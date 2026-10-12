@@ -10,7 +10,7 @@
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
     // Brand, shell, navigation
-    'KONSEPTIDEMO': 'CONCEPT DEMO', 'Konseptidemo': 'Concept demo', 'Koti': 'Home', 'Ajoneuvot': 'Vehicles', 'Minä': 'Me',
+    'KONSEPTIDEMO': 'CONCEPT DEMO', 'TESTIVERSIO': 'TEST VERSION', 'Konseptidemo': 'Concept demo', 'Koti': 'Home', 'Ajoneuvot': 'Vehicles', 'Minä': 'Me',
     'Sovelluksen valikko': 'App menu', 'Huolehtii autostasi.': 'Takes care of your car.', 'huolehtii autostasi.': 'takes care of your car.',
     'AJOURA – huolehtii autostasi': 'AJOURA – takes care of your car', 'Avaa AJOURA-sovellus': 'Open the AJOURA app',
     'Napauta AJOURA-kuvaketta': 'Tap the AJOURA icon', 'Kalenteri': 'Calendar', 'Kuvat': 'Photos', 'Kartat': 'Maps', 'Sää': 'Weather',
@@ -316,10 +316,33 @@
     'Miten saan huoltomuistutuksen puhelimeen?': 'How do I get service reminders on my phone?',
     'Avaa auto ja paina Lisää muistutukset kalenteriin. Seuraavan huollon ja katsastuksen arviot tallentuvat puhelimen kalenteriin, ja kalenteri muistuttaa viikkoa ennen.': 'Open the car and tap Add reminders to calendar. The estimated next service and inspection are saved to your phone’s calendar, which reminds you a week before.',
     'Miten siirrän auton historian ostajalle?': 'How do I hand the car’s history to the buyer?',
-    'Avaa auto → Omistajanvaihdos → Lähetä siirtotiedosto. Ostaja valitsee omassa AJOURAssaan Minä → Palauta varmuuskopio, ja historia siirtyy hänelle.': 'Open the car → Change of ownership → Send transfer file. The buyer chooses Me → Restore backup in their own AJOURA, and the history moves to them.'
+    'Avaa auto → Omistajanvaihdos → Lähetä siirtotiedosto. Ostaja valitsee omassa AJOURAssaan Minä → Palauta varmuuskopio, ja historia siirtyy hänelle.': 'Open the car → Change of ownership → Send transfer file. The buyer chooses Me → Restore backup in their own AJOURA, and the history moves to them.',
+    // Big step (13.10.2026): share link, feedback, tyre season, inspection rule
+    'Jaa historia linkkinä': 'Share history as a link',
+    'Ostaja avaa linkin millä tahansa selaimella, sovellusta ei tarvita. Linkissä ovat auton tiedot ja merkinnät, ei kuvia, kuitteja eikä muistiinpanoja. Linkki ei päivity: luo uusi, kun lisäät merkintöjä.': 'The buyer opens the link in any browser, no app needed. It holds the car details and entries, not photos, receipts or notes. The link does not update: create a new one after adding entries.',
+    '✓ Linkki kopioitu. Liitä se viestiin tai myynti-ilmoitukseen.': '✓ Link copied. Paste it into a message or a sales ad.',
+    'Etkö löytänyt vastausta? Kerro meille.': 'Didn’t find an answer? Tell us.', 'AJOURA on testivaiheessa, ja jokainen palaute auttaa.': 'AJOURA is being tested, and every piece of feedback helps.',
+    'Mikä toimi, mikä ei, mitä puuttuu?': 'What worked, what didn’t, what’s missing?', 'Esim. kuitin lisäys oli hankala, koska…': 'E.g. adding a receipt was awkward because…',
+    'Lähetä palaute': 'Send feedback', 'Kirjoita ensin palautteesi.': 'Write your feedback first.', '✓ Kiitos palautteesta!': '✓ Thanks for the feedback!',
+    'Palaute avautuu puhelimen jakovalikkoon, josta valitset vastaanottajan (esim. WhatsApp). Mukaan liitetään sovelluksen versio ja laitetyyppi, ei autojesi tietoja.': 'Feedback opens in your phone’s share menu, where you pick the recipient (e.g. WhatsApp). The app version and device type are attached, not your car data.',
+    '✓ Palaute kopioitu. Liitä se viestiin AJOURAn tekijöille.': '✓ Feedback copied. Paste it into a message to the AJOURA team.',
+    'Anna palautetta': 'Give feedback', 'Testaatko AJOURAa? Kerro, mikä toimi ja mikä ei.': 'Testing AJOURA? Tell us what worked and what didn’t.',
+    'Tietosuoja': 'Privacy', 'Kehitysvaiheen sovellus': 'App in development', 'AJOURA 0.9 (testiversio) ·': 'AJOURA 0.9 (test version) ·',
+    'Huolto on myöhässä päivämäärän mukaan.': 'The service is overdue by date.', 'Omistajanvaihdos on jo kirjattu tälle päivälle.': 'A change of ownership is already logged for this day.',
+    'TALVIRENKAIDEN AIKA': 'WINTER TYRE SEASON', 'KESÄRENKAIDEN AIKA': 'SUMMER TYRE SEASON',
+    'Talvirenkaat alle viimeistään 30.11.': 'Winter tyres on by 30 November', 'Nastarenkaat pois huhtikuun alussa': 'Studded tyres off in early April',
+    'Huoltoarvio perustuu merkintöihisi ja Minä-välilehden huoltoväliin. Katsastusarvio noudattaa Suomen sääntöä (4, 6 ja 8 vuotta, sitten vuosittain) vuosimallin mukaan. Tarkan päivän näet Traficomin Omat ajoneuvotiedot -palvelusta.': 'The service estimate uses your entries and the interval on the Me tab. The inspection estimate follows the Finnish rule (at 4, 6 and 8 years, then yearly) by model year. The exact date is in Traficom’s own-vehicle service.',
   });
   // Ordered patterns for dynamic strings. Each returns the English string.
   const P = [
+    [re('(Huolto|Katsastus) · myöhässä'), (m, w) => (w === 'Huolto' ? 'Service' : 'Inspection') + ' · overdue'],
+    [re('Huolto on myöhässä päivämäärän mukaan\\. (.*)'), (m, r) => 'The service is overdue by date. ' + t(r)],
+    [re('Mittarilukema ei voi olla pienempi kuin historiaan kirjattu ' + N + ' km\\. Korjaa tarvittaessa ensin väärä merkintä\\.'), (m, k) => 'The odometer cannot be lower than the ' + k + ' km already in the history. Fix the wrong entry first if needed.'],
+    [re('Lukema ' + N + ' km ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' km\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, d, k2) => 'The reading ' + k + ' km does not fit the entry of ' + d + ' (' + k2 + ' km). Check it or save anyway.'],
+    [re('Eriteltyjen summa ' + N + ' €\\. Kustannukseen kirjoittamasi summa säilyy\\.'), (m, v) => 'Itemised total ' + v + ' €. The cost you typed is kept.'],
+    [re('Ensimmäinen katsastus arviolta vuonna (\\d{4}), kun auto täyttää 4 vuotta\\.'), (m, y) => 'First inspection expected in ' + y + ', when the car turns 4.'],
+    [re('(Talvirenkaat ovat pakolliset joulu–helmikuussa\\. Nastarenkaat saa vaihtaa 1\\.11\\. alkaen, tai aiemmin jos keli vaatii\\.|Nastarenkaiden käyttöaika päättyy maaliskuun lopussa, tai pääsiäisen jälkeen jos se on myöhemmin\\.) Kirjaa vaihto, niin muistat mitkä renkaat ovat alla( \\((\\d+) autoa\\))?\\.'),
+      (m, a, b, n) => (a.startsWith('Talvi') ? 'Winter tyres are required December–February. Studs are allowed from 1 November, or earlier if conditions require.' : 'Studded tyres must come off at the end of March, or after Easter if that is later.') + ' Log the change so you remember which tyres are on' + (n ? ' (' + n + ' cars)' : '') + '.'],
     [re('Viimeisin varmuuskopio: ' + DATE), (m, d) => 'Latest backup: ' + d],
     [re('Keskikulutus ' + N + ' (l|kWh)/100 km'), (m, v, u) => 'Average ' + v.replace(',', '.') + ' ' + u + '/100 km'],
     [re('(\\d+) kirjausta'), (m, n) => n + ' ' + plural(n, 'entry', 'entries')],

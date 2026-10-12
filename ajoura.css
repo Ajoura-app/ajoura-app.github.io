@@ -31,3 +31,16 @@
 @media(max-width:900px){.download-grid,.contact-grid{grid-template-columns:1fr}}
 .brand-word b{color:var(--blue);font-weight:inherit}
 .download-cta .share-button{margin-top:10px;background:transparent;color:#fff;border:1px solid #ffffff99;cursor:pointer;font:inherit}.download-cta .share-button:hover{background:#ffffff1f}.download-cta .share-note{font-size:12px;margin-top:8px;min-height:1em}
+.sale-section .section-heading>p:last-child{margin-inline:auto}
+.sale-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
+.sale-grid article{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px}
+.sale-grid h3{font-size:18px;margin:14px 0 8px}
+.sale-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.sale-num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-weight:800}
+@media(max-width:900px){.sale-grid{grid-template-columns:1fr;gap:14px;margin-top:28px}.sale-grid article{padding:20px}}
+.legal{width:min(760px,calc(100% - 32px));margin:0 auto;padding:28px 0 60px}
+.legal h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:22px 0 8px}
+.legal h2{font-size:19px;margin:28px 0 6px}
+.legal p,.legal li{color:#33475c;font-size:15px}
+.legal .draft{background:#fff7e6;border:1px solid #f1d9a6;border-radius:12px;padding:10px 14px;font-size:14px}
+.legal a{color:var(--blue);font-weight:600}
