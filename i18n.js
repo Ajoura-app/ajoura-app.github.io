@@ -24,7 +24,12 @@
     'Nimi näkyy vain sinulle tervehdyksessä.': 'Your name is only shown to you, in the greeting.',
     'Ilman kirjautumista tiedot tallentuvat vain tähän laitteeseen.': 'Without signing in, your data is stored on this device only.',
     'Demotilassa tiedot nollautuvat sivun päivityksessä.': 'In demo mode, data is reset when the page reloads.',
-    'Kirjaudu sisään': 'Sign in', 'Jatka ilman kirjautumista': 'Continue without signing in', 'Toista AJOURA-esittelyvideo': 'Play the AJOURA intro video',
+    'Kirjaudu sisään': 'Sign in', 'Jatka ilman kirjautumista': 'Continue without signing in',
+    'Aloita ilman kirjautumista': 'Start without signing in', 'tulossa': 'coming soon', 'VARMUUSKOPIO': 'BACKUP',
+    'Ota ensimmäinen varmuuskopio': 'Take your first backup', 'Edellisestä varmuuskopiosta on yli kuukausi': 'Your last backup is over a month old',
+    'Tiedot ovat vain tässä puhelimessa. Tallenna ne tiedostoon, niin ne säilyvät, vaikka puhelin vaihtuisi tai hajoaisi.': 'Your data is only on this phone. Save it to a file so it survives a new or broken phone.',
+    'Tallenna varmuuskopio →': 'Save a backup →', 'Varmuuskopiota ei ole vielä otettu tällä laitteella.': 'No backup has been taken on this device yet.',
+    'Myöhemmin kirjautumalla autosi ja merkintäsi tallentuvat turvallisesti ja siirtyvät mukanasi uuteen puhelimeen. Siihen asti käytä varmuuskopiota.': 'Later, signing in will keep your cars and entries safe and move them with you to a new phone. Until then, use a backup.', 'Toista AJOURA-esittelyvideo': 'Play the AJOURA intro video',
     'AJOURA-esittelyvideo': 'AJOURA intro video', 'Esittelyvideo': 'Intro video', 'Kirjautuminen on tulossa.': 'Sign-in is coming soon.',
     'Tili tallentaa autosi ja merkintäsi turvallisesti, ja ne siirtyvät mukanasi uuteen puhelimeen. Sitä ennen voit jatkaa ilman kirjautumista.': 'An account will store your cars and entries securely and move them with you to a new phone. Until then, you can continue without signing in.',
     'Ilman kirjautumista avautuu demotila: voit tutustua sovellukseen, mutta tiedot eivät tallennu.': 'Without signing in, you get demo mode: you can explore the app, but nothing is saved.',
@@ -315,6 +320,7 @@
   });
   // Ordered patterns for dynamic strings. Each returns the English string.
   const P = [
+    [re('Viimeisin varmuuskopio: ' + DATE), (m, d) => 'Latest backup: ' + d],
     [re('Keskikulutus ' + N + ' (l|kWh)/100 km'), (m, v, u) => 'Average ' + v.replace(',', '.') + ' ' + u + '/100 km'],
     [re('(\\d+) kirjausta'), (m, n) => n + ' ' + plural(n, 'entry', 'entries')],
     [re(N + ' € · (\\d+) kirjausta'), (m, v, n) => v + ' € · ' + n + ' ' + plural(n, 'entry', 'entries')],
