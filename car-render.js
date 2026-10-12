@@ -201,7 +201,7 @@
       `<radialGradient id="rim${id}" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#f4f6f8"/><stop offset=".7" stop-color="#cfd6dd"/><stop offset="1" stop-color="#a3adb8"/></radialGradient>` +
       `<radialGradient id="shadow${id}"><stop offset="0" stop-color="#0d1b2a" stop-opacity=".34"/><stop offset="1" stop-color="#0d1b2a" stop-opacity="0"/></radialGradient>` +
       `<clipPath id="clip${id}"><path d="${body}"/></clipPath><clipPath id="glassclip${id}"><path d="${glass}"/></clipPath></defs>` +
-      `<g class="car-own" transform="matrix(-1 0 0 1 400 0)">` +
+      `<g class="car-own" transform="matrix(-1 0 0 1 400 0)"${s.img && (s.dimsOf || s.form) ? ' display="none"' : ''}>` +
       `<ellipse cx="200" cy="${groundY + 2}" rx="${(p.L * k / 2 + 10).toFixed(1)}" ry="10" fill="url(#shadow${id})"/>` +
       `<circle cx="${X(p.xf).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch - 1).toFixed(1)}" fill="#0f141a"/><circle cx="${X(p.xr).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch - 1).toFixed(1)}" fill="#0f141a"/>` +
       `<path d="${body}" fill="url(#paint${id})"/>` +
@@ -231,9 +231,11 @@
 
   // Model drawings made with an image generator (white car on white, facing right). The drawn car stays as the
   // fallback until the drawing has loaded; then the background is cut out and the body tinted to the chosen colour.
-  const photo = (url, c, f) => `<image class="car-model-img" x="16" y="22" width="368" height="130" preserveAspectRatio="xMidYMax meet" opacity="0" ` +
-    `data-src="${String(url).replace(/"/g, '')}" data-c="${c}" data-d="${[f.L, f.WB, f.fo, f.wd].join(',')}"/>`;
-  const bases = new Map(), tints = new Map();
+  // An already tinted drawing is placed straight away, so re-rendering (e.g. picking another body style) never flashes.
+  const photo = (url, c, f) => { const u = String(url).replace(/"/g, ''), ready = done.get(u + c);
+    return `<image class="car-model-img" x="16" y="22" width="368" height="130" preserveAspectRatio="xMidYMax meet" ` +
+      (ready ? `href="${ready}" data-done="1"` : 'opacity="0"') + ` data-src="${u}" data-c="${c}" data-d="${[f.L, f.WB, f.fo, f.wd].join(',')}"/>`; };
+  const bases = new Map(), tints = new Map(), done = new Map();
   const load = url => new Promise((ok, fail) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => ok(im); im.onerror = fail; im.src = url; });
   // Removes the white background, finds the wheels and works out how strongly each pixel takes the paint colour.
   const prepare = (url, d) => {
@@ -309,7 +311,9 @@
       const cv = document.createElement('canvas');
       cv.width = box[2]; cv.height = box[3];
       cv.getContext('2d').putImageData(out, -box[0], -box[1]);
-      return cv.toDataURL('image/png');
+      const url2 = cv.toDataURL('image/png');
+      done.set(key, url2);
+      return url2;
     }));
     return tints.get(key);
   };
@@ -320,9 +324,12 @@
       tinted(el.dataset.src, el.dataset.d, el.dataset.c).then(src => {
         el.setAttribute('href', src);
         el.setAttribute('opacity', '1');
+      }, () => {
+        // Image unavailable (offline, blocked): fall back to the drawn outline.
         const own = el.parentNode && el.parentNode.querySelector('.car-own');
-        if (own) own.setAttribute('display', 'none');
-      }, () => {});
+        if (own) own.removeAttribute('display');
+        el.remove();
+      });
     });
   };
   if (window.MutationObserver) new MutationObserver(list => { for (const m of list) m.addedNodes.forEach(n => { if (n.nodeType === 1) hydrate(n.parentNode || n); }); })

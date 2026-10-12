@@ -643,13 +643,21 @@ window.AjouraShapes = (() => {
       lamp: f.includes('R') ? 'round' : f.includes('Q') ? 'square' : '', tl: f.includes('T') ? 'tall' : '' };
   };
   // The generation that was built in the given year with the chosen body style; without a year, the newest.
-  const form = (brand, model, body, year) => {
+  // gen (first year of a generation) picks that generation when two were sold around the chosen year.
+  const form = (brand, model, body, year, gen) => {
     const list = data[brand] && data[brand][model];
     if (!list) return null;
     const rows = body ? list.filter(r => bodies[r[2]] === body) : list;
     if (!rows.length) return null;
     const y = Number(year) || 9999, dist = r => y < r[0] ? r[0] - y : y > r[1] ? y - r[1] : 0;
-    return decode(rows.slice().sort((a, b) => dist(a) - dist(b) || b[0] - a[0])[0]);
+    const picked = gen && rows.find(r => r[0] === Number(gen) && dist(r) <= 1);
+    return decode(picked || rows.slice().sort((a, b) => dist(a) - dist(b) || b[0] - a[0])[0]);
   };
-  return { form, has: (brand, model) => !!(data[brand] && data[brand][model]) };
+  // Generations of one body style on sale within a year of the chosen model year, oldest first.
+  const gens = (brand, model, body, year) => {
+    const list = data[brand] && data[brand][model], y = Number(year);
+    if (!list || !y) return [];
+    return list.filter(r => bodies[r[2]] === body && y >= r[0] - 1 && y <= r[1] + 1).map(r => [r[0], r[1]]).sort((a, b) => a[0] - b[0]);
+  };
+  return { form, gens, has: (brand, model) => !!(data[brand] && data[brand][model]) };
 })();
