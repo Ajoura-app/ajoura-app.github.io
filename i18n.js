@@ -268,7 +268,7 @@
 
   // Report analysis, ownership change, account
   Object.assign(D, {
-    'Huoltohistoriaraportti': 'Service history report', 'Analyysi': 'Analysis', 'Öljynvaihtoa': 'Oil changes', 'Öljynvaihtojen väli': 'Oil change interval',
+    'Huoltohistoriaraportti': 'Service history report', 'Analyysi': 'Analysis', 'Öljynvaihtoa': 'Oil changes', 'Öljynvaihto': 'Oil change', 'Öljynvaihtojen väli': 'Oil change interval',
     'Huoltoa': 'Services', 'Kulut / vuosi': 'Costs / year', 'ei kirjattu': 'none logged', 'Seuraava öljynvaihto arviolta': 'Next oil change (estimate)',
     'Suurin yksittäinen kulu': 'Largest single cost', 'Viimeisin katsastus': 'Latest inspection', 'Omistajanvaihdoksia kirjattu': 'Ownership changes logged',
     'Kulut vuosittain': 'Costs by year', 'alle 2 kk': 'under 2 mo', 'Omistajanvaihdos': 'Change of ownership', 'Omistajanvaihdos.': 'Change of ownership.',
@@ -356,6 +356,7 @@
     [re('✓ Varmuuskopio palautettu: (\\d+) uutta, (\\d+) päivitetty\\.'), (m, a, u) => '✓ Backup restored: ' + a + ' new, ' + u + ' updated.'],
     [re('viimeksi ' + DATE), (m, d) => 'last ' + d],
     [re('noin ' + N + ' km'), (m, k) => 'about ' + k + ' km'],
+    [re('1 katsastus'), () => '1 inspection'],
     [re('(\\d+) katsastusta'), (m, n) => n + ' ' + plural(n, 'inspection', 'inspections')],
     [re('(\\d+) kk'), (m, n) => n + ' mo'],
     [re('Raportti (AJ-[\\w-]+)'), (m, id) => 'Report ' + id],

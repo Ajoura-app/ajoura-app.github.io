@@ -128,7 +128,7 @@ html.fullscreen .demo-page{min-height:100dvh}html.fullscreen .demo-stage{display
 html.fullscreen .device{width:100%;height:calc(100dvh - 55px - env(safe-area-inset-top));max-width:none;aspect-ratio:auto;padding:0;border-radius:0;background:none;box-shadow:none;transform:none;animation:none}
 html.fullscreen .device-glass{border:0;border-radius:0}html.fullscreen .screen-content{padding-top:8px}html.fullscreen .tab-bar{padding-bottom:calc(4px + env(safe-area-inset-bottom))}
 /* Narrow screens: tables and checklists stay inside the screen. */
-.report-table{table-layout:fixed}.report-table td,.report-table th{overflow-wrap:anywhere}.report-table th:first-child,.report-table td:first-child{width:24%}.report-table th:nth-child(n+3),.report-table td:nth-child(n+3){width:17%}
+.report-table{table-layout:fixed}.report-table td,.report-table th{overflow-wrap:break-word;word-break:normal;hyphens:auto;-webkit-hyphens:auto}.report-table th:first-child,.report-table td:first-child{width:24%}.report-table th:nth-child(n+3),.report-table td:nth-child(n+3){width:17%}
 @container(max-width:300px){.check-grid{grid-template-columns:1fr}.app-stats.three strong{font-size:13px}.report-table{font-size:9px}}
 .check-item span{min-width:0;overflow-wrap:anywhere}
 /* Small motion details. All of them switch off with reduced motion. */
