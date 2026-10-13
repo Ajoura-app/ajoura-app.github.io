@@ -331,7 +331,7 @@
     'Tarkista päivämäärä.': 'Check the date.', 'Tietosuoja': 'Privacy', 'Kehitysvaiheen sovellus': 'App in development', 'AJOURA 0.9 (testiversio) ·': 'AJOURA 0.9 (test version) ·',
     'Huolto on myöhässä päivämäärän mukaan.': 'The service is overdue by date.', 'Omistajanvaihdos on jo kirjattu tälle päivälle.': 'A change of ownership is already logged for this day.',
     'TALVIRENKAIDEN AIKA': 'WINTER TYRE SEASON', 'KESÄRENKAIDEN AIKA': 'SUMMER TYRE SEASON',
-    'Talvirenkaat alle viimeistään 30.11.': 'Winter tyres on by 30 November', 'Nastarenkaat pois huhtikuun alussa': 'Studded tyres off in early April',
+    'Talvirenkaat alle ennen liukkaita kelejä': 'Winter tyres on before slippery weather', 'Nastarenkaat pois maaliskuun lopussa': 'Studded tyres off at the end of March',
     'Huoltoarvio perustuu merkintöihisi ja Minä-välilehden huoltoväliin. Katsastusarvio noudattaa Suomen sääntöä (4, 6 ja 8 vuotta, sitten vuosittain) vuosimallin mukaan. Tarkan päivän näet Traficomin Omat ajoneuvotiedot -palvelusta.': 'The service estimate uses your entries and the interval on the Me tab. The inspection estimate follows the Finnish rule (at 4, 6 and 8 years, then yearly) by model year. The exact date is in Traficom’s own-vehicle service.',
   });
   // Several photos per car, notes page (13.10.2026)
@@ -994,8 +994,8 @@
     [re('Lukema ' + N + ' (km|h) ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' (?:km|h)\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, u, d, k2) => 'The reading ' + k + ' ' + u + ' does not fit the entry of ' + d + ' (' + k2 + ' ' + u + '). Check it or save anyway.'],
     [re('Eriteltyjen summa ' + N + ' €\\. Kustannukseen kirjoittamasi summa säilyy\\.'), (m, v) => 'Itemised total ' + v + ' €. The cost you typed is kept.'],
     [re('Ensimmäinen katsastus arviolta vuonna (\\d{4}), kun auto täyttää 4 vuotta\\.'), (m, y) => 'First inspection expected in ' + y + ', when the car turns 4.'],
-    [re('(Talvirenkaat ovat pakolliset joulu–helmikuussa\\. Nastarenkaat saa vaihtaa 1\\.11\\. alkaen, tai aiemmin jos keli vaatii\\.|Nastarenkaiden käyttöaika päättyy maaliskuun lopussa, tai pääsiäisen jälkeen jos se on myöhemmin\\.) Kirjaa vaihto, niin muistat mitkä renkaat ovat alla( \\((\\d+) autoa\\))?\\.'),
-      (m, a, b, n) => (a.startsWith('Talvi') ? 'Winter tyres are required December–February. Studs are allowed from 1 November, or earlier if conditions require.' : 'Studded tyres must come off at the end of March, or after Easter if that is later.') + ' Log the change so you remember which tyres are on' + (n ? ' (' + n + ' cars)' : '') + '.'],
+    [re('(Talvirenkaat ovat pakolliset 1\\.11\\.–31\\.3\\., kun keli sitä vaatii \\(lunta, jäätä tai sohjoa\\)\\. Nastarenkaita saa käyttää 1\\.11\\.–31\\.3\\. ja muulloinkin, jos keli vaatii\\.|Nastarenkaiden käyttöaika päättyy 31\\.3\\. Sen jälkeen niitä saa käyttää vain, jos keli vaatii\\.) Kirjaa vaihto, niin muistat mitkä renkaat ovat alla( \\((\\d+) autoa\\))?\\.'),
+      (m, a, b, n) => (a.startsWith('Talvi') ? 'Winter tyres are required 1 November–31 March whenever conditions call for them (snow, ice or slush). Studded tyres are allowed 1 November–31 March, and at other times if conditions require.' : 'The studded tyre season ends on 31 March. After that they may only be used if conditions require.') + ' Log the change so you remember which tyres are on' + (n ? ' (' + n + ' cars)' : '') + '.'],
     [re('Viimeisin varmuuskopio: ' + DATE), (m, d) => 'Latest backup: ' + d],
     [re('Keskikulutus ' + N + ' (l|kWh)/(100 km|h)'), (m, v, u, w) => 'Average ' + v.replace(',', '.') + ' ' + u + '/' + w],
     [re('(\\d+) kirjausta'), (m, n) => n + ' ' + plural(n, 'entry', 'entries')],
