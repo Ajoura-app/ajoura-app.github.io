@@ -29,7 +29,8 @@
     ['shop', 'yleinen', 'Autohuollon näkymä', 'Autohuolto yläkulman näkymävalikossa ja korjaamon työkalut.', ''],
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
-    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"]'],
+    ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
+    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"],.fuel-cost'],
     ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"]'],
     ['owner', 'asiakas', 'Omistajanvaihdos', 'Auton siirto uudelle omistajalle.', 'a[href^="#owner/"]'],
     ['tips', 'asiakas', 'Huoltovinkit', 'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.', '.tips-card'],
@@ -249,7 +250,7 @@
       <div class="r-import-card"><div class="r-import-head"><span class="plate-badge" aria-hidden="true"><b>FIN</b>${esc(d.plate)}</span><span>${esc(d.car)}${d.year ? ' · vm. ' + d.year : ''}</span></div>
       <dl class="detail-list"><div><dt>TYÖ</dt><dd>${esc(e.type)} · ${fdate(e.date)}${e.km !== null ? ' · ' + num(e.km) + ' km' : ''}</dd></div>${e.items.length ? `<div><dt>TEHDYT TOIMENPITEET</dt><dd><ul class="done-list">${e.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></dd></div>` : ''}${e.parts.length ? `<div><dt>VARAOSAT</dt><dd><ul class="done-list">${e.parts.map(x => `<li>${esc(x.name)}${x.qty ? ' · ' + esc(x.qty) : ''}${x.price ? ' · ' + num(x.price) + ' €' : ''}</li>`).join('')}</ul></dd></div>` : ''}${e.cost ? `<div><dt>HINTA</dt><dd>${num(e.cost)} €</dd></div>` : ''}${e.note ? `<div><dt>KORJAAMON MUISTIINPANO</dt><dd>${esc(e.note)}</dd></div>` : ''}<div><dt>KORJAAMO</dt><dd>${esc(d.shop.name || '–')}${d.shop.phone ? ' · ' + esc(d.shop.phone) : ''}${d.shop.address ? '<br>' + esc(d.shop.address) : ''}</dd></div></dl></div>
       ${dup ? `<p class="success-note">✓ Tämä merkintä on jo autosi historiassa.</p><a class="app-button" href="#vehicle/${mine.id}">Avaa ${esc(mine.nick || mine.name)}</a>` : `<p class="app-subtitle">${mine ? `Merkintä lisätään autosi <strong>${esc(mine.nick || mine.name)}</strong> huoltohistoriaan.` : `Autoa ${esc(d.plate)} ei ole vielä tallissasi. Se lisätään uutena autona, ja voit tarkentaa mallin ja ulkonäön myöhemmin.`}</p><button class="app-button" type="button" data-r-import>Lisää huoltohistoriaan</button><a class="app-button secondary" href="#home">Ei nyt</a>`}
-      <p class="app-fineprint">Käytätkö kotivalikkoon asennettua AJOURAa? Kopioi korjaamon linkki ja liitä se sovelluksessa kohtaan Minä → Merkintä korjaamolta.</p>`;
+      ${document.documentElement.classList.contains('standalone') ? '' : '<p class="app-fineprint">Käytätkö kotivalikkoon asennettua AJOURAa? Kopioi korjaamon linkki ja liitä se sovelluksessa kohtaan Minä → Merkintä korjaamolta.</p>'}`;
   }
 
   // ---- Feedback: sent to the team's Google Sheet (palaute-apps-script.gs) when features.json names it.
@@ -343,7 +344,7 @@
     document.documentElement.classList.add('r-cust');
     const screen = document.getElementById('app-screen'); if (!screen) return;
     const t = screen.querySelector('.app-top');
-    if (t && !t.querySelector('.r-view-menu,.r-start')) { const label = t.querySelector('.demo-label'), html = view === 'welcome' ? viewMenu(role() === 'huolto' ? 'huolto' : 'asiakas') : startBtn; if (label) label.outerHTML = `<span class="r-top-right">${html}${label.outerHTML}</span>`; else t.insertAdjacentHTML('beforeend', html); }
+    if (t && !t.querySelector('.r-view-menu,.r-start')) { const label = t.querySelector('.demo-label'), html = view === 'welcome' ? viewMenu(role() === 'huolto' ? 'huolto' : role() === 'tiimi' ? 'omistajat' : 'asiakas') : startBtn; if (label) label.outerHTML = `<span class="r-top-right">${html}${label.outerHTML}</span>`; else t.insertAdjacentHTML('beforeend', html); }
     if (view === 'home' && noticeHtml() && t && !screen.querySelector('.r-notice')) t.insertAdjacentHTML('afterend', noticeHtml());
     if (view === 'me' && !screen.querySelector('.r-role-box')) {
       const anchor = [...screen.querySelectorAll('.me-data')].find(x => x.querySelector('[data-backup]'));
@@ -394,6 +395,8 @@
       try { sessionStorage.setItem(inKey, m[1]); } catch (e) {} go('tuo');
     }
   });
+  // Enter in a workshop form moves to the next field instead of saving a half-filled job.
+  document.addEventListener('keydown', ev => { if (ev.key !== 'Enter' || !ev.target.matches || !ev.target.matches('#r-job-form input:not([type=checkbox]),#r-shop-form input:not([type=checkbox])')) return; ev.preventDefault(); const f = [...ev.target.form.querySelectorAll('input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea')].filter(x => x.offsetParent), n = f[f.indexOf(ev.target) + 1]; if (n) n.focus(); else ev.target.blur(); });
   document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; const m = document.querySelector('.r-view-menu[open]'); if (m) { m.open = false; m.querySelector('summary').focus(); } });
   document.addEventListener('click', async ev => {
     const t = ev.target; if (!t.closest || !t.closest('#app-screen')) return;

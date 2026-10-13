@@ -285,7 +285,7 @@ html.dark.standalone,html.dark.fullscreen,html.dark.standalone body,html.dark.fu
 .chart-card{background:#fff;border:1px solid #e0e9f2;border-radius:12px;padding:11px 11px 9px;margin:0 0 14px}.chart-card h3{font-size:12px;letter-spacing:-.02em;margin:0 0 2px}.chart-sub{font-size:9px;color:#5d738a;margin:0 0 4px}
 .chart{display:block;width:100%;height:auto;overflow:visible}.ch-grid{stroke:#e6edf4;stroke-width:1}.ch-ax{font-size:8px;fill:#7a8b9e}.ch-line{fill:none;stroke:var(--blue);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .ch-dot{fill:var(--blue);stroke:#fff;stroke-width:1.2}.ch-avg{stroke:#d9822b;stroke-width:1.4;stroke-dasharray:4 3}.ch-avg-t{font-size:8px;font-weight:700;fill:#b86a1d}
-.km-chart .ch-line{stroke:#9fb3c8;stroke-width:1.6}.ch-dot.k-fuel{fill:#b9c7d6;stroke-width:.8}.ch-dot.k-service,.lg-dot.k-service{fill:#0b5ed7;background:#0b5ed7}.ch-dot.k-inspect,.lg-dot.k-inspect{fill:#1f9a62;background:#1f9a62}.ch-dot.k-tyres,.lg-dot.k-tyres{fill:#7a8ca0;background:#7a8ca0}.ch-dot.k-repair,.lg-dot.k-repair{fill:#d9822b;background:#d9822b}.lg-dot.k-fuel{background:#b9c7d6}
+.km-chart .ch-line{stroke:#9fb3c8;stroke-width:1.6}.ch-dot.k-fuel{fill:#b9c7d6;stroke-width:.8}.ch-dot.k-service,.lg-dot.k-service{fill:#0b5ed7;background:#0b5ed7}.ch-dot.k-inspect,.lg-dot.k-inspect{fill:#1f9a62;background:#1f9a62}.ch-dot.k-tyres,.lg-dot.k-tyres{fill:#7a8ca0;background:#7a8ca0}.ch-dot.k-repair,.lg-dot.k-repair{fill:#d9822b;background:#d9822b}.ch-dot.k-other,.lg-dot.k-other{fill:#a7b1bc;background:#a7b1bc}.lg-dot.k-fuel{background:#b9c7d6}
 .chart-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:9px;color:#5d738a;margin:4px 0 0}.lg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:4px}.lg-dot:first-child{margin-left:0}.lg-line,.lg-avg{display:inline-block;width:14px;height:0;border-top:2px solid var(--blue)}.lg-avg{border-top:2px dashed #d9822b;margin-left:6px}.chart-note{margin:0 0 12px}
 @media print{.chart-card{break-inside:avoid}}
 .form-row.three{grid-template-columns:1fr 1fr 1fr}.fuel-calc label small{font-weight:500}.fuel-guess{margin:-2px 0 8px;font-size:10px}.fx-rate input{margin-top:4px}
@@ -293,3 +293,13 @@ html.dark.standalone,html.dark.fullscreen,html.dark.standalone body,html.dark.fu
 .fx-rate[hidden],.fuel-guess[hidden]{display:none!important}@container(max-width:250px){.form-row.three{grid-template-columns:1fr}}
 .tips-card{background:#fff;border:1px solid #e0e9f2;border-radius:12px;padding:11px 12px 9px;margin:0 0 14px}.tips-card h3{display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:-.02em;margin:0 0 6px}.tips-card h3 svg{width:14px;height:14px;color:var(--blue)}
 .tips-card ul{margin:0;padding:0 0 0 15px;font-size:10px;line-height:1.5;color:#33465b}.tips-card li{margin:0 0 6px}.tips-card summary{cursor:pointer;font-size:10px;font-weight:700;color:var(--blue);margin:2px 0 6px}.tips-note{font-size:8.5px;color:#7a8b9e;margin:4px 0 0}
+.report-charts{display:grid;gap:0 12px;margin-top:10px}.report-charts:empty{display:none}@media print{.report-charts{grid-template-columns:1fr 1fr}.report-charts .chart-card{border-color:#ccd6e0}}
+/* Vehicle kinds: the first step of adding a vehicle, and the kind label on the next steps */
+.kind-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:4px 0 12px}
+.kind-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;min-width:0;padding:10px 10px 11px;border:1px solid #d6e2ee;border-radius:14px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;transition:border-color .2s,box-shadow .2s,transform .15s ease;animation:rise .38s cubic-bezier(.2,.7,.2,1) both}
+.kind-card:hover,.kind-card:focus-visible{border-color:var(--blue);box-shadow:0 6px 18px -12px #1464e8}.kind-card:active{transform:scale(.97)}
+.kind-art{display:block;width:100%;aspect-ratio:400/150;overflow:hidden;margin-bottom:2px}.kind-art svg{display:block;width:100%;height:auto;margin-top:-6%}
+.kind-card strong{font-size:12.5px;line-height:1.25}.kind-card small{font-size:9.5px;color:#62768a;line-height:1.4}
+.kind-chip{display:inline-flex;align-items:center;gap:6px;margin:-2px 0 8px;padding:3px 10px 3px 4px;border-radius:999px;background:#eef5ff;color:#1d4f91;font-size:11px;font-weight:600}
+.kind-chip span{display:block;width:44px}.kind-chip svg{display:block;width:100%;height:auto}
+.kind-brand-text[hidden]{display:none}

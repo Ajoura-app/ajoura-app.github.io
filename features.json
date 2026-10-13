@@ -4,6 +4,7 @@
   "shop": true,
   "notice": true,
   "plate": true,
+  "kinds": true,
   "fuel": true,
   "report": true,
   "owner": true,
