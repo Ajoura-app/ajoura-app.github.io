@@ -6,7 +6,7 @@
     const btn = event.target.closest('[data-share]');
     if (!btn) return;
     const note = btn.parentElement.querySelector('.share-note');
-    if (navigator.share) { try { await navigator.share({ title: 'AJOURA', text: 'AJOURA – autosi oma huoltokirja.', url }); } catch (e) {} return; }
+    if (navigator.share) { try { await navigator.share({ title: 'AJOURA', text: window.AjouraI18n ? window.AjouraI18n.t('AJOURA – autosi oma huoltokirja.') : 'AJOURA – autosi oma huoltokirja.', url }); } catch (e) {} return; }
     try { await navigator.clipboard.writeText(url); if (note) note.textContent = 'Linkki kopioitu leikepöydälle.'; }
     catch (e) { if (note) note.textContent = url; }
   });

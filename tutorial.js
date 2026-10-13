@@ -30,6 +30,19 @@
       ],
       rows: ['Oil change', 'Inspection', 'Tyre change'], dates: ['23/09/2026 · 184,320 km', '15/02/2026 · 181,120 km', '05/04/2026 · 181,900 km'],
       cons: 'Average consumption', reminder: 'NEXT SERVICE', due: 'Due by 23/09/2027', report: 'Service history report'
+    },
+    sv: {
+      skip: 'Hoppa över', mute: 'Ljud av', unmute: 'Ljud på', start: 'Kom igång', label: 'Introduktionsguide', step: 'Steg',
+      scenes: [
+        ['Välkommen till AJOURA', 'Din bils egen servicebok, alltid i fickan.'],
+        ['Lägg till din bil', 'Med registreringsnummer eller för hand. Välj modell, karosstyp och färg.'],
+        ['Registrera service', 'Oljebyten, besiktningar och reparationer, med kvitton.'],
+        ['Följ tankningarna', 'Medelförbrukning och körkostnad räknas ut åt dig.'],
+        ['Påminnelse i tid', 'Service, besiktning och däckbyte: du ser i god tid vad som väntar.'],
+        ['Historik till köparen', 'Hela historiken som länk eller PDF-rapport när du säljer bilen.']
+      ],
+      rows: ['Oljebyte', 'Besiktning', 'Däckbyte'], dates: ['23.9.2026 · 184 320 km', '15.2.2026 · 181 120 km', '5.4.2026 · 181 900 km'],
+      cons: 'Medelförbrukning', reminder: 'NÄSTA SERVICE', due: 'Senast 23.9.2027', report: 'Servicehistorikrapport'
     }
   };
 
@@ -132,7 +145,7 @@
   function open(opts = {}) {
     if (current) return;
     const host = opts.host || document.querySelector('.device-glass') || document.body;
-    const lang = window.AjouraI18n && window.AjouraI18n.lang === 'en' ? 'en' : 'fi', T = text[lang];
+    const lang = window.AjouraI18n && text[window.AjouraI18n.lang] ? window.AjouraI18n.lang : 'fi', T = text[lang];
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const el = document.createElement('div');
     el.className = 'tutorial'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', T.label);
@@ -150,7 +163,7 @@
       const type = s.querySelector('[data-type]');
       if (type) { const full = type.dataset.type; let n = 0; type.textContent = ''; typer = setInterval(() => { type.textContent = full.slice(0, ++n); if (n >= full.length) clearInterval(typer); }, reduce ? 0 : 140); }
       const count = s.querySelector('[data-count]');
-      if (count) { const to = Number(count.dataset.count), t0 = performance.now(), dur = reduce ? 1 : 1600, fmt = v => v.toLocaleString(lang === 'en' ? 'en-GB' : 'fi-FI', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); counter = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / dur); count.textContent = fmt(to * (1 - Math.pow(1 - k, 3))); if (k >= 1) clearInterval(counter); }, 40); }
+      if (count) { const to = Number(count.dataset.count), t0 = performance.now(), dur = reduce ? 1 : 1600, fmt = v => v.toLocaleString(lang === 'en' ? 'en-GB' : lang === 'sv' ? 'sv-FI' : 'fi-FI', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); counter = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / dur); count.textContent = fmt(to * (1 - Math.pow(1 - k, 3))); if (k >= 1) clearInterval(counter); }, 40); }
     };
     const show = i => {
       idx = i; scenes.forEach((s, n) => { s.classList.toggle('on', n === i); s.setAttribute('aria-hidden', String(n !== i)); });

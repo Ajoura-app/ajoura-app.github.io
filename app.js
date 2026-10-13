@@ -153,10 +153,12 @@
   ];
   // Language and light/dark theme: per-device conveniences, chosen on the welcome screen or in settings.
   const prefGet=k=>{try{return localStorage.getItem(k)||'';}catch(e){return '';}},prefSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+  // Text that never reaches the DOM (calendar file, share sheet) goes through the language layer by hand.
+  const tl=s=>window.AjouraI18n?window.AjouraI18n.t(s):s;
   const lang=()=>window.AjouraI18n?window.AjouraI18n.lang:'fi',theme=()=>document.documentElement.classList.contains('dark')?'dark':'light';
   function setTheme(t){document.documentElement.classList.toggle('dark',t==='dark');prefSet('ajoura-theme',t);document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='dark'?'#0b1119':'#f5f8fc');}
   const seg=(name,cur,opts)=>`<div class="seg" role="group" aria-label="${name}">${opts.map(([v,l])=>`<button type="button" data-pref="${name}" data-value="${v}" aria-pressed="${v===cur}">${l}</button>`).join('')}</div>`;
-  const prefsBar=compact=>compact?`<div class="prefs compact">${seg('Kieli',lang(),[['fi','FI'],['en','EN']])}${seg('Teema',theme(),[['light','☀︎'],['dark','☾']])}</div>`:`<div class="prefs">${seg('Kieli',lang(),[['fi','Suomi'],['en','English']])}${seg('Teema',theme(),[['light','☀︎ Vaalea'],['dark','☾ Tumma']])}</div>`;
+  const prefsBar=compact=>compact?`<div class="prefs compact">${seg('Kieli',lang(),[['fi','FI'],['sv','SV'],['en','EN']])}${seg('Teema',theme(),[['light','☀︎'],['dark','☾']])}</div>`:`<div class="prefs">${seg('Kieli',lang(),[['fi','Suomi'],['sv','Svenska'],['en','English']])}${seg('Teema',theme(),[['light','☀︎ Vaalea'],['dark','☾ Tumma']])}</div>`;
   function help(){return `${top()}<h2 class="app-heading">Apua käyttöön</h2><p class="app-subtitle">Yleisimmät kysymykset ja vastaukset.</p><button class="app-button secondary help-guide" type="button" data-tutorial><span aria-hidden="true">▶</span> Katso käyttöönoton opas</button><label class="help-search"><span class="sr-only">Hae ohjeista</span><input type="search" id="help-search" placeholder="Hae, esim. kuitti tai raportti" autocomplete="off"></label><div class="faq-list">${faq.map(([q,a])=>`<details class="faq"><summary>${q}</summary><p>${a}</p></details>`).join('')}</div><p class="faq-empty" id="faq-empty" hidden>Ei osumia. Kokeile toista sanaa tai kysy meiltä.</p><div class="help-contact"><strong>Etkö löytänyt vastausta? Kerro meille.</strong><p>AJOURA on testivaiheessa, ja jokainen palaute auttaa.</p>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${feedbackForm()}</div>`;}
   function nextService(){
     let next=null;
@@ -244,7 +246,7 @@
   function calendar(id){const c=cars.find(c=>c.id===id);if(!c)return;const items=dueDates(c);if(!items.length)return;const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',esc=v=>String(v).replace(/[\\,;]/g,m=>'\\'+m).replace(/\n/g,'\\n');
     const day=d=>d.replace(/-/g,''),next=d=>{const t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+1);return t.toISOString().slice(0,10).replace(/-/g,'');};
     const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AJOURA//Huoltomuistutus//FI','CALSCALE:GREGORIAN'];
-    const t=today();for(const x of items.map(x=>x.due<t?{...x,due:t,late:true}:x))lines.push('BEGIN:VEVENT','UID:'+c.id+'-'+x.what+'-'+day(x.due)+'@ajoura','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+day(x.due),'DTEND;VALUE=DATE:'+next(x.due),'SUMMARY:'+esc(`AJOURA: ${x.what}${x.late?' (myöhässä)':''} – ${carName(c)}`),'DESCRIPTION:'+esc(`AJOURAn arvio omien merkintöjesi perusteella${x.km?`, viimeistään ${number(x.km)} km`:''}.`),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+esc(`${x.what} lähestyy: ${carName(c)}`),'TRIGGER:-P7D','END:VALARM','END:VEVENT');
+    const t=today();for(const x of items.map(x=>x.due<t?{...x,due:t,late:true}:x))lines.push('BEGIN:VEVENT','UID:'+c.id+'-'+x.what+'-'+day(x.due)+'@ajoura','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+day(x.due),'DTEND;VALUE=DATE:'+next(x.due),'SUMMARY:'+esc(tl(`AJOURA: ${x.what}${x.late?' (myöhässä)':''} – ${carName(c)}`)),'DESCRIPTION:'+esc(tl(`AJOURAn arvio omien merkintöjesi perusteella${x.km?`, viimeistään ${number(x.km)} km`:''}.`)),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+esc(tl(`${x.what} lähestyy: ${carName(c)}`)),'TRIGGER:-P7D','END:VALARM','END:VEVENT');
     lines.push('END:VCALENDAR');saveFile(new File([lines.join('\r\n')],'ajoura-muistutus-'+c.plate.replace(/-/g,'')+'.ics',{type:'text/calendar'}),false);}
   // Due within 30 days or already late, across all cars, shown on top of the garage list.
   function dueSoon(){const t=today(),soon=addMonths(t,1),list=cars.flatMap(c=>dueDates(c).map(x=>({c,...x}))).filter(x=>x.due<=soon).sort((a,b)=>a.due.localeCompare(b.due));if(!list.length)return '';
@@ -350,7 +352,7 @@
     if(window.CompressionStream){try{return 'z'+b64u(new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()));}catch(e){}}
     return 'j'+b64u(raw);}
   async function saleLink(id){const c=cars.find(c=>c.id===id);if(!c)return;const url=new URL('historia.html',location.href);url.search='';url.hash=await packHistory(c);const href=url.href,y=screen.scrollTop;
-    if(navigator.share){try{await navigator.share({title:'Huoltohistoria: '+c.name,text:`${c.name} (${c.plate}): huoltohistoria AJOURAsta.`,url:href});return;}catch(e){if(e&&e.name==='AbortError')return;}}
+    if(navigator.share){try{await navigator.share({title:tl('Huoltohistoria: '+c.name),text:tl(`${c.name} (${c.plate}): huoltohistoria AJOURAsta.`),url:href});return;}catch(e){if(e&&e.name==='AbortError')return;}}
     try{await navigator.clipboard.writeText(href);notice='✓ Linkki kopioitu. Liitä se viestiin tai myynti-ilmoitukseen.';}catch(e){window.prompt('Kopioi linkki:',href);}render();screen.scrollTop=y;}
   // Feedback from test users: the phone's share sheet (or the clipboard) carries the message to whoever they choose.
   async function sendFeedback(form){const msg=String(new FormData(form).get('msg')).trim().slice(0,2000),err=form.querySelector('.error-note');if(msg.length<3){err.textContent='Kirjoita ensin palautteesi.';return;}

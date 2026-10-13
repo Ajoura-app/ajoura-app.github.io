@@ -6,6 +6,7 @@
 (() => {
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v === '' ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  const tl = s => (window.AjouraI18n ? window.AjouraI18n.t(s) : s); // text outside the DOM (share sheet, SMS)
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const num = v => Number(v).toLocaleString('fi-FI', { maximumFractionDigits: 2 });
   const fdate = v => new Intl.DateTimeFormat('fi-FI').format(new Date(v + 'T12:00:00'));
@@ -180,7 +181,7 @@
       ${j.items.length ? `<div><dt>TEHDYT TOIMENPITEET</dt><dd><ul class="done-list">${j.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></dd></div>` : ''}${j.note ? `<div><dt>MUISTIINPANO</dt><dd>${esc(j.note)}</dd></div>` : ''}</dl>
       ${lines.length ? `<table class="report-table r-lines"><thead><tr><th>Rivi</th><th>Määrä</th><th>€</th></tr></thead><tbody>${lines.map(l => `<tr><td>${esc(l[0])}</td><td>${esc(l[1])}</td><td>${num(l[2])}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2"><strong>Yhteensä (sis. alv)</strong></td><td><strong>${num(total(j))}</strong></td></tr></tfoot></table>` : ''}
       <footer class="report-foot"><div><strong>${esc(p.name || 'Autohuolto')}</strong>${p.ytunnus ? `<span>Y-tunnus ${esc(p.ytunnus)}</span>` : ''}</div><div>${p.address ? `<span>${esc(p.address)}</span>` : ''}${p.phone ? `<span>${esc(p.phone)}</span>` : ''}</div><div><span>Tehty AJOURAlla</span></div></footer></div>`;
-    const share = handoff && handoff.id === j.id ? `<div class="r-handoff" role="status"><p><strong>Luovutuslinkki on valmis.</strong> Lähetä se asiakkaalle esim. tekstiviestillä tai WhatsAppilla. Asiakas avaa linkin ja työ lisätään hänen AJOURAnsa huoltohistoriaan.</p><textarea readonly rows="3" aria-label="Luovutuslinkki" data-r-select>${esc(handoff.url)}</textarea><button class="app-button secondary" type="button" data-r-copy>Kopioi linkki</button>${j.phone ? `<a class="app-button secondary" href="sms:${esc(j.phone.replace(/[^\d+]/g, ''))}${/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent('Autosi ' + j.plate + ' huoltotiedot AJOURAan: ' + handoff.url)}">Lähetä tekstiviestinä</a>` : ''}</div>` : '';
+    const share = handoff && handoff.id === j.id ? `<div class="r-handoff" role="status"><p><strong>Luovutuslinkki on valmis.</strong> Lähetä se asiakkaalle esim. tekstiviestillä tai WhatsAppilla. Asiakas avaa linkin ja työ lisätään hänen AJOURAnsa huoltohistoriaan.</p><textarea readonly rows="3" aria-label="Luovutuslinkki" data-r-select>${esc(handoff.url)}</textarea><button class="app-button secondary" type="button" data-r-copy>Kopioi linkki</button>${j.phone ? `<a class="app-button secondary" href="sms:${esc(j.phone.replace(/[^\d+]/g, ''))}${/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(tl('Autosi ' + j.plate + ' huoltotiedot AJOURAan: ' + handoff.url))}">Lähetä tekstiviestinä</a>` : ''}</div>` : '';
     return `<a class="app-back no-print" href="#shop">← Työjono</a>${shopNote ? `<p class="success-note no-print" role="status">${esc(shopNote)}</p>` : ''}${sheet}
       <div class="r-actions no-print">${next ? `<button class="app-button" type="button" data-r-status="${j.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
       ${j.status === 'valmis' || j.status === 'luovutettu' ? (on('shopHandoff') ? `<button class="app-button${j.status === 'valmis' ? '' : ' secondary'}" type="button" data-r-handoff="${j.id}">${svg(ic.send)} ${j.status === 'valmis' ? 'Luovuta asiakkaalle' : 'Lähetä luovutuslinkki uudelleen'}</button>` : (j.status === 'valmis' ? `<button class="app-button" type="button" data-r-status="${j.id}" data-to="luovutettu">Merkitse luovutetuksi</button>` : '')) : ''}
@@ -377,7 +378,7 @@
       const url = appUrl() + '?huolto=' + b64(JSON.stringify(payloadOf(j)));
       if (j.status !== 'luovutettu') { j.status = 'luovutettu'; j.doneDate = today(); j.handed = Date.now(); saveShop(); }
       handoff = { id: j.id, url };
-      if (navigator.share) { navigator.share({ title: 'AJOURA – huoltomerkintä', text: `Autosi ${j.plate} huoltotiedot AJOURAan (${shop.profile.name || 'korjaamo'}):`, url }).catch(() => {}); }
+      if (navigator.share) { navigator.share({ title: tl('AJOURA – huoltomerkintä'), text: tl(`Autosi ${j.plate} huoltotiedot AJOURAan (${shop.profile.name || 'korjaamo'}):`), url }).catch(() => {}); }
       const keep = handoff; rerender(); handoff = keep; return;
     }
     if (t.closest('[data-r-copy]')) { const ta = document.querySelector('[data-r-select]'); if (ta) { ta.select(); navigator.clipboard?.writeText(ta.value).then(() => { t.closest('[data-r-copy]').textContent = '✓ Kopioitu'; }).catch(() => document.execCommand && document.execCommand('copy')); } return; }

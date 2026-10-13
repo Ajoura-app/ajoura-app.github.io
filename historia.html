@@ -8,16 +8,19 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=sale-1">
-<script src="car-render.js?v=sale-1" defer></script>
-<script src="car-shapes.js?v=sale-1" defer></script>
-<script src="car-images.js?v=sale-1" defer></script>
-<script src="car-models.js?v=sale-1" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=lang-1">
+<script src="car-render.js?v=lang-1" defer></script>
+<script src="car-shapes.js?v=lang-1" defer></script>
+<script src="car-images.js?v=lang-1" defer></script>
+<script src="car-models.js?v=lang-1" defer></script>
+<script src="i18n-sv.js?v=lang-1" defer></script>
+<script src="i18n.js?v=lang-1" defer></script>
 <style>
 body{background:var(--paper)}
 .hist{width:min(760px,calc(100% - 32px));margin:0 auto;padding:22px 0 48px}
 .hist-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .hist-top img{width:132px;height:auto}
+.hist-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .hist-top a.cta{font-size:13px;font-weight:700;color:var(--blue)}
 .hist-badge{margin:18px 0 6px;font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--cyan)}
 h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:0}
@@ -44,12 +47,12 @@ h2{font-size:19px;margin:26px 0 8px}
 .foot{margin-top:28px;font-size:12px;color:var(--muted)}
 .foot a{color:var(--blue);font-weight:700}
 @media(max-width:480px){.stats strong{font-size:17px}}
-@media print{.hist-top a.cta,.foot a{display:none}.events li{break-inside:avoid}}
+@media print{.lang-switch,.hist-top a.cta,.foot a{display:none}.events li{break-inside:avoid}}
 </style>
 </head>
 <body>
 <main class="hist" id="hist">
-<div class="hist-top"><a href="./" aria-label="AJOURA"><img src="logo.svg" alt="AJOURA" width="640" height="198"></a><a class="cta" href="./">Mikä AJOURA on? →</a></div>
+<div class="hist-top"><a href="./" aria-label="AJOURA"><img src="logo.svg" alt="AJOURA" width="640" height="198"></a><span class="hist-actions"><div class="lang-switch" role="group" aria-label="Kieli"><button type="button" data-set-lang="fi" lang="fi">FI</button><button type="button" data-set-lang="sv" lang="sv">SV</button><button type="button" data-set-lang="en" lang="en">EN</button></div><a class="cta" href="./">Mikä AJOURA on? →</a></span></div>
 <div id="out"><p class="empty">Avataan huoltohistoriaa…</p></div>
 </main>
 <script>
