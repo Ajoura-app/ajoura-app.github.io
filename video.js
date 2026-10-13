@@ -5,7 +5,15 @@
 (()=>{
   const wideQuery='(min-aspect-ratio: 1/1) and (min-width: 700px)';
   const wide=el=>el.dataset.video==='auto'&&matchMedia(wideQuery).matches;
-  const files=w=>w?{src:'media/ajoura-esittely-vaaka.mp4',poster:'media/ajoura-esittely-vaaka-poster.jpg'}:{src:'media/ajoura-esittely.mp4',poster:'media/ajoura-esittely-poster.jpg'};
+  // One cut per language (fi, sv, en): the video's titles and the app screens inside it match the chosen language.
+  const lang=()=>{let l=window.AjouraI18n&&window.AjouraI18n.lang;if(!l)try{l=localStorage.getItem('ajoura-lang');}catch(e){}return l==='sv'||l==='en'?'-'+l:'';};
+  const files=w=>{const b='media/ajoura-esittely'+(w?'-vaaka':'')+lang();return {src:b+'.mp4',poster:b+'-poster.jpg'};};
+  // Posters show the first title of the video, so they follow the language too.
+  const posters=()=>{const sfx=lang(),fix=u=>u.replace(/ajoura-esittely(-vaaka)?(-sv|-en)?-poster\.jpg/,(m,v)=>'ajoura-esittely'+(v||'')+sfx+'-poster.jpg');
+    document.querySelectorAll('[data-video]:not(.playing) img,[data-video]:not(.playing) source').forEach(n=>{if(n.srcset)n.srcset=fix(n.srcset);else if(n.getAttribute('src'))n.setAttribute('src',fix(n.getAttribute('src')));});};
+  document.addEventListener('ajoura-lang',posters);
+  posters();
+  new MutationObserver(l=>{if(lang()&&l.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches('[data-video]')||n.querySelector('[data-video]')))))posters();}).observe(document.documentElement,{childList:true,subtree:true});
   const icon={on:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9.5a3.5 3.5 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
     off:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="m16 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
     full:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
