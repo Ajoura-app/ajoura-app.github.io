@@ -47,3 +47,6 @@
 
 /* Language switch (website pages; the app has its own in Minä and on the welcome screen) */
 .lang-switch{display:inline-flex;padding:3px;border-radius:999px;background:#e7eef7;border:1px solid #d7e3ef;gap:2px}.lang-switch button{border:0;background:none;font:inherit;font-size:11px;font-weight:650;letter-spacing:.04em;color:#5a7189;padding:5px 9px;min-height:30px;min-width:34px;border-radius:999px;cursor:pointer}.lang-switch button[aria-pressed=true]{background:#fff;color:var(--blue);box-shadow:0 2px 6px -2px #1b3a5c40}.legal-top{display:flex;justify-content:space-between;align-items:center;gap:12px}@media(max-width:720px){.lang-switch{padding:2px}.lang-switch button{font-size:10px;padding:4px 6px;min-width:28px;min-height:28px}.nav-app{white-space:nowrap}}@media print{.lang-switch{display:none}}
+.feature-grid{grid-template-columns:repeat(4,1fr);gap:30px}
+@media(min-width:721px) and (max-width:1000px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.feature-grid{grid-template-columns:1fr}}

@@ -10,6 +10,41 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Customer walkthrough 2026-10-13
+    'Haku on vielä demo. Omalla tunnuksella jatkat täyttämällä tiedot itse.': 'The lookup is still a demo. With your own plate, you continue by filling in the details yourself.',
+    'Mitä seuraavaksi?': 'What next?',
+    '＋ Kirjaa viimeisin huolto': '＋ Log the latest service',
+    '＋ Lisää seuraava ajoneuvo': '＋ Add the next vehicle',
+    'Vanhoja huoltoja ei tarvitse kirjata heti. Viimeisin huolto ja katsastus riittävät muistutuksiin.': 'No need to log old services right away. The latest service and inspection are enough for reminders.',
+    'Vanhoja huoltoja ei tarvitse kirjata heti. Viimeisin huolto riittää muistutukseen.': 'No need to log old services right away. The latest service is enough for a reminder.',
+    'Testiversio': 'Test version',
+    'MAKSUTON TESTIVERSIO': 'FREE TEST VERSION',
+    'AJOURA APP / TESTIVERSIO': 'AJOURA APP / TEST VERSION',
+    'Avaa AJOURA, kerro nimesi ja lisää autosi rekisteritunnuksella tai käsin. Voit lisätä niin monta ajoneuvoa kuin haluat.': 'Open AJOURA, tell it your name and add your car by licence plate or by hand. You can add as many vehicles as you like.',
+    '↻ Tyhjennä tiedot ja aloita alusta': '↻ Clear data and start over',
+    'Poistaa autot, merkinnät ja nimen tästä selaimesta.': 'Removes the cars, entries and name from this browser.',
+    'Maksuton testiversio · Tiedot pysyvät laitteessasi': 'Free test version · Your data stays on your device',
+    'AJOURAn voi lisätä puhelimen kotinäytölle. Se aukeaa omalla kuvakkeellaan koko näytölle ja muistaa lisäämäsi autot ja merkinnät tässä laitteessa.': 'You can add AJOURA to your phone’s home screen. It opens full screen from its own icon and remembers the cars and entries you add on this device.',
+    'Maksuton testiversio. Tiedot pysyvät vain laitteessasi, eikä niitä lähetetä minnekään.': 'Free test version. Your data stays on your device only and is never sent anywhere.',
+    'AJOURA on digitaalinen huoltokirja kaikille autoillesi. Huollot, katsastukset, tankkaukset ja kulut yhdessä paikassa, ja näet heti, mikä on seuraavaksi vuorossa.': 'AJOURA is a digital service log for all your cars. Services, inspections, fuel and costs in one place, and you see straight away what is coming up next.',
+    'Aloita maksutta': 'Start for free',
+    'Maksuton testiversio · Ei kirjautumista ·': 'Free test version · No sign-in ·',
+    '04 / KOKO TALLI': '04 / THE WHOLE GARAGE',
+    'Kaikki autot samassa näkymässä.': 'All your cars in one view.',
+    'Lisää perheen kaikki autot, myös moottoripyörä, vene tai kelkka. Kojelauta näyttää jokaisesta, onko huolto tai katsastus tulossa.': 'Add all the family’s cars, and the motorbike, boat or snowmobile too. The dashboard shows for each one whether a service or inspection is coming up.',
+    'Lisää autosi.': 'Add your cars.',
+    'Rekisteritunnuksella tai käsin, yksi kerrallaan. Valitse malli ja väri, niin talli näyttää juuri sinun autosi. Yhden auton lisääminen vie noin minuutin.': 'By licence plate or by hand, one at a time. Pick the model and colour so the garage shows your own car. Adding a car takes about a minute.',
+    'Kirjaa viimeisin huolto.': 'Log the latest service.',
+    'Mitä tehtiin, milloin ja millä mittarilukemalla? Lyhyt merkintä riittää, ja vanhat huollot voi lisätä myöhemmin.': 'What was done, when and at what mileage? A short entry is enough, and older services can be added later.',
+    'Näe, mitä on edessä.': 'See what is coming up.',
+    'AJOURA arvioi seuraavan huollon ja katsastuksen ja muistuttaa rengaskaudesta. Koko historia löytyy auton aikajanalta.': 'AJOURA estimates the next service and inspection and reminds you of tyre season. The full history is on the car’s timeline.',
+    'Avaa sovellus, lisää autosi ja kirjaa ensimmäinen merkintä. Se toimii heti selaimessa, eikä tiliä tarvita. Puhelimeen asennettuna AJOURA aukeaa omalla kuvakkeellaan kuin mikä tahansa sovellus.': 'Open the app, add your car and log your first entry. It works straight away in the browser, with no account needed. Installed on your phone, AJOURA opens from its own icon like any other app.',
+    'Voit lisätä niin monta kuin haluat, myös moottoripyörät, veneet ja kelkat. Kojelauta näyttää koko tallin ja jokaisen auton seuraavan huollon tai katsastuksen. Jokaisella autolla on oma aikajana, kulut ja raportti.': 'You can add as many as you like, including motorbikes, boats and snowmobiles. The dashboard shows the whole garage and each car’s next service or inspection. Every car has its own timeline, costs and report.',
+    'Pitääkö vanhat huollot kirjata heti?': 'Do I have to log old services right away?',
+    'Ei tarvitse. Aloita mittarilukemasta ja viimeisimmästä huollosta ja katsastuksesta, niin muistutukset toimivat heti. Vanhempia merkintöjä voi lisätä myöhemmin, kun huoltokirja on käsillä.': 'No. Start with the odometer reading and the latest service and inspection, and reminders work right away. Older entries can be added later when you have the service book at hand.',
+    'Toimiiko AJOURA sekä puhelimessa että tietokoneella?': 'Does AJOURA work on both phone and computer?',
+    'Toimii, mutta tiedot tallentuvat siihen laitteeseen ja selaimeen, jolla ne kirjasit. Valitse siksi yksi pääpuhelin. Tiedot siirtyvät toiseen laitteeseen varmuuskopiolla. Kirjautuminen, joka pitää tiedot kaikissa laitteissa, on tulossa.': 'Yes, but data is saved on the device and browser where you entered it, so pick one main phone. Data moves to another device with a backup. Sign-in that keeps your data on all devices is coming.',
+    'Kokeile itse sovelluksessa': 'Try it yourself in the app',
     // Brand, shell, navigation
     'KONSEPTIDEMO': 'CONCEPT DEMO', 'TESTIVERSIO': 'TEST VERSION', 'Konseptidemo': 'Concept demo', 'Koti': 'Home', 'Ajoneuvot': 'Vehicles', 'Minä': 'Me',
     'Sovelluksen valikko': 'App menu', 'Huolehtii autostasi.': 'Takes care of your car.', 'huolehtii autostasi.': 'takes care of your car.',
@@ -988,6 +1023,7 @@
   for (const k in SITE) if (!Object.prototype.hasOwnProperty.call(D, k)) D[k] = SITE[k];
   // Ordered patterns for dynamic strings. Each returns the English string.
   const P = [
+    [re('(Huolto|Katsastus) · ' + DATE), (m, w, d) => (w === 'Huolto' ? 'Service' : 'Inspection') + ' · ' + d],
     [re('(Huolto|Katsastus) · myöhässä'), (m, w) => (w === 'Huolto' ? 'Service' : 'Inspection') + ' · overdue'],
     [re('Huolto on myöhässä päivämäärän mukaan\\. (.*)'), (m, r) => 'The service is overdue by date. ' + t(r)],
     [re('Mittarilukema ei voi olla pienempi kuin historiaan kirjattu ' + N + ' km\\. Korjaa tarvittaessa ensin väärä merkintä\\.'), (m, k) => 'The odometer cannot be lower than the ' + k + ' km already in the history. Fix the wrong entry first if needed.'],
