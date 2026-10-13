@@ -258,7 +258,7 @@ html.dark.standalone,html.dark.fullscreen,html.dark.standalone body,html.dark.fu
 .notes-link small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .notes-link>span:nth-child(2){min-width:0;flex:1}
 .memo-new{margin-bottom:14px}
-.memo-list{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.memo-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:9px}.memo h3,.memo p{overflow-wrap:anywhere}
 .memo{background:#fff;border:1px solid #e0e9f2;border-radius:12px;padding:10px 12px}
 .memo small{font-size:10px;color:#6d8196}
 .memo p{margin:3px 0 4px;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:break-word}

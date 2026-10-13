@@ -66,4 +66,5 @@
 .r-view-list a:hover,.r-view-list button:hover{background:#f0f6ff}
 .r-view-list [aria-current]{background:#eef5ff}
 .r-view-list svg{flex-shrink:0;color:var(--blue)}.r-view-list strong{display:block;font-size:11px}.r-view-list small{display:block;font-size:9px;color:#6b8198}
-@media print{.r-view-menu{display:none!important}}
+@media print{.r-view-menu,.r-start{display:none!important}}
+.r-start{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.02em;color:#24476f;background:#fff;border:1px solid #d6e2ee;border-radius:7px;padding:4px 7px 4px 6px;text-decoration:none}.r-start svg{width:12px;height:12px;color:var(--blue)}

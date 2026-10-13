@@ -38,10 +38,10 @@
     ['share', 'asiakas', 'Jakolinkit', 'Sovelluksen ja huoltohistorian jakaminen linkkinä.', '[data-sale],.me-data:has([data-share-app])'],
     ['help', 'asiakas', 'Apu-välilehti', 'Usein kysytyt kysymykset ja haku.', '.tab-bar a[href="#help"]'],
     ['tutorial', 'asiakas', 'Opastus', 'Ensimmäisen käynnistyksen opas ja sen uusinta.', '[data-tutorial]'],
-    ['feedback', 'asiakas', 'Palaute', 'Palautelomake Minä-välilehdellä.', '.me-data:has(#feedback-form)'],
+    ['feedback', 'asiakas', 'Palaute', 'Palautelomake Minä-välilehdellä.', '.me-data:has(#feedback-form),.help-contact #feedback-form'],
     ['video', 'asiakas', 'Esittelyvideo', 'Video tervetulonäkymässä.', '.welcome-video'],
     ['sample', 'asiakas', 'Esimerkkiauto', 'Valmis esimerkkiauto tyhjässä tallissa.', '[data-sample]'],
-    ['theme', 'asiakas', 'Tumma teema', 'Vaalean ja tumman ulkoasun valinta.', '.seg[aria-label="Teema"]'],
+    ['theme', 'asiakas', 'Tumma teema', 'Vaalean ja tumman ulkoasun valinta.', '.seg:has([data-pref="Teema"])'],
     ['shopStats', 'huolto', 'Myyntiluvut', 'Kuukauden luovutetut työt ja myynti etusivulla.', ''],
     ['shopPrint', 'huolto', 'Työtilauksen tulostus', 'Työtilaus ja kuitti A4-tulosteena tai PDF:nä.', ''],
     ['shopHandoff', 'huolto', 'Luovutus asiakkaan AJOURAan', 'Valmis työ huoltomerkinnäksi asiakkaan sovellukseen.', ''],
@@ -71,19 +71,19 @@
   applyFeatures();
   fetch('features.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(data => {
     if (!data || typeof data.features !== 'object') return;
-    const before = JSON.stringify([published, local]);
+    const sig = () => JSON.stringify([published.features, published.notice, published.feedbackUrl, local]), before = sig();
     published = { features: { ...defaults.features, ...Object.fromEntries(Object.entries(data.features).filter(([k, v]) => k in defaults.features && typeof v === 'boolean')) }, notice: typeof data.notice === 'string' ? data.notice.slice(0, 240) : '', updated: typeof data.updated === 'string' ? data.updated : '', feedbackUrl: okUrl(data.feedbackUrl) };
     // Drop device changes that now match what is published.
     for (const k of Object.keys(local.features)) if (local.features[k] === published.features[k]) delete local.features[k];
     if (local.notice === published.notice) local.notice = undefined;
     saveLocal(); applyFeatures();
-    if (before !== JSON.stringify([published, local]) && window.AjouraApp) window.AjouraApp.refresh();
+    if (before !== sig() && window.AjouraApp) window.AjouraApp.refresh();
   }).catch(() => {});
 
   // ---- Roles --------------------------------------------------------------------------------------
   const roleKey = 'ajoura-role', teamKey = 'ajoura-team';
   const teamOk = () => get(teamKey) === '1';
-  const role = () => { const r = get(roleKey); return r === 'tiimi' ? (teamOk() ? 'tiimi' : 'asiakas') : r === 'huolto' ? 'huolto' : 'asiakas'; };
+  const role = () => { const r = get(roleKey); return r === 'tiimi' ? (teamOk() ? 'tiimi' : 'asiakas') : r === 'huolto' && on('shop') ? 'huolto' : 'asiakas'; };
   const setRole = r => set(roleKey, r === 'asiakas' ? '' : r);
   const PIN_HASH = 'ffc1b2c37952cbecda2049510d6a6cf57c49c5a7011775e32173f99586490f52';
   async function checkPin(pin) {
@@ -135,7 +135,9 @@
   const shopNav = view => `<nav class="tab-bar three" aria-label="Autohuollon valikko"><a href="#shop"${['shop', 'shopjob', 'shopnew', 'shopedit'].includes(view) ? ' aria-current="page"' : ''}>${svg(ic.wrench)}<span>Työt</span></a><a href="#shopcars"${['shopcars', 'shopcar'].includes(view) ? ' aria-current="page"' : ''}>${svg(ic.car)}<span>Asiakasautot</span></a><a href="#shopset"${view === 'shopset' ? ' aria-current="page"' : ''}>${svg(ic.gear)}<span>Korjaamo</span></a></nav>`;
   // View switcher in the top corner: Asiakas, Omistajat (PIN) and Autohuolto.
   const viewMenu = cur => `<details class="r-view-menu"><summary aria-label="Vaihda näkymää">${svg(cur === 'omistajat' ? ic.lock : cur === 'huolto' ? ic.wrench : ic.user)}<span>${cur === 'omistajat' ? 'Omistajat' : cur === 'huolto' ? 'Autohuolto' : 'Asiakas'}</span><b aria-hidden="true">▾</b></summary><div class="r-view-list" role="menu"><button type="button" role="menuitem" data-r-role="asiakas"${cur === 'asiakas' ? ' aria-current="true"' : ''}>${svg(ic.user)}<span><strong>Asiakas</strong><small>Oman auton huoltokirja</small></span></button><a role="menuitem" href="#admin"${cur === 'omistajat' ? ' aria-current="true"' : ''}>${svg(ic.lock)}<span><strong>Omistajat</strong><small>Hannes ja Niklas</small></span></a>${on('shop') || role() === 'tiimi' ? `<button type="button" role="menuitem" data-r-role="huolto"${cur === 'huolto' ? ' aria-current="true"' : ''}>${svg(ic.wrench)}<span><strong>Autohuolto</strong><small>Asiakasautot ja työt</small></span></button>` : ''}</div></details>`;
-  const top = label => `<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="r-top-right">${viewMenu(label === 'OMISTAJAT' ? 'omistajat' : label === 'AUTOHUOLTO' ? 'huolto' : 'asiakas')}<span class="demo-label">${label}</span></span></div>`;
+  // The view is chosen on the start page only; every view has a way back there. Nothing is logged out or lost.
+  const startBtn = `<a class="r-start" href="#welcome" aria-label="Aloitussivulle">${svg('<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>')}<span>Aloitussivu</span></a>`;
+  const top = label => `<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="r-top-right">${startBtn}<span class="demo-label">${label}</span></span></div>`;
   const noticeHtml = () => on('notice') && noticeText() ? `<div class="r-notice" role="note">${svg(ic.bell)}<p>${esc(noticeText())}</p></div>` : '';
   const jobRow = j => `<li><a class="event-row" href="#shopjob/${j.id}"><span class="event-symbol r-st-${j.status}" aria-hidden="true">${svg(ic.wrench)}</span><span><strong>${esc(j.plate)} · ${esc(j.type)}</strong><small>${esc(j.car)}${j.customer ? ' · ' + esc(j.customer) : ''} · ${fdate(j.date)}</small></span><span class="r-pill r-st-${j.status}">${esc(statusName(j.status).split(' ')[0])}</span></a></li>`;
 
@@ -211,11 +213,13 @@
   }
 
   // ---- Workshop → customer handoff -----------------------------------------------------------------
+  // Unique per job, so hand-over refs never collide between workshops or after a wipe.
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Date.now().toString(36) + Math.random().toString(36).slice(2)).slice(0, 20);
   const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)));
   function payloadOf(j) {
     const p = shop.profile, parts = j.parts.filter(x => x.name || x.price).map(x => ({ name: x.name, qty: x.qty, price: x.price ? String(x.price) : '' }));
-    return { v: 1, ref: 'shop-' + (b64(p.name || 'huolto').slice(0, 12)) + '-' + j.id, shop: { name: p.name, phone: p.phone, address: p.address, ytunnus: p.ytunnus }, plate: j.plate, car: j.car, year: j.year, event: { type: j.type, date: j.date, km: j.km === undefined ? null : j.km, cost: String(total(j) || ''), labor: labor(j) ? String(Math.round(labor(j) * 100) / 100) : '', other: j.other ? String(j.other) : '', parts, items: j.items.filter(i => CHECKS.includes(i)), note: j.note } };
+    return { v: 1, ref: j.uid ? 'shop-' + j.uid : 'shop-' + (b64(p.name || 'huolto').slice(0, 12)) + '-' + j.id, shop: { name: p.name, phone: p.phone, address: p.address, ytunnus: p.ytunnus }, plate: j.plate, car: j.car, year: j.year, event: { type: j.type, date: j.date, km: j.km === undefined ? null : j.km, cost: String(total(j) || ''), labor: labor(j) ? String(Math.round(labor(j) * 100) / 100) : '', other: j.other ? String(j.other) : '', parts, items: j.items.filter(i => CHECKS.includes(i)), note: j.note } };
   }
   const appUrl = () => location.href.split('#')[0].split('?')[0].replace(/\/(index\.html)?$/, '/app.html');
   function parsePayload(code) {
@@ -337,12 +341,12 @@
     document.documentElement.classList.add('r-cust');
     const screen = document.getElementById('app-screen'); if (!screen) return;
     const t = screen.querySelector('.app-top');
-    if (t && !t.querySelector('.r-view-menu')) { const label = t.querySelector('.demo-label'); if (label) label.insertAdjacentHTML('beforebegin', viewMenu('asiakas')); else t.insertAdjacentHTML('beforeend', viewMenu('asiakas')); }
+    if (t && !t.querySelector('.r-view-menu,.r-start')) { const label = t.querySelector('.demo-label'), html = view === 'welcome' ? viewMenu(role() === 'huolto' ? 'huolto' : 'asiakas') : startBtn; if (label) label.outerHTML = `<span class="r-top-right">${html}${label.outerHTML}</span>`; else t.insertAdjacentHTML('beforeend', html); }
     if (view === 'home' && noticeHtml() && t && !screen.querySelector('.r-notice')) t.insertAdjacentHTML('afterend', noticeHtml());
     if (view === 'me' && !screen.querySelector('.r-role-box')) {
       const anchor = [...screen.querySelectorAll('.me-data')].find(x => x.querySelector('[data-backup]'));
       const box = `<div class="me-data r-import-box"><h3>Merkintä korjaamolta</h3><p>Sait korjaamolta huoltomerkinnän linkkinä? Liitä linkki tähän, niin työ lisätään autosi historiaan.</p><form class="app-form" id="r-paste-form" novalidate><label><span class="sr-only">Korjaamon linkki</span><input name="link" placeholder="https://…?huolto=…" autocomplete="off"></label><p class="error-note" role="alert"></p><button class="app-button secondary" type="submit">Avaa merkintä</button></form></div>
-        <div class="me-data r-role-box"><h3>Käyttäjätyyppi</h3><p>${role() === 'tiimi' ? 'Omistajien tila: näet kaikki näkymät.' : 'Käytät AJOURAa asiakkaana.'}${on('shop') ? ' Korjaamot voivat käyttää AJOURAa asiakasautojen töihin.' : ''}</p>${on('shop') ? '<button class="app-button secondary" type="button" data-r-role="huolto">Vaihda autohuollon näkymään</button>' : ''}<a class="r-team-link" href="#admin">${svg(ic.lock)} Omistajien näkymä</a></div>`;
+        <div class="me-data r-role-box"><h3>Näkymä</h3><p>Asiakkaan, omistajien ja autohuollon näkymä valitaan aloitussivulta. Autosi ja merkintäsi pysyvät tallessa.</p><a class="app-button secondary" href="#welcome">Aloitussivulle</a></div>`;
       if (anchor) anchor.insertAdjacentHTML('afterend', box); else screen.querySelector('.screen-content')?.insertAdjacentHTML('beforeend', box);
     }
   }
@@ -370,7 +374,7 @@
       const bad = !/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(v.plate) ? 'Tarkista rekisteritunnus (esim. ABC-123).' : !v.car ? 'Kirjoita auton merkki ja malli.' : !/^\d{4}-\d{2}-\d{2}$/.test(v.date) ? 'Valitse päivä.' : (v.km !== null && (!Number.isSafeInteger(v.km) || v.km < 0 || v.km > 2000000)) ? 'Tarkista mittarilukema.' : (v.year && !/^\d{4}$/.test(v.year)) ? 'Tarkista vuosimalli.' : ![v.hours, v.rate, v.other, ...v.parts.map(p => p.price)].every(money) ? 'Tarkista hinnat ja tunnit.' : '';
       if (bad) { form.querySelector('#r-error').textContent = bad; return; }
       const id = form.dataset.job; let j = id && shop.jobs.find(x => x.id === id);
-      if (j) Object.assign(j, v); else { j = { id: 'job' + (++shop.seq), created: Date.now(), ...v }; shop.jobs.push(j); }
+      if (j) Object.assign(j, v); else { j = { id: 'job' + (++shop.seq), uid: uid(), created: Date.now(), ...v }; shop.jobs.push(j); }
       if (j.status === 'luovutettu' && !j.doneDate) j.doneDate = today();
       saveShop(); shopNote = id ? '✓ Muutokset tallennettu.' : '✓ Työ lisätty jonoon.'; go('shopjob/' + j.id);
     } else if (form.id === 'r-shop-form') {
@@ -390,14 +394,16 @@
   });
   document.addEventListener('click', async ev => {
     const t = ev.target; if (!t.closest || !t.closest('#app-screen')) return;
+    // Starting as a car owner from the start page leaves the workshop view.
+    if (t.closest('[data-welcome="guest"]') && role() === 'huolto') setRole('asiakas');
     const r = t.closest('[data-r-role]');
     if (r) {
       const want = r.dataset.rRole;
       if (want === 'huolto') { if (role() !== 'tiimi') setRole('huolto'); go('shop'); }
-      else if (want === 'asiakas') { if (role() !== 'tiimi') setRole('asiakas'); const m = r.closest('details'); if (m) m.open = false; const h = location.hash.slice(1).split('/')[0]; if (!(shopViews.includes(h) || h === 'admin')) return; go(window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome'); }
+      else if (want === 'asiakas') { if (role() !== 'tiimi') setRole('asiakas'); const m = r.closest('details'); if (m) m.open = false; const h = location.hash.slice(1).split('/')[0]; if (!(shopViews.includes(h) || h === 'admin' || h === 'welcome')) return; if (h === 'welcome' && !(window.AjouraApp && window.AjouraApp.cars().length)) { window.AjouraApp && window.AjouraApp.refresh(); return; } go(window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome'); }
       return;
     }
-    if (t.closest('[data-r-samples]')) { for (const s of samples()) shop.jobs.push({ id: 'job' + (++shop.seq), created: Date.now(), ...s }); saveShop(); shopNote = '✓ Kolme kuvitteellista esimerkkityötä lisätty.'; rerender(false); return; }
+    if (t.closest('[data-r-samples]')) { for (const s of samples()) shop.jobs.push({ id: 'job' + (++shop.seq), uid: uid(), created: Date.now(), ...s }); saveShop(); shopNote = '✓ Kolme kuvitteellista esimerkkityötä lisätty.'; rerender(false); return; }
     const st = t.closest('[data-r-status]');
     if (st) { const j = shop.jobs.find(x => x.id === st.dataset.rStatus); if (j) { j.status = st.dataset.to; if (j.status === 'luovutettu') { j.doneDate = today(); j.handed = j.handed || Date.now(); } saveShop(); shopNote = '✓ Tila: ' + statusName(j.status) + '.'; rerender(); } return; }
     const ho = t.closest('[data-r-handoff]');
@@ -441,7 +447,10 @@
     if (t.matches && t.matches('[data-r-restore]')) {
       const file = t.files && t.files[0]; t.value = ''; if (!file) return;
       file.text().then(txt => { const d = JSON.parse(txt); if (!d || d.app !== 'AJOURA' || d.kind !== 'autohuolto' || !d.shop || !Array.isArray(d.shop.jobs) || !d.shop.jobs.every(validJob)) throw 0;
-        const have = new Set(shop.jobs.map(j => j.id)); let added = 0; for (const j of d.shop.jobs) { if (have.has(j.id)) { const i = shop.jobs.findIndex(x => x.id === j.id); shop.jobs[i] = j; } else { shop.jobs.push(j); added++; } const m = /(\d+)$/.exec(j.id); if (m) shop.seq = Math.max(shop.seq, Number(m[1])); }
+        const have = new Set(shop.jobs.map(j => j.id)); let added = 0; for (const j of d.shop.jobs) { const m = /(\d+)$/.exec(j.id); if (m) shop.seq = Math.max(shop.seq, Number(m[1])); }
+        for (const j of d.shop.jobs) { const i = shop.jobs.findIndex(x => x.id === j.id), mine = shop.jobs[i];
+          // Same number from another device but a different job: keep both instead of overwriting.
+          if (mine && ((mine.uid && j.uid) ? mine.uid === j.uid : mine.created === j.created)) shop.jobs[i] = j; else { shop.jobs.push(mine ? { ...j, id: 'job' + (++shop.seq) } : j); added++; } }
         if (!shop.profile.name && d.shop.profile) shop.profile = { ...shop.profile, ...d.shop.profile }; saveShop(); shopNote = `✓ Varmuuskopio palautettu: ${added} uutta työtä.`; rerender(); })
         .catch(() => { shopNote = 'Tiedostoa ei voitu lukea. Valitse AJOURAn autohuollon varmuuskopio.'; rerender(); });
     }
