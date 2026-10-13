@@ -1,9 +1,27 @@
 {
  "updated": "2026-10-13",
  "features": {
-  "shop": true, "notice": true, "plate": true, "fuel": true, "report": true, "owner": true, "calendar": true,
-  "tyres": true, "import": true, "share": true, "help": true, "tutorial": true, "feedback": true, "video": true,
-  "sample": true, "theme": true, "shopStats": true, "shopPrint": true, "shopHandoff": true, "shopSamples": true
+  "shop": true,
+  "notice": true,
+  "plate": true,
+  "fuel": true,
+  "report": true,
+  "owner": true,
+  "calendar": true,
+  "tyres": true,
+  "import": true,
+  "share": true,
+  "help": true,
+  "tutorial": true,
+  "feedback": true,
+  "video": true,
+  "sample": true,
+  "theme": true,
+  "shopStats": true,
+  "shopPrint": true,
+  "shopHandoff": true,
+  "shopSamples": true
  },
- "notice": ""
+ "notice": "",
+ "feedbackUrl": "https://script.google.com/macros/s/AKfycbzP7vrUPd9Rs0fg-pbyMgvV2ecxGgKj-aaVsOfqTEqmr8gxZfG12eo1_Q2AYmGJrr7v/exec"
 }
