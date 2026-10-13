@@ -531,6 +531,7 @@
     'Huoltoarvio perustuu merkintöihisi ja Minä-välilehden huoltoväliin (kuukausina, koska laitteessa on tuntimittari).': 'The service estimate is based on your entries and the service interval on the Me tab (in months, as this one has an hour meter).',
     'Palautetta ei voitu lähettää suoraan. Lähetä kopioimasi teksti viestinä AJOURAn tekijöille.': 'The feedback couldn’t be sent directly. Send the copied text as a message to the AJOURA team.',
     'h viimeksi kirjattu': 'h last recorded',
+    'Esim. säilytyspaikka, varaosanumerot, öljylaatu': 'E.g. storage place, part numbers, oil grade',
     'Aloitussivu': 'Start page',
     'Aloitussivulle': 'To the start page',
     'Jatka omaan talliin': 'Continue to my garage',
@@ -990,7 +991,7 @@
     [re('(Huolto|Katsastus) · myöhässä'), (m, w) => (w === 'Huolto' ? 'Service' : 'Inspection') + ' · overdue'],
     [re('Huolto on myöhässä päivämäärän mukaan\\. (.*)'), (m, r) => 'The service is overdue by date. ' + t(r)],
     [re('Mittarilukema ei voi olla pienempi kuin historiaan kirjattu ' + N + ' km\\. Korjaa tarvittaessa ensin väärä merkintä\\.'), (m, k) => 'The odometer cannot be lower than the ' + k + ' km already in the history. Fix the wrong entry first if needed.'],
-    [re('Lukema ' + N + ' km ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' km\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, d, k2) => 'The reading ' + k + ' km does not fit the entry of ' + d + ' (' + k2 + ' km). Check it or save anyway.'],
+    [re('Lukema ' + N + ' (km|h) ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' (?:km|h)\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, u, d, k2) => 'The reading ' + k + ' ' + u + ' does not fit the entry of ' + d + ' (' + k2 + ' ' + u + '). Check it or save anyway.'],
     [re('Eriteltyjen summa ' + N + ' €\\. Kustannukseen kirjoittamasi summa säilyy\\.'), (m, v) => 'Itemised total ' + v + ' €. The cost you typed is kept.'],
     [re('Ensimmäinen katsastus arviolta vuonna (\\d{4}), kun auto täyttää 4 vuotta\\.'), (m, y) => 'First inspection expected in ' + y + ', when the car turns 4.'],
     [re('(Talvirenkaat ovat pakolliset joulu–helmikuussa\\. Nastarenkaat saa vaihtaa 1\\.11\\. alkaen, tai aiemmin jos keli vaatii\\.|Nastarenkaiden käyttöaika päättyy maaliskuun lopussa, tai pääsiäisen jälkeen jos se on myöhemmin\\.) Kirjaa vaihto, niin muistat mitkä renkaat ovat alla( \\((\\d+) autoa\\))?\\.'),
@@ -1059,8 +1060,8 @@
     [re('Arvio: ' + DATE + '(?: tai ' + N + ' km)?'), (m, d, k) => 'Estimate: ' + d + (k ? ' or ' + k + ' km' : '')],
     [re('Viimeisin kirjattu lukema: ' + N + ' (km|h)\\.'), (m, k, u) => 'Last recorded reading: ' + k + ' ' + u + '.'],
     [re('Yhteensä (.+) € \\(päivitetty kustannukseen\\)\\.'), (m, v) => 'Total ' + v + ' € (copied to cost).'],
-    [re('Lukema ' + N + ' km ei sovi yhteen tapahtuman ”(.+)” \\(' + DATE + ', ' + N + ' km\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'),
-      (m, k, t, d, k2) => 'The reading of ' + k + ' km doesn’t fit with “' + typeEn(t) + '” (' + d + ', ' + k2 + ' km). Check the reading or save anyway.'],
+    [re('Lukema ' + N + ' (km|h) ei sovi yhteen tapahtuman ”(.+)” \\(' + DATE + ', ' + N + ' (?:km|h)\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'),
+      (m, k, u, t, d, k2) => 'The reading of ' + k + ' ' + u + ' doesn’t fit with “' + typeEn(t) + '” (' + d + ', ' + k2 + ' ' + u + '). Check the reading or save anyway.'],
     [re('Vuosimallin pitää olla väliltä 1930–(\\d{4})\\.'), (m, y) => 'Model year must be between 1930 and ' + y + '.'],
     [re('Vuoden (\\d{4}) tienoilla myytiin (kahta|\\d+) sukupolvea\\. Valitse, kumpi näyttää autoltasi\\.'), (m, y, n) => 'Around ' + y + ', ' + (n === 'kahta' ? 'two' : n) + ' generations were on sale. Pick the one that looks like your car.'],
     [re('Huom: (.+) valmistettiin vuosina (\\d{4})–(\\d{4})\\. Tarkista vuosimalli\\.'), (m, c, a, b) => 'Note: the ' + c + ' was built ' + a + '–' + b + '. Check the model year.'],
@@ -1104,8 +1105,8 @@
     [re('(.+) · huoltohistoria · AJOURA'), (m, c) => c + ' · service history · AJOURA'],
     [re('merkintää, (\\d+) kuitilla'), (m, n) => 'entries, ' + n + ' with receipt'],
     [re('✓ Kuitti tallessa omistajalla \\((\\d+)\\)'), (m, n) => '✓ Receipt kept by the owner (' + n + ')'],
-    [re('Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia(?: \\((.+?)\\))?\\. AJOURA ei ole tarkistanut tietoja\\. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi\\.(?:\\s*Omistajan kirjaama keskikulutus ' + N + ' (l|kWh)/100 km\\.)?'),
-      (m, span, v, u) => 'This history was entered by the car’s owner in the AJOURA app' + (span ? ' (' + span + ')' : '') + '. AJOURA has not checked the data. “Receipt kept” means the owner attached a photo of the receipt to the entry; ask to see the receipts.' + (v ? ' Average consumption logged by the owner: ' + v.replace(',', '.') + ' ' + u + '/100 km.' : '')],
+    [re('Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia(?: \\((.+?)\\))?\\. AJOURA ei ole tarkistanut tietoja\\. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi\\.(?:\\s*Omistajan kirjaama keskikulutus ' + N + ' (l|kWh)/(100 km|h)\\.)?'),
+      (m, span, v, u, w) => 'This history was entered by the car’s owner in the AJOURA app' + (span ? ' (' + span + ')' : '') + '. AJOURA has not checked the data. “Receipt kept” means the owner attached a photo of the receipt to the entry; ask to see the receipts.' + (v ? ' Average consumption logged by the owner: ' + v.replace(',', '.') + ' ' + u + '/' + w + '.' : '')],
     [re('Linkki luotu (.+?)\\. Tallenna tai tulosta sivu selaimen valikosta\\. Oma auto\\?'), (m, d) => 'Link created ' + d + '. Save or print the page from the browser menu. Your own car?']
   ];
 

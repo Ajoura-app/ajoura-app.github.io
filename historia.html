@@ -8,13 +8,13 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=qa-3">
-<script src="car-render.js?v=qa-3" defer></script>
-<script src="car-shapes.js?v=qa-3" defer></script>
-<script src="car-images.js?v=qa-3" defer></script>
-<script src="car-models.js?v=qa-3" defer></script><script src="vehicles.js?v=qa-3" defer></script>
-<script src="i18n-sv.js?v=qa-3" defer></script>
-<script src="i18n.js?v=qa-3" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=qa-4">
+<script src="car-render.js?v=qa-4" defer></script>
+<script src="car-shapes.js?v=qa-4" defer></script>
+<script src="car-images.js?v=qa-4" defer></script>
+<script src="car-models.js?v=qa-4" defer></script><script src="vehicles.js?v=qa-4" defer></script>
+<script src="i18n-sv.js?v=qa-4" defer></script>
+<script src="i18n.js?v=qa-4" defer></script>
 <style>
 body{background:var(--paper)}
 .hist{width:min(760px,calc(100% - 32px));margin:0 auto;padding:22px 0 48px}
@@ -101,7 +101,7 @@ h2{font-size:19px;margin:26px 0 8px}
     document.title = `${d.n} · huoltohistoria · AJOURA`;
     out.innerHTML = `<p class="hist-badge">HUOLTOHISTORIA</p><h1>${esc(d.n)}</h1><p class="sub">${d.p ? esc(d.p) + ' · ' : ''}vm. ${d.y}${d.f ? ' · ' + esc(d.f) : ''}</p>${image}
       <div class="stats"><div><strong>${num(d.km)}</strong><span>${u} viimeksi kirjattu</span></div><div><strong>${ev.length}</strong><span>merkintää${withDoc ? `, ${withDoc} kuitilla` : ''}</span></div><div><strong>${num(Math.round(total))} €</strong><span>kirjatut kulut</span></div></div>
-      <p class="trust">Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia${span ? ' (' + span + ')' : ''}. AJOURA ei ole tarkistanut tietoja. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi. ${d.fa ? `Omistajan kirjaama keskikulutus ${num(d.fa[0])} ${d.fa[1] === 'kWh' ? 'kWh' : 'l'}/100 km.` : ''}</p>
+      <p class="trust">Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia${span ? ' (' + span + ')' : ''}. AJOURA ei ole tarkistanut tietoja. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi. ${d.fa ? `Omistajan kirjaama keskikulutus ${num(d.fa[0])} ${d.fa[1] === 'kWh' ? 'kWh' : 'l'}/${d.fa[2] === 'h' ? 'h' : '100 km'}.` : ''}</p>
       <h2>Merkinnät</h2>${ev.length ? `<ol class="events">${items}</ol>` : '<p class="empty">Ei merkintöjä.</p>'}
       <p class="foot">Linkki luotu ${day(d.at) || '–'}. Tallenna tai tulosta sivu selaimen valikosta. Oma auto? <a href="./">Kokeile AJOURAa maksutta →</a></p>`;
   }

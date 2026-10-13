@@ -999,6 +999,7 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     'Huoltoarvio perustuu merkintöihisi ja Minä-välilehden huoltoväliin (kuukausina, koska laitteessa on tuntimittari).': 'Serviceuppskattningen bygger på dina poster och serviceintervallet under fliken Jag (i månader, eftersom den har timmätare).',
     'Palautetta ei voitu lähettää suoraan. Lähetä kopioimasi teksti viestinä AJOURAn tekijöille.': 'Responsen kunde inte skickas direkt. Skicka den kopierade texten som ett meddelande till AJOURA-teamet.',
     'h viimeksi kirjattu': 'h senast registrerat',
+    'Esim. säilytyspaikka, varaosanumerot, öljylaatu': 'T.ex. förvaringsplats, reservdelsnummer, oljekvalitet',
     'Aloitussivu': 'Startsida',
     'Aloitussivulle': 'Till startsidan',
     'Jatka omaan talliin': 'Fortsätt till mitt garage',
@@ -1276,7 +1277,7 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     [re('(Huolto|Katsastus) · myöhässä'), (m, w) => what(w) + ' · försenad'],
     [re('Huolto on myöhässä päivämäärän mukaan\\. (.*)'), (m, r) => 'Servicen är försenad enligt datum. ' + t(r)],
     [re('Mittarilukema ei voi olla pienempi kuin historiaan kirjattu ' + N + ' km\\. Korjaa tarvittaessa ensin väärä merkintä\\.'), (m, k) => 'Mätarställningen kan inte vara lägre än de ' + k + ' km som redan finns i historiken. Rätta vid behov först den felaktiga posten.'],
-    [re('Lukema ' + N + ' km ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' km\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, d, k2) => 'Mätarställningen ' + k + ' km stämmer inte med posten ' + d + ' (' + k2 + ' km). Kontrollera den eller spara ändå.'],
+    [re('Lukema ' + N + ' (km|h) ei sovi yhteen kirjauksen ' + DATE + ' \\(' + N + ' (?:km|h)\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'), (m, k, u, d, k2) => 'Mätarställningen ' + k + ' ' + u + ' stämmer inte med posten ' + d + ' (' + k2 + ' ' + u + '). Kontrollera den eller spara ändå.'],
     [re('Eriteltyjen summa ' + N + ' €\\. Kustannukseen kirjoittamasi summa säilyy\\.'), (m, v) => 'Specificerat totalt ' + v + ' €. Kostnaden du skrev in behålls.'],
     [re('Ensimmäinen katsastus arviolta vuonna (\\d{4}), kun auto täyttää 4 vuotta\\.'), (m, y) => 'Första besiktningen väntas år ' + y + ', när bilen fyller 4 år.'],
     [re('(Talvirenkaat ovat pakolliset joulu–helmikuussa\\. Nastarenkaat saa vaihtaa 1\\.11\\. alkaen, tai aiemmin jos keli vaatii\\.|Nastarenkaiden käyttöaika päättyy maaliskuun lopussa, tai pääsiäisen jälkeen jos se on myöhemmin\\.) Kirjaa vaihto, niin muistat mitkä renkaat ovat alla( \\((\\d+) autoa\\))?\\.'),
@@ -1345,8 +1346,8 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     [re('Arvio: ' + DATE + '(?: tai ' + N + ' km)?'), (m, d, k) => 'Uppskattning: ' + d + (k ? ' eller vid ' + k + ' km' : '')],
     [re('Viimeisin kirjattu lukema: ' + N + ' (km|h)\\.'), (m, k, u) => 'Senast registrerade mätarställning: ' + k + ' ' + u + '.'],
     [re('Yhteensä (.+) € \\(päivitetty kustannukseen\\)\\.'), (m, v) => 'Totalt ' + v + ' € (uppdaterat till kostnaden).'],
-    [re('Lukema ' + N + ' km ei sovi yhteen tapahtuman ”(.+)” \\(' + DATE + ', ' + N + ' km\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'),
-      (m, k, x, d, k2) => 'Mätarställningen ' + k + ' km stämmer inte med ”' + type(x) + '” (' + d + ', ' + k2 + ' km). Kontrollera den eller spara ändå.'],
+    [re('Lukema ' + N + ' (km|h) ei sovi yhteen tapahtuman ”(.+)” \\(' + DATE + ', ' + N + ' (?:km|h)\\) kanssa\\. Tarkista lukema tai tallenna silti\\.'),
+      (m, k, u, x, d, k2) => 'Mätarställningen ' + k + ' ' + u + ' stämmer inte med ”' + type(x) + '” (' + d + ', ' + k2 + ' ' + u + '). Kontrollera den eller spara ändå.'],
     [re('Vuosimallin pitää olla väliltä 1930–(\\d{4})\\.'), (m, y) => 'Årsmodellen måste vara mellan 1930 och ' + y + '.'],
     [re('Vuoden (\\d{4}) tienoilla myytiin (kahta|\\d+) sukupolvea\\. Valitse, kumpi näyttää autoltasi\\.'), (m, y, n) => 'Runt år ' + y + ' såldes ' + (n === 'kahta' ? 'två' : n) + ' generationer. Välj den som ser ut som din bil.'],
     [re('Huom: (.+) valmistettiin vuosina (\\d{4})–(\\d{4})\\. Tarkista vuosimalli\\.'), (m, c, a, b) => 'Obs: ' + c + ' tillverkades ' + a + '–' + b + '. Kontrollera årsmodellen.'],
@@ -1390,8 +1391,8 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     [re('(.+) · huoltohistoria · AJOURA'), (m, c) => c + ' · servicehistorik · AJOURA'],
     [re('merkintää, (\\d+) kuitilla'), (m, n) => 'poster, ' + n + ' med kvitto'],
     [re('✓ Kuitti tallessa omistajalla \\((\\d+)\\)'), (m, n) => '✓ Kvitto sparat hos ägaren (' + n + ')'],
-    [re('Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia(?: \\((.+?)\\))?\\. AJOURA ei ole tarkistanut tietoja\\. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi\\.(?:\\s*Omistajan kirjaama keskikulutus ' + N + ' (l|kWh)/100 km\\.)?'),
-      (m, span, v, u) => 'Det här är historiken som bilens ägare själv har fört in i AJOURA-appen' + (span ? ' (' + span + ')' : '') + '. AJOURA har inte kontrollerat uppgifterna. Märkningen ”kvitto sparat” betyder att ägaren har bifogat en bild av kvittot till posten; be att få se kvittona.' + (v ? ' Medelförbrukning enligt ägaren ' + v + ' ' + u + '/100 km.' : '')],
+    [re('Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia(?: \\((.+?)\\))?\\. AJOURA ei ole tarkistanut tietoja\\. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi\\.(?:\\s*Omistajan kirjaama keskikulutus ' + N + ' (l|kWh)/(100 km|h)\\.)?'),
+      (m, span, v, u, w) => 'Det här är historiken som bilens ägare själv har fört in i AJOURA-appen' + (span ? ' (' + span + ')' : '') + '. AJOURA har inte kontrollerat uppgifterna. Märkningen ”kvitto sparat” betyder att ägaren har bifogat en bild av kvittot till posten; be att få se kvittona.' + (v ? ' Medelförbrukning enligt ägaren ' + v + ' ' + u + '/' + w + '.' : '')],
     [re('Linkki luotu (.+?)\\. Tallenna tai tulosta sivu selaimen valikosta\\. Oma auto\\?'), (m, d) => 'Länken skapad ' + d + '. Spara eller skriv ut sidan via webbläsarens meny. Egen bil?']
   ];
   return { D, P };
