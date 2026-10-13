@@ -254,3 +254,20 @@ html.dark.standalone,html.dark.fullscreen,html.dark.standalone body,html.dark.fu
 .me-data .feedback-form{margin-top:8px}
 .tyre-card{margin-top:12px;text-decoration:none;color:inherit}
 .tyre-card .event-symbol{background:#eaf1fd;color:var(--blue)}
+.notes-link .event-symbol{background:#eaf1fd;color:var(--blue)}
+.notes-link small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.notes-link>span:nth-child(2){min-width:0;flex:1}
+.memo-new{margin-bottom:14px}
+.memo-list{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.memo{background:#fff;border:1px solid #e0e9f2;border-radius:12px;padding:10px 12px}
+.memo small{font-size:10px;color:#6d8196}
+.memo p{margin:3px 0 4px;font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:break-word}
+.memo-actions{display:flex;gap:14px;align-items:center}
+.memo.editing .memo-actions{gap:8px;margin-top:8px}
+.memo.editing .app-button{flex:1}
+.danger-text{color:#b42335!important}
+.car-gallery{display:flex;gap:10px;overflow-x:auto;padding:8px 2px 4px;margin-top:8px}
+.car-gallery .att-thumb{flex-shrink:0}
+.car-gallery .att-open img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+.cover-pick{position:absolute;left:-6px;bottom:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#fff;color:#c58a00;font-size:12px;line-height:1;display:grid;place-items:center;box-shadow:0 1px 4px rgba(20,40,70,.25);cursor:pointer}
+.gallery-help{font-size:10px;color:#6d8196;margin:4px 0 0}

@@ -12,8 +12,8 @@
         ['Lisää autosi', 'Rekisteritunnuksella tai käsin. Valitse malli, korimalli ja väri.'],
         ['Kirjaa huollot', 'Öljynvaihdot, katsastukset ja korjaukset kuitteineen talteen.'],
         ['Seuraa tankkauksia', 'Keskikulutus ja ajon hinta lasketaan puolestasi.'],
-        ['Muistutus ajoissa', 'Näet heti, milloin seuraava huolto on edessä.'],
-        ['Raportti myyntiin', 'Koko historia siistinä PDF-raporttina ostajalle.']
+        ['Muistutus ajoissa', 'Huolto, katsastus ja renkaanvaihto: näet ajoissa, mitä on edessä.'],
+        ['Historia ostajalle', 'Koko historia linkkinä tai PDF-raporttina, kun myyt auton.']
       ],
       rows: ['Moottoriöljyn vaihto', 'Katsastus', 'Renkaiden vaihto'], dates: ['23.9.2026 · 184 320 km', '15.2.2026 · 181 120 km', '5.4.2026 · 181 900 km'],
       cons: 'Keskikulutus', reminder: 'SEURAAVA HUOLTO', due: 'Viimeistään 23.9.2027', report: 'Huoltohistoriaraportti'
@@ -25,8 +25,8 @@
         ['Add your car', 'By registration plate or by hand. Pick the model, body style and colour.'],
         ['Log services', 'Oil changes, inspections and repairs, receipts included.'],
         ['Track fill-ups', 'Average consumption and cost of driving, worked out for you.'],
-        ['Reminders in time', 'See at a glance when the next service is due.'],
-        ['Report for selling', 'The whole history as a tidy PDF report for the buyer.']
+        ['Reminders in time', 'Service, inspection and tyre change: see what is coming in good time.'],
+        ['History for the buyer', 'The whole history as a link or a PDF report when you sell the car.']
       ],
       rows: ['Oil change', 'Inspection', 'Tyre change'], dates: ['23/09/2026 · 184,320 km', '15/02/2026 · 181,120 km', '05/04/2026 · 181,900 km'],
       cons: 'Average consumption', reminder: 'NEXT SERVICE', due: 'Due by 23/09/2027', report: 'Service history report'
@@ -116,12 +116,14 @@
   function art(i, T) {
     const Car = window.AjouraCar;
     const car = (body, color, size, year) => Car ? Car.render(body, color, '', { size, year }) : '';
+    // The guide's car is a blue Volvo V60 wagon, the same as on the opening screens.
+    const M = window.AjouraModels, volvo = color => Car ? Car.render('wagon', color, '', M ? M.shape('Volvo', 'V60', 'wagon', 2020) : { size: 'd', year: 2020 }) : '';
     switch (i) {
-      case 0: return `<img class="tut-logo" src="logo.svg" alt="AJOURA" width="640" height="198"><div class="tut-road"><span class="tut-drive">${car('sedan', '#1464e8', 'd', 2022)}</span></div>`;
-      case 1: return `<div class="tut-plate"><span class="tut-fi">FIN</span><b data-type="ABC-123"></b></div><div class="tut-cars"><span>${car('wagon', '#eef1f4', 'd', 2021)}</span><span>${car('wagon', '#1e4f9c', 'd', 2021)}</span><span>${car('wagon', '#a8232d', 'd', 2021)}</span></div><div class="tut-swatches"><i style="--c:#eef1f4"></i><i style="--c:#1e4f9c"></i><i style="--c:#a8232d"></i></div>`;
+      case 0: return `<img class="tut-logo" src="logo.svg" alt="AJOURA" width="640" height="198"><div class="tut-road"><span class="tut-drive">${volvo('#1e4f9c')}</span></div>`;
+      case 1: return `<div class="tut-plate"><span class="tut-fi">FIN</span><b data-type="ABC-123"></b></div><div class="tut-cars"><span>${volvo('#eef1f4')}</span><span>${volvo('#a8232d')}</span><span>${volvo('#1e4f9c')}</span></div><div class="tut-swatches"><i style="--c:#eef1f4"></i><i style="--c:#a8232d"></i><i style="--c:#1e4f9c"></i></div>`;
       case 2: return `<ul class="tut-rows">${[ico.oil, ico.shield, ico.tyre].map((s, n) => `<li style="--d:${0.35 + n * 0.55}s"><span>${s}</span><div><strong>${T.rows[n]}</strong><small>${T.dates[n]}</small></div></li>`).join('')}</ul>`;
       case 3: return `<div class="tut-gauge"><svg viewBox="0 0 120 70" aria-hidden="true"><path d="M10 64a50 50 0 0 1 100 0" class="tut-arc-bg"/><path d="M10 64a50 50 0 0 1 100 0" class="tut-arc"/></svg><strong><b data-count="6.8">0,0</b> <small>l/100 km</small></strong><span>${T.cons}</span></div>`;
-      case 4: return `<div class="tut-reminder"><span class="tut-bell">${ico.bell}</span><div><small>${T.reminder}</small><strong>Volvo XC60</strong><span>${T.due}</span></div></div>`;
+      case 4: return `<div class="tut-reminder"><span class="tut-bell">${ico.bell}</span><div><small>${T.reminder}</small><strong>Volvo V60</strong><span>${T.due}</span></div></div>`;
       default: return `<div class="tut-sheet"><img class="tut-logo" src="logo.svg" alt="" width="640" height="198"><strong>${T.report}</strong><i></i><i></i><i class="short"></i><div class="tut-bars"><span style="--h:40%"></span><span style="--h:70%"></span><span style="--h:55%"></span><span style="--h:90%"></span></div><i></i><i class="short"></i><em>PDF</em></div>`;
     }
   }
