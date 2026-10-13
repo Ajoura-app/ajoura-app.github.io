@@ -26,7 +26,7 @@
   // ---- Feature switches -------------------------------------------------------------------------
   // [key, group, name, what it does, CSS selectors hidden when off]
   const FEATURES = [
-    ['shop', 'yleinen', 'Autohuollon näkymä', 'Autohuolto-vaihtoehto aloitussivulla ja korjaamon työkalut.', ''],
+    ['shop', 'yleinen', 'Autohuollon näkymä', 'Autohuolto yläkulman näkymävalikossa ja korjaamon työkalut.', ''],
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"]'],
@@ -47,9 +47,11 @@
     ['shopHandoff', 'huolto', 'Luovutus asiakkaan AJOURAan', 'Valmis työ huoltomerkinnäksi asiakkaan sovellukseen.', ''],
     ['shopSamples', 'huolto', 'Esimerkkityöt', 'Valmiit esimerkkityöt tyhjään työjonoon.', '']
   ];
-  const GROUPS = { yleinen: 'Yleiset', asiakas: 'Autoilijat', huolto: 'Autohuollot' };
+  const GROUPS = { yleinen: 'Yleiset', asiakas: 'Asiakkaat', huolto: 'Autohuollot' };
   const defaults = { features: Object.fromEntries(FEATURES.map(f => [f[0], true])), notice: '' };
-  let published = { features: { ...defaults.features }, notice: '', updated: '' };
+  let published = { features: { ...defaults.features }, notice: '', updated: '', feedbackUrl: '' };
+  // Feedback goes only to the team's own Google Apps Script web app (Hannes chose this 13.10.2026).
+  const okUrl = u => typeof u === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) ? u : '';
   const localKey = 'ajoura-features-local';
   const readLocal = () => { try { const v = JSON.parse(get(localKey)); return v && typeof v === 'object' ? { features: v.features || {}, notice: typeof v.notice === 'string' ? v.notice : undefined } : { features: {} }; } catch (e) { return { features: {} }; } };
   let local = readLocal();
@@ -70,7 +72,7 @@
   fetch('features.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(data => {
     if (!data || typeof data.features !== 'object') return;
     const before = JSON.stringify([published, local]);
-    published = { features: { ...defaults.features, ...Object.fromEntries(Object.entries(data.features).filter(([k, v]) => k in defaults.features && typeof v === 'boolean')) }, notice: typeof data.notice === 'string' ? data.notice.slice(0, 240) : '', updated: typeof data.updated === 'string' ? data.updated : '' };
+    published = { features: { ...defaults.features, ...Object.fromEntries(Object.entries(data.features).filter(([k, v]) => k in defaults.features && typeof v === 'boolean')) }, notice: typeof data.notice === 'string' ? data.notice.slice(0, 240) : '', updated: typeof data.updated === 'string' ? data.updated : '', feedbackUrl: okUrl(data.feedbackUrl) };
     // Drop device changes that now match what is published.
     for (const k of Object.keys(local.features)) if (local.features[k] === published.features[k]) delete local.features[k];
     if (local.notice === published.notice) local.notice = undefined;
@@ -131,8 +133,9 @@
     ];
   };
   const shopNav = view => `<nav class="tab-bar three" aria-label="Autohuollon valikko"><a href="#shop"${['shop', 'shopjob', 'shopnew', 'shopedit'].includes(view) ? ' aria-current="page"' : ''}>${svg(ic.wrench)}<span>Työt</span></a><a href="#shopcars"${['shopcars', 'shopcar'].includes(view) ? ' aria-current="page"' : ''}>${svg(ic.car)}<span>Asiakasautot</span></a><a href="#shopset"${view === 'shopset' ? ' aria-current="page"' : ''}>${svg(ic.gear)}<span>Korjaamo</span></a></nav>`;
-  const teamChip = () => role() === 'tiimi' ? '<a class="r-team-chip" href="#admin">' + svg(ic.team) + ' Tiimi</a>' : '';
-  const top = label => `<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="r-top-right">${label === 'TIIMI' ? '' : teamChip()}<span class="demo-label">${label}</span></span></div>`;
+  // View switcher in the top corner: Asiakas, Omistajat (PIN) and Autohuolto.
+  const viewMenu = cur => `<details class="r-view-menu"><summary aria-label="Vaihda näkymää">${svg(cur === 'omistajat' ? ic.lock : cur === 'huolto' ? ic.wrench : ic.user)}<span>${cur === 'omistajat' ? 'Omistajat' : cur === 'huolto' ? 'Autohuolto' : 'Asiakas'}</span><b aria-hidden="true">▾</b></summary><div class="r-view-list" role="menu"><button type="button" role="menuitem" data-r-role="asiakas"${cur === 'asiakas' ? ' aria-current="true"' : ''}>${svg(ic.user)}<span><strong>Asiakas</strong><small>Oman auton huoltokirja</small></span></button><a role="menuitem" href="#admin"${cur === 'omistajat' ? ' aria-current="true"' : ''}>${svg(ic.lock)}<span><strong>Omistajat</strong><small>Hannes ja Niklas</small></span></a>${on('shop') || role() === 'tiimi' ? `<button type="button" role="menuitem" data-r-role="huolto"${cur === 'huolto' ? ' aria-current="true"' : ''}>${svg(ic.wrench)}<span><strong>Autohuolto</strong><small>Asiakasautot ja työt</small></span></button>` : ''}</div></details>`;
+  const top = label => `<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="r-top-right">${viewMenu(label === 'OMISTAJAT' ? 'omistajat' : label === 'AUTOHUOLTO' ? 'huolto' : 'asiakas')}<span class="demo-label">${label}</span></span></div>`;
   const noticeHtml = () => on('notice') && noticeText() ? `<div class="r-notice" role="note">${svg(ic.bell)}<p>${esc(noticeText())}</p></div>` : '';
   const jobRow = j => `<li><a class="event-row" href="#shopjob/${j.id}"><span class="event-symbol r-st-${j.status}" aria-hidden="true">${svg(ic.wrench)}</span><span><strong>${esc(j.plate)} · ${esc(j.type)}</strong><small>${esc(j.car)}${j.customer ? ' · ' + esc(j.customer) : ''} · ${fdate(j.date)}</small></span><span class="r-pill r-st-${j.status}">${esc(statusName(j.status).split(' ')[0])}</span></a></li>`;
 
@@ -203,7 +206,7 @@
     const p = shop.profile;
     return `${top('AUTOHUOLTO')}<h2 class="app-heading">Korjaamo</h2>${shopNote ? `<p class="success-note" role="status">${esc(shopNote)}</p>` : ''}<form class="app-form" id="r-shop-form" novalidate><label>Korjaamon nimi<input name="name" maxlength="60" placeholder="esim. Autohuolto Esimerkki Oy" value="${esc(p.name)}"></label><div class="form-row"><label>Puhelin<input name="phone" type="tel" maxlength="20" value="${esc(p.phone)}"></label><label>Y-tunnus <small>· valinnainen</small><input name="ytunnus" maxlength="9" placeholder="1234567-8" value="${esc(p.ytunnus)}"></label></div><label>Osoite<input name="address" maxlength="80" value="${esc(p.address)}"></label><label>Oletustuntihinta (€) <small>· täyttyy uusiin töihin</small><input name="rate" type="number" min="0" max="1000" step="0.5" inputmode="decimal" value="${esc(p.rate)}"></label><button class="app-button" type="submit">Tallenna tiedot</button></form>
       <div class="me-data"><h3>Varmuuskopio</h3><p>Tallenna työt ja asiakasautot tiedostoon tai palauta ne toiselle laitteelle.</p><div class="backup-actions"><button class="app-button" type="button" data-r-backup>Tallenna varmuuskopio</button><label class="app-button secondary">Palauta varmuuskopio<input type="file" accept="application/json,.json" class="sr-only" data-r-restore></label></div></div>
-      <div class="me-data"><h3>Käyttäjätyyppi</h3><p>Tämä laite on autohuollon tilassa. Vaihda autoilijan näkymään, jos käytät AJOURAa omalle autollesi.</p><button class="app-button secondary" type="button" data-r-role="asiakas">Vaihda autoilijan näkymään</button></div>
+      <div class="me-data"><h3>Käyttäjätyyppi</h3><p>Tämä laite on autohuollon tilassa. Vaihda asiakkaan näkymään, jos käytät AJOURAa omalle autollesi.</p><button class="app-button secondary" type="button" data-r-role="asiakas">Vaihda asiakkaan näkymään</button></div>
       <div class="me-data"><h3>Tietosi</h3><p>Asiakkaiden nimet ja puhelinnumerot ovat henkilötietoja. Ne pysyvät tässä laitteessa, eikä niitä lähetetä minnekään. Luovutuslinkkiin ei tule asiakkaan nimeä eikä puhelinnumeroa.</p><button class="app-button secondary danger" type="button" data-r-wipe>Poista korjaamon kaikki tiedot</button></div><p class="app-fineprint">Autohuollon näkymä on testiversio. Oikea monen käyttäjän järjestelmä vaatii tilit ja palvelimen.</p>`;
   }
 
@@ -243,16 +246,44 @@
       <p class="app-fineprint">Käytätkö kotivalikkoon asennettua AJOURAa? Kopioi korjaamon linkki ja liitä se sovelluksessa kohtaan Minä → Merkintä korjaamolta.</p>`;
   }
 
+  // ---- Feedback: sent to the team's Google Sheet (palaute-apps-script.gs) when features.json names it.
+  // A copy also stays on this device, so the team view shows feedback given on the same phone.
+  const fbLocalKey = 'ajoura-feedback-local', fbKeyKey = 'ajoura-feedback-key';
+  const localFeedback = () => { try { const v = JSON.parse(get(fbLocalKey)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+  async function sendFeedback(msg, meta) {
+    set(fbLocalKey, JSON.stringify([{ at: new Date().toISOString(), msg, meta, role: role() }, ...localFeedback()].slice(0, 50)));
+    if (!published.feedbackUrl) return false;
+    try { await fetch(published.feedbackUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ msg, meta, role: role() }) }); return true; } catch (e) { return false; }
+  }
+  let fb = { state: '', rows: [] };
+  async function loadFeedback() {
+    const key = get(fbKeyKey); if (!published.feedbackUrl || !key) return;
+    fb = { state: 'loading', rows: fb.rows }; if (location.hash === '#admin') rerender();
+    try { const r = await fetch(published.feedbackUrl + '?key=' + encodeURIComponent(key)); const d = await r.json(); fb = d && d.ok && Array.isArray(d.rows) ? { state: 'ok', rows: d.rows.slice(0, 300) } : { state: 'badkey', rows: [] }; }
+    catch (e) { fb = { state: 'error', rows: fb.rows }; }
+    if (location.hash === '#admin') rerender();
+  }
+  const fbItem = r => { const t = new Date(r.at); return `<li class="r-fb"><p>${esc(r.msg)}</p><small>${isNaN(t) ? '' : t.toLocaleString('fi-FI', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' · '}${r.role === 'huolto' ? 'autohuolto' : r.role === 'tiimi' ? 'omistaja' : 'asiakas'}${r.meta ? ' · ' + esc(r.meta) : ''}</small></li>`; };
+  function feedbackBox() {
+    const url = published.feedbackUrl, key = get(fbKeyKey), mine = localFeedback();
+    let body;
+    if (!url) body = '<p class="info-note">Palautteiden keräys odottaa vielä Google-taulukon kytkentää. Sen jälkeen kaikkien käyttäjien palautteet näkyvät tässä.</p>';
+    else if (!key || fb.state === 'badkey') body = `${fb.state === 'badkey' ? '<p class="error-note" role="alert">Lukuavain ei kelpaa.</p>' : ''}<form class="app-form" id="r-fbkey-form" novalidate><label>Lukuavain <small>· syötetään kerran tälle laitteelle</small><input name="key" autocomplete="off" required></label><button class="app-button secondary" type="submit">Näytä palautteet</button></form>`;
+    else body = `<div class="r-fb-head"><span>${fb.state === 'loading' ? 'Haetaan…' : fb.state === 'error' ? 'Haku epäonnistui. Tarkista verkkoyhteys.' : fb.rows.length + ' palautetta'}</span><button class="app-back" type="button" data-r-fbload>↻ Päivitä</button></div>${fb.rows.length ? `<ul class="r-fbs">${fb.rows.map(fbItem).join('')}</ul>` : fb.state === 'ok' ? '<p class="r-help">Ei vielä palautteita.</p>' : ''}`;
+    return `<div class="me-data" id="r-feedback"><h3>Palautteet</h3>${body}${mine.length && (!url || !key) ? `<p class="mini-label">TÄLLÄ LAITTEELLA ANNETUT</p><ul class="r-fbs">${mine.map(fbItem).join('')}</ul>` : ''}</div>`;
+  }
+
   // ---- Team view -----------------------------------------------------------------------------------
   let adminNote = '', pinError = '', exportText = '';
   function admin() {
-    if (!teamOk()) return `${top('TIIMI')}<div class="r-lock"><span class="r-lock-icon" aria-hidden="true">${svg(ic.lock)}</span><h2 class="app-heading">AJOURA-tiimi</h2><p class="app-subtitle">Tämä näkymä on Hannekselle ja Niklakselle. Syötä tiimin PIN-koodi.</p><form class="app-form" id="r-pin-form" novalidate><label>PIN-koodi<input name="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required></label><p class="error-note" role="alert">${esc(pinError)}</p><button class="app-button" type="submit">Avaa</button></form><a class="app-button secondary" href="#welcome">← Takaisin</a><p class="app-fineprint">Lukko estää näkymän avaamisen vahingossa. Se ei ole oikea tietoturva: julkisella sivulla kuka tahansa taitava voi ohittaa sen. Oikea suojaus tulee käyttäjätilien myötä.</p></div>`;
+    if (!teamOk()) return `${top('OMISTAJAT')}<div class="r-lock"><span class="r-lock-icon" aria-hidden="true">${svg(ic.lock)}</span><h2 class="app-heading">Omistajien näkymä</h2><p class="app-subtitle">Tämä näkymä on Hannekselle ja Niklakselle. Syötä PIN-koodi.</p><form class="app-form" id="r-pin-form" novalidate><label>PIN-koodi<input name="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required></label><p class="error-note" role="alert">${esc(pinError)}</p><button class="app-button" type="submit">Avaa</button></form><a class="app-button secondary" href="#welcome">← Takaisin</a><p class="app-fineprint">Lukko estää näkymän avaamisen vahingossa. Se ei ole oikea tietoturva: julkisella sivulla kuka tahansa taitava voi ohittaa sen. Oikea suojaus tulee käyttäjätilien myötä.</p></div>`;
     const changed = Object.keys(local.features).length + (local.notice !== undefined ? 1 : 0);
     const A = window.AjouraApp, cars = A ? A.cars().filter(c => !c.sample) : [], events = cars.reduce((s, c) => s + c.events.length, 0);
     const rows = g => FEATURES.filter(f => f[1] === g).map(([k, , name, help]) => { const mod = k in local.features; return `<label class="r-feat"><span><strong>${name}${mod ? ' <small class="r-mod">muutettu</small>' : ''}</strong><small>${help}</small></span><input type="checkbox" role="switch" data-r-feat="${k}"${on(k) ? ' checked' : ''}></label>`; }).join('');
-    return `${top('TIIMI')}<p class="app-greeting">Hei Hannes ja Niklas.</p><h2 class="app-heading">Tiimin näkymä</h2>${adminNote ? `<p class="success-note" role="status">${esc(adminNote)}</p>` : ''}
-      <p class="mini-label">KATSO SOVELLUSTA</p><div class="r-views"><a href="#home">${svg(ic.user)}<strong>Autoilija</strong><small>Asiakkaan sovellus</small></a><a href="#shop">${svg(ic.wrench)}<strong>Autohuolto</strong><small>Korjaamon työkalut</small></a><a href="#welcome">${svg(ic.car)}<strong>Aloitus</strong><small>Ensimmäinen näkymä</small></a></div>
-      <p class="r-help">Tiimin tilassa näet kaikki näkymät. Oikean yläkulman Tiimi-merkistä pääset aina takaisin tänne.</p>
+    return `${top('OMISTAJAT')}<p class="app-greeting">Hei Hannes ja Niklas.</p><h2 class="app-heading">Omistajien näkymä</h2>${adminNote ? `<p class="success-note" role="status">${esc(adminNote)}</p>` : ''}
+      <p class="mini-label">KATSO SOVELLUSTA</p><div class="r-views"><a href="#home">${svg(ic.user)}<strong>Asiakas</strong><small>Asiakkaan sovellus</small></a><a href="#shop">${svg(ic.wrench)}<strong>Autohuolto</strong><small>Korjaamon työkalut</small></a><a href="#welcome">${svg(ic.car)}<strong>Aloitus</strong><small>Ensimmäinen näkymä</small></a></div>
+      <p class="r-help">Omistajina näette kaikki näkymät. Yläkulman Omistajat-merkistä pääsette aina takaisin tänne.</p>
+      ${feedbackBox()}
       <div class="me-data"><h3>Ominaisuudet</h3><p>Kytke ominaisuuksia päälle ja pois. Muutos näkyy heti tällä laitteella, joten voit kokeilla sitä.</p>${changed ? `<p class="info-note"><strong>${changed} ${changed === 1 ? 'muutos' : 'muutosta'} vain tällä laitteella.</strong> Kun haluat muutoksen kaikille, paina Julkaise kaikille ja lähetä teksti Claudelle AJOURA-projektiin.</p>` : ''}
       ${Object.keys(GROUPS).map(g => `<p class="mini-label">${GROUPS[g].toUpperCase()}</p><div class="r-feats">${rows(g)}</div>`).join('')}
       <p class="mini-label">TIEDOTE KÄYTTÄJILLE</p><form class="app-form" id="r-notice-form"><label><span class="sr-only">Tiedote</span><textarea name="notice" maxlength="240" rows="2" placeholder="esim. Uusi versio: nyt voit lisätä useamman kuvan.">${esc(noticeText())}</textarea></label><button class="app-button secondary" type="submit">Tallenna tiedote</button></form>
@@ -260,8 +291,8 @@
       ${exportText ? `<div class="r-handoff"><p><strong>Kopioitu leikepöydälle.</strong> Liitä tämä viestiin Claudelle AJOURA-projektissa ja pyydä julkaisemaan. Muutos tulee kaikille parissa minuutissa.</p><textarea readonly rows="6" data-r-select aria-label="Julkaistavat asetukset">${esc(exportText)}</textarea></div>` : ''}</div>
       <div class="me-data"><h3>Tilanne</h3><dl class="detail-list r-facts"><div><dt>VERSIO</dt><dd>${esc(A ? A.version : '')}</dd></div><div><dt>JULKAISTUT ASETUKSET</dt><dd>${published.updated ? fdate(published.updated) : 'oletukset'}</dd></div><div><dt>TÄLLÄ LAITTEELLA</dt><dd>${cars.length} autoa, ${events} merkintää, ${shop.jobs.length} korjaamon työtä</dd></div></dl>
       <p class="r-help">Käyttäjämääriä, palautteita tai muiden laitteiden tietoja ei näy vielä, koska AJOURA ei lähetä mitään palvelimelle. Ne tulevat käyttäjätilien ja pilven myötä.</p></div>
-      <div class="me-data"><h3>Mitä vain te näette</h3><ul class="done-list"><li>Tämä tiimin näkymä ja ominaisuuskytkimet</li><li>Tiedotteen kirjoitus kaikille käyttäjille</li><li>Kaikki kolme näkymää: autoilija, autohuolto ja aloitus</li><li>Laitteen tilanne ja versio</li></ul></div>
-      <div class="me-data"><h3>Lukitse</h3><p>Lukitse, kun annat puhelimen jollekulle muulle. Seuraavalla kerralla tarvitaan PIN-koodi.</p><button class="app-button secondary danger" type="button" data-r-lock>Lukitse tiimin näkymä</button></div>`;
+      <div class="me-data"><h3>Mitä vain te näette</h3><ul class="done-list"><li>Tämä omistajien näkymä, palautteet ja ominaisuuskytkimet</li><li>Tiedotteen kirjoitus kaikille käyttäjille</li><li>Kaikki kolme näkymää: asiakas, autohuolto ja aloitus</li><li>Laitteen tilanne ja versio</li></ul></div>
+      <div class="me-data"><h3>Lukitse</h3><p>Lukitse, kun annat puhelimen jollekulle muulle. Seuraavalla kerralla tarvitaan PIN-koodi.</p><button class="app-button secondary danger" type="button" data-r-lock>Lukitse omistajien näkymä</button></div>`;
   }
 
   const guides = {
@@ -272,14 +303,14 @@
     shopcars: ['A / 03', 'Asiakasautot.', 'Jokainen auto, jolle on tehty työ, ja sen käynnit.'],
     shopcar: ['A / 03', 'Auton käynnit.', 'Auton kaikki käynnit korjaamolla ja niiden hinnat.'],
     shopset: ['A / 03', 'Korjaamon tiedot.', 'Nimi, yhteystiedot ja tuntihinta näkyvät työtilauksessa.'],
-    admin: ['TIIMI', 'Hanneksen ja Niklaksen näkymä.', 'Kytke ominaisuuksia päälle ja pois, kirjoita tiedote ja katso sovellusta kaikkien käyttäjätyyppien silmin.'],
+    admin: ['OMISTAJAT', 'Hanneksen ja Niklaksen näkymä.', 'Kytke ominaisuuksia päälle ja pois, kirjoita tiedote ja katso sovellusta kaikkien käyttäjätyyppien silmin.'],
     tuo: ['05 / 06', 'Merkintä korjaamolta.', 'Korjaamon lähettämä huolto lisätään autosi historiaan yhdellä napautuksella.']
   };
-  const titles = { shop: 'Työjono', shopnew: 'Uusi työ', shopedit: 'Muokkaa työtä', shopjob: 'Työ', shopcars: 'Asiakasautot', shopcar: 'Asiakasauto', shopset: 'Korjaamo', admin: 'Tiimi', tuo: 'Huoltomerkintä' };
+  const titles = { shop: 'Työjono', shopnew: 'Uusi työ', shopedit: 'Muokkaa työtä', shopjob: 'Työ', shopcars: 'Asiakasautot', shopcar: 'Asiakasauto', shopset: 'Korjaamo', admin: 'Omistajat', tuo: 'Huoltomerkintä' };
   function paint(screen, view, id) {
     const j = shop.jobs.find(x => x.id === id);
     let html;
-    if (view === 'admin') html = admin();
+    if (view === 'admin') { html = admin(); if (teamOk() && fb.state === '' && published.feedbackUrl && get(fbKeyKey)) setTimeout(loadFeedback, 0); }
     else if (view === 'tuo') html = importView();
     else if (view === 'shopnew') { const prev = id && carsOf().find(c => c.plate === decodeURIComponent(id)); html = jobForm(null); if (prev) html = html.replace(/(name="plate"[^>]*value=")"/, `$1${esc(prev.plate)}"`).replace(/(name="car"[^>]*value=")"/, `$1${esc(prev.car)}"`).replace(/(name="customer"[^>]*value=")"/, `$1${esc(prev.customer)}"`).replace(/(name="phone"[^>]*value=")"/, `$1${esc(prev.phone)}"`); }
     else if ((view === 'shopjob' || view === 'shopedit') && !j) { history.replaceState(null, '', '#shop'); view = 'shop'; html = shopHome(); }
@@ -305,18 +336,13 @@
   function after(view) {
     document.documentElement.classList.add('r-cust');
     const screen = document.getElementById('app-screen'); if (!screen) return;
-    if (view === 'welcome') {
-      const choices = screen.querySelector('.welcome-choices');
-      if (choices && !screen.querySelector('.r-role-pick')) choices.insertAdjacentHTML('beforebegin', `<div class="r-role-pick" role="group" aria-label="Kuka käyttää"><button type="button" data-r-role="asiakas" aria-pressed="true">${svg(ic.user)}<strong>Autoilija</strong><small>Oman auton huoltokirja</small></button>${on('shop') ? `<button type="button" data-r-role="huolto" aria-pressed="false">${svg(ic.wrench)}<strong>Autohuolto</strong><small>Asiakasautot ja työt</small></button>` : ''}</div>`);
-      if (choices && !screen.querySelector('.r-team-link')) screen.querySelector('.welcome')?.insertAdjacentHTML('beforeend', `<a class="r-team-link" href="#admin">${svg(ic.team)} AJOURA-tiimi</a>`);
-    }
     const t = screen.querySelector('.app-top');
-    if (t && role() === 'tiimi' && !t.querySelector('.r-team-chip')) { const label = t.querySelector('.demo-label'); (label || t).insertAdjacentHTML('beforebegin', teamChip()); }
+    if (t && !t.querySelector('.r-view-menu')) { const label = t.querySelector('.demo-label'); if (label) label.insertAdjacentHTML('beforebegin', viewMenu('asiakas')); else t.insertAdjacentHTML('beforeend', viewMenu('asiakas')); }
     if (view === 'home' && noticeHtml() && t && !screen.querySelector('.r-notice')) t.insertAdjacentHTML('afterend', noticeHtml());
     if (view === 'me' && !screen.querySelector('.r-role-box')) {
       const anchor = [...screen.querySelectorAll('.me-data')].find(x => x.querySelector('[data-backup]'));
       const box = `<div class="me-data r-import-box"><h3>Merkintä korjaamolta</h3><p>Sait korjaamolta huoltomerkinnän linkkinä? Liitä linkki tähän, niin työ lisätään autosi historiaan.</p><form class="app-form" id="r-paste-form" novalidate><label><span class="sr-only">Korjaamon linkki</span><input name="link" placeholder="https://…?huolto=…" autocomplete="off"></label><p class="error-note" role="alert"></p><button class="app-button secondary" type="submit">Avaa merkintä</button></form></div>
-        <div class="me-data r-role-box"><h3>Käyttäjätyyppi</h3><p>${role() === 'tiimi' ? 'Tiimin tila: näet kaikki näkymät.' : 'Käytät AJOURAa autoilijana.'}${on('shop') ? ' Korjaamot voivat käyttää AJOURAa asiakasautojen töihin.' : ''}</p>${on('shop') ? '<button class="app-button secondary" type="button" data-r-role="huolto">Vaihda autohuollon näkymään</button>' : ''}<a class="r-team-link" href="#admin">${svg(ic.team)} AJOURA-tiimi</a></div>`;
+        <div class="me-data r-role-box"><h3>Käyttäjätyyppi</h3><p>${role() === 'tiimi' ? 'Omistajien tila: näet kaikki näkymät.' : 'Käytät AJOURAa asiakkaana.'}${on('shop') ? ' Korjaamot voivat käyttää AJOURAa asiakasautojen töihin.' : ''}</p>${on('shop') ? '<button class="app-button secondary" type="button" data-r-role="huolto">Vaihda autohuollon näkymään</button>' : ''}<a class="r-team-link" href="#admin">${svg(ic.lock)} Omistajien näkymä</a></div>`;
       if (anchor) anchor.insertAdjacentHTML('afterend', box); else screen.querySelector('.screen-content')?.insertAdjacentHTML('beforeend', box);
     }
   }
@@ -338,7 +364,7 @@
     if (form.id === 'r-pin-form') {
       const ok = await checkPin(String(new FormData(form).get('pin') || '').trim());
       if (!ok) { pinError = 'Väärä PIN-koodi.'; rerender(); return; }
-      pinError = ''; set(teamKey, '1'); setRole('tiimi'); adminNote = 'Tiimin näkymä avattu tällä laitteella.'; rerender(false);
+      pinError = ''; set(teamKey, '1'); setRole('tiimi'); adminNote = 'Omistajien näkymä avattu tällä laitteella.'; rerender(false);
     } else if (form.id === 'r-job-form') {
       const v = readJob(form), money = x => x === '' || (Number.isFinite(Number(x)) && Number(x) >= 0);
       const bad = !/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(v.plate) ? 'Tarkista rekisteritunnus (esim. ABC-123).' : !v.car ? 'Kirjoita auton merkki ja malli.' : !/^\d{4}-\d{2}-\d{2}$/.test(v.date) ? 'Valitse päivä.' : (v.km !== null && (!Number.isSafeInteger(v.km) || v.km < 0 || v.km > 2000000)) ? 'Tarkista mittarilukema.' : (v.year && !/^\d{4}$/.test(v.year)) ? 'Tarkista vuosimalli.' : ![v.hours, v.rate, v.other, ...v.parts.map(p => p.price)].every(money) ? 'Tarkista hinnat ja tunnit.' : '';
@@ -354,6 +380,8 @@
     } else if (form.id === 'r-notice-form') {
       const text = String(new FormData(form).get('notice') || '').trim().slice(0, 240);
       local.notice = text === (published.notice || '') ? undefined : text; saveLocal(); adminNote = text ? '✓ Tiedote tallennettu tälle laitteelle.' : '✓ Tiedote poistettu tältä laitteelta.'; rerender();
+    } else if (form.id === 'r-fbkey-form') {
+      set(fbKeyKey, String(new FormData(form).get('key') || '').trim().slice(0, 60)); fb = { state: '', rows: [] }; loadFeedback();
     } else if (form.id === 'r-paste-form') {
       const m = /[?&]huolto=([\w-]+)/.exec(String(new FormData(form).get('link') || ''));
       if (!m || !parsePayload(m[1])) { err.textContent = 'Linkistä ei löytynyt huoltomerkintää. Kopioi koko linkki korjaamon viestistä.'; return; }
@@ -366,7 +394,7 @@
     if (r) {
       const want = r.dataset.rRole;
       if (want === 'huolto') { if (role() !== 'tiimi') setRole('huolto'); go('shop'); }
-      else if (want === 'asiakas') { if (role() !== 'tiimi') setRole('asiakas'); if (location.hash.startsWith('#welcome') || !location.hash) { r.parentElement.querySelectorAll('[data-r-role]').forEach(b => b.setAttribute('aria-pressed', String(b === r))); } else go(window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome'); }
+      else if (want === 'asiakas') { if (role() !== 'tiimi') setRole('asiakas'); const m = r.closest('details'); if (m) m.open = false; const h = location.hash.slice(1).split('/')[0]; if (!(shopViews.includes(h) || h === 'admin')) return; go(window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome'); }
       return;
     }
     if (t.closest('[data-r-samples]')) { for (const s of samples()) shop.jobs.push({ id: 'job' + (++shop.seq), created: Date.now(), ...s }); saveShop(); shopNote = '✓ Kolme kuvitteellista esimerkkityötä lisätty.'; rerender(false); return; }
@@ -395,10 +423,11 @@
       if (role() === 'huolto') setRole('asiakas');
       A.notify('✓ Korjaamon huoltomerkintä lisätty historiaan.'); go('vehicle/' + res.car); return;
     }
+    if (t.closest('[data-r-fbload]')) { loadFeedback(); return; }
     if (t.closest('[data-r-lock]')) { set(teamKey, ''); setRole('asiakas'); go(window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome'); return; }
     if (t.closest('[data-r-revert]')) { local = { features: {} }; saveLocal(); applyFeatures(); adminNote = '✓ Laitteen muutokset peruttu. Käytössä julkaistut asetukset.'; rerender(); return; }
     if (t.closest('[data-r-publish]')) {
-      const cfg = { updated: today(), features: Object.fromEntries(FEATURES.map(f => [f[0], on(f[0])])), notice: noticeText() };
+      const cfg = { updated: today(), ...(published.feedbackUrl ? { feedbackUrl: published.feedbackUrl } : {}), features: Object.fromEntries(FEATURES.map(f => [f[0], on(f[0])])), notice: noticeText() };
       const off = FEATURES.filter(f => !on(f[0])).map(f => f[2]);
       exportText = `Julkaise AJOURAn asetukset kaikille (features.json):\nPois päältä: ${off.length ? off.join(', ') : 'ei mitään'}\nTiedote: ${cfg.notice || '(ei tiedotetta)'}\n\n${JSON.stringify(cfg, null, 1)}`;
       try { await navigator.clipboard.writeText(exportText); } catch (e) {}
@@ -423,7 +452,8 @@
     const form = t.closest && t.closest('#r-job-form');
     if (form) { const out = form.querySelector('#r-total'); if (out) out.textContent = 'Yhteensä ' + num(total(readJob(form))) + ' € (sis. alv)'; }
   });
+  document.addEventListener('click', ev => { document.querySelectorAll('.r-view-menu[open]').forEach(m => { if (!m.contains(ev.target) || ev.target.closest('a,button')) m.open = false; }); }, true);
   document.addEventListener('focusin', ev => { if (ev.target.matches && ev.target.matches('[data-r-select]')) ev.target.select(); });
 
-  window.AjouraRoles = { owns: v => ownViews.includes(v), redirect, paint, after, role, feature: on, features: FEATURES };
+  window.AjouraRoles = { sendFeedback, feedbackOnline: () => !!published.feedbackUrl, owns: v => ownViews.includes(v), redirect, paint, after, role, feature: on, features: FEATURES };
 })();
