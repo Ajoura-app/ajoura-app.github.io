@@ -21,7 +21,10 @@
     mute.addEventListener('click',e=>{e.stopPropagation();v.muted=!v.muted;setMute();});
     full.addEventListener('click',e=>{e.stopPropagation();if(document.fullscreenElement)document.exitFullscreen();else if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();});
     // At the end the poster returns, so a new tap plays the video again from the start.
-    v.addEventListener('ended',()=>{if(document.fullscreenElement===el)document.exitFullscreen().catch(()=>{});el.classList.remove('playing');el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','Toista AJOURA-esittelyvideo uudelleen');el.replaceChildren(...el._poster);});
+    const back=()=>{if(document.fullscreenElement===el)document.exitFullscreen().catch(()=>{});el.classList.remove('playing','wide');el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','Toista AJOURA-esittelyvideo uudelleen');el.replaceChildren(...el._poster);};
+    // If the video can't load (offline, unsupported), the poster comes back instead of a black box.
+    v.addEventListener('error',back);
+    v.addEventListener('ended',()=>{if(document.fullscreenElement===el)document.exitFullscreen().catch(()=>{});el.classList.remove('playing','wide');el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','Toista AJOURA-esittelyvideo uudelleen');el.replaceChildren(...el._poster);});
     el.classList.add('playing');el.classList.toggle('wide',w);el.removeAttribute('role');el.removeAttribute('tabindex');el.removeAttribute('aria-label');el.replaceChildren(v,mute,full);
     v.play().catch(()=>{v.muted=true;setMute();v.play().catch(()=>{});});
   };

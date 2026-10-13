@@ -7,7 +7,7 @@
   "fuel": true,
   "report": true,
   "owner": true,
-  "calendar": true,
+  "calendar": true, "tips": true,
   "tyres": true,
   "import": true,
   "share": true,

@@ -378,6 +378,72 @@
     'Palautteet': 'Feedback',
     'Omistajien näkymä': 'Owners’ view',
     'Asiakkaan, omistajien ja autohuollon näkymä valitaan aloitussivulta. Autosi ja merkintäsi pysyvät tallessa.': 'The car owner, owners’ and workshop views are chosen on the start page. Your cars and entries stay saved.',
+    'Merkintä, joka jää.': 'An entry that stays.',
+    'Huollot, katsastukset ja korjaukset kilometreineen. Kuitin kuva jää merkinnän liitteeksi.': 'Services, inspections and repairs with mileage. The receipt photo stays attached to the entry.',
+    'Huollot, renkaanvaihdot, katsastukset ja korjaukset aikajanalla': 'Services, tyre changes, inspections and repairs on a timeline',
+    'Avaa sovellus, lisää oma autosi ja kirjaa ensimmäinen merkintä. Puhelimen sisällä olevat painikkeet toimivat oikeasti, ja sovelluksen voi asentaa omaan puhelimeen.': 'Open the app, add your own car and log the first entry. The buttons inside the phone really work, and you can install the app on your own phone.',
+    'Avaa sovellusdemo': 'Open the app demo',
+    'Avaa merkintä': 'Open entry',
+    'Kaikki autot, joille on kirjattu työ.': 'All cars with a logged job.',
+    'Tankkaukset, kulutus ja ajon hinta.': 'Fill-ups, consumption and cost of driving.',
+    'Muokkaa': 'Edit',
+    'Poista': 'Delete',
+    'Poista pääkuva': 'Remove main photo',
+    'Pääkuvaksi': 'Set as main photo',
+    '✓ Tämä merkintä on jo autosi historiassa.': '✓ This entry is already in your car’s history.',
+    'Merkitse luovutetuksi': 'Mark as handed over',
+    'TÄLLÄ LAITTEELLA ANNETUT': 'GIVEN ON THIS DEVICE',
+    'Haetaan…': 'Loading…',
+    'Haku epäonnistui. Tarkista verkkoyhteys.': 'Loading failed. Check your connection.',
+    'muutettu': 'changed',
+    'Kopioitu leikepöydälle.': 'Copied to the clipboard.',
+    'Liitä tämä viestiin Claudelle AJOURA-projektissa ja pyydä julkaisemaan. Muutos tulee kaikille parissa minuutissa.': 'Paste this into a message to Claude in the AJOURA project and ask for it to be published. The change reaches everyone within a few minutes.',
+    'Julkaistavat asetukset': 'Settings to publish',
+    'asiakas': 'car owner',
+    'autohuolto': 'car workshop',
+    'omistaja': 'owner',
+    'asennettu': 'installed',
+    'selain': 'browser',
+    'Avataan huoltohistoriaa…': 'Opening the service history…',
+    'Kulutus': 'Consumption',
+    'Kilometrien kehitys': 'Kilometres over time',
+    'l/100 km täysien tankkausten välillä': 'l/100 km between full fill-ups',
+    'kWh/100 km täysien latausten välillä': 'kWh/100 km between full charges',
+    'keskikulutus': 'average',
+    'Kulutuskaavio näkyy, kun täysiä tankkauksia on vähintään kolme.': 'The consumption chart appears once there are at least three full fill-ups.',
+    'Kulutuskaavio näkyy, kun täysiä latauksia on vähintään kolme.': 'The consumption chart appears once there are at least three full charges.',
+    'Tankkaus': 'Fill-up',
+    'Lataus': 'Charge',
+    'Maa': 'Country',
+    'Suomi': 'Finland',
+    'Ruotsi': 'Sweden',
+    'Norja': 'Norway',
+    'Viro': 'Estonia',
+    'Latvia': 'Latvia',
+    'Liettua': 'Lithuania',
+    'Tanska': 'Denmark',
+    'Saksa': 'Germany',
+    'Puola': 'Poland',
+    'Muu euromaa': 'Other euro country',
+    'Ruotsi (SEK)': 'Sweden (SEK)',
+    'Norja (NOK)': 'Norway (NOK)',
+    'Tanska (DKK)': 'Denmark (DKK)',
+    'Puola (PLN)': 'Poland (PLN)',
+    'Kurssi: 1 € =': 'Rate: 1 € =',
+    'Hinta': 'Price',
+    'Summa': 'Total',
+    'Anna kaksi kolmesta, niin kolmas lasketaan. Summa ja hinta ovat valinnaisia.': 'Fill in two of the three and the third is calculated. Total and price are optional.',
+    'Arvioi hinta, jos et muista sitä →': 'Estimate the price if you don’t remember it →',
+    'Hinta on jo laskettu litroista ja summasta.': 'The price is already worked out from the litres and the total.',
+    'Arvio omien lähimpien tankkaustesi hinnasta.': 'Estimated from the price of your own nearest fill-ups.',
+    'Karkea keskihinta, koska aiempia hintoja ei ole.': 'A rough average price, as there are no earlier prices.',
+    'Kirjoita vielä litrat tai summa.': 'Now enter the litres or the total.',
+    'Korjaa, jos muistat oikean.': 'Correct it if you remember the right one.',
+    'Tarkista valuuttakurssi.': 'Check the exchange rate.',
+    'arvio': 'estimate',
+    'Huoltovinkit': 'Maintenance tips',
+    'Yleisiä vinkkejä merkin, mallin ja vuosimallin mukaan. Valmistajan huolto-ohjelma on aina ensisijainen.': 'General tips by make, model and model year. The manufacturer’s service schedule always comes first.',
+    'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.': 'Make- and model-specific maintenance tips on the vehicle page.',
     'Aloitussivu': 'Start page',
     'Aloitussivulle': 'To the start page',
     'Jatka omaan talliin': 'Continue to my garage',
@@ -879,7 +945,15 @@
     [re('Vaihe (\\d+) / (\\d+)'), (m, a, b) => 'Step ' + a + ' / ' + b],
     [re('Avaa (kuitti|kuva) (\\d+)'), (m, k, n) => 'Open ' + (k === 'kuitti' ? 'receipt' : 'photo') + ' ' + n],
     [re('Poista (kuitti|kuva) (\\d+)'), (m, k, n) => 'Remove ' + (k === 'kuitti' ? 'receipt' : 'photo') + ' ' + n],
-    [re('Avaa (.+)'), (m, c) => 'Open ' + c],
+    [re('(\\d+) käynti(?:ä)?'), (m, n) => n + (n === '1' ? ' visit' : ' visits')],
+    [re('autoja (\\d+)'), (m, n) => 'cars ' + n],
+    [re('Uusin: (.+)'), (m, x) => 'Latest: ' + x],
+    [re('✓ (\\d+) kuvaa tallennettu\\.(.*)'), (m, n, r) => '✓ ' + n + ' photos saved.' + (r ? ' ' + t(r.trim()) : '')],
+    [re('(\\d{1,2}\\.\\d{1,2}\\.\\d{4}) klo (\\d{1,2}\\.\\d{2})'), (m, d, h) => d + ' at ' + h],
+    [re('Keskikulutus (\\d+,\\d)'), (m, v) => 'Average ' + v],
+    [re('Keskimäärin (.+) km vuodessa'), (m, v) => 'On average ' + v + ' km a year'],
+    [re('Näytä kaikki vinkit \\((\\d+)\\)'), (m, n) => 'Show all tips (' + n + ')'],
+    [re('Avaa ([A-ZÅÄÖÀ-ÞŠŽČĆŁ0-9].+)'), (m, c) => 'Open ' + c],
     [re('(.+): valitse, mikä näistä (\\d+) korimallista autosi on\\.'), (m, c, n) => c + ': choose which of these ' + n + ' body styles is yours.'],
     [re('(.+) on (sedan|viistoperä|farmari|maastoauto / suv|coupé|tila-auto|avolava)\\. Valitse vielä väri\\.'), (m, c, b) => c + ' is ' + bodyArticle[b] + '. Now choose a colour.'],
     [re('(.+): valitse lähin korimalli\\.'), (m, c) => c + ': choose the closest body style.'],
@@ -888,6 +962,7 @@
     [re('Muu (Audi|BMW|Mercedes-Benz)'), (m, b) => 'Other ' + b],
     [re('vm\\. (\\d{4})'), (m, y) => 'model year ' + y],
     [re('noin ' + N + ' km / vuosi'), (m, k) => 'about ' + k + ' km / year'],
+    [re('Polttoaine (\\d{4}): (.+)'), (m, y, v) => 'Fuel ' + y + ': ' + v],
     [re('Vuonna (\\d{4}): (.+)'), (m, y, v) => 'In ' + y + ': ' + v],
     [re('Arvio: ' + DATE + '(?: tai ' + N + ' km)?'), (m, d, k) => 'Estimate: ' + d + (k ? ' or ' + k + ' km' : '')],
     [re('Viimeisin kirjattu lukema: ' + N + ' km\\.'), (m, k) => 'Last recorded reading: ' + k + ' km.'],
@@ -943,8 +1018,11 @@
   ];
 
   // Language packs: Finnish -> target. Swedish reuses the helpers so its patterns read like the English ones.
+  // Maintenance tips (tips.js) carry their own translations.
+  if (window.AjouraTips) Object.assign(D, window.AjouraTips.en);
   const PACK = { en: { D, P } };
   if (typeof window.AjouraSV === 'function') PACK.sv = window.AjouraSV({ re, N, DATE, plural, lower, t: s => t(s), tr: s => tr(s) });
+  if (PACK.sv && window.AjouraTips) Object.assign(PACK.sv.D, window.AjouraTips.sv);
   if (lang === 'sv' && !PACK.sv) lang = 'fi';
 
   // Translate a trimmed string; returns null when nothing applies.
@@ -962,9 +1040,9 @@
     }
     // "Moottoriöljy, Öljynsuodatin": comma lists of known items.
     if (s.includes(', ')) {
-      const parts = s.split(', '); let hit = false;
-      const out = parts.map(p => { const t = Object.prototype.hasOwnProperty.call(D, p) ? D[p] : null; if (t !== null) { hit = true; return t; } return p; });
-      if (hit) return out.join(', ');
+      // Only when every item is known; otherwise the line would come out half Finnish.
+      const parts = s.split(', ');
+      if (parts.every(p => Object.prototype.hasOwnProperty.call(D, p))) return parts.map(p => D[p]).join(', ');
     }
     return null;
   }

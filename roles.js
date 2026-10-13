@@ -32,6 +32,7 @@
     ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"]'],
     ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"]'],
     ['owner', 'asiakas', 'Omistajanvaihdos', 'Auton siirto uudelle omistajalle.', 'a[href^="#owner/"]'],
+    ['tips', 'asiakas', 'Huoltovinkit', 'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.', '.tips-card'],
     ['calendar', 'asiakas', 'Kalenterimuistutukset', 'Huolto ja katsastus puhelimen kalenteriin.', '[data-ics]'],
     ['tyres', 'asiakas', 'Rengaskausimuistutus', 'Muistutus renkaiden vaihdosta syksyllä ja keväällä.', '.tyre-card'],
     ['import', 'asiakas', 'Merkinnät korjaamolta', 'Korjaamon lähettämän huoltomerkinnän tuonti.', '.r-import-box'],
@@ -98,7 +99,7 @@
   function redirect(view, id) {
     const r = role();
     if (shopViews.includes(view)) {
-      if (!on('shop') && r !== 'tiimi') return 'welcome';
+      if (!on('shop') && r !== 'tiimi') return window.AjouraApp && window.AjouraApp.cars().length ? 'home' : 'welcome';
       if (r === 'asiakas') setRole('huolto');
       return '';
     }
@@ -125,7 +126,7 @@
   const labor = j => (Number(j.hours) || 0) * (Number(j.rate) || 0);
   const total = j => Math.round((partsSum(j) + labor(j) + (Number(j.other) || 0)) * 100) / 100;
   const samples = () => {
-    const d = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
+    const d = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
     return [
       { plate: 'LMN-456', car: 'Volkswagen Golf', year: '2015', customer: 'Matti Esimerkki', phone: '040 123 4567', km: 151200, date: d(0), type: 'Vuosihuolto', items: ['Moottoriöljy', 'Öljynsuodatin', 'Ilmansuodatin', 'Valot tarkistettu'], parts: [{ name: 'Moottoriöljy 5W-30', qty: '4,5 l', price: '62' }, { name: 'Öljynsuodatin', qty: '1', price: '18' }], hours: '1.5', rate: '78', other: '', note: 'Asiakas toivoo myös rengaspaineiden tarkistuksen. Kuvitteellinen esimerkkityö.', status: 'tyossa' },
       { plate: 'FIN-202', car: 'Škoda Octavia Combi', year: '2019', customer: 'Liisa Malli', phone: '050 765 4321', km: 98340, date: d(1), type: 'Jarruhuolto', items: ['Jarrupalat', 'Jarrulevyt', 'Jarruneste'], parts: [{ name: 'Jarrulevyt etu', qty: '2', price: '118' }, { name: 'Jarrupalat etu', qty: '1 sarja', price: '56' }], hours: '2', rate: '78', other: '12', note: 'Kuvitteellinen esimerkkityö.', status: 'valmis' },
@@ -181,7 +182,7 @@
     const lines = [...j.parts.filter(x => x.name || x.price).map(x => [x.name || 'Varaosa', x.qty, Number(x.price) || 0]), ...(labor(j) ? [['Työ ' + num(j.hours) + ' h × ' + num(j.rate) + ' €', '', labor(j)]] : []), ...(Number(j.other) ? [['Muut kulut', '', Number(j.other)]] : [])];
     const sheet = `<div id="report" class="r-sheet"><header class="report-head"><img src="logo.svg" alt="AJOURA" width="640" height="198"><div><strong>Työtilaus ${esc(j.id.replace(/\D/g, ''))}</strong><span>${esc(p.name || 'Autohuolto')}</span><span>${fdate(j.date)}</span></div></header>
       <h2 class="app-heading">${esc(j.plate)}</h2><p class="app-subtitle">${esc(j.car)}${j.year ? ' · vm. ' + esc(j.year) : ''}${j.km !== null && j.km !== undefined ? ' · ' + num(j.km) + ' km' : ''}</p>
-      <p class="r-status-line"><span class="r-pill r-st-${j.status}">${statusName(j.status)}</span>${j.handed ? ' Luovutettu ' + fdate(new Date(j.handed).toISOString().slice(0, 10)) : ''}</p>
+      <p class="r-status-line"><span class="r-pill r-st-${j.status}">${statusName(j.status)}</span>${j.handed ? ' Luovutettu ' + fdate((t => `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`)(new Date(j.handed))) : ''}</p>
       <dl class="detail-list"><div><dt>TYÖ</dt><dd>${esc(j.type)}</dd></div>${j.customer || j.phone ? `<div><dt>ASIAKAS</dt><dd>${esc(j.customer)}${j.phone ? ` · <a href="tel:${esc(j.phone.replace(/[^\d+]/g, ''))}">${esc(j.phone)}</a>` : ''}</dd></div>` : ''}
       ${j.items.length ? `<div><dt>TEHDYT TOIMENPITEET</dt><dd><ul class="done-list">${j.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></dd></div>` : ''}${j.note ? `<div><dt>MUISTIINPANO</dt><dd>${esc(j.note)}</dd></div>` : ''}</dl>
       ${lines.length ? `<table class="report-table r-lines"><thead><tr><th>Rivi</th><th>Määrä</th><th>€</th></tr></thead><tbody>${lines.map(l => `<tr><td>${esc(l[0])}</td><td>${esc(l[1])}</td><td>${num(l[2])}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="2"><strong>Yhteensä (sis. alv)</strong></td><td><strong>${num(total(j))}</strong></td></tr></tfoot></table>` : ''}
@@ -226,6 +227,7 @@
     try {
       const d = JSON.parse(unb64(code));
       const e = d && d.event;
+      if (d && typeof d.plate === 'string') { const p = d.plate.toUpperCase().replace(/[\s-]/g, ''), m = /^([A-ZÅÄÖ]{1,3})(\d{1,3})$/.exec(p); if (m) d.plate = m[1] + '-' + m[2]; }
       if (!d || d.v !== 1 || typeof d.plate !== 'string' || !/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(d.plate) || !e || !JOB_TYPES.includes(e.type) || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return null;
       const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
       const money = v => typeof v === 'string' && v !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? v : '';
@@ -375,7 +377,7 @@
       if (bad) { form.querySelector('#r-error').textContent = bad; return; }
       const id = form.dataset.job; let j = id && shop.jobs.find(x => x.id === id);
       if (j) Object.assign(j, v); else { j = { id: 'job' + (++shop.seq), uid: uid(), created: Date.now(), ...v }; shop.jobs.push(j); }
-      if (j.status === 'luovutettu' && !j.doneDate) j.doneDate = today();
+      if (j.status === 'luovutettu') { if (!j.doneDate) j.doneDate = today(); j.handed = j.handed || Date.now(); }
       saveShop(); shopNote = id ? '✓ Muutokset tallennettu.' : '✓ Työ lisätty jonoon.'; go('shopjob/' + j.id);
     } else if (form.id === 'r-shop-form') {
       const f = new FormData(form), s = k => String(f.get(k) || '').trim();
@@ -392,6 +394,7 @@
       try { sessionStorage.setItem(inKey, m[1]); } catch (e) {} go('tuo');
     }
   });
+  document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; const m = document.querySelector('.r-view-menu[open]'); if (m) { m.open = false; m.querySelector('summary').focus(); } });
   document.addEventListener('click', async ev => {
     const t = ev.target; if (!t.closest || !t.closest('#app-screen')) return;
     // Starting as a car owner from the start page leaves the workshop view.
@@ -412,7 +415,7 @@
       const url = appUrl() + '?huolto=' + b64(JSON.stringify(payloadOf(j)));
       if (j.status !== 'luovutettu') { j.status = 'luovutettu'; j.doneDate = today(); j.handed = Date.now(); saveShop(); }
       handoff = { id: j.id, url };
-      if (navigator.share) { navigator.share({ title: tl('AJOURA – huoltomerkintä'), text: tl(`Autosi ${j.plate} huoltotiedot AJOURAan (${shop.profile.name || 'korjaamo'}):`), url }).catch(() => {}); }
+      if (navigator.share) { navigator.share({ title: tl('AJOURA – huoltomerkintä'), text: tl(`Autosi ${j.plate} huoltotiedot AJOURAan` + (shop.profile.name ? ` (${shop.profile.name}):` : ':')), url }).catch(() => {}); }
       const keep = handoff; rerender(); handoff = keep; return;
     }
     if (t.closest('[data-r-copy]')) { const ta = document.querySelector('[data-r-select]'); if (ta) { ta.select(); navigator.clipboard?.writeText(ta.value).then(() => { t.closest('[data-r-copy]').textContent = '✓ Kopioitu'; }).catch(() => document.execCommand && document.execCommand('copy')); } return; }
