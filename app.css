@@ -406,3 +406,5 @@ html.dark .device-glass .row-btn.fuel,html.dark .device-glass .today-scene{filte
 .sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
 .sync-actions .app-button{width:auto;flex:1 1 140px}
 .sync-status{font-size:11px;color:#55748e}
+.sync-steps{font-size:11px;color:#62768a;line-height:1.6;margin:0 0 10px;padding-left:18px}
+.sync-handoff .app-fineprint{margin-top:8px}
