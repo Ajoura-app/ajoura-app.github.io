@@ -50,3 +50,21 @@
 .feature-grid{grid-template-columns:repeat(4,1fr);gap:30px}
 @media(min-width:721px) and (max-width:1000px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.feature-grid{grid-template-columns:1fr}}
+/* Hero preview of the home screen (2026-10, Niklas's mockups): today card with a landscape and colour-coded vehicle rows */
+.home-preview{padding:22px 22px 18px}
+.hp-today{position:relative;overflow:hidden;margin:12px 0 12px;padding:14px 14px 13px;border-radius:16px;border:1px solid #dbe7f6;background:linear-gradient(135deg,#fff,#f1f6ff 55%,#e3edfc)}
+.hp-scene{position:absolute;right:-6px;top:-4px;width:55%;height:auto;pointer-events:none}
+.hp-today .mini-label{position:relative;font-size:8px}
+.hp-today strong{position:relative;display:block;font-size:19px;letter-spacing:-.035em;margin-top:3px}
+.hp-today small{position:relative;display:block;font-size:10px;color:#5a6d82;margin-top:2px}
+.hp-row{display:grid;grid-template-columns:38% 1fr;gap:12px;align-items:start;padding:10px;border:1px solid #e1eaf4;border-radius:16px;background:#fff;margin-top:9px;box-shadow:0 10px 24px -20px #1d4f9466}
+.car-visual.car-stage.hp-car{margin:0;padding:6px 4px;border-radius:11px;background:linear-gradient(180deg,#eef4fb,#f8fbfe);aspect-ratio:4/3;display:grid;place-items:center}
+.hp-car img,.hp-car svg{width:100%;height:auto}
+.hp-info strong{display:block;font-size:14px;letter-spacing:-.025em}.hp-info>small{display:block;font-size:10px;color:#66798e}
+.hp-status{margin-top:7px;padding:7px 9px 8px;border-radius:11px;background:#edf4ff}.hp-status b{display:block;font-size:7.5px;letter-spacing:.1em;color:#1464e8}.hp-status span{display:block;font-size:10px;font-weight:600;margin-top:1px}
+.hp-status i{display:block;height:5px;border-radius:5px;background:#dfe7f1;margin-top:6px;overflow:hidden}.hp-status em{display:block;height:100%;border-radius:inherit;background:#1464e8}
+.hp-status.soon{background:#fff4e6}.hp-status.soon b{color:#d9822b}.hp-status.soon em{background:linear-gradient(90deg,#f6b73c,#f3c74c)}
+.hp-status.ok{background:#e9f7ef}.hp-status.ok b{color:#1f9a62}.hp-status.ok em{background:#2fb36f}
+.hp-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.hp-btn{display:flex;align-items:center;justify-content:center;min-height:28px;border-radius:9px;font-size:10px;font-weight:650;color:#1464e8;background:#f3f8ff;border:1px solid #d7e4f4;white-space:nowrap}.hp-btn.fuel{background:#1464e8;border-color:#1464e8;color:#fff}
+.home-preview .preview-foot{margin-top:12px}
+body{background:linear-gradient(180deg,#e9f1fd 0,var(--paper) 720px)}
