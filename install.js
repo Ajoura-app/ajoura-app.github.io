@@ -21,7 +21,7 @@
     dialog.close();
   });
   const copy = document.getElementById('install-copy');
-  const link = 'https://mestarihannes.github.io/Ajoura/app.html';
+  const link = 'https://ajoura-app.github.io/app.html';
   copy.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(link); copy.textContent = 'Linkki kopioitu'; }
     catch (e) { window.prompt('Kopioi linkki:', link); }

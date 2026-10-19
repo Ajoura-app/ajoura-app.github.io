@@ -1,7 +1,7 @@
 'use strict';
 // Website "share the link" button: the phone's own share sheet where available, otherwise copy to clipboard.
 (() => {
-  const url = 'https://mestarihannes.github.io/Ajoura/';
+  const url = 'https://ajoura-app.github.io/';
   document.addEventListener('click', async event => {
     const btn = event.target.closest('[data-share]');
     if (!btn) return;

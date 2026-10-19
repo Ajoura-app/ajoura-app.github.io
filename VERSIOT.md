@@ -7,7 +7,7 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … Isompi hyppy (esim. 1.0 virallinen julkaisu) tehdään vain pyynnöstä.
 
 **Missä kopiot ovat:**
-- GitHubissa haara `backup/VVVV-KK-PP-vX.XX` (repo MestariHannes/Ajoura). Tämä on varsinainen palautuspiste.
+- GitHubissa haara `backup/VVVV-KK-PP-vX.XX` (repo Ajoura-app/ajoura-app.github.io; 19.10.2026 asti MestariHannes/Ajoura). Tämä on varsinainen palautuspiste.
 - Koneellasi: `Ajoura\99_arkisto\versiot\X.XX_VVVV-KK-PP\` (zip: sovellus ja sivu, esittelyvideot erikseen kielittäin).
 - Projektin jaetussa kansiossa: `ajoura/varmuuskopiot/`.
 

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Siirto · AJOURA</title>
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<style>
+:root{--bg:#f5f8fc;--ink:#0d1b33;--muted:#4a5a75;--accent:#1565d8;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1322;--ink:#e8eef8;--muted:#a6b4ca;--accent:#4d95ff;--card:#14203a}}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{width:min(440px,100% - 32px);background:var(--card);border-radius:20px;padding:28px 24px;box-shadow:0 10px 40px rgba(13,27,51,.08);text-align:center}
+img{width:170px;height:auto;margin-bottom:12px}
+h1{font-size:1.25rem;margin:.2em 0 .6em}p{color:var(--muted)}
+.btn{display:inline-block;border:0;border-radius:12px;padding:12px 20px;background:var(--accent);color:#fff;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+</style>
+</head>
+<body>
+<main><img src="logo.svg" width="640" height="198" alt="AJOURA"><div id="siirto" aria-live="polite"><h1>…</h1></div></main>
+<script src="siirto.js?v=1"></script>
+</body>
+</html>
