@@ -403,3 +403,6 @@ html.dark .device-glass .row-btn.fuel,html.dark .device-glass .today-scene{filte
 .sheet-form .form-row.four{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px;margin-top:4px}
 .sheet-help{font-size:9px;line-height:1.45;color:#6b7f93;margin:6px 0 10px}
 @container(min-width:420px){.sheet-form .form-row.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+.sync-actions .app-button{width:auto;flex:1 1 140px}
+.sync-status{font-size:11px;color:#55748e}

@@ -7,18 +7,18 @@
 <meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-4">
-<script src="i18n-sv.js?v=ak-4" defer></script>
-<script src="i18n.js?v=ak-4" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-5">
+<script src="i18n-sv.js?v=ak-5" defer></script>
+<script src="i18n.js?v=ak-5" defer></script>
 </head>
 <body>
 <main class="legal">
 <div class="legal-top"><a href="./" aria-label="AJOURA etusivu"><img src="logo.svg" alt="AJOURA" width="160" height="50"></a><div class="lang-switch" role="group" aria-label="Kieli"><button type="button" data-set-lang="fi" lang="fi">FI</button><button type="button" data-set-lang="sv" lang="sv">SV</button><button type="button" data-set-lang="en" lang="en">EN</button></div></div>
 <h1>Tietosuoja</h1>
-<p class="draft"><strong>Luonnos testivaiheeseen.</strong> Tämä seloste kuvaa AJOURAn nykyisen testiversion. Se päivitetään ja tarkistetaan ennen virallista julkaisua, viimeistään kun sovellukseen tulee kirjautuminen.</p>
+<p class="draft"><strong>Luonnos testivaiheeseen.</strong> Tämä seloste kuvaa AJOURAn nykyisen testiversion. Se tarkistetaan ennen virallista julkaisua.</p>
 
 <h2>Lyhyesti</h2>
-<p>AJOURA tallentaa autosi, merkintäsi, kuvasi ja nimesi vain omaan laitteeseesi. Emme saa niitä, emmekä voi nähdä niitä. Meillä ei ole palvelinta, käyttäjätilejä, mainoksia eikä kävijäseurantaa.</p>
+<p>Ilman kirjautumista AJOURA tallentaa autosi, merkintäsi, kuvasi ja nimesi vain omaan laitteeseesi. Jos kirjaudut sisään, autosi, merkintäsi, tankkauksesi, muistiinpanosi ja nimesi tallentuvat lisäksi tilillesi, jotta ne näkyvät kaikilla laitteillasi. Meillä ei ole mainoksia eikä kävijäseurantaa.</p>
 
 <h2>Mitä tietoja sovellus käsittelee</h2>
 <ul>
@@ -37,23 +37,32 @@
 <li><strong>Kalenterimuistutus</strong> tallentuu puhelimesi kalenteriin.</li>
 </ul>
 
+<h2>Jos kirjaudut sisään</h2>
+<ul>
+<li>Sähköpostiosoitettasi käytetään kirjautumiskoodin lähettämiseen ja tilisi tunnistamiseen.</li>
+<li>Autosi, merkinnät, tankkaukset, muistiinpanot ja nimesi tallennetaan Supabase-palveluun (Supabase Inc.) EU:ssa sijaitsevalle palvelimelle. Kuvat ja kuitit pysyvät toistaiseksi vain laitteellasi.</li>
+<li>Vain sinä näet tilisi tiedot: tietokanta antaa jokaiselle käyttäjälle pääsyn vain omiin tietoihinsa.</li>
+<li>Kun kirjaudut ulos, tiedot jäävät myös laitteellesi. Tilin ja sen tietojen poistoa voit pyytää Apu-välilehden palautteella.</li>
+</ul>
+
 <h2>Palvelut, joiden kautta sivu toimii</h2>
 <ul>
 <li><strong>GitHub Pages</strong> (GitHub Inc.) jakaa sivuston. Kuten kaikki verkkopalvelimet, se näkee teknisiä tietoja, kuten IP-osoitteen, sivua ladattaessa.</li>
 <li><strong>Automallien kuvat</strong> ladataan kuvapalvelun sisällönjakeluverkosta (Amazon CloudFront). Kuvapyyntö kertoo vain, minkä automallin kuva haetaan, ei rekisteritunnusta eikä merkintöjäsi.</li>
+<li><strong>Supabase</strong> (Supabase Inc.) hoitaa kirjautumisen ja tilin tiedot, jos kirjaudut sisään. Palvelin on EU:ssa.</li>
 </ul>
 
 <h2>Rekisterihaku</h2>
 <p>Rekisteritunnuksella haku on testivaiheessa simuloitu esimerkkiaineistolla. Tunnusta ei lähetetä mihinkään.</p>
 
 <h2>Oikeutesi</h2>
-<p>Koska tiedot ovat vain sinun laitteessasi, hallitset niitä itse: voit katsoa, muuttaa, viedä (varmuuskopio) ja poistaa ne milloin tahansa sovelluksessa.</p>
+<p>Hallitset tietojasi itse: voit katsoa, muuttaa, viedä (varmuuskopio) ja poistaa ne milloin tahansa sovelluksessa. Jos olet kirjautunut, sovelluksessa poistamasi merkinnät poistuvat myös tililtäsi.</p>
 
 <h2>Rekisterinpitäjä ja yhteystiedot</h2>
 <p>AJOURAa kehittävät Hannes ja Niklas (DRONEX). Yhteystiedot ja yrityksen tiedot lisätään tähän ennen virallista julkaisua. Siihen asti palautteen voi lähettää sovelluksen Apu-välilehdeltä.</p>
 
 <p style="margin-top:32px"><a href="./">← Takaisin AJOURAan</a> · <a href="app.html">Avaa sovellus</a></p>
-<p style="font-size:13px;color:var(--muted)">Päivitetty 13.10.2026</p>
+<p style="font-size:13px;color:var(--muted)">Päivitetty 19.10.2026</p>
 </main>
 </body>
 </html>
