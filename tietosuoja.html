@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tietosuoja · AJOURA</title>
+<meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
+<meta name="theme-color" content="#f6f8fb">
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ajoura.css?v=ak-7">
+<script src="i18n-sv.js?v=ak-7" defer></script>
+<script src="i18n.js?v=ak-7" defer></script>
+</head>
+<body>
+<main class="legal">
+<div class="legal-top"><a href="./" aria-label="AJOURA etusivu"><img src="logo.svg" alt="AJOURA" width="160" height="50"></a><div class="lang-switch" role="group" aria-label="Kieli"><button type="button" data-set-lang="fi" lang="fi">FI</button><button type="button" data-set-lang="sv" lang="sv">SV</button><button type="button" data-set-lang="en" lang="en">EN</button></div></div>
+<h1>Tietosuoja</h1>
+<p class="draft"><strong>Luonnos testivaiheeseen.</strong> Tämä seloste kuvaa AJOURAn nykyisen testiversion. Se tarkistetaan ennen virallista julkaisua.</p>
+
+<h2>Lyhyesti</h2>
+<p>Ilman kirjautumista AJOURA tallentaa autosi, merkintäsi, kuvasi ja nimesi vain omaan laitteeseesi. Jos kirjaudut sisään, autosi, merkintäsi, tankkauksesi, muistiinpanosi ja nimesi tallentuvat lisäksi tilillesi, jotta ne näkyvät kaikilla laitteillasi. Meillä ei ole mainoksia eikä kävijäseurantaa.</p>
+
+<h2>Mitä tietoja sovellus käsittelee</h2>
+<ul>
+<li>Antamasi nimi (valinnainen), jota käytetään vain tervehdyksessä.</li>
+<li>Autojesi tiedot: rekisteritunnus, merkki ja malli, vuosimalli, mittarilukema ja ulkonäkö.</li>
+<li>Huolto-, katsastus-, korjaus- ja tankkausmerkinnät, muistiinpanot sekä lisäämäsi kuvat ja kuitit.</li>
+</ul>
+<p>Tiedot ovat selaimen tallennustilassa (IndexedDB ja localStorage) tällä laitteella. Ne poistuvat, kun valitset Minä → Poista kaikki tiedot tai tyhjennät selaimen sivustotiedot.</p>
+
+<h2>Milloin tietoja lähtee laitteeltasi</h2>
+<p>Vain silloin, kun itse päätät:</p>
+<ul>
+<li><strong>Varmuuskopio ja siirtotiedosto</strong> tallentuvat tiedostoon, jonka sijainnin valitset itse.</li>
+<li><strong>Historia linkkinä</strong>: auton tiedot ja merkinnät (ei kuvia, kuitteja eikä muistiinpanoja) ovat linkin sisällä. Jokainen, jolla on linkki, voi avata sen. Linkkiä ei tallenneta palvelimellemme, koska meillä ei ole sellaista.</li>
+<li><strong>Palaute</strong> lähetetään AJOURAn tekijöiden Google-taulukkoon (Google Apps Script), josta vain he lukevat sen. Mukana on palautteen teksti, sovelluksen versio, laitetyyppi ja autojen määrä, ei autojesi tietoja eikä nimeäsi. Jos lähetys ei ole käytössä, palaute avautuu puhelimen jakovalikkoon.</li>
+<li><strong>Kalenterimuistutus</strong> tallentuu puhelimesi kalenteriin.</li>
+</ul>
+
+<h2>Jos kirjaudut sisään</h2>
+<ul>
+<li>Sähköpostiosoitettasi käytetään kirjautumiskoodin lähettämiseen ja tilisi tunnistamiseen.</li>
+<li>Autosi, merkinnät, tankkaukset, muistiinpanot ja nimesi tallennetaan Supabase-palveluun (Supabase Inc.) EU:ssa sijaitsevalle palvelimelle. Kuvat ja kuitit pysyvät toistaiseksi vain laitteellasi.</li>
+<li>Vain sinä näet tilisi tiedot: tietokanta antaa jokaiselle käyttäjälle pääsyn vain omiin tietoihinsa.</li>
+<li>Kun kirjaudut ulos, tiedot jäävät myös laitteellesi. Tilin ja sen tietojen poistoa voit pyytää Apu-välilehden palautteella.</li>
+</ul>
+
+<h2>Palvelut, joiden kautta sivu toimii</h2>
+<ul>
+<li><strong>GitHub Pages</strong> (GitHub Inc.) jakaa sivuston. Kuten kaikki verkkopalvelimet, se näkee teknisiä tietoja, kuten IP-osoitteen, sivua ladattaessa.</li>
+<li><strong>Automallien kuvat</strong> ladataan kuvapalvelun sisällönjakeluverkosta (Amazon CloudFront). Kuvapyyntö kertoo vain, minkä automallin kuva haetaan, ei rekisteritunnusta eikä merkintöjäsi.</li>
+<li><strong>Supabase</strong> (Supabase Inc.) hoitaa kirjautumisen ja tilin tiedot, jos kirjaudut sisään. Palvelin on EU:ssa.</li>
+</ul>
+
+<h2>Rekisterihaku</h2>
+<p>Rekisteritunnuksella haku on testivaiheessa simuloitu esimerkkiaineistolla. Tunnusta ei lähetetä mihinkään.</p>
+
+<h2>Oikeutesi</h2>
+<p>Hallitset tietojasi itse: voit katsoa, muuttaa, viedä (varmuuskopio) ja poistaa ne milloin tahansa sovelluksessa. Jos olet kirjautunut, sovelluksessa poistamasi merkinnät poistuvat myös tililtäsi.</p>
+
+<h2>Rekisterinpitäjä ja yhteystiedot</h2>
+<p>AJOURAa kehittävät Hannes ja Niklas (DRONEX). Yhteystiedot ja yrityksen tiedot lisätään tähän ennen virallista julkaisua. Siihen asti palautteen voi lähettää sovelluksen Apu-välilehdeltä.</p>
+
+<p style="margin-top:32px"><a href="./">← Takaisin AJOURAan</a> · <a href="app.html">Avaa sovellus</a></p>
+<p style="font-size:13px;color:var(--muted)">Päivitetty 19.10.2026</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Auton huoltohistoria · AJOURA</title>
+<meta name="description" content="Auton omistajan AJOURAssa kirjaama huoltohistoria.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f8fb">
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ajoura.css?v=ak-7">
+<script src="car-render.js?v=ak-7" defer></script>
+<script src="car-shapes.js?v=ak-7" defer></script>
+<script src="car-images.js?v=ak-7" defer></script>
+<script src="car-models.js?v=ak-7" defer></script><script src="vehicles.js?v=ak-7" defer></script>
+<script src="i18n-sv.js?v=ak-7" defer></script>
+<script src="i18n.js?v=ak-7" defer></script>
+<style>
+body{background:var(--paper)}
+.hist{width:min(760px,calc(100% - 32px));margin:0 auto;padding:22px 0 48px}
+.hist-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.hist-top img{width:132px;height:auto}
+.hist-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.hist-top a.cta{font-size:13px;font-weight:700;color:var(--blue)}
+.hist-badge{margin:18px 0 6px;font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--cyan)}
+h1{font-size:clamp(28px,6vw,42px);line-height:1.1;margin:0}
+.sub{color:var(--muted);margin:6px 0 0}
+.car{margin:18px 0 6px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px 18px}
+.car svg,.car img{width:100%;height:auto;max-height:240px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+.stats strong{display:block;font-size:20px}
+.stats span{font-size:12px;color:var(--muted)}
+.trust{background:#eef5ff;border:1px solid #cfe0f6;border-radius:14px;padding:12px 14px;font-size:13px;color:#33506e;margin:14px 0}
+h2{font-size:19px;margin:26px 0 8px}
+.events{list-style:none;margin:0;padding:0}
+.events li{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px}
+.ev-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ev-head strong{font-size:15px}
+.ev-head b{white-space:nowrap}
+.ev-meta{font-size:13px;color:var(--muted)}
+.ev-note{font-size:14px;margin:6px 0 0}
+.ev-items{font-size:12px;color:#4a627a;margin:6px 0 0}
+.doc{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#0f7a59;background:#e6f6ef;border-radius:20px;padding:2px 9px}
+.events li.year{background:none;border:0;padding:0;font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--muted);margin:16px 0 6px}
+.empty,.error{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:20px}
+.foot{margin-top:28px;font-size:12px;color:var(--muted)}
+.foot a{color:var(--blue);font-weight:700}
+@media(max-width:480px){.stats strong{font-size:17px}}
+@media print{.lang-switch,.hist-top a.cta,.foot a{display:none}.events li{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="hist" id="hist">
+<div class="hist-top"><a href="./" aria-label="AJOURA"><img src="logo.svg" alt="AJOURA" width="640" height="198"></a><span class="hist-actions"><div class="lang-switch" role="group" aria-label="Kieli"><button type="button" data-set-lang="fi" lang="fi">FI</button><button type="button" data-set-lang="sv" lang="sv">SV</button><button type="button" data-set-lang="en" lang="en">EN</button></div><a class="cta" href="./">Mikä AJOURA on? →</a></span></div>
+<div id="out"><p class="empty">Avataan huoltohistoriaa…</p></div>
+</main>
+<script>
+'use strict';
+// Read-only view of a car history shared from the AJOURA app. The data travels in the link itself
+// (#z = deflate-raw + base64url, #j = plain JSON in base64url); nothing is fetched or stored.
+(() => {
+  const out = document.getElementById('out');
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const num = v => Number(v).toLocaleString('fi-FI', {maximumFractionDigits: 2});
+  const day = v => /^\d{4}-\d{2}-\d{2}$/.test(v) ? new Intl.DateTimeFormat('fi-FI').format(new Date(v + 'T12:00:00')) : '';
+  const fail = msg => { out.innerHTML = `<div class="error"><strong>Huoltohistoriaa ei voitu avata.</strong><p>${msg}</p><p>Pyydä myyjältä uusi linkki AJOURA-sovelluksen raportista (Jaa historia linkkinä).</p></div>`; };
+  const bytes = s => { const b = atob(s.replace(/-/g, '+').replace(/_/g, '/')); const a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
+  async function decode(hash) {
+    const kind = hash[0], raw = bytes(hash.slice(1));
+    if (kind === 'j') return JSON.parse(new TextDecoder().decode(raw));
+    if (kind === 'z') {
+      if (!window.DecompressionStream) throw new Error('old');
+      const buf = await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+      return JSON.parse(new TextDecoder().decode(buf));
+    }
+    throw new Error('kind');
+  }
+  function valid(d) {
+    return d && d.v === 1 && typeof d.n === 'string' && typeof d.p === 'string' && Number.isInteger(d.y) && Number.isSafeInteger(d.km) && Array.isArray(d.e) && d.e.length <= 2000 &&
+      d.e.every(e => Array.isArray(e) && /^\d{4}-\d{2}-\d{2}$/.test(e[0]) && typeof e[1] === 'string' && (e[2] === null || Number.isSafeInteger(e[2])) && (e[3] === null || Number.isFinite(e[3])));
+  }
+  function render(d) {
+    const ev = [...d.e].sort((a, b) => b[0].localeCompare(a[0]));
+    const total = ev.reduce((s, e) => s + (e[3] || 0), 0), withDoc = ev.filter(e => e[6] > 0).length;
+    const Car = window.AjouraCar, M = window.AjouraModels;
+    let image = '';
+    const K = window.AjouraKinds, kind = typeof d.k === 'string' && K && K.list.some(k => k.id === d.k && k.id !== 'car') ? d.k : '', u = kind && K.unit(kind) === 'h' ? 'h' : 'km';
+    if (kind) image = `<div class="car">${K.render(kind, d.b, /^#[0-9a-f]{6}$/i.test(d.c) ? d.c : '#eef1f4', esc(d.n))}</div>`;
+    else if (Car && Car.bodies.includes(d.b)) {
+      let shape; try { const m = M && M.parse(d.n); shape = m && m.brand ? M.shape(m.brand, m.model, d.b, d.y) : undefined; } catch (e) {}
+      image = `<div class="car">${Car.render(d.b, /^#[0-9a-f]{6}$/i.test(d.c) ? d.c : '#eef1f4', esc(d.n), shape)}</div>`;
+    }
+    let lastYear = '';
+    const items = ev.map(e => {
+      const y = e[0].slice(0, 4), head = y !== lastYear ? `<li class="year" aria-hidden="true">${y}</li>` : ''; lastYear = y;
+      const list = Array.isArray(e[5]) && e[5].length ? `<p class="ev-items">${e[5].map(esc).join(' · ')}</p>` : '';
+      return head + `<li><div class="ev-head"><strong>${esc(e[1])}</strong>${e[3] !== null ? `<b>${num(e[3])} €</b>` : ''}</div><div class="ev-meta">${day(e[0])}${e[2] !== null ? ' · ' + num(e[2]) + ' ' + u : ''}</div>${e[4] ? `<p class="ev-note">${esc(e[4])}</p>` : ''}${list}${e[6] > 0 ? `<span class="doc">✓ Kuitti tallessa omistajalla${e[6] > 1 ? ' (' + e[6] + ')' : ''}</span>` : ''}</li>`;
+    }).join('');
+    const span = ev.length ? `${day(ev[ev.length - 1][0])} – ${day(ev[0][0])}` : '';
+    document.title = `${d.n} · huoltohistoria · AJOURA`;
+    out.innerHTML = `<p class="hist-badge">HUOLTOHISTORIA</p><h1>${esc(d.n)}</h1><p class="sub">${d.p ? esc(d.p) + ' · ' : ''}vm. ${d.y}${d.f ? ' · ' + esc(d.f) : ''}</p>${image}
+      <div class="stats"><div><strong>${num(d.km)}</strong><span>${u} viimeksi kirjattu</span></div><div><strong>${ev.length}</strong><span>merkintää${withDoc ? `, ${withDoc} kuitilla` : ''}</span></div><div><strong>${num(Math.round(total))} €</strong><span>kirjatut kulut</span></div></div>
+      <p class="trust">Tämä on auton omistajan AJOURA-sovellukseen itse kirjaama historia${span ? ' (' + span + ')' : ''}. AJOURA ei ole tarkistanut tietoja. Merkintä "kuitti tallessa" tarkoittaa, että omistaja on liittänyt merkintään kuitin kuvan; pyydä kuitit nähtäväksi. ${d.fa ? `Omistajan kirjaama keskikulutus ${num(d.fa[0])} ${d.fa[1] === 'kWh' ? 'kWh' : 'l'}/${d.fa[2] === 'h' ? 'h' : '100 km'}.` : ''}</p>
+      <h2>Merkinnät</h2>${ev.length ? `<ol class="events">${items}</ol>` : '<p class="empty">Ei merkintöjä.</p>'}
+      <p class="foot">Linkki luotu ${day(d.at) || '–'}. Tallenna tai tulosta sivu selaimen valikosta. Oma auto? <a href="./">Kokeile AJOURAa maksutta →</a></p>`;
+  }
+  async function start() {
+    const hash = location.hash.slice(1);
+    if (!hash) { fail('Linkistä puuttuu auton tiedot.'); return; }
+    try { const d = await decode(hash); if (!valid(d)) throw new Error('data'); render(d); }
+    catch (e) { fail(e && e.message === 'old' ? 'Selaimesi on liian vanha tämän linkin avaamiseen. Kokeile uudempaa selainta.' : 'Linkki on katkennut tai vaurioitunut. Tarkista, että kopioit sen kokonaan.'); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  window.addEventListener('hashchange', start);
+})();
+</script>
+</body>
+</html>
