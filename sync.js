@@ -29,8 +29,12 @@
     if (!r.ok) { const err = new Error((body && (body.msg || body.message || body.error_description || body.error)) || 'HTTP ' + r.status); err.status = r.status; err.code = body && (body.error_code || body.code); throw err; }
     return body;
   }
+  // Another tab or the installed app may have refreshed the token already; a used refresh token is refused.
+  const fresher = () => { const s = getJson(sessionKey); if (s && s.user && session && s.user.id === session.user.id && s.expires_at > session.expires_at) session = s; };
+  window.addEventListener('storage', e => { if (e.key === sessionKey) { const s = getJson(sessionKey); session = s && s.refresh_token && s.user ? s : null; } });
   async function token() {
     if (!session) throw new Error('no session');
+    fresher();
     if (session.expires_at - Date.now() > 60000) return;
     try { saveSession(fromAuth(await call('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: JSON.stringify({ refresh_token: session.refresh_token }) }, false))); }
     catch (e) { if (e.status === 400 || e.status === 401 || e.status === 403) { signedOut('Kirjautuminen vanhentui. Kirjaudu uudelleen.'); } throw e; }
@@ -123,14 +127,14 @@
   let state = 'idle', lastError = '', timer = 0, running = null, again = false;
   const App = () => window.AjouraApp;
   // Someone is filling in a form: an entry, vehicle or fill-up form is open, or the cursor is in a field.
-  const formViews = ['add', 'edit', 'newcar', 'caredit', 'owner'];
+  const formViews = ['add', 'edit', 'newcar', 'caredit', 'owner', 'fuel', 'notes'];
   const busyForm = () => { const v = (location.hash.slice(1).split('/')[0]) || ''; const a = document.activeElement; return formViews.includes(v) || !!document.querySelector('.sheet-layer') || !!(a && a.closest && a.closest('#app-screen') && a.matches('input,textarea,select')); };
   async function syncOnce() {
     await token();
     const uid = session.user.id;
     const rows = await call('/rest/v1/garages?select=data,rev&user_id=eq.' + uid);
     const row = rows && rows[0];
-    const stored = getJson(baseKey), base = stored && stored.user === uid ? stored.data : null;
+    const stored = getJson(baseKey), base = row && stored && stored.user === uid ? stored.data : null; // no cloud row: upload, never treat local cars as deleted
     let full = App().state();
     const remote = row ? row.data : { cars: [], sequence: 0, profile: full.profile };
     if (!base && row) full = separate(full, remote);
@@ -140,6 +144,8 @@
       if (busyForm()) return 'later'; // never redraw a form someone is filling in; retry on the next screen
       if (!App().apply(withImages(merged, full))) throw new Error('invalid data');
     }
+    // This device now holds the cloud copy merged in: if the save below fails or loses a race, the retry merges against it.
+    if (row) set(baseKey, JSON.stringify({ user: uid, data: row.data }));
     if (!row) await call('/rest/v1/garages', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ user_id: uid, data: merged, rev: 1 }) });
     else if (!same(merged, row.data)) {
       const done = await call('/rest/v1/garages?user_id=eq.' + uid + '&rev=eq.' + row.rev, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ data: merged, rev: row.rev + 1, updated_at: new Date().toISOString() }) });
@@ -168,7 +174,8 @@
     return running;
   }
   const schedule = (ms = 1500) => { if (!enabled || !session) return; clearTimeout(timer); timer = setTimeout(sync, ms); };
-  function signedOut(note) { saveSession(null); set(baseKey, ''); set(syncedKey, ''); state = 'idle'; flash = note || ''; }
+  // The base copy stays (it is per user): signing back in later merges instead of duplicating entries.
+  function signedOut(note) { saveSession(null); set(syncedKey, ''); state = 'idle'; flash = note || ''; }
   async function signOut() {
     if (!confirm('Kirjaudutaanko ulos? Autosi ja merkintäsi jäävät myös tähän laitteeseen.')) return;
     const s = session; signedOut('Kirjauduit ulos. Tiedot ovat yhä tällä laitteella.');
@@ -254,12 +261,12 @@
 
   if (enabled && fromLink) {
     session = { ...fromAuth({ ...fromLink, user: { id: '', email: '' } }) };
-    call('/auth/v1/user').then(u => { saveSession({ ...session, user: { id: u.id, email: u.email } }); flash = ''; schedule(0); rerender(); }, () => { session = null; flash = 'Kirjautuminen ei onnistunut. Pyydä uusi linkki.'; location.hash = 'login'; });
+    call('/auth/v1/user').then(u => { saveSession({ ...session, user: { id: u.id, email: u.email } }); flash = ''; schedule(0); rerender(); }, () => { session = null; flash = 'Kirjautuminen ei onnistunut. Pyydä uusi linkki.'; location.hash = 'login'; rerender(); });
   }
 
   window.AjouraSync = {
     enabled, owns: v => enabled && v === 'login', paint, meCard,
-    signedIn: () => !!session, forget: () => signedOut(''), changed: () => schedule(), start: () => schedule(0),
+    signedIn: () => !!session, forget: () => { signedOut(''); set(baseKey, ''); }, changed: () => schedule(), start: () => schedule(0),
     _merge: merge // for tests
   };
 })();

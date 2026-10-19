@@ -116,7 +116,7 @@
   const statusName = s => (STATUS.find(x => x[0] === s) || STATUS[0])[1];
   const JOB_TYPES = ['Huolto', 'Määräaikaishuolto', 'Vuosihuolto', 'Moottoriöljyn vaihto', 'Jarruhuolto', 'Ilmansuodattimen vaihto', 'Renkaiden vaihto', 'Akun vaihto', 'Polttimon vaihto', 'Korjaus', 'Osan vaihto', 'Pesu ja vahaus', 'Muu tapahtuma'];
   const CHECKS = ['Moottoriöljy', 'Öljynsuodatin', 'Ilmansuodatin', 'Raitisilmasuodatin', 'Polttoainesuodatin', 'Sytytystulpat', 'Jarruneste', 'Jäähdytysneste', 'Vaihteistoöljy', 'Jakohihna / -ketju', 'Apulaitehihna', 'Jarrupalat', 'Jarrulevyt', 'Akku tarkistettu', 'Valot tarkistettu', 'Pyyhkijät', 'Rengaspaineet', 'Huoltovälinäyttö nollattu'];
-  const validJob = j => j && /^[\w-]{1,40}$/.test(j.id) && typeof j.plate === 'string' && typeof j.car === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(j.date) && STATUS.some(s => s[0] === j.status) && Array.isArray(j.parts) && Array.isArray(j.items);
+  const validJob = j => j && /^[\w-]{1,40}$/.test(j.id) && typeof j.plate === 'string' && typeof j.car === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(j.date) && STATUS.some(s => s[0] === j.status) && Array.isArray(j.parts) && Array.isArray(j.items) && (j.km == null || Number.isSafeInteger(j.km)) && (j.phone == null || typeof j.phone === 'string');
   function loadShop() {
     try { const d = JSON.parse(get(shopKey)); if (d && Array.isArray(d.jobs) && d.jobs.every(validJob) && Number.isSafeInteger(d.seq) && d.profile) return d; } catch (e) {}
     return { profile: { name: '', phone: '', address: '', ytunnus: '', rate: '' }, jobs: [], seq: 0 };
@@ -167,7 +167,7 @@
       <label>Merkki ja malli<input name="car" required maxlength="60" placeholder="esim. Volvo V60" value="${esc(v.car)}"></label>
       <div class="form-row"><label>Asiakas<input name="customer" maxlength="60" autocomplete="off" placeholder="Nimi" value="${esc(v.customer)}"></label><label>Puhelin<input name="phone" type="tel" maxlength="20" autocomplete="off" placeholder="040…" value="${esc(v.phone)}"></label></div>
       <p class="form-title">Työ</p>
-      <div class="form-row"><label>Päivä<input name="date" type="date" required value="${esc(v.date)}"></label><label>Mittarilukema<input name="km" type="number" min="0" max="2000000" inputmode="numeric" placeholder="km" value="${v.km === null || v.km === undefined ? '' : v.km}"></label></div>
+      <div class="form-row"><label>Päivä<input name="date" type="date" required value="${esc(v.date)}"></label><label>Mittarilukema<input name="km" type="number" min="0" max="2000000" inputmode="numeric" placeholder="km" value="${v.km === null || v.km === undefined ? '' : esc(v.km)}"></label></div>
       <div class="form-row"><label>Työn tyyppi<select name="type">${JOB_TYPES.map(t => `<option${t === v.type ? ' selected' : ''}>${t}</option>`).join('')}</select></label><label>Tila<select name="status">${STATUS.map(([k, n]) => `<option value="${k}"${k === v.status ? ' selected' : ''}>${n}</option>`).join('')}</select></label></div>
       <details class="check-set"${v.items.length ? ' open' : ''}><summary>Tehdyt toimenpiteet <small>· ${v.items.length ? v.items.length + ' valittu' : 'valitse'}</small></summary><div class="check-grid">${CHECKS.map(i => `<label class="check-item"><input type="checkbox" name="items" value="${i}"${v.items.includes(i) ? ' checked' : ''}><span>${i}</span></label>`).join('')}</div></details>
       <details class="check-set parts-set" open><summary>Varaosat ja työ</summary><div class="part-head"><span>Varaosa</span><span>Määrä</span><span>€</span></div><div class="part-rows">${parts.map(partRow).join('')}</div><button class="app-back" type="button" data-add-part>＋ Lisää rivi</button>
@@ -229,7 +229,7 @@
       const d = JSON.parse(unb64(code));
       const e = d && d.event;
       if (d && typeof d.plate === 'string') { const p = d.plate.toUpperCase().replace(/[\s-]/g, ''), m = /^([A-ZÅÄÖ]{1,3})(\d{1,3})$/.exec(p); if (m) d.plate = m[1] + '-' + m[2]; }
-      if (!d || d.v !== 1 || typeof d.plate !== 'string' || !/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(d.plate) || !e || !JOB_TYPES.includes(e.type) || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return null;
+      if (!d || d.v !== 1 || typeof d.plate !== 'string' || !/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(d.plate) || !e || !JOB_TYPES.includes(e.type) || !/^\d{4}-\d{2}-\d{2}$/.test(e.date) || isNaN(new Date(e.date + 'T12:00:00'))) return null;
       const str = (v, n) => typeof v === 'string' ? v.slice(0, n) : '';
       const money = v => typeof v === 'string' && v !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? v : '';
       return { ref: str(d.ref, 80), shop: { name: str(d.shop && d.shop.name, 60), phone: str(d.shop && d.shop.phone, 20), address: str(d.shop && d.shop.address, 80) }, plate: d.plate, car: str(d.car, 60), year: /^\d{4}$/.test(String(d.year || '')) ? Number(d.year) : null,
