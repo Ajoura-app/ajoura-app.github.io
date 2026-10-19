@@ -10,6 +10,11 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Quick fill-up with price per litre 2026-10-19 (Niklas)
+    'Litrahinta (€/l)': 'Price per litre (€/l)',
+    'Hinta (€/kWh)': 'Price (€/kWh)',
+    'Anna litrahinta ja summa, niin litrat lasketaan. Voit myös kirjoittaa litrat itse.': 'Enter the price per litre and the total and the litres are calculated. You can also type the litres yourself.',
+    'Anna hinta ja summa, niin kWh lasketaan. Voit myös kirjoittaa määrän itse.': 'Enter the price and the total and the kWh are calculated. You can also type the amount yourself.',
     // Home screen and quick fill-up 2026-10-19
     'Lisää perheen kaikki autot, myös moottoripyörä, vene tai kelkka. Etusivu näyttää jokaisesta värein, onko huolto tai katsastus tulossa ja paljonko ajettavaa on jäljellä.': 'Add all the family’s cars, and the motorbike, boat or snowmobile too. Home shows each one in colour: whether a service or inspection is coming up and how far you can still drive.',
     'Etusivu: tänään huomioitavaa, autot ja viimeisimmät tapahtumat': 'Home: what to note today, your cars and the latest events',

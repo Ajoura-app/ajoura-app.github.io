@@ -3,6 +3,11 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Quick fill-up with price per litre 2026-10-19 (Niklas)
+    'Litrahinta (€/l)': 'Literpris (€/l)',
+    'Hinta (€/kWh)': 'Pris (€/kWh)',
+    'Anna litrahinta ja summa, niin litrat lasketaan. Voit myös kirjoittaa litrat itse.': 'Ange literpris och summa så räknas literna ut. Du kan också skriva in literna själv.',
+    'Anna hinta ja summa, niin kWh lasketaan. Voit myös kirjoittaa määrän itse.': 'Ange pris och summa så räknas kWh ut. Du kan också skriva in mängden själv.',
     // Home screen and quick fill-up 2026-10-19
     'Lisää perheen kaikki autot, myös moottoripyörä, vene tai kelkka. Etusivu näyttää jokaisesta värein, onko huolto tai katsastus tulossa ja paljonko ajettavaa on jäljellä.': 'Lägg till familjens alla bilar, också motorcykeln, båten eller skotern. Startsidan visar med färger för varje fordon om service eller besiktning närmar sig och hur långt det är kvar att köra.',
     'Etusivu: tänään huomioitavaa, autot ja viimeisimmät tapahtumat': 'Startsida: dagens påminnelser, bilarna och senaste händelser',
