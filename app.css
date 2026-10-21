@@ -460,3 +460,34 @@ html.dark .device-glass .ev-act.primary{filter:invert(1) hue-rotate(180deg)}
   .ev-gallery img{max-width:60mm;max-height:55mm;object-fit:contain;border:1px solid #ccd6e0;border-radius:2mm;break-inside:avoid}
   .ev-receipts .ev-gallery img{max-width:90mm;max-height:125mm}
 }
+/* Entry context: since previous, next due, browsing, view-only thumbnails (22.10.2026). */
+.ev-since{display:flex;align-items:center;gap:9px;margin:0 0 10px;padding:9px 11px;background:#fff;border:1px solid #e1eaf4;border-radius:13px;box-shadow:var(--card-shadow);color:var(--ink);text-decoration:none}
+a.ev-since:hover{border-color:#7fb2f3}
+.ev-since-ico{width:28px;height:28px;flex-shrink:0;border-radius:9px;background:#e5f0ff;color:var(--blue);display:grid;place-items:center}
+.ev-since-ico svg{width:15px;height:15px}
+.ev-since-txt{flex:1;min-width:0;display:grid;gap:1px}
+.ev-since-txt b{font-size:8px;font-weight:600;letter-spacing:.04em;color:#75889c}
+.ev-since-txt strong{font-size:13px;font-weight:650;letter-spacing:-.02em}
+.ev-since.first .ev-since-txt b{font-size:11px;letter-spacing:0;color:#5f7186;font-weight:550}
+.ev-since-prev{font-size:10px;color:var(--blue);white-space:nowrap}
+.ev-next{margin:-4px 0 12px;padding:0 4px;font-size:10px;color:#5f7186;line-height:1.45}
+.ev-next b{color:var(--ink);font-weight:650}
+.ev-sec h3 small{font-weight:500;letter-spacing:0}
+.ev-thumbs .att-thumb{width:76px;height:76px}
+.ev-thumbs .att-thumb.receipt{width:60px;height:80px}
+.ev-add-att{display:block;margin:0 0 10px;padding:11px;border:1px dashed #c3d3e4;border-radius:13px;text-align:center;font-size:11px;font-weight:600;color:var(--blue);text-decoration:none}
+.ev-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:4px 0 12px}
+.ev-nav-btn{display:grid;gap:2px;padding:9px 11px;border:1px solid #e1eaf4;border-radius:13px;background:#fff;color:var(--ink);text-decoration:none;min-width:0}
+.ev-nav-btn.newer{text-align:right}
+.ev-nav-btn.empty{border:0;background:none}
+.ev-nav-btn:not(.empty):hover{border-color:#7fb2f3}
+.ev-nav-dir{font-size:11px;font-weight:650;color:var(--blue)}
+.ev-nav-btn small{font-size:9px;color:#7c8ca0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media print{
+  .ev-since{box-shadow:none;border-color:#ccd6e0!important;break-inside:avoid}
+  .ev-since-ico{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ev-since-txt b{font-size:8pt}.ev-since-txt strong{font-size:12pt}.ev-since-prev{font-size:9pt;color:#5d7389}
+  .ev-next{font-size:9.5pt}
+}
+.ev-views{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:0 0 2px}
+.ev-views .ev-sec{margin-bottom:8px}
