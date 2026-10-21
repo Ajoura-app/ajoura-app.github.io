@@ -6,7 +6,9 @@
 (() => {
   const BASE = 'https://qcziihilblykccfrvqui.supabase.co';
   const KEY = 'sb_publishable_DhMJLU_Uv2XkXewz4ybw_Q_BwQ5gIR9'; // publishable (anon) key: public by design, row level security does the protecting
-  const enabled = !!(BASE && KEY);
+  // Kirjautuminen ja synkronointi pois käytöstä 21.10.2026 (Niklas): ei vielä tietosuojaselostetta pilvitallennukselle.
+  // Palautus: vaihda takaisin muotoon !!(BASE && KEY). Ks. muistion kohta 9.
+  const enabled = false && !!(BASE && KEY);
 
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v === '' ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
