@@ -408,3 +408,55 @@ html.dark .device-glass .row-btn.fuel,html.dark .device-glass .today-scene{filte
 .sync-status{font-size:11px;color:#55748e}
 .sync-steps{font-size:11px;color:#62768a;line-height:1.6;margin:0 0 10px;padding-left:18px}
 .sync-handoff .app-fineprint{margin-top:8px}
+
+/* Entry page (22.10.2026): summary card, fact tiles, actions on top. Prints as an A4 sheet. */
+.ev-hero{display:flex;align-items:center;gap:12px;margin:14px 0 10px;padding:14px 13px;background:linear-gradient(135deg,#fff 0,#f4f8ff 55%,#e6effd 100%);border:1px solid #dbe7f6;border-radius:18px;box-shadow:var(--card-shadow)}
+.ev-hero>div{min-width:0}
+.ev-hero .app-heading{margin:0 0 4px;font-size:21px;overflow-wrap:anywhere}
+.ev-hero .app-subtitle{margin:0}
+.ev-ico{width:44px;height:44px;flex-shrink:0;border-radius:13px;background:#e5f0ff;color:var(--blue);display:grid;place-items:center}
+.ev-ico svg{width:22px;height:22px}
+.ev-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 10px}
+.ev-tile{min-width:0;background:#fff;border:1px solid #e1eaf4;border-radius:13px;padding:9px 9px 10px;box-shadow:var(--card-shadow)}
+.ev-tile dt{font-size:7.5px;font-weight:600;letter-spacing:.06em;color:#75889c}
+.ev-tile dd{margin:4px 0 0;font-size:13px;font-weight:650;letter-spacing:-.02em;overflow-wrap:anywhere}
+.ev-tile.muted dd{font-size:11px;font-weight:500;color:#9aabbd}
+.ev-actions{display:grid;grid-template-columns:1fr 1.45fr 1fr;gap:7px;margin:0 0 14px}
+.ev-act{display:flex;align-items:center;justify-content:center;gap:5px;min-height:40px;padding:6px 7px;border-radius:12px;border:1px solid #d5e2f0;background:#fff;color:var(--blue);font:inherit;font-size:11px;font-weight:600;line-height:1.15;text-align:center;cursor:pointer;text-decoration:none}
+.ev-act svg{width:15px;height:15px;flex-shrink:0}
+.ev-act:hover{border-color:#7fb2f3}
+.ev-act.primary{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 8px 18px -12px #1464e8}
+.ev-act.danger{color:#a1262f;border-color:#f1d3d6;background:#fff8f8}
+.ev-act.danger:hover{border-color:#e39aa1}
+html.dark .device-glass .ev-act.primary{filter:invert(1) hue-rotate(180deg)}
+.ev-sec{background:#fff;border:1px solid #e1eaf4;border-radius:14px;padding:11px 12px 12px;margin:0 0 10px;box-shadow:var(--card-shadow)}
+.ev-sec h3{margin:0 0 8px;font-size:7.5px;font-weight:600;letter-spacing:.07em;color:#75889c}
+.ev-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
+.ev-chips li{font-size:11px;font-weight:550;padding:4px 9px;border-radius:99px;background:var(--ok-bg);color:#1c7a4e}
+.ev-costs{width:100%;border-collapse:collapse;font-size:11.5px}
+.ev-costs td{padding:5px 0;border-top:1px solid #eef3f8;vertical-align:top}
+.ev-costs tr:first-child td{border-top:0}
+.ev-costs td:last-child{text-align:right;white-space:nowrap;font-weight:600;padding-left:10px}
+.ev-costs small{color:#7c8ca0}
+.ev-note{margin:0;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+#event-sheet .detail-att{margin:4px 0 10px}
+.ev-print{display:none!important}
+@media print{
+  #event-sheet,#event-sheet *{visibility:visible!important}
+  #event-sheet{position:static!important;width:auto!important;font-size:11pt;color:#17283d}
+  #event-sheet .report-head.ev-print{display:flex!important}
+  #event-sheet .report-foot.ev-print{display:grid!important;margin-top:8mm}
+  #event-sheet .ev-att.ev-print{display:block!important}
+  #event-sheet .ev-hero{background:none;border:0;box-shadow:none;padding:0;margin:6mm 0 5mm}
+  #event-sheet .ev-hero .app-heading{font-size:20pt!important}
+  #event-sheet .app-subtitle{font-size:10pt}
+  .ev-ico,.ev-chips li{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ev-tile,.ev-sec{box-shadow:none;border-color:#ccd6e0;break-inside:avoid}
+  .ev-tile dt,.ev-sec h3{font-size:8pt}
+  .ev-tile dd{font-size:13pt}.ev-tile.muted dd{font-size:10pt}
+  .ev-chips li{font-size:10pt}
+  .ev-costs,.ev-note{font-size:10.5pt}
+  .ev-gallery{display:flex;flex-wrap:wrap;gap:4mm}
+  .ev-gallery img{max-width:60mm;max-height:55mm;object-fit:contain;border:1px solid #ccd6e0;border-radius:2mm;break-inside:avoid}
+  .ev-receipts .ev-gallery img{max-width:90mm;max-height:125mm}
+}
