@@ -1375,7 +1375,6 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   };
   const days = { maanantai: 'måndag', tiistai: 'tisdag', keskiviikko: 'onsdag', torstai: 'torsdag', perjantai: 'fredag', lauantai: 'lördag', sunnuntai: 'söndag' };
   const months = { tammikuuta: 'januari', helmikuuta: 'februari', maaliskuuta: 'mars', huhtikuuta: 'april', toukokuuta: 'maj', kesäkuuta: 'juni', heinäkuuta: 'juli', elokuuta: 'augusti', syyskuuta: 'september', lokakuuta: 'oktober', marraskuuta: 'november', joulukuuta: 'december' };
-  const greetings = { 'Hyvää yötä': 'God kväll', 'Hyvää huomenta': 'God morgon', 'Hyvää päivää': 'God dag', 'Hyvää iltaa': 'God kväll' };
   const bodyArticle = { 'sedan': 'en sedan', 'viistoperä': 'en halvkombi', 'farmari': 'en kombi', 'maastoauto / suv': 'en SUV', 'coupé': 'en coupé', 'tila-auto': 'en MPV', 'avolava': 'en pickup' };
   const LOW = {}; for (const k of Object.keys(D)) LOW[k.toLowerCase()] = lower(D[k]);
   const type = s => D[s] || s; // event types may be custom text; keep as-is when unknown
@@ -1410,7 +1409,6 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     [re('Raportti (AJ-[\\w-]+)'), (m, id) => 'Rapport ' + id],
     [re('Tulostettu ' + DATE), (m, d) => 'Utskriven ' + d],
     [re('Y-tunnus (\\S+) \\(esimerkki\\)'), (m, id) => 'FO-nummer ' + id + ' (exempel)'],
-    [re('(Hyvää yötä|Hyvää huomenta|Hyvää päivää|Hyvää iltaa)(?:, (.+))?\\.'), (m, g, n) => greetings[g] + (n ? ', ' + n : '') + '.'],
     [re('(.+), tervetuloa omaan talliin\\.'), (m, n) => 'Välkommen till ditt garage, ' + n + '.'],
     [re('SEURAAVA HUOLTO · (.+)'), (m, c) => 'NÄSTA SERVICE · ' + c],
     [re('Viimeistään ' + DATE + '(?: tai ' + N + ' km)?'), (m, d, k) => 'Senast ' + d + (k ? ' eller vid ' + k + ' km' : '')],

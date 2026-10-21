@@ -369,7 +369,6 @@
   const re = s => new RegExp('^' + s + '$');
   const days = { maanantai: 'Monday', tiistai: 'Tuesday', keskiviikko: 'Wednesday', torstai: 'Thursday', perjantai: 'Friday', lauantai: 'Saturday', sunnuntai: 'Sunday' };
   const months = { tammikuuta: 'January', helmikuuta: 'February', maaliskuuta: 'March', huhtikuuta: 'April', toukokuuta: 'May', kesäkuuta: 'June', heinäkuuta: 'July', elokuuta: 'August', syyskuuta: 'September', lokakuuta: 'October', marraskuuta: 'November', joulukuuta: 'December' };
-  const greetings = { 'Hyvää yötä': 'Good evening', 'Hyvää huomenta': 'Good morning', 'Hyvää päivää': 'Good afternoon', 'Hyvää iltaa': 'Good evening' };
   const plural = (n, one, many) => (String(n).trim() === '1' ? one : many);
   const typeEn = s => D[s] || s; // event types may be custom text; keep as-is when unknown
 
@@ -1138,7 +1137,6 @@
     [re('Raportti (AJ-[\\w-]+)'), (m, id) => 'Report ' + id],
     [re('Tulostettu ' + DATE), (m, d) => 'Printed ' + d],
     [re('Y-tunnus (\\S+) \\(esimerkki\\)'), (m, id) => 'Business ID ' + id + ' (example)'],
-    [re('(Hyvää yötä|Hyvää huomenta|Hyvää päivää|Hyvää iltaa)(?:, (.+))?\\.'), (m, g, n) => greetings[g] + (n ? ', ' + n : '') + '.'],
     [re('(.+), tervetuloa omaan talliin\\.'), (m, n) => 'Welcome to your garage, ' + n + '.'],
     [re('SEURAAVA HUOLTO · (.+)'), (m, c) => 'NEXT SERVICE · ' + c],
     [re('Viimeistään ' + DATE + '(?: tai ' + N + ' km)?'), (m, d, k) => 'Due by ' + d + (k ? ' or ' + k + ' km' : '')],
