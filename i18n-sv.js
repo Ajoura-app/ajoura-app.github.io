@@ -61,6 +61,7 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     'Ajettavaa jäljellä n.': 'Kvar att köra ca',
     'Aikaa jäljellä': 'Tid kvar',
     'Aikaa jäljellä n.': 'Tid kvar ca',
+    'jäljellä': 'kvar',
     'HUOLTO MYÖHÄSSÄ': 'SERVICE FÖRSENAD',
     'KATSASTUS MYÖHÄSSÄ': 'BESIKTNING FÖRSENAD',
     'SEURAAVA HUOLTO': 'NÄSTA SERVICE',

@@ -68,6 +68,7 @@
     'Ajettavaa jäljellä n.': 'Left to drive: about',
     'Aikaa jäljellä': 'Time left:',
     'Aikaa jäljellä n.': 'Time left: about',
+    'jäljellä': 'left',
     'HUOLTO MYÖHÄSSÄ': 'SERVICE OVERDUE',
     'KATSASTUS MYÖHÄSSÄ': 'INSPECTION OVERDUE',
     'SEURAAVA HUOLTO': 'NEXT SERVICE',
