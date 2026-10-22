@@ -31,16 +31,16 @@
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
     ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"],.fuel-cost,[data-quickfuel]'],
-    ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"]'],
+    ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"],.tab-bar a[href="#reports"]'],
     ['owner', 'asiakas', 'Omistajanvaihdos', 'Auton siirto uudelle omistajalle.', 'a[href^="#owner/"]'],
     ['tips', 'asiakas', 'Huoltovinkit', 'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.', '.tips-card'],
     ['calendar', 'asiakas', 'Kalenterimuistutukset', 'Huolto ja katsastus puhelimen kalenteriin.', '[data-ics]'],
     ['tyres', 'asiakas', 'Rengaskausimuistutus', 'Muistutus renkaiden vaihdosta syksyllä ja keväällä.', '.tyre-card,.tyre-chip'],
     ['import', 'asiakas', 'Merkinnät korjaamolta', 'Korjaamon lähettämän huoltomerkinnän tuonti.', '.r-import-box'],
-    ['share', 'asiakas', 'Jakolinkit', 'Sovelluksen ja huoltohistorian jakaminen linkkinä.', '[data-sale],.me-data:has([data-share-app])'],
-    ['help', 'asiakas', 'Apu-välilehti', 'Usein kysytyt kysymykset ja haku.', '.tab-bar a[href="#help"]'],
+    ['share', 'asiakas', 'Jakolinkit', 'Sovelluksen ja huoltohistorian jakaminen linkkinä.', '[data-sale],.me-data:has([data-share-app]),.menu-row[data-share-app]'],
+    ['help', 'asiakas', 'Ohjeet', 'Usein kysytyt kysymykset ja haku Valikossa.', '.menu-row[href="#help"]'],
     ['tutorial', 'asiakas', 'Opastus', 'Ensimmäisen käynnistyksen opas ja sen uusinta.', '[data-tutorial]'],
-    ['feedback', 'asiakas', 'Palaute', 'Palautelomake Minä-välilehdellä.', '.me-data:has(#feedback-form),.help-contact #feedback-form'],
+    ['feedback', 'asiakas', 'Palaute', 'Palautelomake Valikossa ja ohjeissa.', '.menu-row[href="#feedback"],.me-data:has(#feedback-form),.help-contact #feedback-form'],
     ['video', 'asiakas', 'Esittelyvideo', 'Video tervetulonäkymässä.', '.welcome-video'],
     ['sample', 'asiakas', 'Esimerkkiauto', 'Valmis esimerkkiauto tyhjässä tallissa.', '[data-sample]'],
     ['theme', 'asiakas', 'Tumma teema', 'Vaalean ja tumman ulkoasun valinta.', '.seg:has([data-pref="Teema"])'],
@@ -65,7 +65,7 @@
   function applyFeatures() {
     const off = FEATURES.filter(f => f[4] && !on(f[0]));
     style.textContent = off.map(f => f[4].split(',').map(s => `html.r-cust ${s}`).join(',') + '{display:none!important}').join('\n') +
-      (on('help') ? '' : '\nhtml.r-cust .tab-bar.four{grid-template-columns:repeat(3,1fr)}');
+      (on('report') ? '' : '\nhtml.r-cust .tab-bar.four{grid-template-columns:repeat(3,1fr)}');
     if (!on('theme') && document.documentElement.classList.contains('dark')) document.documentElement.classList.remove('dark');
   }
   document.documentElement.classList.add('r-cust');
@@ -96,7 +96,7 @@
 
   const shopViews = ['shop', 'shopnew', 'shopjob', 'shopedit', 'shopcars', 'shopcar', 'shopset'];
   const ownViews = [...shopViews, 'admin', 'tuo'];
-  const custOnly = { fuel: 'fuel', report: 'report', owner: 'owner', help: 'help' };
+  const custOnly = { fuel: 'fuel', report: 'report', reports: 'report', owner: 'owner', help: 'help', feedback: 'feedback' };
   function redirect(view, id) {
     const r = role();
     if (shopViews.includes(view)) {
@@ -250,7 +250,7 @@
       <div class="r-import-card"><div class="r-import-head"><span class="plate-badge" aria-hidden="true"><b>FIN</b>${esc(d.plate)}</span><span>${esc(d.car)}${d.year ? ' · vm. ' + d.year : ''}</span></div>
       <dl class="detail-list"><div><dt>TYÖ</dt><dd>${esc(e.type)} · ${fdate(e.date)}${e.km !== null ? ' · ' + num(e.km) + ' km' : ''}</dd></div>${e.items.length ? `<div><dt>TEHDYT TOIMENPITEET</dt><dd><ul class="done-list">${e.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></dd></div>` : ''}${e.parts.length ? `<div><dt>VARAOSAT</dt><dd><ul class="done-list">${e.parts.map(x => `<li>${esc(x.name)}${x.qty ? ' · ' + esc(x.qty) : ''}${x.price ? ' · ' + num(x.price) + ' €' : ''}</li>`).join('')}</ul></dd></div>` : ''}${e.cost ? `<div><dt>HINTA</dt><dd>${num(e.cost)} €</dd></div>` : ''}${e.note ? `<div><dt>KORJAAMON MUISTIINPANO</dt><dd>${esc(e.note)}</dd></div>` : ''}<div><dt>KORJAAMO</dt><dd>${esc(d.shop.name || '–')}${d.shop.phone ? ' · ' + esc(d.shop.phone) : ''}${d.shop.address ? '<br>' + esc(d.shop.address) : ''}</dd></div></dl></div>
       ${dup ? `<p class="success-note">✓ Tämä merkintä on jo autosi historiassa.</p><a class="app-button" href="#vehicle/${mine.id}">Avaa ${esc(mine.nick || mine.name)}</a>` : `<p class="app-subtitle">${mine ? `Merkintä lisätään autosi <strong>${esc(mine.nick || mine.name)}</strong> huoltohistoriaan.` : `Autoa ${esc(d.plate)} ei ole vielä tallissasi. Se lisätään uutena autona, ja voit tarkentaa mallin ja ulkonäön myöhemmin.`}</p><button class="app-button" type="button" data-r-import>Lisää huoltohistoriaan</button><a class="app-button secondary" href="#home">Ei nyt</a>`}
-      ${document.documentElement.classList.contains('standalone') ? '' : '<p class="app-fineprint">Käytätkö kotivalikkoon asennettua AJOURAa? Kopioi korjaamon linkki ja liitä se sovelluksessa kohtaan Minä → Merkintä korjaamolta.</p>'}`;
+      ${document.documentElement.classList.contains('standalone') ? '' : '<p class="app-fineprint">Käytätkö kotivalikkoon asennettua AJOURAa? Kopioi korjaamon linkki ja liitä se sovelluksessa kohtaan Valikko → Varmuuskopio ja tiedot → Merkintä korjaamolta.</p>'}`;
   }
 
   // ---- Feedback: sent to the team's Google Sheet (palaute-apps-script.gs) when features.json names it.
@@ -346,12 +346,13 @@
     const t = screen.querySelector('.app-top');
     if (t && !t.querySelector('.r-view-menu,.r-start')) { const label = t.querySelector('.demo-label'), html = view === 'welcome' ? viewMenu(role() === 'huolto' ? 'huolto' : role() === 'tiimi' ? 'omistajat' : 'asiakas') : startBtn; if (label) label.outerHTML = `<span class="r-top-right">${html}${label.outerHTML}</span>`; else t.insertAdjacentHTML('beforeend', html); }
     if (view === 'home' && noticeHtml() && t && !screen.querySelector('.r-notice')) t.insertAdjacentHTML('afterend', noticeHtml());
-    if (view === 'me' && !screen.querySelector('.r-role-box')) {
+    // Valikko → Varmuuskopio ja tiedot (#me): workshop entry under the backup card. Valikko → Asetukset: view choice.
+    if (view === 'me' && !screen.querySelector('.r-import-box')) {
       const anchor = [...screen.querySelectorAll('.me-data')].find(x => x.querySelector('[data-backup]'));
-      const box = `<div class="me-data r-import-box"><h3>Merkintä korjaamolta</h3><p>Sait korjaamolta huoltomerkinnän linkkinä? Liitä linkki tähän, niin työ lisätään autosi historiaan.</p><form class="app-form" id="r-paste-form" novalidate><label><span class="sr-only">Korjaamon linkki</span><input name="link" placeholder="https://…?huolto=…" autocomplete="off"></label><p class="error-note" role="alert"></p><button class="app-button secondary" type="submit">Avaa merkintä</button></form></div>
-        <div class="me-data r-role-box"><h3>Näkymä</h3><p>Asiakkaan, omistajien ja autohuollon näkymä valitaan aloitussivulta. Autosi ja merkintäsi pysyvät tallessa.</p><a class="app-button secondary" href="#welcome">Aloitussivulle</a></div>`;
+      const box = `<div class="me-data r-import-box"><h3>Merkintä korjaamolta</h3><p>Sait korjaamolta huoltomerkinnän linkkinä? Liitä linkki tähän, niin työ lisätään autosi historiaan.</p><form class="app-form" id="r-paste-form" novalidate><label><span class="sr-only">Korjaamon linkki</span><input name="link" placeholder="https://…?huolto=…" autocomplete="off"></label><p class="error-note" role="alert"></p><button class="app-button secondary" type="submit">Avaa merkintä</button></form></div>`;
       if (anchor) anchor.insertAdjacentHTML('afterend', box); else screen.querySelector('.screen-content')?.insertAdjacentHTML('beforeend', box);
     }
+    if (view === 'settings' && !screen.querySelector('.r-role-box')) screen.querySelector('.screen-content')?.insertAdjacentHTML('beforeend', `<div class="me-data r-role-box"><h3>Näkymä</h3><p>Asiakkaan, omistajien ja autohuollon näkymä valitaan aloitussivulta. Autosi ja merkintäsi pysyvät tallessa.</p><a class="app-button secondary" href="#welcome">Aloitussivulle</a></div>`);
   }
 
   // ---- Events --------------------------------------------------------------------------------------
@@ -401,7 +402,7 @@
   document.addEventListener('click', async ev => {
     const t = ev.target; if (!t.closest || !t.closest('#app-screen')) return;
     // Starting as a car owner from the start page leaves the workshop view.
-    if (t.closest('[data-welcome="guest"]') && role() === 'huolto') setRole('asiakas');
+    if (t.closest('[data-start]') && role() === 'huolto') setRole('asiakas');
     const r = t.closest('[data-r-role]');
     if (r) {
       const want = r.dataset.rRole;

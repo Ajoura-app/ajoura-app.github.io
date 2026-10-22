@@ -532,3 +532,27 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .app-form input[type=date]:not(.sheet-opt *){-webkit-appearance:none;appearance:none;max-width:100%;text-align:left}
 .app-form input[type=date]:not(.sheet-opt *)::-webkit-date-and-time-value{text-align:left;margin:0}
 }
+
+/* Valikko and Raportit tabs 22.10.2026 (v0.18): grouped rows like a phone's settings list, and the report list
+   reuses the garage row look. Screen only; printouts are unchanged. */
+@media screen{
+.menu-group{background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow);overflow:hidden;margin:0 0 6px}
+.menu-row{display:flex;align-items:center;gap:11px;width:100%;min-height:52px;padding:10px 12px;margin:0;background:none;border:0;border-top:1px solid var(--hairline);border-radius:0;color:var(--ink);font:inherit;text-align:left;cursor:pointer;-webkit-appearance:none;appearance:none}
+.menu-row:first-child{border-top:0}
+.menu-row:active{background:#f2f6fb}
+.menu-row .event-symbol{width:32px;height:32px;flex-shrink:0;display:grid;place-items:center;border-radius:10px;background:var(--soft-blue);color:var(--blue)}
+.menu-row .event-symbol svg{width:18px;height:18px}
+.menu-row>span:nth-child(2){min-width:0}
+.menu-row strong{display:block;font-size:12.5px;font-weight:650;letter-spacing:-.01em}
+.menu-row small{display:block;font-size:10px;color:#6b8198;margin-top:2px;line-height:1.4}
+.menu-row .chevron{margin-left:auto;padding-left:6px;color:#9aabbe;font-size:16px}
+.menu-h{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#6b7f95;margin:18px 4px 7px;font-weight:650}
+.menu-version{text-align:center;margin-top:18px}
+.report-pick{color:var(--ink)}
+.report-pick .row-info{justify-content:center}
+.reports-soon{margin-top:14px;padding:12px 14px;border:1px dashed #cfdbe8;border-radius:14px;color:#41566d}
+.reports-soon strong{font-size:12px;font-weight:650}
+.reports-soon p{font-size:10.5px;color:#62768a;margin:4px 0 0;line-height:1.55}
+.feedback-page{margin-top:6px}
+.app-heading+.me-data{margin-top:14px;padding-top:0;border-top:0}
+}
