@@ -524,3 +524,11 @@ a.ev-since:hover{border-color:#7fb2f3}
 .history-heading span{font-size:10px}
 .success-note{border-radius:12px;font-size:12px}
 }
+/* iPhone fix 22.10.2026 (v0.16): the native date field ignored the column width and let the whole screen pan
+   sideways. Draw it like the other fields, and never let the app screen move sideways. */
+@media screen{
+#app-screen{overflow-x:hidden}
+html.standalone body,html.fullscreen body{overflow-x:clip}
+.app-form input[type=date]:not(.sheet-opt *){-webkit-appearance:none;appearance:none;max-width:100%;text-align:left}
+.app-form input[type=date]:not(.sheet-opt *)::-webkit-date-and-time-value{text-align:left;margin:0}
+}
