@@ -564,9 +564,6 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 @media screen{
 .home-hero{position:relative;overflow:hidden;margin:2px 0 0;padding:16px 14px 18px;border-radius:20px;color:#fff;background:radial-gradient(120% 90% at 100% 0,#244f8f 0,transparent 62%),linear-gradient(165deg,#1b3157 0,#152846 48%,#0f1d35 100%);box-shadow:0 14px 28px -20px #0f1d35}
 .home-hero.has-alerts{padding-bottom:54px}
-.home-hero .today-scene{top:auto;bottom:-3px;right:-4px;width:56%;max-width:230px;opacity:.95}
-.home-hero .today-scene .sun{fill:#f1e2b8;opacity:.85}.home-hero .today-scene .far{fill:#2b4b7c}.home-hero .today-scene .near{fill:#223f6b}.home-hero .today-scene .snow{fill:#c9d8ec}.home-hero .today-scene .pines path{fill:#18305a}.home-hero .today-scene .road{stroke:#34557f}.home-hero .today-scene .road-line{stroke:#7f9cc4}
-.home-hero .today-scene:not(.winter) .far{fill:#264f63}.home-hero .today-scene:not(.winter) .near{fill:#1f4757}.home-hero .today-scene:not(.winter) .pines path{fill:#163a47}.home-hero .today-scene:not(.winter) .snow{fill:#3a6175}
 .hero-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .home-hero .app-heading{color:#fff;margin:0;font-size:22px}
 .hero-add{display:inline-flex;align-items:center;gap:3px;padding:6px 11px;border-radius:99px;background:#1464e8;color:#fff;font-size:10.5px;font-weight:650;white-space:nowrap;box-shadow:0 6px 14px -8px #1464e8}
@@ -635,6 +632,76 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 @container(max-width:300px){.home-hero{padding-inline:12px}.hero-status{padding-right:0}.gc-due{grid-template-columns:minmax(0,1fr)}.due-tile+.due-tile{border-left:0;border-top:1px solid var(--hairline);padding-left:0}}
 /* Dark theme inverts the whole app; turn the dark top and the light picture area back so they keep their colours. */
 html.dark .device-glass .home-hero,html.dark .device-glass .gc-pic{filter:invert(1) hue-rotate(180deg)}
-html.dark .device-glass .home-hero .today-scene,html.dark .device-glass .gc-pic img,html.dark .device-glass .gc-pic .car-render{filter:none!important}
-html.dark .device-glass .home-hero .today-scene{opacity:.95}
+html.dark .device-glass .gc-pic img,html.dark .device-glass .gc-pic .car-render{filter:none!important}
 }
+
+/* Look of Niklas's mockup 22.10.2026 (v0.19). One palette for the whole app: the colours below replace the earlier
+   near-identical blues and greys. The mockup's grey text (#748198) and orange (#DE8215) were darkened for small
+   text so it stays readable (contrast ≥ 4.5:1); the bright orange is kept for the icon circle. Screen only, so printouts keep their colours. */
+@media screen{:root{--navy:#15263f;--navy-end:#101b30;--blue:#1769f4;--blue-press:#1258da;--paper:#f5f8fc;--card:#fff;--ink:#152238;
+  --muted:#66768c;--hairline:#e5eaf1;--soft-blue:#ebf2fe;--notice-bg:#fff7ed;--notice-line:#f6dfc3;--orange:#de8215;
+  --orange-ink:#a85d0c;--warn:#b8650f;--ok:#27865a;--card-shadow:0 1px 2px #12284a0a,0 8px 22px -16px #12284a3d}}
+@media screen{
+/* Dark top: title and the add button, plain navy gradient as in the mockup. */
+.home-hero{padding:18px 16px 20px;border-radius:20px;background:linear-gradient(160deg,var(--navy) 0,#13233b 55%,var(--navy-end) 100%);box-shadow:0 16px 30px -22px var(--navy-end)}
+.home-hero.has-alerts{padding-bottom:52px}
+.home-hero .app-heading{font-size:23px;font-weight:700}
+.hero-add{gap:4px;padding:8px 12px;border-radius:11px;background:var(--blue);font-size:11px;box-shadow:none;transition:transform .12s,background-color .15s}
+.hero-add:hover,.hero-add:active{background:var(--blue-press)}
+.hero-status{padding-right:0}
+/* The orange notice under the dark top. */
+.home-alerts{margin:-34px 10px 0;background:var(--notice-bg);border-color:var(--notice-line);box-shadow:0 12px 24px -18px #8a4a0a55}
+.alert-row+.alert-row,.alerts-more .alert-row,.alerts-more summary{border-top-color:#f3e0c9}
+.alert-main{column-gap:11px;padding:12px 12px 12px 11px}
+.alert-ico{width:38px;height:38px;background:var(--orange);box-shadow:0 6px 14px -8px var(--orange)}.alert-ico svg{width:20px;height:20px}
+.alert-txt b{font-size:11px;font-weight:600;color:var(--orange-ink)}
+.alert-txt strong{font-size:13px}
+.alert-txt small{font-size:10px;color:#4f5f73}
+.alert-txt small .hl{font-weight:700;color:var(--orange-ink)}
+.alert-main .chevron{color:var(--orange)}
+.alerts-more summary{color:var(--orange-ink)}
+/* Vehicle cards: wide 16:7 picture, ⋯ menu on it, big name, next service and inspection side by side. */
+.garage-cards{gap:14px}
+.garage-cards+.app-button{margin-top:14px}
+.garage-card{position:relative;border-radius:18px;padding-bottom:14px}
+.gc-pic .car-stage,.gc-pic .car-photo{aspect-ratio:16/7}
+.gc-pic .car-stage{padding:8px 8% 2px;background:linear-gradient(180deg,#e6edf7 0,#f2f6fb 72%,#fff 100%)}
+.gc-head{padding:12px 14px 10px}
+.gc-name strong{font-size:17px;font-weight:700}
+.gc-name .row-meta{font-size:11px;color:var(--muted)}
+.gc-head .chevron{color:#7b8ca1}
+.gc-due{margin:0 14px}
+.due-tile{column-gap:9px;padding-top:11px}
+.due-ico{width:24px;height:24px;color:var(--ink)}.due-ico svg{width:21px;height:21px}
+.due-txt small{font-size:9.5px;color:var(--muted)}
+.due-txt strong{font-size:16px;font-weight:700}
+.due-sub,.due-tile .due-sub{font-size:9.5px;color:var(--muted)}
+.due-tile.soon .due-ico,.due-tile.late .due-ico{color:var(--ink)}
+.due-tile.soon strong{color:var(--warn)}
+.due-tile.est strong{font-size:16px}
+.garage-card .row-actions{margin:12px 14px 0;gap:8px}
+.garage-card .row-btn{min-height:40px;border-radius:12px;font-size:11.5px;transition:transform .12s,background-color .15s}
+.garage-card .row-btn.note{background:var(--soft-blue);border-color:transparent}
+.row-btn.fuel{background:var(--blue);border-color:var(--blue);box-shadow:0 8px 16px -10px var(--blue)}
+.row-btn.fuel:active{background:var(--blue-press)}
+.gc-menu{position:absolute;top:10px;right:10px;z-index:3}
+.gc-menu summary{list-style:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#ffffffeb;color:var(--ink);box-shadow:0 2px 8px -3px #12284a40;cursor:pointer;transition:transform .12s}
+.gc-menu summary::-webkit-details-marker{display:none}
+.gc-menu summary svg{width:18px;height:18px}
+.gc-menu[open] summary{background:#fff;box-shadow:0 0 0 2px var(--blue)}
+.gc-menu-list{position:absolute;right:0;top:38px;min-width:178px;padding:5px;background:#fff;border:1px solid var(--hairline);border-radius:14px;box-shadow:0 16px 32px -14px #12284a59;animation:menu-in .15s ease-out}
+.gc-menu-list a{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;color:var(--ink);font-size:12px;font-weight:600}
+.gc-menu-list a:active,.gc-menu-list a:hover{background:var(--soft-blue)}
+.gc-menu-list svg{width:17px;height:17px;flex-shrink:0;color:var(--blue)}
+/* Bottom tabs: white, lifted off the page by a light shadow; the chosen tab in blue. */
+.tab-bar{background:#fff;border-top-color:transparent;box-shadow:0 -1px 0 #12284a0d,0 -10px 24px -18px #12284a40}
+.tab-bar a{color:#687a90;font-weight:550}
+.tab-bar a[aria-current]{color:var(--blue);font-weight:650}
+/* Short, quiet motion: cards fade in, buttons give way a little when pressed. */
+@keyframes card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes menu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.home-alerts,.garage-card{animation:card-in .22s ease-out both}
+.garage-card:nth-child(2){animation-delay:.04s}.garage-card:nth-child(3){animation-delay:.08s}.garage-card:nth-child(n+4){animation-delay:.12s}
+.hero-add:active,.gc-menu summary:active,.alert-main:active,.garage-card .row-btn:active{transform:scale(.97)}
+}
+@media screen and (prefers-reduced-motion:reduce){.home-alerts,.garage-card,.gc-menu-list{animation:none}}
