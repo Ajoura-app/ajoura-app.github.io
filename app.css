@@ -491,3 +491,36 @@ a.ev-since:hover{border-color:#7fb2f3}
 }
 .ev-views{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:0 0 2px}
 .ev-views .ev-sec{margin-bottom:8px}
+/* Shared look 22.10.2026 (v0.15, from Niklas's mockup): flat background, white cards with a hairline border and a
+   soft shadow, one button and form-field style, a roomier tab bar and slightly larger small print. Screen only, so
+   printouts keep their own styles. Status colours (green ok, orange soon, red late) are unchanged. */
+:root{--hairline:#e2e8f0;--soft-blue:#edf4fd;--card-shadow:0 1px 2px #12284a0a,0 8px 22px -16px #12284a3d}
+@media screen{
+#app-screen,.device-glass,.home-bar{background:#f5f8fc}
+.vehicle-card,.garage-row,.reminder-card,.cost-line,.app-stats div,.upcoming,.notes-card,.fuel-link,.tips-card,.chart-card,.added-next,.method-card,.kind-card,.ev-tile,.ev-sec,.ev-since,.ev-nav-btn:not(.empty){background-color:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow)}
+.app-stats div,.ev-tile{border-radius:14px}
+.timeline-body,.memo,.faq,.att-set,.check-set{border-color:var(--hairline);border-radius:14px}
+.app-button{min-height:46px;border-radius:12px;font-size:13px;font-weight:650}
+.app-button.secondary{background:var(--soft-blue);color:var(--blue);box-shadow:inset 0 0 0 1px #d5e4f8}
+.app-button.secondary:hover{background:#e2edfc}
+.app-button.secondary:has(.soon-tag){background:#eef2f7;color:#5b6b80;box-shadow:none}
+.app-form input:not([type=radio]):not([type=checkbox]):not([type=file]):not([type=hidden]):not(.plate-field *):not(.part-row *),.app-form select:not(.part-row *),.app-form textarea,.help-search input{font-size:16px}
+.app-form input:is([type=text],[type=number],[type=date],[type=tel],[type=email],[type=password]):not(.plate-field *):not(.part-row *),.app-form select:not(.part-row *){min-height:46px}
+.app-form input:is([type=text],[type=number],[type=date],[type=tel],[type=email],[type=password]):not(.plate-field *),.app-form select,.app-form textarea{border-color:#d8e0ea;border-radius:12px}
+.app-form:not(.sheet-form) label{font-size:12px}
+.app-form .field-help{font-size:10px}
+.tab-bar{background:#fffffff2;border-top-color:var(--hairline)}
+.tab-bar a{gap:3px;font-size:10.5px;color:#73859a}
+.tab-bar a svg{width:22px;height:22px}
+.tab-bar a[aria-current]{color:var(--blue)}
+.app-heading{letter-spacing:-.03em}
+.app-greeting{font-size:12px}
+.app-subtitle{font-size:12px;line-height:1.6}
+.app-note{font-size:11px;line-height:1.6}
+.app-fineprint{font-size:10px!important}
+.app-back{font-size:12px}
+.history-heading h3{font-size:15px}
+.history-heading a{font-size:11px}
+.history-heading span{font-size:10px}
+.success-note{border-radius:12px;font-size:12px}
+}
