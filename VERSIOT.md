@@ -18,5 +18,7 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 | 0.11 | 22.10.2026 | `backup/2026-10-22-v0.11` (commit 5c4899c) | Kirjautuminen ja synkronointi pois käytöstä, tietosuojatekstit todellisuutta vastaaviksi, kellonaikatervehdys pois, huoltopalkin liukuva väri, merkintäsivu uudistettu (edellinen ja seuraava huolto, selaus, tulostus). |
 | 0.14 | 22.10.2026 | `backup/2026-10-22-v0.14` (commit c95b07b) | Versionumeron nosto (0.12 ja 0.13 ohitettiin). |
 | 0.15 | 22.10.2026 | `backup/2026-10-22-v0.15` (commit 18b43d1) | Yhteinen ilme: puhelimen oma fontti, kortit, painikkeet, lomakekentät, alavalikko. |
-| 0.16 | 22.10.2026 | `backup/2026-10-22-v0.16` (commit 847f67e, sama sisältö kuin 1834025) | iPhonen päivämääräkenttä ei enää levitä näkymää sivusuunnassa. **Tämä on nyt julkaistu versio**: 0.17 palautettiin tähän Niklaksen pyynnöstä. |
-| 0.17 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.17-peruttu` (commit 95e13aa) | Etusivun uusi ilme (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa, jos siihen halutaan palata. Seuraava uusi versio on 0.18. |
+| 0.16 | 22.10.2026 | `backup/2026-10-22-v0.16` (commit 847f67e, sama sisältö kuin 1834025) | iPhonen päivämääräkenttä ei enää levitä näkymää sivusuunnassa. 0.17 palautettiin tähän Niklaksen pyynnöstä. |
+| 0.17 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.17-peruttu` (commit 95e13aa) | Etusivun uusi ilme (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa, jos siihen halutaan palata. |
+| 0.18 | 22.10.2026 | `backup/2026-10-22-v0.18` (commit 8de7262, sama sisältö kuin 3b3693f) | Alavalikko Koti, Ajoneuvot, Raportit, Valikko; nimikysely pois. **Tämä on nyt julkaistu versio**: 0.19 palautettiin tähän Niklaksen pyynnöstä. |
+| 0.19 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.19-peruttu` (commit 896663e) | Etusivu ja Ajoneuvot havainnekuvan ilmeeseen (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa. Seuraava uusi versio on 0.20. |
