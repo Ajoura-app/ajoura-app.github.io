@@ -304,10 +304,11 @@
   // Brand and model search: typing "octa" offers "Škoda Octavia"; accents and case don't matter.
   const fold=t=>String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
   function makeMatches(q){const f=fold(q);if(!f)return [];const out=[],words=f.split(' ');
-    for(const b of Models.brands){const fb=fold(b);if(fb.startsWith(f)||(f.length>1&&fb.includes(f)))out.push({brand:b,model:'',rank:fb.startsWith(f)?0:2});
+    // A make can also be found by its other name (SsangYong = KGM), see AjouraModels.alias.
+    for(const b of Models.brands){const names=[b,...((Models.alias||{})[b]||[])].map(fold),hit=names.some(n=>n.startsWith(f)),fb=names.join(' ');if(hit||(f.length>1&&fb.includes(f)))out.push({brand:b,model:'',rank:hit?0:2});
       const bw=fb.split(' '),mw=words.filter(w=>!bw.some(x=>x.startsWith(w)));
       for(const m of Models.models(b)){if(/^Muu /.test(m.name))continue;const fm=fold(m.name),full=fb+' '+fm,fw=fm.split(' ');if(!words.every(w=>full.includes(w))||!mw.every(w=>fm.includes(w)))continue;
-        out.push({brand:b,model:m.name,rank:fm.startsWith(f)||full.startsWith(f)||(mw.length&&mw.every(w=>fw.some(x=>x.startsWith(w))))?1:3});}}
+        out.push({brand:b,model:m.name,rank:fm.startsWith(f)||names.some(n=>(n+' '+fm).startsWith(f))||(mw.length&&mw.every(w=>fw.some(x=>x.startsWith(w))))?1:3});}}
     return out.sort((a,b)=>a.rank-b.rank||a.brand.localeCompare(b.brand,'fi')||a.model.localeCompare(b.model,'fi')).slice(0,8);}
   function showMatches(input){const box=input.parentElement.querySelector('.make-results'),list=makeMatches(input.value);
     box.innerHTML=list.length?list.map(r=>`<button type="button" role="option" data-pick-brand="${escape(r.brand)}" data-pick-model="${escape(r.model)}">${escape(r.brand)}${r.model?' <strong>'+escape(r.model)+'</strong>':' <small>· kaikki mallit</small>'}</button>`).join(''):input.value.trim()?'<p>Ei osumia. Valitse alta “Muu merkki…”.</p>':'';}
@@ -381,7 +382,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.21 (testiversio)';
+  const appVersion='0.22 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
