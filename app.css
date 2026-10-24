@@ -556,3 +556,17 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .feedback-page{margin-top:6px}
 .app-heading+.me-data{margin-top:14px;padding-top:0;border-top:0}
 }
+
+/* Tyre season reminder 24.10.2026 (v0.20): a compact row like the Valikko rows instead of a tall card with small
+   legal text. Screen only; printouts are unchanged. */
+@media screen{
+.tyre-row{display:flex;align-items:center;gap:11px;margin-top:12px;padding:10px 12px;min-height:52px;background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow);color:var(--ink);text-decoration:none}
+.tyre-row:active{background:#f2f6fb}
+.tyre-row .event-symbol{width:32px;height:32px;flex-shrink:0;display:grid;place-items:center;border-radius:10px;background:var(--soft-blue);color:var(--blue)}
+.tyre-row .event-symbol svg{width:18px;height:18px}
+.tyre-row .tyre-txt{flex:1;min-width:0}
+.tyre-row strong{display:block;font-size:12.5px;font-weight:650;letter-spacing:-.01em;line-height:1.35}
+.tyre-row .tyre-n{font-weight:500;color:#66768c}
+.tyre-row small{display:block;font-size:10.5px;color:#66768c;margin-top:2px;line-height:1.45}
+.tyre-row .chevron{margin-left:auto;padding-left:4px;color:#9aabbe;font-size:16px}
+}

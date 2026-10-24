@@ -219,8 +219,11 @@
   function tyreInfo(){const t=today(),m=Number(t.slice(5,7)),d=Number(t.slice(8,10));
     const winter=(m===10&&d>=1)||m===11,spring=(m===3&&d>=15)||m===4;if(!winter&&!spring)return null;
     const since=t.slice(0,4)+(winter?'-09-01':'-03-01'),own=cars.filter(c=>!c.sample&&isCar(c)),todo=own.filter(c=>!c.events.some(e=>e.type==='Renkaiden vaihto'&&e.date>=since));return todo.length?{winter,todo}:null;}
-  function tyreSeason(){const s=tyreInfo();if(!s)return '';const {winter,todo}=s;
-    const c=todo[0];return `<a class="reminder-card tyre-card" id="tyre-card" href="#add/${c.id}"><span class="event-symbol" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">${winter?'TALVIRENKAIDEN AIKA':'KESÄRENKAIDEN AIKA'}</span><strong>${winter?'Talvirenkaat alle, kun keli muuttuu talviseksi':'Nastarenkaat pois maaliskuun lopussa'}</strong><small>${winter?'Talvirenkaat ovat pakolliset marras–maaliskuussa vain, jos sää tai keli sitä edellyttää. Silloin pääurien syvyyden pitää olla vähintään 3 mm. Nastarenkaita saa käyttää 1.11.–31.3. ja muulloinkin, jos keli vaatii.':'Nastarenkaiden käyttöaika päättyy 31.3. Sen jälkeen niitä saa käyttää vain, jos keli vaatii.'} Kirjaa vaihto, niin muistat mitkä renkaat ovat alla${todo.length>1?' ('+todo.length+' autoa)':''}.</small></div></a>`;}
+  // Compact row (v0.20, 24.10.2026, Niklas): the old card was tall with small legal text. Now one line of the rule in
+  // the law's own words. Tapping still opens a new entry for the first vehicle. Keep the id and the tyre-card class:
+  // the "Talvirenkaat" chip scrolls to the id and the feature switch in roles.js hides the class.
+  function tyreSeason(){const s=tyreInfo();if(!s)return '';const {winter,todo}=s,n=todo.length;
+    return `<a class="tyre-card tyre-row" id="tyre-card" href="#add/${todo[0].id}"><span class="event-symbol" aria-hidden="true">${svg(icons.snow)}</span><span class="tyre-txt"><strong><span>${winter?'Talvirenkaiden aika':'Kesärenkaiden aika'}</span>${n>1?` <span class="tyre-n">· <span>${n}</span> <span>autoa</span></span>`:''}</strong><small>${winter?'Pakolliset 1.11.–31.3., jos sää tai keli sitä edellyttää.':'Nastarenkaita saa käyttää 31.3. asti, sen jälkeen vain jos sää tai keli sitä edellyttää.'}</small></span><span class="chevron" aria-hidden="true">›</span></a>`;}
   // One line per garage card: what is due next for this vehicle, so an owner of several cars sees at a glance which one needs attention.
   function carStatus(c){const d=dueDates(c).sort((a,b)=>a.due.localeCompare(b.due))[0],t=today();
     if(d){const late=d.due<t||(d.km!==null&&c.km>=d.km);return `<span class="car-due${late?' late':d.due<=addMonths(t,1)?' soon':''}">${late?d.what+' · myöhässä':d.what+' · '+date(d.due)}</span>`;}
@@ -379,7 +382,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.18 (testiversio)';
+  const appVersion='0.20 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
