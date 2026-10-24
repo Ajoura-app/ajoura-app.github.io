@@ -155,7 +155,6 @@
   const iconFor={'Huolto':'wrench','Vuosihuolto':'wrench','Moottoriöljyn vaihto':'oil','Ilmansuodattimen vaihto':'filter','Renkaiden vaihto':'tyre','Katsastus':'inspection','Jarruhuolto':'brake','Korjaus':'repair','Osan vaihto':'part','Mittarilukeman päivitys':'gauge','Omistajanvaihdos':'user'};
   const eventIcon=type=>svg(icons[iconFor[type]||'note']);
   const kmPart=(e,c)=>e.km===null?'':` · ${number(e.km)} ${c?ku(c):'km'}`;
-  const eventRow=(c,e,showCar)=>`<li><a class="event-row" href="#event/${c.id}/${e.id}"><span class="event-symbol" aria-hidden="true">${eventIcon(e.type)}</span><span><strong>${escape(e.type)}</strong><small>${showCar?escape(carName(c))+' · ':''}${date(e.date)}${kmPart(e,c)}</small></span><span class="chevron" aria-hidden="true">›</span></a></li>`;
   // Bottom tabs (22.10.2026): Koti, Ajoneuvot, Raportit and Valikko. Settings, backup, help and feedback open from
   // Valikko as sub-pages, and the Valikko tab stays lit on them. Old #me and #help links still work.
   const menuViews=['menu','me','help','settings','feedback'],tabViews=['home','vehicles','vehicle','event','reports',...menuViews];
@@ -266,9 +265,9 @@
     return `<section class="today-card" aria-label="Tänään huomioitavaa">${scene()}<div class="today-top"><span class="today-bell" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">TÄNÄÄN HUOMIOITAVAA</span>${headline}<p>${sub}</p></div></div><div class="today-chips n${chips.length}">${chips.join('')}</div></section>`;}
   function home(){
     if(!cars.length)return `${top()}<h2 class="app-heading">Oma talli</h2>${emptyGarage()}`;
-    const year=today().slice(0,4),all=cars.flatMap(c=>c.events.map(e=>({c,e}))),latest=all.sort((a,b)=>newest(a.e,b.e)).slice(0,3),rows=cars.map(c=>({c,d:dueInfo(c)}));
+    const year=today().slice(0,4),rows=cars.map(c=>({c,d:dueInfo(c)}));
     const backupCard=backupDue()?`<div class="reminder-card backup-due"><span class="event-symbol" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">VARMUUSKOPIO</span><strong>${stamp(backupKey)?'Edellisestä varmuuskopiosta on yli kuukausi':'Ota ensimmäinen varmuuskopio'}</strong><small>Tiedot ovat vain tässä puhelimessa. Tallenna ne tiedostoon, niin ne säilyvät, vaikka puhelin vaihtuisi tai hajoaisi.</small><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div>`:'';
-    return `${top()}<h2 class="app-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading"><h3>Oma talli</h3><a href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${tyreSeason()}${backupCard}<div class="history-heading"><h3>Viimeisimmät tapahtumat</h3><span>${cars.every(isCar)?'Kaikki autot':'Kaikki ajoneuvot'}</span></div>${latest.length?`<ul class="event-list">${latest.map(x=>eventRow(x.c,x.e,true)).join('')}</ul>`:'<p class="app-empty">Ei vielä tapahtumia. Paina ajoneuvon kohdalla + Merkintä ja lisää ensimmäinen.</p>'}`;
+    return `${top()}<h2 class="app-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading"><h3>Oma talli</h3><a href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${tyreSeason()}${backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   const grades=c=>c.fuel==='Diesel'?['Diesel','HVO100']:c.fuel==='Kaasu'?['Biokaasu','Maakaasu']:c.fuel==='Sähkö'?[]:['95 E10','98 E5','E85'];
@@ -382,7 +381,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.20 (testiversio)';
+  const appVersion='0.21 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
