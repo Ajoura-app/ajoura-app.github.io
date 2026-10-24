@@ -20,5 +20,9 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 | 0.15 | 22.10.2026 | `backup/2026-10-22-v0.15` (commit 18b43d1) | Yhteinen ilme: puhelimen oma fontti, kortit, painikkeet, lomakekentät, alavalikko. |
 | 0.16 | 22.10.2026 | `backup/2026-10-22-v0.16` (commit 847f67e, sama sisältö kuin 1834025) | iPhonen päivämääräkenttä ei enää levitä näkymää sivusuunnassa. 0.17 palautettiin tähän Niklaksen pyynnöstä. |
 | 0.17 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.17-peruttu` (commit 95e13aa) | Etusivun uusi ilme (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa, jos siihen halutaan palata. |
-| 0.18 | 22.10.2026 | `backup/2026-10-22-v0.18` (commit 8de7262, sama sisältö kuin 3b3693f) | Alavalikko Koti, Ajoneuvot, Raportit, Valikko; nimikysely pois. **Tämä on nyt julkaistu versio**: 0.19 palautettiin tähän Niklaksen pyynnöstä. |
-| 0.19 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.19-peruttu` (commit 896663e) | Etusivu ja Ajoneuvot havainnekuvan ilmeeseen (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa. Seuraava uusi versio on 0.20. |
+| 0.18 | 22.10.2026 | `backup/2026-10-22-v0.18` (commit 8de7262, sama sisältö kuin 3b3693f) | Alavalikko Koti, Ajoneuvot, Raportit, Valikko; nimikysely pois. 0.19 palautettiin tähän Niklaksen pyynnöstä. |
+| 0.19 (peruttu) | 22.10.2026 | `backup/2026-10-22-v0.19-peruttu` (commit 896663e) | Etusivu ja Ajoneuvot havainnekuvan ilmeeseen (ulkoasun pala 2/5). Peruttiin samana iltana, mutta on tallessa. |
+| 0.20 | 24.10.2026 | `backup/2026-10-24-v0.20` (commit be153f1) | Tiivis rengasmuistutus etusivulle. |
+| 0.21 | 24.10.2026 | `backup/2026-10-24-v0.21` (commit 0256a8e) | Viimeisimmät tapahtumat poistettu etusivulta. |
+| 0.22 | 24.10.2026 | `backup/2026-10-24-v0.22` (commit 96fadfe) | Puuttuvat automerkit ja pakettiautomallit lisätty. |
+| 0.23 | 24.10.2026 | `backup/2026-10-24-v0.23` (commit 920fb61) | Kuvat muille ajoneuvoille tyypin mukaan. **Tämä on nyt julkaistu versio.** |
