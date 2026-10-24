@@ -232,11 +232,20 @@
   // Model drawings made with an image generator (white car on white, facing right). The drawn car stays as the
   // fallback until the drawing has loaded; then the background is cut out and the body tinted to the chosen colour.
   // An already tinted drawing is placed straight away, so re-rendering (e.g. picking another body style) never flashes.
-  const photo = (url, c, f) => { const u = String(url).replace(/"/g, ''), ready = done.get(u + c);
-    return `<image class="car-model-img" x="16" y="22" width="368" height="130" preserveAspectRatio="xMidYMax meet" ` +
-      (ready ? `href="${ready}" data-done="1"` : 'opacity="0"') + ` data-src="${u}" data-c="${c}" data-d="${[f.L, f.WB, f.fo, f.wd].join(',')}"/>`; };
+  // box = where the picture sits in the 400×170 frame. f.lo = brightness where the paint tint starts: other vehicles
+  // (vehicles.js) use a higher value, so chrome and grey parts stay grey and only the white paint takes the colour.
+  const photo = (url, c, f, box = [16, 22, 368, 130]) => { const u = String(url).replace(/"/g, ''), ready = done.get(u + c);
+    return `<image class="car-model-img" x="${box[0]}" y="${box[1]}" width="${box[2]}" height="${box[3]}" preserveAspectRatio="xMidYMax meet" ` +
+      (ready ? `href="${ready}" data-done="1"` : 'opacity="0"') + ` data-src="${u}" data-c="${c}" data-d="${[f.L, f.WB, f.fo, f.wd].concat(f.lo ? [f.lo] : []).join(',')}"/>`; };
   const bases = new Map(), tints = new Map(), done = new Map();
   const load = url => new Promise((ok, fail) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => ok(im); im.onerror = fail; im.src = url; });
+  // Pictures of other vehicles (vehicles.js) are softer than the car drawings: blur the paint weights so compression
+  // blotches don't turn into patchy paint. (Their light cut-out fringe is shaved off when the files are made.)
+  const smoothPaint = (weight, w, h) => {
+    const tmp = new Float32Array(w * h), r = 2, span = 2 * r + 1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let k = -r; k <= r; k++) s += weight[y * w + Math.min(w - 1, Math.max(0, x + k))]; tmp[y * w + x] = s / span; }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let k = -r; k <= r; k++) s += tmp[Math.min(h - 1, Math.max(0, y + k)) * w + x]; const i = y * w + x; weight[i] = Math.round(s / span); }
+  };
   // Removes the white background, finds the wheels and works out how strongly each pixel takes the paint colour.
   const prepare = (url, d) => {
     if (!bases.has(url)) bases.set(url, load(url).then(im => {
@@ -271,7 +280,7 @@
       for (let i = 0; i < n; i++) if (px[i * 4 + 3]) { const x = i % w, y = (i - x) / w; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
       if (x1 - x0 < w * 0.4) throw new Error('no car');
       // Wheels: best-fitting dark tyre circle near where the model's wheelbase and overhang put them.
-      const [L, WB, fo, wd] = String(d).split(',').map(Number), cw = x1 - x0, wheels = [];
+      const [L, WB, fo, wd, lo = 175] = String(d).split(',').map(Number), cw = x1 - x0, wheels = [];
       const dark = (x, y) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= w || y >= h) return 0; const i = (y * w + x) * 4; return px[i + 3] && Math.min(px[i], px[i + 1], px[i + 2]) < 110 ? 1 : 0; };
       if (L > 0 && WB > 0 && wd > 0) for (const c0 of [x1 - fo / L * cw, x1 - (fo + WB) / L * cw]) {
         let best = null;
@@ -290,11 +299,12 @@
       for (let i = 0; i < n; i++) {
         if (!px[i * 4 + 3]) continue;
         const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2], mn = Math.min(r, g, b);
-        if (Math.max(r, g, b) - mn >= 22 || mn <= 175) continue;
+        if (Math.max(r, g, b) - mn >= 22 || mn <= lo) continue;
         const x = i % w, y = (i - x) / w;
         if (wheels.some(([, a, bb, rr]) => (x - a) ** 2 + (y - bb) ** 2 < rr * rr)) continue;
-        weight[i] = Math.round(Math.min(1, (mn - 175) / 55) * 255);
+        weight[i] = Math.round(Math.min(1, (mn - lo) / (230 - lo)) * 255);
       }
+      if (lo !== 175) smoothPaint(weight, w, h);
       return { img, weight, box: [x0, y0, x1 - x0 + 1, y1 - y0 + 1], w, h };
     }));
     return bases.get(url);
@@ -341,7 +351,7 @@
     ['Valkoinen', '#eef1f4'], ['Hopea', '#b9c1ca'], ['Harmaa', '#6b737c'], ['Musta', '#1f2329'],
     ['Sininen', '#1e4f9c'], ['Punainen', '#a8232d'], ['Vihreä', '#2f5b45'], ['Beige', '#c8b79a']
   ];
-  window.AjouraCar = { render, hydrate, bodies: Object.keys(dims), names, colors };
+  window.AjouraCar = { render, hydrate, photo, bodies: Object.keys(dims), names, colors };
   document.querySelectorAll('[data-car-render]').forEach(el => {
     const d = String(el.dataset.d || '').split(',').map(Number), form = d.length === 4 && d.every(n => n > 0) ? { L: d[0], WB: d[1], fo: d[2], wd: d[3] } : undefined;
     el.innerHTML = render(el.dataset.carRender, el.dataset.color, el.dataset.label, { size: el.dataset.size, year: el.dataset.year, img: form && el.dataset.img, dimsOf: form });

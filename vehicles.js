@@ -202,14 +202,31 @@
     return s;
   }
   const DRAW = { mc: motorcycle, moped, atv, sled, boat, tractor, other };
+  // One picture per type (0.23): white vehicle, background removed, file ajoneuvokuvat/<kind>-<type>.webp. Made with an
+  // image generator from one reference sheet, so prototype quality. car-render.js tints it to the chosen colour like the
+  // car model images; the drawing stays underneath as the fallback (offline before first view, file missing).
+  // The sailboat has no picture yet (the generated one was cropped badly), so it keeps the drawing.
+  const PICS = { mc: ['street', 'sport', 'custom', 'touring', 'adventure', 'cross'], moped: ['scooter', 'moped', 'light'], microcar: ['hatchback', 'pickup'],
+    atv: ['atv', 'utv'], sled: ['trail', 'utility', 'mountain'], boat: ['open', 'cabin', 'small', 'jet'], tractor: ['farm', 'garden'], other: ['engine', 'trailer'] };
+  const pic = (k, t) => (PICS[k] || []).includes(t) ? `ajoneuvokuvat/${k}-${t}.webp` : '';
   function render(kindId, t, color, label) {
+    const C = window.AjouraCar, c = /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#b9c1ca', tt = types(kindId).includes(t) ? t : types(kindId)[0];
+    const url = C && C.photo ? pic(kindId, tt) : '', open = `<svg class="car-render kind-render" viewBox="0 0 400 170" role="img" aria-label="${label || 'Tyylitelty kuva'}" xmlns="http://www.w3.org/2000/svg">`;
+    let own;
     // A microcar is a very short car: car-render.js draws it from microcar dimensions.
-    if (kindId === 'microcar' && window.AjouraCar) return window.AjouraCar.render(t === 'pickup' ? 'pickup' : 'hatchback', color, label, { size: 'a', dims: t === 'pickup' ? [3.0, 1.55, 1.9] : [2.75, 1.52, 1.75] });
-    const id = 'v' + (++seq), c = /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#b9c1ca', fn = DRAW[kindId] || other;
-    const tt = types(kindId).includes(t) ? t : types(kindId)[0];
-    return `<svg class="car-render kind-render" viewBox="0 0 400 170" role="img" aria-label="${label || 'Tyylitelty kuva'}" xmlns="http://www.w3.org/2000/svg">${defs(id, c)}${fn(id, tt, `url(#vp${id})`)}</svg>`;
+    if (kindId === 'microcar' && C) {
+      own = C.render(tt === 'pickup' ? 'pickup' : 'hatchback', color, label, { size: 'a', dims: tt === 'pickup' ? [3.0, 1.55, 1.9] : [2.75, 1.52, 1.75] });
+      if (!url) return own;
+      own = own.replace('<svg class="car-render"', '<svg aria-hidden="true"');
+    } else {
+      const id = 'v' + (++seq), fn = DRAW[kindId] || other;
+      own = defs(id, c) + fn(id, tt, `url(#vp${id})`);
+      if (!url) return open + own + '</svg>';
+    }
+    // lo 190: mainly the white paint takes the colour; darker grey parts stay as they are (190 gave the most even paint).
+    return open + `<g class="car-own" display="none">${own}</g>` + C.photo(url, c, { L: 0, WB: 0, fo: 0, wd: 0, lo: 190 }, [20, 10, 360, 142]) + '</svg>';
   }
-  // A small icon for the kind picker: the drawing itself, in a neutral colour.
-  const icon = id => id === 'car' ? '' : render(id, types(id)[0], '#5a86c5', '');
+  // A small icon for the kind picker: the first type's picture, white like the car on the Auto card.
+  const icon = id => id === 'car' ? '' : render(id, types(id)[0], '#eef1f4', '');
   window.AjouraKinds = { list: KINDS, kind, types, typeName, brands, models, render, icon, unit: id => kind(id).unit };
 })();
