@@ -292,7 +292,7 @@
     const changed = Object.keys(local.features).length + (local.notice !== undefined ? 1 : 0);
     const A = window.AjouraApp, cars = A ? A.cars().filter(c => !c.sample) : [], events = cars.reduce((s, c) => s + c.events.length, 0);
     const rows = g => SHOWN.filter(f => f[1] === g).map(([k, , name, help]) => { const mod = k in local.features; return `<label class="r-feat"><span><strong>${name}${mod ? ' <small class="r-mod">muutettu</small>' : ''}</strong><small>${help}</small></span><input type="checkbox" role="switch" data-r-feat="${k}"${on(k) ? ' checked' : ''}></label>`; }).join('');
-    return `${top('YLLÄPITO')}<p class="app-greeting">Hei Hannes ja Niklas.</p><h2 class="app-heading">Ylläpidon näkymä</h2>${adminNote ? `<p class="success-note" role="status">${esc(adminNote)}</p>` : ''}
+    return `${top('YLLÄPITO')}<h2 class="app-heading">Ylläpidon näkymä</h2>${adminNote ? `<p class="success-note" role="status">${esc(adminNote)}</p>` : ''}
       <p class="mini-label">KATSO SOVELLUSTA</p><div class="r-views"><a href="#home">${svg(ic.user)}<strong>Asiakas</strong><small>Asiakkaan sovellus</small></a>${SHOP_ENABLED ? `<a href="#shop">${svg(ic.wrench)}<strong>Autohuolto</strong><small>Korjaamon työkalut</small></a>` : ''}<a href="#welcome">${svg(ic.car)}<strong>Aloitus</strong><small>Ensimmäinen näkymä</small></a></div>
       <p class="r-help">Ylläpitäjinä näette kaikki näkymät. Yläkulman Ylläpito-merkistä pääsette aina takaisin tänne.</p>
       ${feedbackBox()}
