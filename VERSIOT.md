@@ -26,4 +26,5 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 | 0.21 | 24.10.2026 | `backup/2026-10-24-v0.21` (commit 0256a8e) | Viimeisimmät tapahtumat poistettu etusivulta. |
 | 0.22 | 24.10.2026 | `backup/2026-10-24-v0.22` (commit 96fadfe) | Puuttuvat automerkit ja pakettiautomallit lisätty. |
 | 0.23 | 24.10.2026 | `backup/2026-10-24-v0.23` (commit 920fb61) | Kuvat muille ajoneuvoille tyypin mukaan. |
-| 0.24 | 25.10.2026 | `backup/2026-10-25-v0.24` (commit c56e759) | Autohuollon näkymä piilotettu (koodi tallessa, palautus: `SHOP_ENABLED` roles.js:ssä), Omistajat → Ylläpito, ylläpidon tervehdys pois. **Tämä on nyt julkaistu versio.** |
+| 0.24 | 25.10.2026 | `backup/2026-10-25-v0.24` (commit c56e759) | Autohuollon näkymä piilotettu (koodi tallessa, palautus: `SHOP_ENABLED` roles.js:ssä), Omistajat → Ylläpito, ylläpidon tervehdys pois. |
+| 0.25 | 25.10.2026 | `backup/2026-10-25-v0.25` (commit c761a22) | Myöhässä olevan huollon tila selkeäksi: ei enää "0 % jäljellä", ylittynyt raja ja toinen raja omilla riveillään (esim. myöhässä 186 pv, ajettavaa n. 800 km). **Tämä on nyt julkaistu versio.** |
