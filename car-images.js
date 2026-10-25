@@ -1089,5 +1089,50 @@ window.AjouraImages = (() => {
     const f = files[[brand, model, body, from].join('|')];
     return f ? (/^https?:|^\//.test(f) ? f : base + f) : undefined;
   };
-  return { get, files };
+  // Brand picker (0.26): one small picture per make, cut from the drawing of its best-known model and kept in our
+  // own repo (merkkikuvat/, about 6 kB each). Makes without a picture show their name only.
+  const brands = {
+    "Alfa Romeo": "alfa-romeo.webp",
+    "Audi": "audi.webp",
+    "BMW": "bmw.webp",
+    "BYD": "byd.webp",
+    "Chevrolet": "chevrolet.webp",
+    "Chrysler": "chrysler.webp",
+    "Citroën": "citroen.webp",
+    "Cupra": "cupra.webp",
+    "Dacia": "dacia.webp",
+    "Daihatsu": "daihatsu.webp",
+    "Fiat": "fiat.webp",
+    "Ford": "ford.webp",
+    "Honda": "honda.webp",
+    "Hyundai": "hyundai.webp",
+    "Jaguar": "jaguar.webp",
+    "Jeep": "jeep.webp",
+    "Kia": "kia.webp",
+    "Lada": "lada.webp",
+    "Land Rover": "land-rover.webp",
+    "Lexus": "lexus.webp",
+    "Mazda": "mazda.webp",
+    "Mercedes-Benz": "mercedes-benz.webp",
+    "MG": "mg.webp",
+    "Mini": "mini.webp",
+    "Mitsubishi": "mitsubishi.webp",
+    "Nissan": "nissan.webp",
+    "Opel": "opel.webp",
+    "Peugeot": "peugeot.webp",
+    "Polestar": "polestar.webp",
+    "Porsche": "porsche.webp",
+    "Renault": "renault.webp",
+    "Saab": "saab.webp",
+    "Seat": "seat.webp",
+    "Subaru": "subaru.webp",
+    "Suzuki": "suzuki.webp",
+    "Tesla": "tesla.webp",
+    "Toyota": "toyota.webp",
+    "Volkswagen": "volkswagen.webp",
+    "Volvo": "volvo.webp",
+    "Škoda": "skoda.webp"
+  };
+  const brand = b => brands[b] ? 'merkkikuvat/' + brands[b] : undefined;
+  return { get, files, brand };
 })();

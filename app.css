@@ -580,3 +580,35 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .row-status.late .row-txt small.lim{color:#4f5f72}
 .row-status.late .row-txt small+small{margin-top:1px}
 }
+/* Brand picker 0.26: picture tiles (merkkikuvat/), Suosituimmat first, the full A–Ö list behind "Kaikki merkit",
+   "Muu merkki…" last. The chosen make collapses to one row with a Vaihda button. Text ≥ 11 px, contrast ≥ 4.5:1. */
+@media screen{
+.brand-picker{border:0;padding:0;margin:0 0 14px;min-width:0;position:relative}
+.brand-picker legend{font-size:11px;font-weight:600;padding:0;margin-bottom:6px}
+.bp-head{margin:0 0 6px;font-size:11px;font-weight:600;color:#4f5f72}
+.brand-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.brand-tile{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;padding:5px 5px 6px;border:1px solid #dbe5ef;border-radius:12px;background:#fff;color:#15263f;font:inherit;cursor:pointer;transition:border-color .2s,background .2s,transform .15s ease;-webkit-tap-highlight-color:transparent}
+.brand-tile:active{transform:scale(.97)}
+.brand-tile:focus-visible,.bp-other:focus-visible,.bp-all summary:focus-visible,.bc-change:focus-visible,.bp-keep:focus-visible{outline:3px solid #1568e8;outline-offset:2px}
+.brand-tile[aria-pressed=true],.bp-other[aria-pressed=true]{border-color:var(--blue);background:#eef5ff;box-shadow:0 0 0 1px var(--blue)}
+.bt-pic{display:flex;align-items:center;justify-content:center;height:38px;border-radius:8px;background:#eef1f4;overflow:hidden}
+.bt-pic img{display:block;max-width:92%;max-height:34px;width:auto;height:auto}
+.bt-name{font-size:11px;font-weight:600;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+.bp-all{margin-top:8px}
+.bp-all summary{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 12px;border:1px solid #c9daf0;border-radius:12px;background:var(--soft-blue);color:#1257c7;font-size:12px;font-weight:650;cursor:pointer;list-style:none}
+.bp-all summary::-webkit-details-marker{display:none}
+.bp-all summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.bp-all[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.bp-all[open] summary{margin-bottom:8px}
+.bp-count{min-width:22px;padding:1px 6px;border-radius:999px;background:#fff;color:#15263f;font-size:11px;font-weight:650}
+.bp-other{display:block;width:100%;margin-top:8px;min-height:40px;padding:8px 12px;border:1px dashed #b9c8da;border-radius:12px;background:#fff;color:#15263f;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.bp-keep{position:absolute;top:-3px;right:0;padding:2px 4px;border:0;background:none;color:#1257c7;font:inherit;font-size:11px;font-weight:650;cursor:pointer}
+.brand-chosen{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:7px 8px 7px 7px;border:1px solid #dbe5ef;border-radius:14px;background:#fff}
+.brand-chosen .bt-pic{flex:0 0 72px;height:40px}
+.brand-chosen .bt-pic img{max-height:36px}
+.bc-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.bc-text small{font-size:11px;font-weight:600;color:#66768c}
+.bc-text strong{font-size:14px;line-height:1.25;color:#15263f;overflow-wrap:anywhere}
+.bc-change{flex:none;min-height:36px;padding:6px 14px;border:1px solid #c9daf0;border-radius:999px;background:var(--soft-blue);color:#1257c7;font:inherit;font-size:12px;font-weight:650;cursor:pointer}
+}
+@media screen and (min-width:600px){.brand-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
