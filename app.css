@@ -570,3 +570,13 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .tyre-row small{display:block;font-size:10.5px;color:#66768c;margin-top:2px;line-height:1.45}
 .tyre-row .chevron{margin-left:auto;padding-left:4px;color:#9aabbe;font-size:16px}
 }
+
+/* Overdue service 25.10.2026 (v0.25): no "0 % left" bar; the passed limit and the other limit as their own lines.
+   Darker red and grey on the pink background for at least 4.5:1 contrast. Screen only; printouts are unchanged. */
+@media screen{
+.row-status.late{grid-template-columns:auto minmax(0,1fr)}
+.row-status.late .row-txt b{color:#b42a2a}
+.row-status.late .row-txt small.lim-over{color:#b42a2a;font-weight:650}
+.row-status.late .row-txt small.lim{color:#4f5f72}
+.row-status.late .row-txt small+small{margin-top:1px}
+}

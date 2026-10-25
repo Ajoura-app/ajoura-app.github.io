@@ -244,7 +244,14 @@
     if(!d)return `<span class="row-status none"><span class="row-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="row-txt"><b>EI AKTIIVISIA MUISTUTUKSIA</b><strong>Kirjaa viimeisin huolto</strong><small>Niin AJOURA laskee seuraavan.</small></span></span>`;
     const urgent=d.tone==='late'||d.tone==='soon',pct=Math.round(d.left*100);
     const when=urgent?`<strong><span>${date(d.due)}</span>${d.km!==null?` <span>tai</span> <span>${number(d.km)} km</span>`:''}</strong>`:`<strong><span>${d.what==='Katsastus'?'Seuraava katsastus':'Seuraava huolto'}</span> <span>${date(d.due)}</span></strong>`;
-    const rest=d.kmLeft!==null&&d.kmLeft<=0?'<small><span>Kilometriraja on ylittynyt.</span></small>':d.days<0?`<small><span>Myöhässä</span> <span>${number(-d.days)}</span> <span>pv</span></small>`:d.by==='km'?`<small><span>Ajettavaa jäljellä n.</span> <span>${number(d.kmLeft)} km</span></small>`:d.days<62?`<small><span>Aikaa jäljellä</span> <span>${number(d.days)}</span> <span>pv</span></small>`:`<small><span>Aikaa jäljellä n.</span> <span>${number(Math.round(d.days/30.4))}</span> <span>kk</span></small>`;
+    // Time and kilometres are shown as separate facts. When the service is overdue, the limit that has passed comes first
+    // and the other one under it, so "late by date but 800 km still to go" reads plainly instead of a bare "0 % left" (0.25).
+    const kmOver=d.kmLeft!==null&&d.kmLeft<=0,timeOver=d.days<0;
+    const timeTxt=timeOver?`<span>Myöhässä</span> <span>${number(-d.days)}</span> <span>pv</span>`:d.days<62?`<span>Aikaa jäljellä</span> <span>${number(d.days)}</span> <span>pv</span>`:`<span>Aikaa jäljellä n.</span> <span>${number(Math.round(d.days/30.4))}</span> <span>kk</span>`;
+    const kmTxt=d.kmLeft===null?'':kmOver?(d.kmLeft<0?`<span>Kilometriraja ylitetty</span> <span>${number(-d.kmLeft)} km</span>`:'<span>Kilometriraja on ylittynyt.</span>'):`<span>Ajettavaa jäljellä n.</span> <span>${number(d.kmLeft)} km</span>`;
+    if(d.tone==='late'){const line=(t,over)=>t?`<small class="${over?'lim-over':'lim'}">${t}</small>`:'',lines=timeOver?line(timeTxt,true)+line(kmTxt,kmOver):line(kmTxt,true)+line(timeTxt,false);
+      return `<span class="row-status late"><span class="row-ico" aria-hidden="true">${svg(icons.wrench)}</span><span class="row-txt"><b>${statusHead.late[d.what]}</b>${when}${lines}</span></span>`;}
+    const rest=d.by==='km'?`<small><span>Ajettavaa jäljellä n.</span> <span>${number(d.kmLeft)} km</span></small>`:`<small>${timeTxt}</small>`;
     return `<span class="row-status ${d.tone}"><span class="row-ico" aria-hidden="true">${svg(urgent?icons.wrench:d.tone==='ok'?icons.check:icons.cal)}</span><span class="row-txt"><b>${statusHead[d.tone][d.what]}</b>${when}${rest}</span><span class="row-bar" aria-hidden="true"><i style="width:${Math.max(3,pct)}%;background:${barColor(d.left)}"></i></span><em class="row-pct" style="color:${barColor(d.left,.6)}"><span>${pct} %</span> <span>jäljellä</span></em></span>`;}
   // Bar colour slides from green (all left) through yellow (half) to red (nothing left). shade<1 darkens it for readable text.
   function barColor(left,shade=1){const stops=[[226,85,85],[242,182,31],[47,179,111]],x=Math.max(0,Math.min(1,left))*2,i=Math.min(1,Math.floor(x)),f=x-i;
@@ -382,7 +389,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.24 (testiversio)';
+  const appVersion='0.25 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
