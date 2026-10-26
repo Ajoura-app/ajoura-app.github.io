@@ -35,12 +35,27 @@
   };
   const examplePlates=['LMN-456','FIN-202','MKV-310','VLV-240'];
   // Car event types (26.10.2026, v0.29): 17 types grouped into 11. Old entries keep their stored type; dispType shows the
-  // renamed ones under the new name, and their items use the new group's list (oldGroup). Other vehicle kinds: kindsFor.
+  // renamed ones under the new name, and their items use the new group's list (oldGroup). Other vehicle kinds: kindPlan (v0.31).
   const kinds=['Huolto','Määräaikaishuolto','Vuosihuolto','Muu huolto','Renkaiden vaihto','Katsastus','Korjaus ja osan vaihto','Autohoito','Mittarilukeman päivitys','Omistajanvaihdos','Muu tapahtuma'];
   const checkItems=['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Raitisilmasuodatin','Polttoainesuodatin','Sytytystulpat','Jarruneste','Jäähdytysneste','Vaihteistoöljy','Jakohihna / -ketju','Apulaitehihna','Jarrupalat','Jarrulevyt','Akku tarkistettu','Valot tarkistettu','Pyyhkijät','Rengaspaineet','Huoltovälinäyttö nollattu'];
   // Done jobs by event type (cars). Huolto, Määräaikaishuolto and Vuosihuolto use checkItems. Stored items must be in allItems (validCar).
   const itemSets={'Muu huolto':['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Raitisilmasuodatin','Polttoainesuodatin','Sytytystulpat','Jarrupalat','Jarrulevyt','Jarruneste','Jäähdytysneste','Apulaitehihna','Jakohihna / -ketju','Akun vaihto','Polttimon vaihto','Pyyhkijät','Ilmastointihuolto'],'Renkaiden vaihto':['Kausivaihto','Uudet renkaat','Tasapainotus','Rengashotelli','Rengaspaineet'],'Katsastus':['Määräaikaiskatsastus','Jälkitarkastus','Muutoskatsastus'],'Korjaus ja osan vaihto':['Moottori','Vaihteisto ja kytkin','Jarrut','Jousitus','Ohjaus','Pakoputkisto','Sähkö ja valot','Ilmastointi','Kori ja maalaus','Lasit'],'Autohoito':['Käsinpesu','Konepesu','Sisäpuhdistus','Vanteiden pesu','Savipuhdistus','Kevytvaha','Kestovaha','Kiillotus','Pinnoite','Tuulilasin sadepinnoite','Muoviosien ja tiivisteiden hoito','Alustan pesu','Ruostesuojaus'],'Mittarilukeman päivitys':[],'Omistajanvaihdos':[],'Muu tapahtuma':[]};
-  const allItems=[...new Set([...checkItems,...Object.values(itemSets).flat()])];
+  // Other vehicle kinds (26.10.2026, v0.31): own event list (ev, followed by kindTail), one job list for every service
+  // event (svc) and a repair list (fix). Care is Pesu ja hoito, for boats Venehoito. Old entries keep their stored type.
+  const landFix=['Moottori','Vaihteisto ja kytkin','Voimansiirto','Jarrut','Jousitus','Ohjaus','Pakoputkisto','Sähkö ja valot','Kori ja muoviosat'];
+  const careSets={'Pesu ja hoito':['Pesu','Vahaus','Kiillotus','Pinnoite','Muoviosien hoito','Satulan / istuimen hoito','Alustan pesu','Ruostesuojaus'],'Venehoito':['Pesu','Vahaus','Kiillotus','Pohjan pesu','Pohjamaalaus','Teakin hoito','Kuomun ja pehmusteiden hoito','Sisätilojen puhdistus']};
+  const kindTail=['Mittarilukeman päivitys','Omistajanvaihdos','Muu tapahtuma'];
+  const kindPlan={
+    mc:{ev:['Huolto','Kausihuolto','Muu huolto','Renkaiden vaihto','Katsastus','Korjaus ja osan vaihto','Pesu ja hoito','Talvisäilytykseen','Käyttöönotto keväällä'],svc:['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Sytytystulpat','Venttiilien säätö','Ketjun huolto','Jarrupalat','Jarruneste','Jäähdytysneste','Etuhaarukan öljy','Akku tarkistettu','Valot tarkistettu','Rengaspaineet'],fix:landFix},
+    moped:{ev:['Huolto','Kausihuolto','Muu huolto','Renkaiden vaihto','Korjaus ja osan vaihto','Pesu ja hoito','Talvisäilytykseen','Käyttöönotto keväällä'],svc:['Moottoriöljy','Vaihteistoöljy','Ilmansuodatin','Sytytystulpat','Variaattorihihna','Variaattorin rullat','Ketjun huolto','Jarrupalat','Jarruneste','Akku tarkistettu','Valot tarkistettu','Rengaspaineet'],fix:landFix},
+    microcar:{ev:['Huolto','Vuosihuolto','Muu huolto','Renkaiden vaihto','Katsastus','Korjaus ja osan vaihto','Pesu ja hoito'],svc:['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Polttoainesuodatin','Variaattorihihna','Jarrupalat','Jarruneste','Jäähdytysneste','Akku tarkistettu','Valot tarkistettu','Pyyhkijät','Rengaspaineet'],fix:landFix},
+    atv:{ev:['Huolto','Vuosihuolto','Muu huolto','Renkaiden vaihto','Katsastus','Korjaus ja osan vaihto','Pesu ja hoito'],svc:['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Sytytystulpat','Vaihteistoöljy','Vetopyörästöjen öljyt','Variaattorihihna','Jarrupalat','Jarruneste','Jäähdytysneste','Rasvaus','Rengaspaineet'],fix:landFix},
+    sled:{ev:['Huolto','Kausihuolto','Muu huolto','Korjaus ja osan vaihto','Pesu ja hoito','Kesäsäilytykseen','Käyttöönotto syksyllä'],svc:['Moottoriöljy','Sytytystulpat','Variaattorihihna','Variaattorin puhdistus','Ketjukotelon öljy','Telamaton kiristys','Liukupalat','Suksien kulutusraudat','Jarrupalat','Jarruneste','Jäähdytysneste','Rasvaus'],fix:[...landFix,'Telamatto','Sukset']},
+    boat:{ev:['Huolto','Kausihuolto','Muu huolto','Korjaus ja osan vaihto','Venehoito','Vesillelasku','Nosto talvisäilytykseen'],svc:['Moottoriöljy','Öljynsuodatin','Polttoainesuodatin','Sytytystulpat','Vetolaitteen öljy','Siipipyörä','Anodit','Potkuri tarkistettu','Jäähdytysneste','Ohjauksen voitelu','Akku tarkistettu','Pilssipumppu tarkistettu'],fix:['Moottori','Vetolaite ja potkuri','Polttoainejärjestelmä','Ohjaus','Sähkö ja valot','Runko ja kansi','Takila ja purjeet']},
+    tractor:{ev:['Huolto','Vuosihuolto','Muu huolto','Renkaiden vaihto','Katsastus','Korjaus ja osan vaihto','Pesu ja hoito','Talvisäilytykseen','Käyttöönotto keväällä'],svc:['Moottoriöljy','Öljynsuodatin','Ilmansuodatin','Polttoainesuodatin','Hydrauliöljy','Hydrauliöljyn suodatin','Vaihteistoöljy','Jäähdytysneste','Rasvaus','Terien teroitus','Hihnat','Akku tarkistettu'],fix:[...landFix,'Hydrauliikka','Leikkuulaite']},
+    other:{ev:['Huolto','Vuosihuolto','Muu huolto','Renkaiden vaihto','Korjaus ja osan vaihto','Pesu ja hoito','Talvisäilytykseen','Käyttöönotto keväällä'],svc:['Moottoriöljy','Ilmansuodatin','Sytytystulpat','Polttoainesuodatin','Pyöränlaakerit','Jarrujen säätö','Valot tarkistettu','Rengaspaineet','Rasvaus','Akku tarkistettu'],fix:[...landFix,'Kytkentälaite']}
+  };
+  const allItems=[...new Set([...checkItems,...Object.values(itemSets).flat(),...Object.values(kindPlan).flatMap(k=>[...k.svc,...k.fix]),...Object.values(careSets).flat()])];
   // Old car types (before v0.29): which new group they belong to. Only renamed ones change their shown name.
   const oldGroup={'Moottoriöljyn vaihto':'Muu huolto','Jarruhuolto':'Muu huolto','Ilmansuodattimen vaihto':'Muu huolto','Pyyhkijänsulkien vaihto':'Muu huolto','Akun vaihto':'Muu huolto','Polttimon vaihto':'Muu huolto','Korjaus':'Korjaus ja osan vaihto','Osan vaihto':'Korjaus ja osan vaihto','Pesu ja vahaus':'Autohoito'};
   const renamed={'Korjaus':'Korjaus ja osan vaihto','Osan vaihto':'Korjaus ja osan vaihto','Pesu ja vahaus':'Autohoito'};
@@ -48,8 +63,12 @@
   const serviceKinds=['Huolto','Määräaikaishuolto','Vuosihuolto','Moottoriöljyn vaihto','Kausihuolto','Perämoottorin huolto'];
   // Muu huolto counts as a service (resets the service estimate) only when engine oil was changed (decision 26.10.2026).
   const isService=e=>serviceKinds.includes(e.type)||(e.type==='Muu huolto'&&(e.items||[]).includes('Moottoriöljy'));
-  const dispType=(c,t)=>isCar(c)&&renamed[t]||t;
-  const itemsFor=(c,t)=>!t?[]:!isCar(c)?checkItems:itemSets[t]||itemSets[oldGroup[t]]||checkItems;
+  // Other kinds (v0.31): renamed old types and the job list for each type. Old service-like types use the kind's service list.
+  const planOf=c=>kindPlan[c.kind]||kindPlan.other,careOf=c=>c.kind==='boat'?'Venehoito':'Pesu ja hoito';
+  const oldKindSvc=['Moottoriöljyn vaihto','Ilmansuodattimen vaihto','Akun vaihto','Jarruhuolto','Ketjun huolto','Variaattorihihnan vaihto','Telamaton vaihto','Liukupalojen vaihto','Siipipyörän vaihto','Perämoottorin huolto','Hydrauliöljyn vaihto','Terien teroitus'];
+  const dispType=(c,t)=>isCar(c)?renamed[t]||t:t==='Pesu ja vahaus'?careOf(c):renamed[t]||t;
+  const kindItems=(c,t)=>{const p=planOf(c);return serviceKinds.includes(t)||t==='Muu huolto'||oldKindSvc.includes(t)?p.svc:t==='Korjaus ja osan vaihto'?p.fix:careSets[t]||(t==='Pohjamaalaus'?careSets.Venehoito:itemSets[t]&&/^(Renkaiden vaihto|Katsastus)$/.test(t)?itemSets[t]:[]);};
+  const itemsFor=(c,t)=>!t?[]:!isCar(c)?kindItems(c,dispType(c,t)):itemSets[t]||itemSets[oldGroup[t]]||checkItems;
   // Order of the body-type picker; names come from car-render.js.
   const bodyOrder=['suv','wagon','sedan','hatchback','coupe','van','pickup'];
   const guidance={
@@ -163,7 +182,7 @@
     chat:'<path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3.5v-3.5h.5a2 2 0 0 1-2-2z"/>',
     share:'<circle cx="17" cy="6" r="2.3"/><circle cx="7" cy="12" r="2.3"/><circle cx="17" cy="18" r="2.3"/><path d="m9 10.9 6-3.6M9 13.1l6 3.6"/>'
   };
-  const iconFor={'Huolto':'wrench','Vuosihuolto':'wrench','Moottoriöljyn vaihto':'oil','Ilmansuodattimen vaihto':'filter','Renkaiden vaihto':'tyre','Katsastus':'inspection','Jarruhuolto':'brake','Korjaus':'repair','Osan vaihto':'part','Muu huolto':'wrench','Korjaus ja osan vaihto':'repair','Mittarilukeman päivitys':'gauge','Omistajanvaihdos':'user'};
+  const iconFor={'Huolto':'wrench','Vuosihuolto':'wrench','Moottoriöljyn vaihto':'oil','Ilmansuodattimen vaihto':'filter','Renkaiden vaihto':'tyre','Katsastus':'inspection','Jarruhuolto':'brake','Korjaus':'repair','Osan vaihto':'part','Muu huolto':'wrench','Kausihuolto':'wrench','Korjaus ja osan vaihto':'repair','Mittarilukeman päivitys':'gauge','Omistajanvaihdos':'user'};
   const eventIcon=type=>svg(icons[iconFor[type]||'note']);
   const kmPart=(e,c)=>e.km===null?'':` · ${number(e.km)} ${c?ku(c):'km'}`;
   // Bottom tabs (22.10.2026; Ajoneuvot removed 26.10.2026, v0.28, because it repeated the home screen): Koti, Raportit
@@ -370,8 +389,7 @@
     if(!Kinds.types(c.kind).includes(body)||!Car.colors.some(([,v])=>v===color)||(fuel!==''&&!fuels.includes(fuel))){err.textContent='Tarkista valinnat.';return;}if(km<maxKm(c)){err.textContent=`Lukema ei voi olla pienempi kuin historiaan kirjattu ${number(maxKm(c))} ${ku(c)}. Korjaa tarvittaessa ensin väärä merkintä.`;return;}
     const engine=tidyText(d.get('engine'),40);Object.assign(c,{name,plate:tidyText(d.get('reg'),12).toUpperCase(),nick:tidyText(d.get('nick'),24),year,km,fuel,body,color});if(engine)c.engine=engine;else delete c.engine;persist();notice='✓ Tiedot päivitetty.';go('vehicle/'+c.id);}
   // Entry types: cars keep their list; other kinds get the ones that fit them.
-  const kindEvents={mc:['Ketjun huolto','Renkaiden vaihto','Jarruhuolto','Katsastus'],moped:['Variaattorihihnan vaihto','Renkaiden vaihto','Jarruhuolto'],microcar:['Variaattorihihnan vaihto','Renkaiden vaihto','Jarruhuolto','Katsastus'],atv:['Renkaiden vaihto','Jarruhuolto','Katsastus'],sled:['Variaattorihihnan vaihto','Telamaton vaihto','Liukupalojen vaihto'],boat:['Perämoottorin huolto','Siipipyörän vaihto','Vesillelasku','Nosto talvisäilytykseen','Pohjamaalaus'],tractor:['Hydrauliöljyn vaihto','Renkaiden vaihto','Terien teroitus','Katsastus'],other:['Renkaiden vaihto']};
-  const kindsFor=c=>isCar(c)?kinds:['Huolto','Vuosihuolto','Kausihuolto','Moottoriöljyn vaihto','Ilmansuodattimen vaihto',...(kindEvents[c.kind]||[]),'Akun vaihto','Korjaus','Osan vaihto',...(c.kind==='boat'?[]:['Talvisäilytykseen']),'Käyttöönotto keväällä','Pesu ja vahaus','Mittarilukeman päivitys','Omistajanvaihdos','Muu tapahtuma'];
+  const kindsFor=c=>isCar(c)?kinds:[...planOf(c).ev,...kindTail];
   function newcar(){if(draft&&draft.kind)return draft.step==='look'?kindLook(draft):kindDetails(draft);return !draft?(lookup?plateStep():carPicked||!kindsOn()?methodStep():kindStep()):draft.step==='look'?lookStep(draft):detailsStep();}
   const kind=t=>/katsastus/i.test(t)?'inspect':/rengas|renkai/i.test(t)?'tyres':/jarru/i.test(t)?'repair':/huolto|öljy|suodat/i.test(t)?'service':'repair';
   function timeline(c,sorted){let last='';const kinds2=[['all','Kaikki'],['service','Huollot'],['repair','Korjaukset'],['inspect','Katsastukset'],['tyres','Renkaat']].filter(([k])=>k==='all'||sorted.some(e=>kind(e.type)===k));return `${sorted.length>=4&&kinds2.length>2?`<div class="timeline-filter" role="group" aria-label="Suodata historiaa">${kinds2.map(([k,l])=>`<button type="button" data-tl="${k}" aria-pressed="${k==='all'}">${l}</button>`).join('')}</div>`:''}<ol class="timeline">${sorted.map(e=>{const y=e.date.slice(0,4),head=y!==last?`<li class="timeline-year" data-y="${y}">${y}</li>`:'';last=y;return head+`<li class="timeline-item ${kind(e.type)}" data-y="${y}" data-cost="${e.cost&&Number.isFinite(Number(e.cost))?Number(e.cost):0}"><a href="#event/${c.id}/${e.id}"><span class="timeline-dot" aria-hidden="true"></span><span class="timeline-body"><strong>${escape(dispType(c,e.type))}</strong><small>${date(e.date)}${kmPart(e,c)}${e.items?.length?' · '+e.items.length+' toimenpidettä':''}${e.photos?.length?' · '+e.photos.length+' kuva'+(e.photos.length>1?'a':''):''}${e.receipts?.length?' · '+e.receipts.length+' kuitti'+(e.receipts.length>1?'a':''):''}</small></span>${e.cost?`<span class="timeline-cost">${number(e.cost)} €</span>`:''}</a></li>`;}).join('')}</ol><div class="timeline-total"><span>Yhteensä</span><strong id="tl-total">${number(costOf(sorted))} €</strong></div><a class="fab" href="#add/${c.id}" aria-label="Lisää merkintä">＋</a>`;}
@@ -398,7 +416,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.30 (testiversio)';
+  const appVersion='0.31 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -464,7 +482,7 @@
     const pts=s.series.map(p=>({x:p.km,y:p.v,tip:`${date(p.date)} · ${dec(p.v)} ${u}/${per(c)}`}));
     return `<div class="chart-card"><h3>Kulutus</h3>${lineChart(pts,{yFmt:v=>dec(v),xLabels:[number(s.series[0].km)+' '+ku(c),number(s.series[s.series.length-1].km)+' '+ku(c)],avg:s.avg,avgLabel:'Keskikulutus '+dec(s.avg)})}<p class="chart-legend"><span class="lg-line"></span>${u}/${per(c)} täysien ${u==='kWh'?'latausten':'tankkausten'} välillä <span class="lg-avg"></span>keskikulutus</p></div>`;}
   // Odometer over time: every km reading (entries and fill-ups), entries marked by kind.
-  const kmKind=t=>/^(Omistajanvaihdos|Mittarilukeman päivitys|Muu tapahtuma|Pesu ja vahaus|Autohoito|Talvisäilytykseen|Käyttöönotto keväällä|Vesillelasku|Nosto talvisäilytykseen|Pohjamaalaus)$/.test(t)?'other':kind(t);
+  const kmKind=t=>/^(Omistajanvaihdos|Mittarilukeman päivitys|Muu tapahtuma|Pesu ja vahaus|Autohoito|Talvisäilytykseen|Käyttöönotto keväällä|Vesillelasku|Nosto talvisäilytykseen|Pohjamaalaus|Pesu ja hoito|Venehoito|Kesäsäilytykseen|Käyttöönotto syksyllä)$/.test(t)?'other':kind(t);
   function kmChart(c){const pts=[...c.events.filter(e=>e.km!==null&&e.km!==undefined).map(e=>({x:dayNum(e.date),y:e.km,cls:'k-'+kmKind(e.type),big:true,tip:`${date(e.date)} · ${dispType(c,e.type)} · ${number(e.km)} ${ku(c)}`})),...(c.fuels||[]).map(f=>({x:dayNum(f.date),y:f.km,cls:'k-fuel',tip:`${date(f.date)} · ${unitOf(c)==='kWh'?'Lataus':'Tankkaus'} · ${number(f.km)} ${ku(c)}`}))].sort((a,b)=>a.x-b.x||a.y-b.y);
     if(pts.length<2||pts[0].x===pts[pts.length-1].x)return '';const first=pts[0],lastP=pts[pts.length-1],years=(lastP.x-first.x)/365.25,st=hourly(c)?10:100,per=years>=.25?Math.round((lastP.y-first.y)/years/st)*st:null;
     const has=k=>pts.some(p=>p.cls==='k-'+k),lg=[['service','Huolto'],['repair','Korjaus'],['inspect','Katsastus'],['tyres','Renkaat'],['other','Muu merkintä'],['fuel',unitOf(c)==='kWh'?'Lataus':'Tankkaus']].filter(([k])=>has(k)).map(([k,l])=>`<span class="lg-dot k-${k}"></span>${l}`).join(' ');
