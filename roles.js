@@ -69,7 +69,7 @@
   function applyFeatures() {
     const off = FEATURES.filter(f => f[4] && !on(f[0]));
     style.textContent = off.map(f => f[4].split(',').map(s => `html.r-cust ${s}`).join(',') + '{display:none!important}').join('\n') +
-      (on('report') ? '' : '\nhtml.r-cust .tab-bar.four{grid-template-columns:repeat(3,1fr)}');
+      (on('report') ? '' : '\nhtml.r-cust .tab-bar.main-tabs{grid-template-columns:repeat(2,1fr)}');
     if (!on('theme') && document.documentElement.classList.contains('dark')) document.documentElement.classList.remove('dark');
   }
   document.documentElement.classList.add('r-cust');
