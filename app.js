@@ -398,7 +398,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.29 (testiversio)';
+  const appVersion='0.30 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -660,46 +660,88 @@
   function drivenIn(c,from,to){const r=[...c.events.filter(e=>e.km!==null).map(e=>[e.date,e.km]),...(c.fuels||[]).map(f=>[f.date,f.km]),[today(),c.km]];
     const before=r.filter(x=>x[0]<from).map(x=>x[1]),inside=r.filter(x=>x[0]>=from&&x[0]<=to).map(x=>x[1]);if(!inside.length)return 0;
     return Math.max(0,Math.max(...inside)-(before.length?Math.max(...before):Math.min(...inside)));}
+  // Raportit 0.30 (Niklas 26.10.2026): new look after Niklas's picture. Summary tab: key figures with the change from the
+  // previous period, costs by type and one card per vehicle. Vehicles tab: each vehicle's own report. The 0.27 vehicle and
+  // cost-type choices and the table are kept behind "Näytä tarkemmin". Every figure comes from the user's own entries.
   // The choices are a view setting kept on this device only (not part of the backup); everything starts selected.
-  const rpKey='ajoura-reports';
+  const rpKey='ajoura-reports';let rpMore=false;
   function rpPrefs(){let o={};try{o=JSON.parse(prefGet(rpKey)||'{}')||{};}catch(e){}const list=a=>Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,500):[];
-    return {p:['year','12','all'].includes(o.p)?o.p:'year',offCars:list(o.offCars),offKinds:list(o.offKinds).filter(k=>costKinds.some(([x])=>x===k))};}
+    return {p:['year','12','all'].includes(o.p)?o.p:'year',offCars:list(o.offCars),offKinds:list(o.offKinds).filter(k=>costKinds.some(([x])=>x===k)),s:['cost','name','km'].includes(o.s)?o.s:'cost',t:o.t==='cars'?'cars':'sum'};}
   const rpRange=p=>{const t=today();return p==='year'?{from:t.slice(0,4)+'-01-01',to:t}:p==='12'?{from:(Number(t.slice(0,4))-1)+t.slice(4),to:t}:{from:'',to:t};};
+  // The period the change is measured against: the same dates a year earlier (Tämä vuosi) or the 12 months before (12 kk).
+  const yBack=s=>{const md=s.slice(5);return (Number(s.slice(0,4))-1)+'-'+(md==='02-29'?'02-28':md);},dayBefore=s=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);};
+  const rpPrev=p=>{if(p==='all')return null;const {from,to}=rpRange(p);return p==='year'?{from:yBack(from),to:yBack(to)}:{from:yBack(from),to:dayBefore(from)};};
+  const pctOf=(now,was)=>was>0&&Number.isFinite(now)?Math.round((now-was)/was*100):null;
+  // Less money spent is green, more is red; the sign is always written out, so the colour is never the only cue.
+  const rpDelta=(v,pill)=>v===null?'':`<span class="rp-delta ${v<0?'down':v>0?'up':'flat'}${pill?' pill':''}"><span aria-hidden="true">${v<0?'↓':v>0?'↑':'→'}</span> <span>${v>0?'+':v<0?'−':''}${number(Math.abs(v))} %</span></span>`;
   const eur=v=>`${number(Math.round(v))} €`,dec2=v=>v.toLocaleString('fi-FI',{minimumFractionDigits:2,maximumFractionDigits:2});
   const rpThumb=c=>c.photo?`<img src="${c.photo}" alt="">`:art(c,'');
+  const rpIcon={fuel:'fuel',service:'wrench',repair:'repair',inspect:'inspection',tyres:'tyre',other:'more'};
+  const chev='<svg class="rp-chev" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>';
+  // A native select under a styled label: the phone shows its own picker, and the 16 px font keeps iPhone from zooming.
+  const rpPick=(attr,label,shown,opts,cur)=>`<label class="rp-pick"><span class="rp-pick-t">${shown}</span>${chev}<select ${attr} aria-label="${label}">${opts.map(([v,n])=>`<option value="${v}"${v===cur?' selected':''}>${n}</option>`).join('')}</select></label>`;
   function reports(){if(!cars.length)return `${top()}<h2 class="app-heading">Raportit</h2>${emptyGarage()}`;
-    const o=rpPrefs(),{from,to}=rpRange(o.p),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
+    const o=rpPrefs(),{from,to}=rpRange(o.p),prev=rpPrev(o.p),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
     const ev=cars.some(c=>c.fuel==='Sähkö'||c.fuel==='Lataushybridi'),kn=k=>k==='fuel'&&ev?'Polttoaine ja lataus':costKinds.find(([x])=>x===k)[1];
-    const rows=sel.map(c=>{const all=costsOf(c,from,to),s={};let t=0;for(const k of kinds){s[k]=all[k];t+=all[k];}
-      const first=[...c.events.map(e=>e.date),...(c.fuels||[]).map(f=>f.date)].sort()[0]||'';return {c,s,t,d:drivenIn(c,from,to),late:o.p!=='all'&&first>from?first:''};}).sort((a,b)=>b.t-a.t);
-    const sum=rows.reduce((m,r)=>m+r.t,0),max=Math.max(0,...rows.map(r=>r.t)),perKm=rows.filter(r=>!hourly(r.c)&&r.d>=100),km=perKm.reduce((m,r)=>m+r.d,0),kmCost=perKm.reduce((m,r)=>m+r.t,0);
+    const pick=(s,ks)=>{const r={};let t=0;for(const k of ks){r[k]=s[k];t+=s[k];}return [r,t];};
+    const rows=sel.map(c=>{const [s,t]=pick(costsOf(c,from,to),kinds),u=ku(c),d=drivenIn(c,from,to),min=u==='h'?1:100;
+      let pt=0,pd=0;if(prev){[,pt]=pick(costsOf(c,prev.from,prev.to),kinds);pd=drivenIn(c,prev.from,prev.to);}
+      const first=[...c.events.map(e=>e.date),...(c.fuels||[]).map(f=>f.date)].sort()[0]||'';
+      return {c,s,t,d,u,per:d>=min&&t?t/d:null,pt,pd,late:o.p!=='all'&&first>from?first:''};});
+    const sorts={cost:(a,b)=>b.t-a.t,name:(a,b)=>carName(a.c).localeCompare(carName(b.c),'fi'),km:(a,b)=>(b.per??-1)-(a.per??-1)||b.t-a.t};rows.sort(sorts[o.s]);
+    const sum=rows.reduce((m,r)=>m+r.t,0),perKm=rows.filter(r=>!hourly(r.c)&&r.d>=100),km=perKm.reduce((m,r)=>m+r.d,0),kmCost=perKm.reduce((m,r)=>m+r.t,0);
     // Months for the monthly average: the period, or for the whole history from the first cost on.
     const mFrom=o.p!=='all'?from:rows.flatMap(r=>[...r.c.events.filter(e=>evCost(e)>0).map(e=>e.date),...(r.c.fuels||[]).filter(f=>f.cost).map(f=>f.date)]).sort()[0]||to;
-    const months=Math.max(1,(new Date(to+'T12:00:00')-new Date(mFrom+'T12:00:00'))/864e5/30.44),label=o.p==='all'?'Koko historia':`${date(from)}–${date(to)}`;
+    const monthsOf=(a,b)=>Math.max(1,(new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5/30.44),months=monthsOf(mFrom,to);
+    // Change from the previous period: shown only when that period has costs (or driving) to compare with.
+    // €/km is compared only over the vehicles driven at least 100 km in both periods, so a vehicle without old readings
+    // does not skew it.
+    const pSum=rows.reduce((m,r)=>m+r.pt,0),both=rows.filter(r=>!hourly(r.c)&&r.d>=100&&r.pd>=100),sumOf=f=>both.reduce((m,r)=>m+f(r),0);
+    const dMonth=prev?pctOf(sum/months,pSum/monthsOf(prev.from,prev.to)):null,dKm=prev&&both.length&&sumOf(r=>r.pt)?pctOf(sumOf(r=>r.t)/sumOf(r=>r.d),sumOf(r=>r.pt)/sumOf(r=>r.pd)):null;
+    const vs=o.p==='year'?'verrattuna viime vuoteen':'verrattuna edellisiin 12 kk';
+    const filtered=o.offCars.some(id=>cars.some(c=>c.id===id))||o.offKinds.length;if(!sel.length||!kinds.length)rpMore=true;
+    const head=`<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2><p class="rp-lead">Yhteenveto ajoneuvojen kuluista</p></div>${o.t==='sum'?rpPick('data-rp-period','Jakso',[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']].find(x=>x[0]===o.p)[1],[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o.p):''}</div>`;
+    const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-rp-tab="sum" aria-pressed="${o.t==='sum'}">${svg(icons.chart)}<span>Yhteenveto</span></button><button type="button" data-rp-tab="cars" aria-pressed="${o.t==='cars'}">${svg(icons.car)}<span>Ajoneuvot</span></button></div>`;
+    const reps=`<section class="rp-card rp-reps" aria-label="Ajoneuvokohtaiset raportit"><p class="rp-sub">Jokaisen ajoneuvon oma raportti: huoltohistoria, kulut ja tunnusluvut.</p>${cars.map(c=>`<a class="rp-rep" href="#report/${c.id}/raportit"><span class="rp-rthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong><small><span translate="no">${plateTxt(c)}</span> · <span>Tulosta tai tallenna PDF</span></small></span><span class="chevron" aria-hidden="true">›</span></a>`).join('')}</section>`;
+    if(o.t==='cars')return `${top()}${head}${tabs}${reps}`;
+    const note=filtered?`<p class="rp-note"><span>Osa ajoneuvoista tai kululajeista on rajattu pois.</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
     const ck='<span class="rp-ck" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 3"/></svg></span>';
-    const seg=`<div class="rp-seg" role="group" aria-label="Jakso">${[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']].map(([v,n])=>`<button type="button" data-rp-period="${v}" aria-pressed="${o.p===v}">${n}</button>`).join('')}</div>`;
     const carChips=`<div class="rp-lbl"><span>Ajoneuvot</span>${sel.length<cars.length?'<button type="button" class="rp-link" data-rp-all>Valitse kaikki</button>':''}</div><div class="rp-chips">${cars.map(c=>{const on=!o.offCars.includes(c.id);return `<button type="button" class="rp-chip car" data-rp-car="${c.id}" aria-pressed="${on}"><span class="rp-thumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-cname" translate="no">${escape(carName(c))}</span>${on?ck:''}</button>`;}).join('')}</div>`;
     const kindChips=`<div class="rp-lbl"><span>Kulut</span></div><div class="rp-chips">${costKinds.map(([k])=>`<button type="button" class="rp-chip kind" data-rp-kind="${k}" aria-pressed="${kinds.includes(k)}"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span></button>`).join('')}</div>`;
+    const table=sum?`<table class="rp-table"><caption class="sr-only">Kulut ajoneuvoittain</caption><thead><tr><th scope="col">Ajoneuvo</th><th scope="col">€</th></tr></thead>${rows.map(r=>`<tbody><tr class="rp-tcar"><th scope="row" translate="no">${escape(carName(r.c))}</th><td>${number(Math.round(r.t))}</td></tr>${kinds.filter(k=>r.s[k]>0).map(k=>`<tr><td>${kn(k)}</td><td>${number(Math.round(r.s[k]))}</td></tr>`).join('')}</tbody>`).join('')}</table>`:'';
+    const label=o.p==='all'?'Koko historia':`${date(from)}–${date(to)}`;
+    const explain=`<p class="rp-sub"><span>Jakso</span> <span>${label}</span>${prev?` · <span>muutos verrataan jaksoon</span> <span>${date(prev.from)}–${date(prev.to)}</span>`:''}</p>`;
+    const more=rpMore?`<section class="rp-card rp-detail" aria-labelledby="rp-hd"><h3 class="rp-h" id="rp-hd">Tarkemmat valinnat</h3>${explain}${carChips}${kindChips}${table}</section>`:'';
     let body;
     if(!sel.length)body='<div class="rp-card"><p class="rp-empty">Valitse vähintään yksi ajoneuvo.</p></div>';
     else if(!kinds.length)body='<div class="rp-card"><p class="rp-empty">Valitse vähintään yksi kululaji.</p></div>';
     else if(!sum)body=`<div class="rp-card"><p class="rp-empty">Ei kuluja valitulla jaksolla.</p></div>`;
-    else{const n=sel.length;
-      const kpis=`<div class="rp-card rp-kpis"><div><small>Yhteensä</small><b class="big">${eur(sum)}</b><em><span>${n}</span> <span>${n===1?'ajoneuvo':'ajoneuvoa'}</span></em></div><div><small>Kuukaudessa</small><b>${eur(sum/months)}</b><em>keskimäärin</em></div><div><small>Kilometri</small><b>${km?dec2(kmCost/km)+' €':'–'}</b><em>${km?`<span>${number(km)}</span> <span>km ajettu</span>`:'ei mittarilukemia'}</em></div></div>`;
-      const rowHtml=rows.map(r=>{const c=r.c,u=ku(c),min=u==='h'?1:100,on=kinds.filter(k=>r.s[k]>0);
-        const meta=[r.d>=min&&r.t?`<span>${dec2(r.t/r.d)}</span> <span>€/${u}</span> · <span>${number(r.d)}</span> <span>${u}</span>`:'',r.late?`<span>tiedot alkaen</span> <span>${date(r.late)}</span>`:''].filter(Boolean).join(' · ');
-        return `<div class="rp-row"><button type="button" class="rp-hit" data-rp-row aria-expanded="false"${r.t?'':' disabled'}><span class="rp-t"><strong translate="no">${escape(carName(c))}</strong><b>${eur(r.t)}</b></span>${r.t?`<span class="rp-bar" style="width:${Math.max(2,r.t/max*100).toFixed(1)}%">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span>`:'<small class="rp-meta">ei kuluja</small>'}${meta?`<small class="rp-meta">${meta}</small>`:''}</button><div class="rp-tip" hidden>${on.map(k=>`<div><span class="rp-k"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span></span><b>${eur(r.s[k])}</b></div>`).join('')}</div></div>`;}).join('');
-      const table=`<table class="rp-table" hidden><thead><tr><th scope="col">Ajoneuvo</th><th scope="col">€</th></tr></thead>${rows.map(r=>`<tbody><tr class="rp-tcar"><th scope="row" translate="no">${escape(carName(r.c))}</th><td>${number(Math.round(r.t))}</td></tr>${kinds.filter(k=>r.s[k]>0).map(k=>`<tr><td>${kn(k)}</td><td>${number(Math.round(r.s[k]))}</td></tr>`).join('')}</tbody>`).join('')}</table>`;
-      body=`${kpis}<section class="rp-card" aria-labelledby="rp-h1"><h3 class="rp-h" id="rp-h1">Kulut ajoneuvoittain</h3><p class="rp-sub"><span>${label}</span> · <span>napauta palkkia</span></p><div class="rp-rows">${rowHtml}</div>${table}<button type="button" class="rp-more" data-rp-table aria-expanded="false"><span>Näytä taulukkona</span><span aria-hidden="true">›</span></button></section>`;}
-    const reps=`<section class="rp-card rp-reps"><h3 class="rp-h">Ajoneuvokohtaiset raportit</h3>${cars.map(c=>`<a class="rp-rep" href="#report/${c.id}/raportit"><span class="rp-rthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong><small><span translate="no">${plateTxt(c)}</span> · <span>Tulosta tai tallenna PDF</span></small></span><span class="chevron" aria-hidden="true">›</span></a>`).join('')}</section>`;
-    return `${top()}<h2 class="app-heading">Raportit</h2>${seg}${carChips}${kindChips}${body}${reps}`;}
-  function reportsClick(t){const per=t.closest('[data-rp-period]'),car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
-    if(per||car||kd||all){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];if(per)o.p=per.dataset.rpPeriod;if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];
-      prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
-      // Keep the keyboard focus on the same control after the screen is redrawn.
-      const q=per?`[data-rp-period="${per.dataset.rpPeriod}"]`:car?`[data-rp-car="${car.dataset.rpCar}"]`:kd?`[data-rp-kind="${kd.dataset.rpKind}"]`:'.rp-chip.car';const f=screen.querySelector(q);if(f)f.focus({preventScroll:true});return true;}
-    const row=t.closest('[data-rp-row]');if(row){const open=row.getAttribute('aria-expanded')==='true';screen.querySelectorAll('[data-rp-row][aria-expanded="true"]').forEach(b=>{b.setAttribute('aria-expanded','false');b.nextElementSibling.hidden=true;});if(!open){row.setAttribute('aria-expanded','true');row.nextElementSibling.hidden=false;}return true;}
-    const tb=t.closest('[data-rp-table]');if(tb){const tbl=screen.querySelector('.rp-table'),open=tb.getAttribute('aria-expanded')==='true';if(tbl)tbl.hidden=open;tb.setAttribute('aria-expanded',String(!open));tb.firstElementChild.textContent=open?'Näytä taulukkona':'Piilota taulukko';return true;}
+    if(body)return `${top()}${head}${tabs}${note}${body}${more}`;
+    const n=sel.length,tot={};for(const k of kinds)tot[k]=rows.reduce((m,r)=>m+r.s[k],0);const used=kinds.filter(k=>tot[k]>0);
+    const kpis=`<div class="rp-card rp-kpis"><div><small>Kokonaiskulut</small><b class="big">${eur(sum)}</b><em><span>${n}</span> <span>${n===1?'ajoneuvo':'ajoneuvoa'}</span></em></div>
+      <div><small><span>Keskimäärin</span> <span class="nw">/ kk</span></small><b>${eur(sum/months)}</b>${dMonth!==null?`<em class="rp-dl">${rpDelta(dMonth)}</em><em class="rp-vs">${vs}</em>`:''}</div>
+      <div><small>Ajetut kilometrit</small><b>${km?`<span>${number(km)}</span> <span>km</span>`:'–'}</b><em>${km?`<span>${dec2(kmCost/km)}</span> <span>€/km</span>`:'ei mittarilukemia'}</em>${dKm!==null?`<em class="rp-dl">${rpDelta(dKm,true)}</em>`:''}</div></div>`;
+    const pct=v=>{const p=v/sum*100;return p>0&&p<1?'<1 %':`${number(Math.round(p))} %`;};
+    const cats=`<section class="rp-card rp-cats" aria-labelledby="rp-hc"><div class="rp-hrow"><h3 class="rp-h" id="rp-hc">Kulut kategorioittain</h3><button type="button" class="rp-link" data-rp-more aria-expanded="${rpMore}"><span>${rpMore?'Piilota tarkemmat':'Näytä tarkemmin'}</span><span aria-hidden="true"> ›</span></button></div>
+      <div class="rp-bar big" aria-hidden="true">${used.map(k=>`<i class="rp-c rpk-${k}" style="flex:${tot[k].toFixed(2)}"></i>`).join('')}</div>
+      <ul class="rp-kinds">${used.map(k=>`<li><span class="rp-ico rpk-${k}" aria-hidden="true">${svg(icons[rpIcon[k]])}</span><span class="rp-kt"><small>${kn(k)}</small><b>${eur(tot[k])}</b><em>${pct(tot[k])}</em></span></li>`).join('')}</ul></section>`;
+    const card=r=>{const c=r.c,on=kinds.filter(k=>r.s[k]>0),dl=prev&&r.late===''?pctOf(r.t,r.pt):null;
+      const meta=[r.per!==null?`<span class="nw"><span>${number(r.d)}</span> <span>${r.u}</span></span> · <span class="nw"><span>${dec2(r.per)}</span> <span>€/${r.u}</span></span>`:'',r.late?`<span class="nw"><span>tiedot alkaen</span> <span>${date(r.late)}</span></span>`:'',!r.t?'<span>ei kuluja</span>':''].filter(Boolean).join(' · ');
+      return `<a class="rp-vcard" href="#report/${c.id}/raportit"><span class="rp-vpic" aria-hidden="true">${rpThumb(c)}</span><span class="rp-vbody"><span class="rp-vtop"><strong translate="no">${escape(carName(c))}</strong><b>${eur(r.t)}</b><span class="chevron" aria-hidden="true">›</span></span><span class="rp-vmid"><small>${meta}</small>${rpDelta(dl,true)}</span>${r.t?`<span class="rp-bar" aria-hidden="true">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span><span class="rp-leg">${on.map(k=>`<span><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span class="sr-only">${kn(k)}</span> <span>${eur(r.s[k])}</span></span>`).join('')}</span>`:''}</span></a>`;};
+    const sortNames=[['cost','Kulut'],['name','Nimi'],['km','€/km']];
+    const list=`<section class="rp-vsec" aria-labelledby="rp-hv"><div class="rp-hrow"><h3 class="rp-h2" id="rp-hv">Ajoneuvokohtaiset kulut</h3>${rows.length>1?rpPick('data-rp-sort','Järjestä',`<span>Järjestä:</span> <span>${sortNames.find(x=>x[0]===o.s)[1]}</span>`,sortNames,o.s):''}</div>${rows.map(card).join('')}</section>`;
+    return `${top()}${head}${tabs}${note}${kpis}${cats}${more}${list}`;}
+  function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
+    // Keep the keyboard focus on the same control after the screen is redrawn.
+    const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
+  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
+  function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
+    const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}
+    if(t.closest('[data-rp-more]')){rpMore=!rpMore;rpSave(o,'[data-rp-more]');return true;}
+    if(t.closest('[data-rp-reset]')){o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
+    const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
+    if(car||kd||all){if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];
+      rpSave(o,car?`[data-rp-car="${car.dataset.rpCar}"]`:kd?`[data-rp-kind="${kd.dataset.rpKind}"]`:'.rp-chip.car');return true;}
     return false;}
   // Each screen remembers its scroll position, so going back (or re-rendering after a choice) does not jump to the top.
   const scrollMem={};let lastKey='';const keepScroll=['home','vehicle','help','me','report','event','notes','reports','menu','settings'];
@@ -793,6 +835,7 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&glass.querySelector('.sheet-layer'))closeSheet();});
   window.addEventListener('hashchange',closeSheet);
   screen.addEventListener('click',event=>{if(route().view==='reports')reportsClick(event.target);});
+  screen.addEventListener('change',event=>{if(route().view==='reports')reportsChange(event.target);});
   document.getElementById('reset-demo').addEventListener('click',reset);
   document.getElementById('home-button').addEventListener('click',()=>go('launcher'));
   screen.addEventListener('click',event=>{const t=event.target;if(t.closest('[data-login]')){loginNote=true;const y=screen.scrollTop;render();screen.scrollTop=y;return;}const pref=t.closest('[data-pref]');if(pref){const v=pref.dataset.value;if(pref.dataset.pref==='Teema')setTheme(v);else if(window.AjouraI18n)window.AjouraI18n.set(v);const y=screen.scrollTop;render();screen.scrollTop=y;return;}const icon=t.closest('[data-launch]');if(icon)launch(icon);if(t.closest('[data-reset]'))reset();const chip=t.closest('[data-plate]');if(chip)startLookup(chip.dataset.plate);const method=t.closest('[data-method]');if(method){if(method.dataset.method==='plate'){draft=null;lookup={plate:''};}else{draft={plate:lookup?.plate||'',name:'',year:'',body:'',fuel:'',color:'',source:'manual',step:'details'};lookup=null;}render();}

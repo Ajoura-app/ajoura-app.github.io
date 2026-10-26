@@ -585,9 +585,6 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
    Cost colours are fixed per type (checked for colour-blind separation); the numbers are always shown as text too.
    Screen only; printouts are unchanged. */
 @media screen{
-.rp-seg{display:flex;background:#e6ebf2;border-radius:11px;padding:3px;margin:2px 0 14px}
-.rp-seg button{flex:1;min-height:32px;border:0;border-radius:9px;background:none;font:inherit;font-size:12px;font-weight:600;color:#4f5f72;cursor:pointer}
-.rp-seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(21,38,63,.16)}
 .rp-lbl{display:flex;justify-content:space-between;align-items:center;min-height:22px;margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4f5f72}
 .rp-link{border:0;background:none;padding:3px 0;font:inherit;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--blue);cursor:pointer}
 .rp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
@@ -605,31 +602,18 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .rp-chip[aria-pressed="false"] .rp-dot{background:none!important;box-shadow:inset 0 0 0 2px #a3afbd}
 .rpk-fuel{background:#2a78d6}.rpk-service{background:#1baf7a}.rpk-repair{background:#6250d6}.rpk-inspect{background:#eda100}.rpk-tyres{background:#e87ba4}.rpk-other{background:#8d99aa}
 .rp-card{margin-bottom:11px;padding:13px 14px;background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow)}
-.rp-kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:8px}
-.rp-kpis>div{min-width:0}
+.rp-kpis{display:grid;grid-template-columns:1.12fr 1fr 1.08fr;gap:0;padding:14px 2px}
+.rp-kpis>div{min-width:0;padding:0 9px}
+.rp-kpis>div+div{border-left:1px solid var(--hairline)}
 .rp-kpis small{display:block;font-size:11px;font-weight:600;color:#4f5f72}
-.rp-kpis b{display:block;margin-top:2px;font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink);white-space:nowrap}
-.rp-kpis b.big{font-size:20px}
+.rp-kpis b{display:block;margin-top:4px;font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink);white-space:nowrap}
+.rp-kpis b.big{font-size:21px}
 .rp-kpis em{display:block;margin-top:1px;font-size:11px;font-style:normal;line-height:1.35;color:#4f5f72}
 .rp-h{margin:0 0 2px;font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
 .rp-sub{margin:0 0 10px;font-size:11px;color:#4f5f72}
-.rp-row+.rp-row{margin-top:9px}
-.rp-hit{display:block;width:100%;padding:3px 0;border:0;border-radius:8px;background:none;font:inherit;text-align:left;color:inherit;cursor:pointer}
-.rp-hit:disabled{cursor:default}
-.rp-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px;font-size:12.5px}
-.rp-t strong{min-width:0;overflow:hidden;font-weight:650;text-overflow:ellipsis;white-space:nowrap}
-.rp-t b{font-weight:700;white-space:nowrap}
 .rp-bar{display:flex;gap:2px;height:13px}
 .rp-c{display:block;min-width:3px;height:100%}
 .rp-c:first-child{border-radius:4px 0 0 4px}.rp-c:last-child{border-radius:0 4px 4px 0}.rp-c:only-child{border-radius:4px}
-.rp-hit[aria-expanded="true"] .rp-bar{outline:2px solid var(--ink);outline-offset:2px;border-radius:5px}
-.rp-meta{display:block;margin-top:4px;font-size:11px;color:#4f5f72}
-.rp-tip{margin-top:7px;padding:8px 11px;border-radius:11px;background:#15263f;color:#fff;font-size:11.5px}
-.rp-tip[hidden],.rp-table[hidden]{display:none}
-.rp-tip>div{display:flex;justify-content:space-between;gap:10px;padding:1px 0}
-.rp-k{display:flex;align-items:center;gap:6px}
-.rp-tip .rp-dot{width:9px;height:9px}
-.rp-more{display:flex;justify-content:space-between;align-items:center;width:calc(100% + 28px);margin:12px -14px -13px;padding:11px 14px;border:0;border-top:1px solid var(--hairline);border-radius:0 0 16px 16px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--blue);cursor:pointer}
 .rp-table{width:100%;margin-top:12px;border-collapse:collapse;font-size:12px}
 .rp-table th,.rp-table td{padding:5px 0;border-bottom:1px solid #edf1f6;text-align:left}
 .rp-table th:last-child,.rp-table td:last-child{text-align:right}
@@ -648,4 +632,61 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .rp-rtxt small{display:block;font-size:11px;color:#4f5f72}
 .rp-rep .chevron{color:#8494a8;font-size:16px}
 }
-html.dark .device-glass .rp-c,html.dark .device-glass .rp-dot,html.dark .device-glass .rp-ck{filter:invert(1) hue-rotate(180deg)}
+/* Raportit 0.30 (26.10.2026): header, period picker, tabs, change badges, cost types and vehicle cards. */
+.rp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:0 0 12px}
+.rp-titles{min-width:0}
+.rp-titles .app-heading{margin:0 0 3px}
+.rp-lead{margin:0;font-size:12px;line-height:1.35;color:#4f5f72}
+.rp-pick{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 10px 0 12px;border:1px solid var(--hairline);border-radius:12px;background:#fff;box-shadow:var(--card-shadow);font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;cursor:pointer}
+.rp-pick select{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;font-size:16px;cursor:pointer;-webkit-appearance:none;appearance:none}
+.rp-pick:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.rp-chev{flex:none;color:#4f5f72}
+.rp-tabs{display:flex;gap:4px;margin:0 0 12px;padding:4px;background:#fff;border:1px solid var(--hairline);border-radius:14px;box-shadow:var(--card-shadow)}
+.rp-tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;border:0;border-radius:10px;background:none;font:inherit;font-size:13px;font-weight:600;color:#3f4f63;cursor:pointer}
+.rp-tabs button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.rp-tabs svg{width:17px;height:17px}
+.rp-note{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin:0 0 11px;padding:8px 12px;border-radius:12px;background:#edf4ff;font-size:11.5px;color:#1f3550}
+.rp-dl{margin-top:5px!important}
+.rp-delta{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;font-style:normal;white-space:nowrap}
+.rp-delta.down{color:#0b7148}.rp-delta.up{color:#b42a2a}.rp-delta.flat{color:#4f5f72}
+.rp-delta.pill{padding:2px 8px;border-radius:999px;font-size:11.5px}
+.rp-delta.pill.down{background:#e2f5eb}.rp-delta.pill.up{background:#fdeaea}.rp-delta.pill.flat{background:#edf1f6}
+.rp-hrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}
+.rp-hrow .rp-h,.rp-hrow .rp-h2{margin:0}
+.rp-vsec .rp-hrow{flex-wrap:wrap;gap:6px}
+.rp-vsec .rp-h2{flex:1 0 100%}
+.rp-vsec .rp-pick{min-height:30px;font-size:11.5px;box-shadow:none}
+.rp-hrow .rp-link{flex:none;font-size:12px}
+.rp-bar.big{height:16px;margin-bottom:13px}
+.rp-bar.big .rp-c:first-child{border-radius:6px 0 0 6px}.rp-bar.big .rp-c:last-child{border-radius:0 6px 6px 0}.rp-bar.big .rp-c:only-child{border-radius:6px}
+.rp-kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px;margin:0;padding:0;list-style:none}
+.rp-kinds li{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.rp-ico{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:8px;color:#fff}
+.rp-ico svg{width:16px;height:16px}
+.rp-kt{min-width:0}
+.rp-kt small{display:block;font-size:11px;line-height:1.25;color:#3f4f63;overflow-wrap:break-word}
+.rp-kt b{display:block;margin-top:1px;font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.rp-kt em{display:block;font-size:11px;font-style:normal;color:#4f5f72}
+.rp-detail .rp-sub{margin-bottom:12px}
+.rp-detail .rp-table{margin-top:4px}
+.rp-vsec{margin-top:18px}
+.rp-h2{font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.rp-vcard{display:flex;gap:11px;margin-bottom:10px;padding:10px 12px 10px 10px;background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow);color:var(--ink);text-decoration:none}
+.rp-vpic{width:78px;height:64px;flex:none;display:grid;place-items:center;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#eef4fb,#f8fbfe)}
+.rp-vpic img{width:100%;height:100%;object-fit:cover}
+.rp-vpic svg{width:100%;height:auto}
+.rp-vbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.rp-vtop{display:flex;align-items:baseline;gap:6px}
+.rp-vtop strong{flex:1;min-width:0;overflow:hidden;font-size:14px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.rp-vtop b{font-size:16px;font-weight:750;letter-spacing:-.02em;white-space:nowrap}
+.rp-vtop .chevron{color:#8494a8;font-size:16px}
+.rp-vmid{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:20px}
+.rp-vmid small{min-width:0;font-size:11px;line-height:1.35;color:#4f5f72}
+.rp-vcard .rp-bar{height:10px;margin-top:2px}
+.rp-leg{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:11px;font-weight:600;color:#3f4f63}
+.rp-leg>span{display:inline-flex;align-items:center;gap:4px}
+.rp-leg .rp-dot{width:8px;height:8px;border-radius:50%}
+.rp-reps .rp-sub{margin-bottom:6px}
+.rp-vmid .nw,.rp-kpis .nw{white-space:nowrap}
+@container(max-width:349.98px){.rp-kpis>div{padding:0 7px}.rp-kpis b{font-size:14.5px}.rp-kpis b.big{font-size:18px}.rp-kinds{gap:12px 6px}}
+html.dark .device-glass .rp-c,html.dark .device-glass .rp-dot,html.dark .device-glass .rp-ck,html.dark .device-glass .rp-ico,html.dark .device-glass .rp-tabs button[aria-pressed="true"]{filter:invert(1) hue-rotate(180deg)}
