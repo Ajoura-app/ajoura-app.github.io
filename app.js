@@ -155,7 +155,7 @@
   const route=()=>{let [view=startView,id='',eventId='']=(location.hash.slice(1)||startView).split('/');if(installed&&view==='launcher')view='home';if(compact&&view==='launcher')view='welcome';return {view,id,eventId};};
   const go=target=>{if(location.hash==='#'+target)render();else location.hash=target;};
   const svg=paths=>`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
-  const icons={help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17.2h.01"/>',
+  const icons={doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17.2h.01"/>',
     wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
     oil:'<path d="M12 3.5s5.5 6 5.5 10a5.5 5.5 0 0 1-11 0c0-4 5.5-10 5.5-10z"/>',
     filter:'<path d="M4 5h16l-6 7.5V18l-4 2v-7.5z"/>',
@@ -416,7 +416,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.31 (testiversio)';
+  const appVersion='0.32 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -698,8 +698,9 @@
   const chev='<svg class="rp-chev" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>';
   // A native select under a styled label: the phone shows its own picker, and the 16 px font keeps iPhone from zooming.
   const rpPick=(attr,label,shown,opts,cur)=>`<label class="rp-pick"><span class="rp-pick-t">${shown}</span>${chev}<select ${attr} aria-label="${label}">${opts.map(([v,n])=>`<option value="${v}"${v===cur?' selected':''}>${n}</option>`).join('')}</select></label>`;
-  function reports(){if(!cars.length)return `${top()}<h2 class="app-heading">Raportit</h2>${emptyGarage()}`;
-    const o=rpPrefs(),{from,to}=rpRange(o.p),prev=rpPrev(o.p),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
+  // The Raportit figures in one place: the screen and the PDF report (0.32) use the same numbers.
+  function rpCalc(o){
+    const {from,to}=rpRange(o.p),prev=rpPrev(o.p),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
     const ev=cars.some(c=>c.fuel==='Sähkö'||c.fuel==='Lataushybridi'),kn=k=>k==='fuel'&&ev?'Polttoaine ja lataus':costKinds.find(([x])=>x===k)[1];
     const pick=(s,ks)=>{const r={};let t=0;for(const k of ks){r[k]=s[k];t+=s[k];}return [r,t];};
     const rows=sel.map(c=>{const [s,t]=pick(costsOf(c,from,to),kinds),u=ku(c),d=drivenIn(c,from,to),min=u==='h'?1:100;
@@ -716,8 +717,12 @@
     // does not skew it.
     const pSum=rows.reduce((m,r)=>m+r.pt,0),both=rows.filter(r=>!hourly(r.c)&&r.d>=100&&r.pd>=100),sumOf=f=>both.reduce((m,r)=>m+f(r),0);
     const dMonth=prev?pctOf(sum/months,pSum/monthsOf(prev.from,prev.to)):null,dKm=prev&&both.length&&sumOf(r=>r.pt)?pctOf(sumOf(r=>r.t)/sumOf(r=>r.d),sumOf(r=>r.pt)/sumOf(r=>r.pd)):null;
+    const filtered=o.offCars.some(id=>cars.some(c=>c.id===id))||o.offKinds.length;
+    return {from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,filtered};}
+  function reports(){if(!cars.length)return `${top()}<h2 class="app-heading">Raportit</h2>${emptyGarage()}`;
+    const o=rpPrefs(),{from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,filtered}=rpCalc(o);
     const vs=o.p==='year'?'verrattuna viime vuoteen':'verrattuna edellisiin 12 kk';
-    const filtered=o.offCars.some(id=>cars.some(c=>c.id===id))||o.offKinds.length;if(!sel.length||!kinds.length)rpMore=true;
+    if(!sel.length||!kinds.length)rpMore=true;
     const head=`<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2><p class="rp-lead">Yhteenveto ajoneuvojen kuluista</p></div>${o.t==='sum'?rpPick('data-rp-period','Jakso',[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']].find(x=>x[0]===o.p)[1],[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o.p):''}</div>`;
     const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-rp-tab="sum" aria-pressed="${o.t==='sum'}">${svg(icons.chart)}<span>Yhteenveto</span></button><button type="button" data-rp-tab="cars" aria-pressed="${o.t==='cars'}">${svg(icons.car)}<span>Ajoneuvot</span></button></div>`;
     const reps=`<section class="rp-card rp-reps" aria-label="Ajoneuvokohtaiset raportit"><p class="rp-sub">Jokaisen ajoneuvon oma raportti: huoltohistoria, kulut ja tunnusluvut.</p>${cars.map(c=>`<a class="rp-rep" href="#report/${c.id}/raportit"><span class="rp-rthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong><small><span translate="no">${plateTxt(c)}</span> · <span>Tulosta tai tallenna PDF</span></small></span><span class="chevron" aria-hidden="true">›</span></a>`).join('')}</section>`;
@@ -748,7 +753,10 @@
       return `<a class="rp-vcard" href="#report/${c.id}/raportit"><span class="rp-vpic" aria-hidden="true">${rpThumb(c)}</span><span class="rp-vbody"><span class="rp-vtop"><strong translate="no">${escape(carName(c))}</strong><b>${eur(r.t)}</b><span class="chevron" aria-hidden="true">›</span></span><span class="rp-vmid"><small>${meta}</small>${rpDelta(dl,true)}</span>${r.t?`<span class="rp-bar" aria-hidden="true">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span><span class="rp-leg">${on.map(k=>`<span><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span class="sr-only">${kn(k)}</span> <span>${eur(r.s[k])}</span></span>`).join('')}</span>`:''}</span></a>`;};
     const sortNames=[['cost','Kulut'],['name','Nimi'],['km','€/km']];
     const list=`<section class="rp-vsec" aria-labelledby="rp-hv"><div class="rp-hrow"><h3 class="rp-h2" id="rp-hv">Ajoneuvokohtaiset kulut</h3>${rows.length>1?rpPick('data-rp-sort','Järjestä',`<span>Järjestä:</span> <span>${sortNames.find(x=>x[0]===o.s)[1]}</span>`,sortNames,o.s):''}</div>${rows.map(card).join('')}</section>`;
-    return `${top()}${head}${tabs}${note}${kpis}${cats}${more}${list}`;}
+    // PDF report of this summary (0.32): same period and choices as on the screen.
+    const pdf=`<button type="button" class="rp-card rp-pdf" data-rp-pdf><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>Raportoi ajanjakso</strong><small><span>${sel.length<cars.length?'Valitut ajoneuvot':'Kaikki ajoneuvot'}</span> · <span>PDF-tiedosto</span></small></span><span class="chevron" aria-hidden="true">›</span></button>`;
+    const msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
+    return `${top()}${head}${tabs}${note}${msg}${kpis}${cats}${more}${list}${pdf}`;}
   function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
     // Keep the keyboard focus on the same control after the screen is redrawn.
     const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
@@ -756,11 +764,88 @@
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}
     if(t.closest('[data-rp-more]')){rpMore=!rpMore;rpSave(o,'[data-rp-more]');return true;}
+    if(t.closest('[data-rp-pdf]')){fleetPdf();return true;}
     if(t.closest('[data-rp-reset]')){o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
     const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
     if(car||kd||all){if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];
       rpSave(o,car?`[data-rp-car="${car.dataset.rpCar}"]`:kd?`[data-rp-kind="${kd.dataset.rpKind}"]`:'.rp-chip.car');return true;}
     return false;}
+  // PDF report of the Raportit summary (0.32, Niklas 26.10.2026). The installed iPhone app ignores window.print(), so the
+  // report is built as a PDF file on the device (pdf-writer.js) and handed out: phones get the share sheet (print, save to
+  // Files, send), computers download it. Same figures and choices as the screen (rpCalc); labels go through tl(), so the
+  // PDF follows the app's language. Built in one go without waiting, so the phone still lets the share sheet open.
+  function fleetPdf(){const P=window.AjouraPDF,o=rpPrefs(),d=rpCalc(o);if(!P||!d.sum||!d.sel.length||!d.kinds.length)return;let file;
+    try{file=new File([fleetDoc(P,o,d).blob()],'ajoura-kulut-'+today()+'.pdf',{type:'application/pdf'});}
+    catch(e){notice='PDF-tiedoston teko ei onnistunut. Yritä uudelleen.';rpSave(o);return;}
+    saveFile(file,matchMedia('(pointer: coarse)').matches);}
+  function fleetDoc(P,o,d){const {from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm}=d,T=tl;
+    const doc=P.create({title:'AJOURA – '+T('Kulujen yhteenveto')}),L=12,R=198,CW=R-L,BOT=277;
+    const grey='#4f5f72',hair='#d6dee8',blue='#1769f4',kc={fuel:'#2a78d6',service:'#1baf7a',repair:'#6250d6',inspect:'#eda100',tyres:'#e87ba4',other:'#8d99aa'};
+    const rid='AJ-TALLI-'+today().replace(/-/g,''),tot={};for(const k of kinds)tot[k]=rows.reduce((m,r)=>m+r.s[k],0);const used=kinds.filter(k=>tot[k]>0);
+    // Change with its sign written out; less money is green, more is red (the same colours as the screen).
+    const signed=v=>v===null?null:{t:(v>0?'+':v<0?'−':'')+number(Math.abs(v))+' %',c:v<0?'#0b7148':v>0?'#b42a2a':grey};
+    let y=0;
+    const head=()=>{doc.page();doc.logo(L,12,46);doc.text(R,17,T('Kulujen yhteenveto'),{size:12,bold:true,align:'right'});
+      doc.text(R,21.5,T('Raportti '+rid),{size:8,color:grey,align:'right'});doc.text(R,25.5,T('Tulostettu '+date(today())),{size:8,color:grey,align:'right'});
+      doc.rect(L,29.5,CW,.6,{fill:blue});y=37;};
+    // A new page when the next block would not fit; again draws the table's header row when one is given.
+    const room=(h,hdr)=>{if(y+h<=BOT)return;head();if(hdr)hdr();};
+    const thead=(cols,h=6.5)=>{doc.rect(L,y,CW,h,{fill:'#eef2f7'});for(const [t,x,al,w] of cols){const ls=w?doc.wrap(t,w,7.5,true):[t];ls.forEach((l,i)=>doc.text(x,y+h-2.1-(ls.length-1-i)*3.1,l,{size:7.5,bold:true,color:grey,align:al}));}y+=h;};
+    const h2=s=>{room(26);y+=5.5;doc.text(L,y,T(s),{size:12,bold:true});y+=3;};
+    const rule=()=>doc.line(L,y,R,y,{color:hair,lw:.2});
+    head();
+    doc.text(L,y+4,T(sel.length<cars.length?'Valitut ajoneuvot':'Kaikki ajoneuvot'),{size:18,bold:true});y+=10.5;
+    doc.text(L,y,(o.p==='all'?T('Koko historia'):`${T('Jakso')} ${date(from)}–${date(to)}`)+(prev?`   ·   ${T('Vertailujakso')} ${date(prev.from)}–${date(prev.to)}`:''),{size:9.5,color:grey});y+=4.5;
+    if(d.filtered){const parts=[];if(sel.length<cars.length)parts.push(`${T('Ajoneuvot')}: ${sel.map(carName).join(', ')}`);if(kinds.length<costKinds.length)parts.push(`${T('Kululajit')}: ${kinds.map(k=>T(kn(k))).join(', ')}`);
+      for(const l of doc.wrap(`${T('Rajaus')} – ${parts.join('; ')}`,CW,8.5)){doc.text(L,y+0.5,l,{size:8.5,color:grey});y+=4;}}
+    // Key figures as four tiles.
+    y+=3;const tw=(CW-9)/4,th=19.5,tiles=[
+      [T('Kokonaiskulut'),eur(sum),{t:`${sel.length} ${T(sel.length===1?'ajoneuvo':'ajoneuvoa')}`,c:grey}],
+      [`${T('Keskimäärin')} ${T('/ kk')}`,eur(sum/months),signed(dMonth)],
+      [T('Ajetut kilometrit'),km?`${number(km)} km`:'–',km?null:{t:T('ei mittarilukemia'),c:grey}],
+      [T('Kulut / km'),km?`${dec2(kmCost/km)} €/km`:'–',signed(dKm)]];
+    tiles.forEach(([lab,val,sub],i)=>{const x=L+i*(tw+3);doc.rect(x,y,tw,th,{fill:'#f1f6fd',stroke:'#d9e6f4',r:2.5});
+      doc.text(x+3.5,y+5.5,doc.fit(lab,tw-7,7.5,true),{size:7.5,bold:true,color:grey});
+      doc.text(x+3.5,y+12,doc.fit(val,tw-7,14,true),{size:14,bold:true,color:blue});
+      if(sub)doc.text(x+3.5,y+16.6,doc.fit(sub.t,tw-7,8,sub.c!==grey),{size:8,bold:sub.c!==grey,color:sub.c});});
+    y+=th+1.5;
+    // Costs by type: one bar and a table.
+    h2('Kulut kategorioittain');y+=1.5;let bx=L;for(const k of used){const w=CW*tot[k]/sum;doc.rect(bx,y,w,4.5,{fill:kc[k]});bx+=w;}y+=7.5;
+    const pct=v=>{const p=v/sum*100;return p>0&&p<1?'<1 %':`${number(Math.round(p))} %`;};
+    thead([[T('Kululaji'),L+2],['€',R-32,'right'],[T('Osuus'),R-2,'right']]);
+    for(const k of used){doc.rect(L+2,y+1.7,3,3,{fill:kc[k],r:.6});doc.text(L+7.5,y+4.3,T(kn(k)),{size:9.5});doc.text(R-32,y+4.3,eur(tot[k]),{size:9.5,align:'right'});doc.text(R-2,y+4.3,pct(tot[k]),{size:9.5,color:grey,align:'right'});y+=6;rule();}
+    doc.text(L+2,y+4.8,T('Yhteensä'),{size:9.5,bold:true});doc.text(R-32,y+4.8,eur(sum),{size:9.5,bold:true,align:'right'});doc.text(R-2,y+4.8,'100 %',{size:9.5,bold:true,color:grey,align:'right'});y+=7;
+    // One row per vehicle, in the order chosen on the screen.
+    const vcols=()=>thead([[T('Ajoneuvo'),L+2],[T('Ajettu'),L+112,'right'],['€/km',L+140,'right'],[T('Kulut'),L+168,'right'],[T('Muutos'),R-2,'right']]);
+    h2('Ajoneuvokohtaiset kulut');y+=1.5;vcols();
+    for(const r of rows){room(9.5,vcols);const sg=signed(prev&&r.late===''?pctOf(r.t,r.pt):null);
+      doc.text(L+2,y+4.4,doc.fit(carName(r.c),80,9.5,true),{size:9.5,bold:true});
+      doc.text(L+2,y+8.2,doc.fit([r.c.plate||T(typeOf(r.c)),r.late?`${T('tiedot alkaen')} ${date(r.late)}`:''].filter(Boolean).join(' · '),80,7.5),{size:7.5,color:grey});
+      doc.text(L+112,y+4.4,r.d>0?`${number(r.d)} ${r.u}`:'–',{size:9.5,align:'right'});
+      doc.text(L+140,y+4.4,r.per!==null?`${dec2(r.per)} €/${r.u}`:'–',{size:9.5,align:'right'});
+      doc.text(L+168,y+4.4,eur(r.t),{size:9.5,bold:true,align:'right'});
+      doc.text(R-2,y+4.4,sg?sg.t:'–',{size:9.5,bold:!!sg,color:sg?sg.c:grey,align:'right'});y+=9.5;rule();}
+    // Vehicles by cost type, when there is more than one of each to compare.
+    if(rows.length>1&&used.length>1){const nw=54,cw=(CW-nw)/(used.length+1),col=i=>L+nw+cw*(i+1)-1.5,hh=Math.max(...used.map(k=>doc.wrap(T(kn(k)),cw-2,7.5,true).length))>1?9.6:6.5;
+      const mcols=()=>thead([[T('Ajoneuvo'),L+2],...used.map((k,i)=>[T(kn(k)),col(i),'right',cw-2]),[T('Yhteensä'),col(used.length),'right',cw-2]],hh);
+      h2('Kulut ajoneuvoittain ja lajeittain');y+=1.5;mcols();
+      for(const r of rows){room(6,mcols);doc.text(L+2,y+4.1,doc.fit(carName(r.c),nw-4,8.5,true),{size:8.5,bold:true});
+        used.forEach((k,i)=>doc.text(col(i),y+4.1,r.s[k]?number(Math.round(r.s[k])):'–',{size:8.5,align:'right',color:r.s[k]?undefined:grey}));
+        doc.text(col(used.length),y+4.1,number(Math.round(r.t)),{size:8.5,bold:true,align:'right'});y+=6;rule();}
+      room(7,mcols);doc.text(L+2,y+4.6,T('Yhteensä'),{size:8.5,bold:true});used.forEach((k,i)=>doc.text(col(i),y+4.6,number(Math.round(tot[k])),{size:8.5,bold:true,align:'right'}));
+      doc.text(col(used.length),y+4.6,number(Math.round(sum)),{size:8.5,bold:true,align:'right'});y+=7;
+      doc.text(R-2,y+1.5,T('Summat euroina.'),{size:7,color:grey,align:'right'});y+=2;}
+    // How the figures are counted.
+    const notes=[T('Luvut perustuvat omiin merkintöihisi ja tankkauksiisi. Kulut / km lasketaan ajoneuvoista, joilla on ajettu jaksolla vähintään 100 km.')];
+    if(rows.some(r=>hourly(r.c)))notes.push(T('Tuntimittarilliset ajoneuvot, kuten vene, eivät ole mukana kilometreissä.'));
+    if(prev)notes.push(T('Muutos verrataan vertailujaksoon. Ajoneuvolle muutosta ei näytetä, jos sen tiedot alkavat vasta jakson aikana.'));
+    // The notes stay together on one page.
+    const nl=notes.flatMap(n=>doc.wrap(n,CW,8));room(nl.length*3.8+5);y+=5;for(const l of nl){doc.text(L,y,l,{size:8,color:grey});y+=3.8;}
+    doc.each((i,n)=>{const fy=285;doc.line(L,fy-4.5,R,fy-4.5,{color:'#cbd9e8',lw:.25});
+      doc.text(L,fy,company.name,{size:7.5,bold:true});doc.text(L,fy+3.3,company.id?`${T('Y-tunnus')} ${company.id}`:T('Kehitysvaiheen sovellus'),{size:7,color:grey});
+      doc.text(105,fy,company.web,{size:7.5,color:grey,align:'center'});
+      doc.text(R,fy,`${T('Sivu')} ${i} / ${n}`,{size:7.5,color:grey,align:'right'});doc.text(R,fy+3.3,rid,{size:7,color:grey,align:'right'});});
+    return doc;}
   // Each screen remembers its scroll position, so going back (or re-rendering after a choice) does not jump to the top.
   const scrollMem={};let lastKey='';const keepScroll=['home','vehicle','help','me','report','event','notes','reports','menu','settings'];
   function render(){if(lastKey)scrollMem[lastKey]=screen.scrollTop;let {view,id,eventId}=route();const R=window.AjouraRoles;if(R){const to=R.redirect(view,id);if(to){history.replaceState(null,'','#'+to);({view,id,eventId}=route());}}if(R&&R.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;R.paint(screen,view,id);lastKey='';notice='';screen.focus({preventScroll:true});return;}const S=window.AjouraSync;if(S&&S.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;S.paint(screen,view);lastKey='';notice='';screen.focus({preventScroll:true});if(R)R.after(view);return;}let c=cars.find(c=>c.id===id);if(!guidance[view]||(['vehicle','add','event','edit','report','caredit','owner','fuel','notes'].includes(view)&&!c)){history.replaceState(null,'','#home');view='home';}let e=c?.events.find(e=>e.id===eventId);if((view==='event'||view==='edit')&&!e){history.replaceState(null,'','#vehicle/'+c.id);view='vehicle';}if(view!=='newcar'){draft=null;lookup=null;carPicked=false;}if(view!=='notes')memoEdit='';if(view!=='welcome')welcomeStep='';if(view!=='add'&&view!=='edit'){pending={photos:[],receipts:[]};pendingFor='';}clearTimeout(launchTimer);launchTimer=0;const now=new Date();document.getElementById('status-time').textContent=now.getHours()+'.'+String(now.getMinutes()).padStart(2,'0');glass.classList.toggle('launcher-mode',view==='launcher');let html=view==='launcher'?launcher():view==='welcome'?welcome():view==='home'?home():view==='newcar'?newcar():view==='vehicle'?vehicle(c):view==='add'?add(c):view==='edit'?add(c,e):view==='report'?report(c,eventId):view==='caredit'?carEdit(c):view==='owner'?owner(c):view==='fuel'?fuel(c):view==='notes'?notesPage(c):view==='me'?me():view==='help'?help():view==='reports'?reports():view==='menu'?menu():view==='settings'?settings():view==='feedback'?feedbackPage():detail(c,e);screen.innerHTML=view==='launcher'?html:'<div class="screen-content">'+html+'</div>'+(tabViews.includes(view)?tabBar(view):'');const key=location.hash||view;screen.scrollTop=keepScroll.includes(view)?(scrollMem[key]||0):(key===lastKey?scrollMem[key]||0:0);lastKey=key;screen.focus({preventScroll:true});const done=view==='vehicle'&&c&&c.events&&c.events.length,g=done?guidance.home:guidance[view],stepKey=done?'home':guideStep[view];document.getElementById('guide-number').textContent=g[0];document.getElementById('guide-title').textContent=g[1];document.getElementById('guide-copy').textContent=g[2];document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('active',el.dataset.step===stepKey));document.title='AJOURA App — '+({launcher:'Aloitusnäyttö',welcome:'Tervetuloa',home:'Etusivu',newcar:'Uusi ajoneuvo',me:'Varmuuskopio ja tiedot',help:'Ohjeet',reports:'Raportit',menu:'Valikko',settings:'Asetukset',feedback:'Palaute',vehicle:c&&carName(c),add:'Uusi merkintä',edit:'Muokkaa merkintää',report:'Raportti',caredit:'Muokkaa ajoneuvoa',owner:'Omistajanvaihdos',fuel:'Tankkauskirja',notes:'Muistiinpanot',event:e?.type}[view]);notice='';if(R)R.after(view);}

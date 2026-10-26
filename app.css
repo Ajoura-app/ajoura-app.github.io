@@ -689,4 +689,10 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .rp-reps .rp-sub{margin-bottom:6px}
 .rp-vmid .nw,.rp-kpis .nw{white-space:nowrap}
 @container(max-width:349.98px){.rp-kpis>div{padding:0 7px}.rp-kpis b{font-size:14.5px}.rp-kpis b.big{font-size:18px}.rp-kinds{gap:12px 6px}}
-html.dark .device-glass .rp-c,html.dark .device-glass .rp-dot,html.dark .device-glass .rp-ck,html.dark .device-glass .rp-ico,html.dark .device-glass .rp-tabs button[aria-pressed="true"]{filter:invert(1) hue-rotate(180deg)}
+html.dark .device-glass .rp-c,html.dark .device-glass .rp-dot,html.dark .device-glass .rp-ck,html.dark .device-glass .rp-ico,html.dark .device-glass .rp-pdf-ico,html.dark .device-glass .rp-tabs button[aria-pressed="true"]{filter:invert(1) hue-rotate(180deg)}
+/* PDF report button on the Raportit summary (v0.32) */
+.rp-pdf{display:flex;align-items:center;gap:11px;width:100%;margin-top:2px;font:inherit;text-align:left;color:var(--ink);cursor:pointer}
+.rp-pdf:hover{border-color:#7fb2f3}
+.rp-pdf-ico{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:11px;background:var(--blue);color:#fff}
+.rp-pdf-ico svg{width:20px;height:20px}
+.rp-pdf .chevron{color:#8494a8;font-size:16px}
