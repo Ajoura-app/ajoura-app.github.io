@@ -49,6 +49,8 @@
       rect(x,y,w,h,o={}){const p=path(x,y,w,h,o.r);if(o.fill&&o.stroke)put(`${rgb(o.fill)} rg ${rgb(o.stroke)} RG ${num((o.lw||.25)*K)} w ${p} B`);else if(o.stroke)put(`${rgb(o.stroke)} RG ${num((o.lw||.25)*K)} w ${p} S`);else put(`${rgb(o.fill||'#000000')} rg ${p} f`);},
       line(x1,y1,x2,y2,o={}){put(`${rgb(o.color||'#000000')} RG ${num((o.lw||.25)*K)} w ${X(x1)} ${Y(y1)} m ${X(x2)} ${Y(y2)} l S`);},
       logo(x,y,w){const s=w*K/640;put(`q ${num(s)} 0 0 ${num(-s)} ${X(x)} ${num(PH-y*K-88*s)} cm ${LOGO} Q`);return w*198/640;},
+      // Pixel size of a JPEG data URL ({w,h}), or null when it can't be read; lets the caller plan rows before drawing.
+      imageSize(url){const j=jpeg(url);return j&&j.w&&j.h?{w:j.w,h:j.h}:null;},
       // A JPEG (data URL) fitted inside the box, keeping its shape; returns false when it isn't a JPEG.
       image(url,x,y,w,h){const j=jpeg(url);if(!j||!j.w||!j.h)return false;let n=imgs.findIndex(i=>i.url===url);if(n<0){imgs.push({url,...j});n=imgs.length-1;}
         const k=Math.min(w/j.w,h/j.h),iw=j.w*k,ih=j.h*k;if(!cur.img.includes(n))cur.img.push(n);

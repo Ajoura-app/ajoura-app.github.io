@@ -79,7 +79,7 @@
     vehicle:['04 / 06','Auton päiväkirja.','Tässä on autosi oma historia. Paina Lisää merkintä ja kirjaa vaikka viimeisin huolto.'],
     event:['04 / 06','Yksityiskohdat tallessa.','Päivämäärä, mittarilukema ja muistiinpanot yhdessä näkymässä. Palaa historiaan vasemman yläkulman nuolesta.'],
     add:['05 / 06','Ensimmäinen merkintä.','Valitse tapahtuma, päivämäärä ja mittarilukema. Tallennuksen jälkeen merkintä löytyy auton historiasta.'],
-    report:['04 / 06','Huoltohistoriaraportti.','Koko historia yhdellä sivulla. Tulosta tai tallenna PDF:ksi vaikka auton myyntiä varten.'],
+    report:['04 / 06','Huoltohistoriaraportti.','Koko historia yhdellä sivulla. Tallenna se PDF-tiedostoksi vaikka auton myyntiä varten.'],
     notes:['04 / 06','Muistiinpanot.','Kirjaa auton pienet asiat talteen: renkaiden koot, hallipaikka, varaosanumerot. Jokainen muistiinpano saa päivämäärän.'],
     fuel:['04 / 06','Tankkauskirja.','Kirjaa tankkaukset tai lataukset. AJOURA laskee keskikulutuksen täysien tankkausten väliltä ja kertoo, paljon ajaminen maksaa.'],
     owner:['04 / 06','Omistajanvaihdos.','Kirjaa vaihdos historiaan, anna raportti ostajalle ja poista auto halutessasi.'],
@@ -87,7 +87,7 @@
     edit:['05 / 06','Tarkenna merkintää.','Lisää jälkikäteen kilometrit, kulut, tehdyt toimenpiteet, kuitit ja kuvat.'],
     help:['06 / 06','Apua käyttöön.','Yleisimmät kysymykset valmiine vastauksineen. Hakukenttä löytää vastauksen nopeasti.'],
     me:['06 / 06','Varmuuskopio ja tiedot.','Tallenna tiedot tiedostoon ja palauta ne uudessa puhelimessa. Täältä voit myös poistaa kaikki tiedot.'],
-    reports:['06 / 06','Raportit.','Jokaisen ajoneuvon huoltohistoriaraportti samassa paikassa. Avaa raportti ja tulosta tai tallenna se PDF:ksi.'],
+    reports:['06 / 06','Raportit.','Jokaisen ajoneuvon huoltohistoriaraportti samassa paikassa. Avaa raportti ja tallenna se PDF-tiedostoksi.'],
     menu:['06 / 06','Valikko.','Asetukset, varmuuskopio, ohjeet ja palaute.'],
     settings:['06 / 06','Asetukset.','Huoltomuistutuksen väli, kieli ja ulkoasu.'],
     feedback:['06 / 06','Anna palautetta.','Kerro, mikä toimi ja mikä ei. Palaute menee AJOURAn tekijöille.']
@@ -198,8 +198,8 @@
     ['Miten kirjaan huollon tai korjauksen?','Avaa auto ja paina ＋ Lisää merkintä. Pakollisia ovat vain tyyppi ja päivämäärä. Kilometrit, kulut, tehdyt toimenpiteet, kuvat ja kuitit voit lisätä heti tai myöhemmin.'],
     ['Miten lisään kuitin tai kuvan?','Merkinnässä on erikseen Lisää kuvia ja Lisää kuitit. Voit ottaa kuvan kameralla tai valita sen kuvista. Kuvat pienennetään automaattisesti, jotta ne mahtuvat puhelimeen.'],
     ['Kuva ei lataudu. Mitä teen?','Kokeile toista kuvaa tai ota kuvasta kuvakaappaus ja lisää se. Jotkin kuvamuodot (esim. osa HEIC-kuvista) eivät aukea kaikissa selaimissa.'],
-    ['Miten muokkaan tai poistan merkinnän?','Avaa merkintä aikajanalta. Muokkaa-, Tulosta- ja Poista-painikkeet ovat merkinnän yläosassa. Kuvia ja kuitteja lisätään ja poistetaan Muokkaa-näkymässä.'],
-    ['Miten saan huoltohistorian auton myyntiä varten?','Avaa Raportit-välilehti tai auto ja valitse Raportti. Raportin voi tulostaa tai tallentaa PDF-tiedostoksi tulostusvalikosta.'],
+    ['Miten muokkaan tai poistan merkinnän?','Avaa merkintä aikajanalta. Muokkaa-, Tallenna PDF- ja Poista-painikkeet ovat merkinnän yläosassa. Kuvia ja kuitteja lisätään ja poistetaan Muokkaa-näkymässä.'],
+    ['Miten saan huoltohistorian auton myyntiä varten?','Avaa Raportit-välilehti tai auto ja valitse Raportti. Tallenna PDF-raportti -painike tekee raportista PDF-tiedoston: puhelimessa avautuu jakovalikko, tietokoneella tiedosto latautuu.'],
     ['Seuraavan huollon arvio on väärin.','Huoltoväli on oletuksena 12 kuukautta. Vaihda se kohdasta Valikko → Asetukset → Huoltomuistutuksen väli. Arvio lasketaan viimeisimmästä huoltomerkinnästä.'],
     ['Rekisterihaku ei löytänyt autoani.','Rekisterihaku on vielä esimerkkiaineistoon perustuva demo. Valitse Syötä tiedot itse, niin pääset jatkamaan.'],
     ['Tallentuvatko tietoni?','Tiedot tallentuvat vain tähän laitteeseen, myös selaimessa. Asenna sovellus kotivalikkoon ja ota välillä varmuuskopio, koska selain voi poistaa pitkään käyttämättömän sivun tiedot.'],
@@ -416,7 +416,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.33 (testiversio)';
+  const appVersion='0.34 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -638,13 +638,16 @@
   // older/newer neighbours for browsing, and the next due date when this entry is the one the reminder is counted from.
   const evGroup=(c,e)=>isService(e)?'svc':dispType(c,e.type);
   const spanTxt=d=>d<62?`<span>${number(d)}</span> <span>pv</span>`:`<span>${number(Math.round(d/30.4))}</span> <span>kk</span>`;
-  function evContext(c,e){const ev=[...c.events].sort(newest),i=ev.findIndex(x=>x.id===e.id),g=evGroup(c,e),prev=ev.slice(i+1).find(x=>evGroup(c,x)===g);
+  // What the entry page says about the previous entry of the same group and the next due date; shared by the screen and the PDF.
+  function evInfo(c,e){const ev=[...c.events].sort(newest),i=ev.findIndex(x=>x.id===e.id),g=evGroup(c,e),prev=ev.slice(i+1).find(x=>evGroup(c,x)===g);
     const word=g==='svc'?['Edellisestä huollosta','Ensimmäinen kirjattu huolto']:e.type==='Katsastus'?['Edellisestä katsastuksesta','Ensimmäinen kirjattu katsastus']:['Edellisestä kerrasta','Ensimmäinen kirjattu kerta'];
-    let since;if(!prev)since=`<div class="ev-since first"><span class="ev-since-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="ev-since-txt"><b>${word[1]}</b></span></div>`;
-    else{const days=Math.max(0,Math.round(dayNum(e.date)-dayNum(prev.date))),km=e.km!==null&&prev.km!==null&&e.km>=prev.km?e.km-prev.km:null;
-      since=`<a class="ev-since" href="#event/${c.id}/${prev.id}"><span class="ev-since-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="ev-since-txt"><b>${word[0]}</b><strong>${spanTxt(days)}${km!==null?` · <span>${number(km)} ${ku(c)}</span>`:''}</strong></span><span class="ev-since-prev"><span>${date(prev.date)}</span> <span class="no-print" aria-hidden="true">›</span></span></a>`;}
+    const days=prev?Math.max(0,Math.round(dayNum(e.date)-dayNum(prev.date))):null,km=prev&&e.km!==null&&prev.km!==null&&e.km>=prev.km?e.km-prev.km:null;
     const due=dueDates(c).find(d=>d.from===e.date&&(d.what==='Huolto'?g==='svc':e.type==='Katsastus')),latest=ev.find(x=>evGroup(c,x)===g)?.id===e.id;
-    const next=due&&latest?`<p class="ev-next"><span>${due.what==='Huolto'?'Tämän huollon perusteella seuraava huolto':'Tämän katsastuksen perusteella seuraava katsastus'}</span> <b><span>${date(due.due)}</span>${due.km!==null?` <span>tai</span> <span>${number(due.km)} km</span>`:''}</b></p>`:'';
+    return {ev,i,prev,word,days,km,due:due&&latest?due:null};}
+  function evContext(c,e){const {ev,i,prev,word,days,km,due}=evInfo(c,e);
+    let since;if(!prev)since=`<div class="ev-since first"><span class="ev-since-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="ev-since-txt"><b>${word[1]}</b></span></div>`;
+    else since=`<a class="ev-since" href="#event/${c.id}/${prev.id}"><span class="ev-since-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="ev-since-txt"><b>${word[0]}</b><strong>${spanTxt(days)}${km!==null?` · <span>${number(km)} ${ku(c)}</span>`:''}</strong></span><span class="ev-since-prev"><span>${date(prev.date)}</span> <span class="no-print" aria-hidden="true">›</span></span></a>`;
+    const next=due?`<p class="ev-next"><span>${due.what==='Huolto'?'Tämän huollon perusteella seuraava huolto':'Tämän katsastuksen perusteella seuraava katsastus'}</span> <b><span>${date(due.due)}</span>${due.km!==null?` <span>tai</span> <span>${number(due.km)} km</span>`:''}</b></p>`:'';
     const nav=(x,cls,label)=>x?`<a class="ev-nav-btn ${cls}" href="#event/${c.id}/${x.id}"><span class="ev-nav-dir">${label}</span><small><span>${escape(dispType(c,x.type))}</span> · <span>${date(x.date)}</span></small></a>`:'<span class="ev-nav-btn empty"></span>';
     const older=ev[i+1],newer=i>0?ev[i-1]:null;
     return {since,next,nav:older||newer?`<nav class="ev-nav no-print" aria-label="Selaa merkintöjä">${nav(older,'older','‹ Edellinen')}${nav(newer,'newer','Seuraava ›')}</nav>`:''};}
@@ -657,7 +660,7 @@
     return `${back('vehicle/'+c.id,'Huoltohistoria')}<div id="event-sheet"><header class="report-head ev-print"><img src="logo.svg" alt="AJOURA" width="640" height="198"><div><strong>Huoltomerkintä</strong><span>Tulostettu ${date(today())}</span></div></header>`
       +`<div class="ev-hero"><span class="ev-ico" aria-hidden="true">${eventIcon(dispType(c,e.type))}</span><div><h2 class="app-heading">${escape(dispType(c,e.type))}</h2><p class="app-subtitle">${escape(carName(c))} · ${plateTxt(c)}</p></div></div>`
       +`<dl class="ev-facts">${tile('PÄIVÄMÄÄRÄ',date(e.date))}${tile(hourly(c)?'TUNTIMITTARI':'MITTARILUKEMA',e.km===null?'Ei merkitty':number(e.km)+' '+ku(c),e.km===null)}${tile('KUSTANNUS',has(e.cost)?number(e.cost)+' €':'Ei merkitty',!has(e.cost))}</dl>${x.since}${x.next}`
-      +`<div class="ev-actions no-print"><a class="ev-act primary" href="#edit/${c.id}/${e.id}">${svg(evIcons.edit)}<span>Muokkaa</span></a><button class="ev-act" type="button" data-print>${svg(evIcons.print)}<span>Tulosta / tallenna PDF</span></button><button class="ev-act danger" type="button" data-delete-event="${e.id}">${svg(evIcons.trash)}<span>Poista</span></button></div>`
+      +`<div class="ev-actions no-print"><a class="ev-act primary" href="#edit/${c.id}/${e.id}">${svg(evIcons.edit)}<span>Muokkaa</span></a><button class="ev-act" type="button" data-event-pdf="${e.id}" data-event-car="${c.id}">${svg(icons.doc)}<span>Tallenna PDF</span></button><button class="ev-act danger" type="button" data-delete-event="${e.id}">${svg(evIcons.trash)}<span>Poista</span></button></div>`
       +`${notice?`<p class="success-note no-print" role="status">${escape(notice)}</p>`:''}`
       +`${e.items?.length?sec('TEHDYT TOIMENPITEET',`<ul class="ev-chips">${e.items.map(i=>`<li>${i}</li>`).join('')}</ul>`):''}`
       +`${parts.length||e.labor||e.other?sec('KULUT ERITELTYINÄ',`<table class="ev-costs"><tbody>${parts.map(x=>`<tr><td><span translate="no">${escape(x.name)}</span>${x.qty?` <small>· ${escape(x.qty)}</small>`:''}</td><td>${x.price?number(x.price)+' €':''}</td></tr>`).join('')}${e.labor?`<tr><td>Työ</td><td>${number(e.labor)} €</td></tr>`:''}${e.other?`<tr><td>Muut</td><td>${number(e.other)} €</td></tr>`:''}</tbody></table>`):''}`
@@ -963,6 +966,60 @@
       doc.text(105,fy,company.web,{size:7.5,color:grey,align:'center'});
       doc.text(R,fy,`${T('Sivu')} ${i} / ${n}`,{size:7.5,color:grey,align:'right'});doc.text(R,fy+3.3,reportId,{size:7,color:grey,align:'right'});});
     return doc;}
+  // One entry as a PDF with its photos and receipts (0.34), handed over like the reports: share sheet on a phone, download on a computer.
+  function eventPdf(carId,id){const P=window.AjouraPDF,c=cars.find(c=>c.id===carId),e=c?.events.find(e=>e.id===id);if(!P||!e)return;let file;
+    try{const tag=(c.plate||'').normalize('NFD').replace(/[^A-Za-z0-9]/g,'')||'ajoneuvo';
+      file=new File([eventDoc(P,c,e).blob()],'ajoura-'+tag+'-merkinta-'+e.date+'.pdf',{type:'application/pdf'});}
+    catch(err){notice='PDF-tiedoston teko ei onnistunut. Yritä uudelleen.';render();return;}
+    saveFile(file,matchMedia('(pointer: coarse)').matches);}
+  function eventDoc(P,c,e){const T=tl,hr=hourly(c),u=ku(c),x=evInfo(c,e),printed=date(today()),has=v=>v!==''&&v!=null&&Number.isFinite(Number(v));
+    const doc=P.create({title:'AJOURA – '+T('Huoltomerkintä')+' – '+carName(c)}),L=12,R=198,CW=R-L,BOT=277;
+    const grey='#4f5f72',hair='#d6dee8',blue='#1769f4';
+    let y=0;
+    const head=()=>{doc.page();doc.logo(L,12,46);doc.text(R,17,T('Huoltomerkintä'),{size:12,bold:true,align:'right'});
+      doc.text(R,21.5,T('Tulostettu '+printed),{size:8,color:grey,align:'right'});doc.rect(L,29.5,CW,.6,{fill:blue});y=37;};
+    const room=h=>{if(y+h>BOT)head();};
+    const rule=()=>doc.line(L,y,R,y,{color:hair,lw:.2});
+    // Section title like the screen's small capitals; need keeps it on the same page as the first lines below it.
+    const h3=(s,need)=>{room(need+11);y+=6;doc.text(L,y+3,T(s),{size:8.5,bold:true,color:grey});y+=6;};
+    // Label on the left, value on the right; the label gives way when the value is long.
+    const row=(k,v)=>{room(7);const vw=v?Math.min(doc.width(v,9,true),CW*.6):0;doc.text(L+1,y+4.6,doc.fit(k,CW-vw-8,9),{size:9,color:grey});if(v)doc.text(R-1,y+4.6,doc.fit(v,CW*.6,9,true),{size:9,bold:true,align:'right'});y+=7;rule();};
+    head();
+    doc.text(L,y+4,doc.fit(T(dispType(c,e.type)),CW,18,true),{size:18,bold:true});y+=10.5;
+    doc.text(L,y,doc.fit(carName(c)+' · '+(c.plate||T(typeOf(c))),CW,9.5),{size:9.5,color:grey});y+=6;
+    // Date, meter and cost as tiles.
+    const tiles=[[date(e.date),T('PÄIVÄMÄÄRÄ')],[e.km===null?T('Ei merkitty'):number(e.km)+' '+u,T(hr?'TUNTIMITTARI':'MITTARILUKEMA'),e.km===null],[has(e.cost)?number(e.cost)+' €':T('Ei merkitty'),T('KUSTANNUS'),!has(e.cost)]],tw=(CW-6)/3;
+    tiles.forEach(([v,k,empty],i)=>{const tx=L+i*(tw+3);doc.rect(tx,y,tw,16,{fill:'#f1f6fd',stroke:'#d9e6f4',r:2.5});
+      doc.text(tx+3.5,y+6,doc.fit(k,tw-7,7.5,true),{size:7.5,bold:true,color:grey});doc.text(tx+3.5,y+12.5,doc.fit(v,tw-7,empty?10:13,true),{size:empty?10:13,bold:true,color:empty?grey:blue});});
+    y+=19;rule();
+    // Time and distance since the previous entry of the same kind, and the next due date.
+    if(x.prev){const t=x.days<62?`${number(x.days)} ${T('pv')}`:`${number(Math.round(x.days/30.4))} ${T('kk')}`;row(T(x.word[0]),`${t}${x.km!==null?` · ${number(x.km)} ${u}`:''} (${date(x.prev.date)})`);}
+    else row(T(x.word[1]),'');
+    if(x.due)row(T(x.due.what==='Huolto'?'Tämän huollon perusteella seuraava huolto':'Tämän katsastuksen perusteella seuraava katsastus'),`${date(x.due.due)}${x.due.km!==null?` ${T('tai')} ${number(x.due.km)} km`:''}`);
+    // Done jobs in two columns.
+    if(e.items?.length){const cw=(CW-6)/2,list=e.items.map(T),half=Math.ceil(list.length/2);h3('TEHDYT TOIMENPITEET',5.5);
+      for(let r=0;r<half;r++){room(5.5);[list[r],list[r+half]].forEach((it,ci)=>{if(it===undefined)return;const cx=L+ci*(cw+6);doc.rect(cx+1,y+1.9,1.6,1.6,{fill:blue,r:.8});doc.text(cx+4.5,y+3.8,doc.fit(it,cw-5,9),{size:9});});y+=5.5;}}
+    // Itemised costs: parts (the owner's own names stay untranslated), labour and other.
+    const parts=e.parts||[];
+    if(parts.length||e.labor||e.other){h3('KULUT ERITELTYINÄ',6.5);
+      const line=(name,qty,price)=>{room(6.5);let lx=L+1+doc.text(L+1,y+4.4,doc.fit(name,CW-50,9),{size:9});if(qty)doc.text(lx+1.5,y+4.4,doc.fit('· '+qty,R-30-lx,8),{size:8,color:grey});
+        doc.text(R-1,y+4.4,price,{size:9,align:'right'});y+=6.5;rule();};
+      rule();for(const p of parts)line(p.name,p.qty,p.price?number(p.price)+' €':'');if(e.labor)line(T('Työ'),'',number(e.labor)+' €');if(e.other)line(T('Muut'),'',number(e.other)+' €');}
+    // The owner's note as written, line breaks kept.
+    if(e.note){const nl=String(e.note).split(/\r?\n/).flatMap(p=>p.trim()?doc.wrap(p,CW-2,9):['']);h3('MUISTIINPANO',Math.min(nl.length,3)*4.4);
+      for(const l of nl){room(4.4);if(l)doc.text(L+1,y+3.4,l,{size:9});y+=4.4;}}
+    // Photos three to a row and receipts two to a row and up to a page tall (close to real size, so the text can be read); each keeps its shape and a row moves to the next page when it does not fit.
+    const grid=(title,list,cols,boxH)=>{const cw=(CW-4*(cols-1))/cols,items=list.map(src=>({src,s:doc.imageSize(src)})).filter(i=>i.s);if(!items.length)return;
+      const rows=[];for(let i=0;i<items.length;i+=cols)rows.push(items.slice(i,i+cols).map(it=>{const k=Math.min(cw/it.s.w,boxH/it.s.h);return {...it,w:it.s.w*k,h:it.s.h*k};}));
+      const rh=r=>Math.max(...r.map(i=>i.h));h3(title,rh(rows[0]));y+=1;
+      for(const r of rows){room(rh(r));r.forEach((it,ci)=>{const ix=L+ci*(cw+4)+(cw-it.w)/2;doc.image(it.src,ix,y,it.w,it.h);doc.rect(ix,y,it.w,it.h,{stroke:hair,lw:.2});});y+=rh(r)+4;}};
+    grid('KUVAT',e.photos||[],3,62);grid('KUITIT',e.receipts||[],2,225);
+    if(c.sample&&!e.id.startsWith('new')){room(8);y+=6;doc.text(L,y,T('Kuvitteellinen esimerkkimerkintä.'),{size:8,color:grey});}
+    doc.each((i,n)=>{const fy=285;doc.line(L,fy-4.5,R,fy-4.5,{color:'#cbd9e8',lw:.25});
+      doc.text(L,fy,company.name,{size:7.5,bold:true});doc.text(L,fy+3.3,company.id?`${T('Y-tunnus')} ${company.id}`:T('Kehitysvaiheen sovellus'),{size:7,color:grey});
+      doc.text(105,fy,company.web,{size:7.5,color:grey,align:'center'});doc.text(105,fy+3.3,doc.fit(carName(c)+(c.plate?' · '+c.plate:''),70,7),{size:7,color:grey,align:'center'});
+      doc.text(R,fy,`${T('Sivu')} ${i} / ${n}`,{size:7.5,color:grey,align:'right'});doc.text(R,fy+3.3,T('Tulostettu '+printed),{size:7,color:grey,align:'right'});});
+    return doc;}
   // Each screen remembers its scroll position, so going back (or re-rendering after a choice) does not jump to the top.
   const scrollMem={};let lastKey='';const keepScroll=['home','vehicle','help','me','report','event','notes','reports','menu','settings'];
   function render(){if(lastKey)scrollMem[lastKey]=screen.scrollTop;let {view,id,eventId}=route();const R=window.AjouraRoles;if(R){const to=R.redirect(view,id);if(to){history.replaceState(null,'','#'+to);({view,id,eventId}=route());}}if(R&&R.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;R.paint(screen,view,id);lastKey='';notice='';screen.focus({preventScroll:true});return;}const S=window.AjouraSync;if(S&&S.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;S.paint(screen,view);lastKey='';notice='';screen.focus({preventScroll:true});if(R)R.after(view);return;}let c=cars.find(c=>c.id===id);if(!guidance[view]||(['vehicle','add','event','edit','report','caredit','owner','fuel','notes'].includes(view)&&!c)){history.replaceState(null,'','#home');view='home';}let e=c?.events.find(e=>e.id===eventId);if((view==='event'||view==='edit')&&!e){history.replaceState(null,'','#vehicle/'+c.id);view='vehicle';}if(view!=='newcar'){draft=null;lookup=null;carPicked=false;}if(view!=='notes')memoEdit='';if(view!=='welcome')welcomeStep='';if(view!=='add'&&view!=='edit'){pending={photos:[],receipts:[]};pendingFor='';}clearTimeout(launchTimer);launchTimer=0;const now=new Date();document.getElementById('status-time').textContent=now.getHours()+'.'+String(now.getMinutes()).padStart(2,'0');glass.classList.toggle('launcher-mode',view==='launcher');let html=view==='launcher'?launcher():view==='welcome'?welcome():view==='home'?home():view==='newcar'?newcar():view==='vehicle'?vehicle(c):view==='add'?add(c):view==='edit'?add(c,e):view==='report'?report(c,eventId):view==='caredit'?carEdit(c):view==='owner'?owner(c):view==='fuel'?fuel(c):view==='notes'?notesPage(c):view==='me'?me():view==='help'?help():view==='reports'?reports():view==='menu'?menu():view==='settings'?settings():view==='feedback'?feedbackPage():detail(c,e);screen.innerHTML=view==='launcher'?html:'<div class="screen-content">'+html+'</div>'+(tabViews.includes(view)?tabBar(view):'');const key=location.hash||view;screen.scrollTop=keepScroll.includes(view)?(scrollMem[key]||0):(key===lastKey?scrollMem[key]||0:0);lastKey=key;screen.focus({preventScroll:true});const done=view==='vehicle'&&c&&c.events&&c.events.length,g=done?guidance.home:guidance[view],stepKey=done?'home':guideStep[view];document.getElementById('guide-number').textContent=g[0];document.getElementById('guide-title').textContent=g[1];document.getElementById('guide-copy').textContent=g[2];document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('active',el.dataset.step===stepKey));document.title='AJOURA App — '+({launcher:'Aloitusnäyttö',welcome:'Tervetuloa',home:'Etusivu',newcar:'Uusi ajoneuvo',me:'Varmuuskopio ja tiedot',help:'Ohjeet',reports:'Raportit',menu:'Valikko',settings:'Asetukset',feedback:'Palaute',vehicle:c&&carName(c),add:'Uusi merkintä',edit:'Muokkaa merkintää',report:'Raportti',caredit:'Muokkaa ajoneuvoa',owner:'Omistajanvaihdos',fuel:'Tankkauskirja',notes:'Muistiinpanot',event:e?.type}[view]);notice='';if(R)R.after(view);}
@@ -1061,7 +1118,7 @@
   screen.addEventListener('click',event=>{const t=event.target;if(t.closest('[data-login]')){loginNote=true;const y=screen.scrollTop;render();screen.scrollTop=y;return;}const pref=t.closest('[data-pref]');if(pref){const v=pref.dataset.value;if(pref.dataset.pref==='Teema')setTheme(v);else if(window.AjouraI18n)window.AjouraI18n.set(v);const y=screen.scrollTop;render();screen.scrollTop=y;return;}const icon=t.closest('[data-launch]');if(icon)launch(icon);if(t.closest('[data-reset]'))reset();const chip=t.closest('[data-plate]');if(chip)startLookup(chip.dataset.plate);const method=t.closest('[data-method]');if(method){if(method.dataset.method==='plate'){draft=null;lookup={plate:''};}else{draft={plate:lookup?.plate||'',name:'',year:'',body:'',fuel:'',color:'',source:'manual',step:'details'};lookup=null;}render();}
     const to=t.closest('[data-step-to]');if(to){const step=to.dataset.stepTo;if(step==='method'||step==='kind'){draft=null;lookup=null;if(step==='kind')carPicked=false;}else if(step==='plate'){lookup={plate:draft?.plate||''};draft=null;}else if(draft)draft.step=step;render();}
     if(t.closest('[data-add-part]')){const rows=screen.querySelector('.part-rows');if(rows&&rows.children.length<30){rows.insertAdjacentHTML('beforeend',partRow());rows.lastElementChild.querySelector('input').focus();}}
-    if(t.closest('[data-print]'))window.print();const vp=t.closest('[data-vehicle-pdf]');if(vp)vehiclePdf(vp.dataset.vehiclePdf);if(t.closest('[data-tutorial]'))tutorial();const tl=t.closest('[data-tl]');if(tl)filterTimeline(tl.dataset.tl);if(t.closest('[data-backup]'))backup();const ics=t.closest('[data-ics]');if(ics)calendar(ics.dataset.ics);const tr=t.closest('[data-transfer]');if(tr)transfer(tr.dataset.transfer);if(t.closest('[data-share-app]'))shareApp();const sl=t.closest('[data-sale]');if(sl)saleLink(sl.dataset.sale);
+    if(t.closest('[data-print]'))window.print();const vp=t.closest('[data-vehicle-pdf]');if(vp)vehiclePdf(vp.dataset.vehiclePdf);const ep=t.closest('[data-event-pdf]');if(ep)eventPdf(ep.dataset.eventCar,ep.dataset.eventPdf);if(t.closest('[data-tutorial]'))tutorial();const tl=t.closest('[data-tl]');if(tl)filterTimeline(tl.dataset.tl);if(t.closest('[data-backup]'))backup();const ics=t.closest('[data-ics]');if(ics)calendar(ics.dataset.ics);const tr=t.closest('[data-transfer]');if(tr)transfer(tr.dataset.transfer);if(t.closest('[data-share-app]'))shareApp();const sl=t.closest('[data-sale]');if(sl)saleLink(sl.dataset.sale);
     const fr=t.closest('[data-fuel-remove]');if(fr)removeFill(fr.dataset.fuelRemove);const mv=t.closest('[data-memo-view]');if(mv){prefSet('ajoura-memo-view',mv.dataset.memoView);const y=screen.scrollTop;render();screen.scrollTop=y;return;}const me=t.closest('[data-memo-edit]');if(me){memoEdit=me.dataset.memoEdit;const y=screen.scrollTop;render();screen.scrollTop=y;screen.querySelector('#memo-edit-form textarea')?.focus({preventScroll:true});}if(t.closest('[data-memo-cancel]')){memoEdit='';const y=screen.scrollTop;render();screen.scrollTop=y;}const md=t.closest('[data-memo-del]');if(md)deleteMemo(md.dataset.memoDel);const cv=t.closest('[data-cover]');if(cv)setCover(cv);
     const de=t.closest('[data-delete-event]');if(de)deleteEvent(de.dataset.deleteEvent);
     const ar=t.closest('[data-att-remove]');if(ar)removeAtt(ar);const av=t.closest('[data-view-src]');if(av)viewAtt(av);
