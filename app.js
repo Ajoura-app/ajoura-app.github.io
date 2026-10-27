@@ -416,26 +416,32 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.32 (testiversio)';
+  const appVersion='0.33 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
   function gaps(list){const m=[],k=[];for(let i=1;i<list.length;i++){m.push(monthsBetween(list[i-1].date,list[i].date));if(list[i].km!==null&&list[i-1].km!==null)k.push(list[i].km-list[i-1].km);}const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;return {months:avg(m),km:avg(k)};}
   const fmtMonths=m=>m===null?'–':m<1.5?'alle 2 kk':Math.round(m)+' kk';
-  function analysis(c,ev,total){
+  // Analysis figures, shared by the screen report and the PDF (0.33).
+  function anCalc(c,ev,total){
     const oil=ev.filter(isOil),svc=ev.filter(e=>isService(e)||isOil(e)),insp=ev.filter(e=>e.type==='Katsastus'),owners=ev.filter(e=>e.type==='Omistajanvaihdos');
     const og=gaps(oil),kmEv=ev.filter(e=>e.km!==null),span=ev.length>1?monthsBetween(ev[0].date,ev[ev.length-1].date)/12:0,kmSpan=kmEv.length>1?kmEv[kmEv.length-1].km-kmEv[0].km:0;
     const lastOil=oil[oil.length-1],biggest=ev.filter(e=>e.cost!==''&&e.cost!==undefined).sort((a,b)=>Number(b.cost)-Number(a.cost))[0];
     const perYearCost={},perYearFuel={};for(const e of ev)if(e.cost!==''&&e.cost!==undefined)perYearCost[e.date.slice(0,4)]=(perYearCost[e.date.slice(0,4)]||0)+Number(e.cost);for(const f of c.fuels||[])if(f.cost!==null){const y=f.date.slice(0,4);perYearFuel[y]=(perYearFuel[y]||0)+f.cost;perYearCost[y]=(perYearCost[y]||0)+f.cost;}const hasFuel=Object.keys(perYearFuel).length>0;
     const yrs=Object.keys(perYearCost).sort(),maxY=Math.max(1,...Object.values(perYearCost));
+    return {oil,svc,insp,owners,og,span,kmSpan,lastOil,biggest,perYearCost,perYearFuel,hasFuel,yrs,maxY};}
+  function analysis(c,ev,total){const {oil,svc,insp,owners,og,span,kmSpan,lastOil,biggest,perYearCost,perYearFuel,hasFuel,yrs,maxY}=anCalc(c,ev,total);
     const kpi=(v,l,sub='')=>`<div><strong>${v}</strong><span>${l}</span>${sub?`<small>${sub}</small>`:''}</div>`;
     return `<h3 class="report-h">Analyysi</h3><div class="report-kpis">${kpi(oil.length,oil.length===1?'Öljynvaihto':'Öljynvaihtoa',lastOil?'viimeksi '+date(lastOil.date):'ei kirjattu')}${kpi(og.months===null?'–':fmtMonths(og.months),'Öljynvaihtojen väli',og.km&&!hourly(c)?'noin '+number(Math.round(og.km/500)*500)+' km':'')}${kpi(svc.length,svc.length===1?'Huolto':'Huoltoa',insp.length?insp.length+(insp.length===1?' katsastus':' katsastusta'):'')}${kpi(span>=0.5?number(Math.round(total/span))+' €':'–','Kulut / vuosi',kmSpan>=1000&&!hourly(c)?number(Math.round(total/kmSpan*1000))+' € / 1000 km':'')}</div>
     <dl class="report-facts">${lastOil&&og.months?`<div><dt>Seuraava öljynvaihto arviolta</dt><dd>${date(addMonths(lastOil.date,Math.round(og.months)))}${lastOil.km!==null&&og.km&&!hourly(c)?' / '+number(lastOil.km+Math.round(og.km/500)*500)+' km':''}</dd></div>`:''}${biggest?`<div><dt>Suurin yksittäinen kulu</dt><dd>${escape(dispType(c,biggest.type))} · ${number(biggest.cost)} €</dd></div>`:''}${insp.length?`<div><dt>Viimeisin katsastus</dt><dd>${date(insp[insp.length-1].date)}</dd></div>`:''}<div><dt>Omistajanvaihdoksia kirjattu</dt><dd>${owners.length}</dd></div></dl>
     ${yrs.length>1?`<div class="report-bars${hasFuel?' split':''}" aria-label="Kulut vuosittain">${yrs.map(y=>`<div><span style="--h:${Math.max(4,Math.round(perYearCost[y]/maxY*100))}%">${perYearFuel[y]?`<i style="--f:${Math.round(perYearFuel[y]/perYearCost[y]*100)}%"></i>`:''}</span><b>${number(Math.round(perYearCost[y]))} €</b><small>${y}</small></div>`).join('')}</div>${hasFuel?'<p class="report-legend"><span class="lg-service"></span>Huolto ja korjaus <span class="lg-fuel"></span>Polttoaine</p>':''}`:''}`;}
-  function report(c,from){const ev=[...c.events].sort((a,b)=>a.date.localeCompare(b.date)),total=costOf(ev),receipts=ev.reduce((n,e)=>n+(e.receipts?.length||0),0),kmEv=ev.filter(e=>e.km!==null),first=kmEv[0],last=kmEv[kmEv.length-1];
+  // Vehicle report figures (0.33): one calculation for the screen report and its PDF (vehicleDoc), so they always match.
+  function repCalc(c){const ev=[...c.events].sort((a,b)=>a.date.localeCompare(b.date)),total=costOf(ev),receipts=ev.reduce((n,e)=>n+(e.receipts?.length||0),0),kmEv=ev.filter(e=>e.km!==null),first=kmEv[0],last=kmEv[kmEv.length-1];
     const years=first&&last&&last!==first?(new Date(last.date)-new Date(first.date))/31557600000:0,perYear=years>=0.5?Math.round((last.km-first.km)/years/(hourly(c)?10:100))*(hourly(c)?10:100):null;
     const byType={};for(const e of ev){const k=dispType(c,e.type),t=byType[k]||(byType[k]={n:0,cost:0});t.n++;t.cost+=e.cost!==''&&e.cost!==undefined?Number(e.cost):0;}
     const printed=date(today()),reportId='AJ-'+(c.plate.replace(/[^\wÅÄÖ]/g,'')||c.id.replace(/\D/g,''))+'-'+today().replace(/-/g,'');
+    return {ev,total,receipts,perYear,byType,printed,reportId};}
+  function report(c,from){const {ev,total,receipts,perYear,byType,printed,reportId}=repCalc(c);
     return `${from==='raportit'?back('reports','Raportit'):back('vehicle/'+c.id,'Ajoneuvo')}<div class="report" id="report"><header class="report-head"><img src="logo.svg" alt="AJOURA" width="640" height="198"><div><strong>Huoltohistoriaraportti</strong><span>Raportti ${reportId}</span><span>Tulostettu ${printed}</span></div></header><h2 class="app-heading">${escape(carName(c))}</h2><p class="app-subtitle">${c.nick?escape(c.name)+' · ':''}${c.plate?escape(c.plate)+' · ':''}vm. ${c.year} · ${typeOf(c)}${c.fuel?' · '+escape(c.fuel):''}${c.engine?' · '+escape(c.engine):''}</p>
     <div class="app-stats three"><div><strong>${ev.length}</strong><span>Merkintää</span></div><div><strong>${number(c.km)}</strong><span>${hourly(c)?'Tunnit nyt':'Km nyt'}</span></div><div><strong>${number(total)} <small>€</small></strong><span>Kulut</span></div></div>
     <dl class="report-facts">${ev.length?`<div><dt>Aikaväli</dt><dd>${date(ev[0].date)} – ${date(ev[ev.length-1].date)}</dd></div>`:''}${perYear!==null?`<div><dt>Ajoa keskimäärin</dt><dd>noin ${number(perYear)} ${ku(c)} / vuosi</dd></div>`:''}<div><dt>Kuitteja tallessa</dt><dd>${receipts} kpl</dd></div>${fuelFacts(c)}</dl>
@@ -445,7 +451,7 @@
     <h3 class="report-h">Kaikki merkinnät</h3>${ev.length?`<table class="report-table"><thead><tr><th>Pvm</th><th>Tapahtuma</th><th>${hourly(c)?'h':'Km'}</th><th>€</th></tr></thead><tbody>${[...ev].reverse().map(e=>`<tr><td>${date(e.date)}</td><td><strong>${escape(dispType(c,e.type))}</strong>${e.items?.length?`<small>${e.items.map(escape).join(', ')}</small>`:''}${e.note?`<small translate="no">${escape(e.note)}</small>`:''}</td><td>${e.km===null?'–':number(e.km)}</td><td>${e.cost!==''&&e.cost!==undefined?number(e.cost):'–'}</td></tr>`).join('')}</tbody></table>`:'<p class="app-empty">Ei vielä merkintöjä.</p>'}
     ${ev.some(e=>e.parts?.length)?`<h3 class="report-h">Käytetyt varaosat</h3><table class="report-table"><thead><tr><th>Pvm</th><th>Osa</th><th>Määrä</th><th>€</th></tr></thead><tbody>${[...ev].reverse().flatMap(e=>(e.parts||[]).map(x=>`<tr><td>${date(e.date)}</td><td translate="no">${escape(x.name)}</td><td>${escape(x.qty)||'–'}</td><td>${x.price?number(x.price):'–'}</td></tr>`)).join('')}</tbody></table>`:''}
     <p class="report-note">Raportti perustuu omistajan omiin merkintöihin${c.sample?' (esimerkkiauto, kuvitteelliset tiedot)':''}. Se ei korvaa valmistajan tai korjaamon virallista huoltokirjaa.</p>
-    <footer class="report-foot"><div><strong>${company.name}</strong>${company.id?`<span>Y-tunnus ${company.id}</span>`:'<span>Kehitysvaiheen sovellus</span>'}</div><div><span>${company.web}</span>${company.email?`<span>${company.email}</span>`:''}</div><div><span>Tulostettu ${printed}</span><span>${reportId}</span></div></footer></div><button class="app-button no-print" type="button" data-print>Tulosta / tallenna PDF</button>${c.events.length?`<button class="app-button secondary no-print" type="button" data-sale="${c.id}">Jaa historia linkkinä</button><p class="app-fineprint no-print">Ostaja avaa linkin millä tahansa selaimella, sovellusta ei tarvita. Linkissä ovat auton tiedot ja merkinnät, ei kuvia, kuitteja eikä muistiinpanoja. Linkki ei päivity: luo uusi, kun lisäät merkintöjä.</p>`:''}${notice?`<p class="success-note no-print" role="status">${escape(notice)}</p>`:''}<p class="app-fineprint no-print">Valitse tulostusikkunassa kohde <strong>Tallenna PDF-tiedostona</strong>, niin saat raportin tiedostona esimerkiksi auton ostajalle.</p>`;}
+    <footer class="report-foot"><div><strong>${company.name}</strong>${company.id?`<span>Y-tunnus ${company.id}</span>`:'<span>Kehitysvaiheen sovellus</span>'}</div><div><span>${company.web}</span>${company.email?`<span>${company.email}</span>`:''}</div><div><span>Tulostettu ${printed}</span><span>${reportId}</span></div></footer></div><button class="app-button no-print" type="button" data-vehicle-pdf="${c.id}">Tallenna PDF-raportti</button>${c.events.length?`<button class="app-button secondary no-print" type="button" data-sale="${c.id}">Jaa historia linkkinä</button><p class="app-fineprint no-print">Ostaja avaa linkin millä tahansa selaimella, sovellusta ei tarvita. Linkissä ovat auton tiedot ja merkinnät, ei kuvia, kuitteja eikä muistiinpanoja. Linkki ei päivity: luo uusi, kun lisäät merkintöjä.</p>`:''}${notice?`<p class="success-note no-print" role="status">${escape(notice)}</p>`:''}<p class="app-fineprint no-print">Puhelimessa avautuu jakovalikko: tallenna raportti Tiedostoihin, tulosta se tai lähetä se esimerkiksi auton ostajalle. Tietokoneella PDF-tiedosto latautuu.</p>`;}
   // Ownership change: log it on the timeline, hand the history to the buyer as a report, then optionally remove the car.
   function owner(c){return `${back('vehicle/'+c.id,'Ajoneuvo')}<h2 class="app-heading">Omistajanvaihdos</h2><p class="app-subtitle">${escape(carName(c))} · ${plateTxt(c)}<br>Kolme vaihetta, kun myyt tai luovutat auton.</p><ol class="owner-steps"><li><strong>Kirjaa vaihdos</strong><span>Päivä ja mittarilukema jäävät auton historiaan.</span><form class="app-form" id="owner-form" novalidate><div class="form-row"><label>Päivämäärä<input name="date" type="date" required value="${today()}" max="${today()}"></label><label>${meterLabel(c)}<input name="km" type="number" min="${c.km}" max="2000000" inputmode="numeric" value="${c.km}"></label></div><label>Muistiinpano <small>· valinnainen</small><input name="note" maxlength="120" placeholder="Esim. myyty yksityiselle"></label><p class="error-note" id="form-error" role="alert"></p><button class="app-button" type="submit">Kirjaa omistajanvaihdos</button></form></li><li><strong>Anna historia uudelle omistajalle</strong><span>Lähetä ostajalle siirtotiedosto. Ostaja avaa omassa AJOURAssaan Valikko → Varmuuskopio ja tiedot → Palauta varmuuskopio, ja koko historia kuitteineen siirtyy hänelle. Raportti PDF:nä sopii ostajalle, jolla ei ole AJOURAa.</span><button class="app-button" type="button" data-transfer="${c.id}">Lähetä siirtotiedosto</button><button class="app-button secondary" type="button" data-sale="${c.id}">Jaa historia linkkinä</button><a class="app-button secondary" href="#report/${c.id}">Avaa raportti</a>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}</li><li><strong>Poista auto tallistasi</strong><span>Valinnainen. Poista vasta, kun olet tallentanut raportin.</span><button class="app-button secondary danger" type="button" data-remove="${c.id}">Poista ajoneuvo</button></li></ol>`;}
   function saveOwner(form){const c=cars.find(c=>c.id===route().id);if(!c)return;const d=new FormData(form),err=document.getElementById('form-error'),dt=String(d.get('date')),kmRaw=String(d.get('km')).trim(),km=kmRaw===''?null:Number(kmRaw),note=String(d.get('note')).trim().slice(0,120);
@@ -483,8 +489,11 @@
     return `<div class="chart-card"><h3>Kulutus</h3>${lineChart(pts,{yFmt:v=>dec(v),xLabels:[number(s.series[0].km)+' '+ku(c),number(s.series[s.series.length-1].km)+' '+ku(c)],avg:s.avg,avgLabel:'Keskikulutus '+dec(s.avg)})}<p class="chart-legend"><span class="lg-line"></span>${u}/${per(c)} täysien ${u==='kWh'?'latausten':'tankkausten'} välillä <span class="lg-avg"></span>keskikulutus</p></div>`;}
   // Odometer over time: every km reading (entries and fill-ups), entries marked by kind.
   const kmKind=t=>/^(Omistajanvaihdos|Mittarilukeman päivitys|Muu tapahtuma|Pesu ja vahaus|Autohoito|Talvisäilytykseen|Käyttöönotto keväällä|Vesillelasku|Nosto talvisäilytykseen|Pohjamaalaus|Pesu ja hoito|Venehoito|Kesäsäilytykseen|Käyttöönotto syksyllä)$/.test(t)?'other':kind(t);
-  function kmChart(c){const pts=[...c.events.filter(e=>e.km!==null&&e.km!==undefined).map(e=>({x:dayNum(e.date),y:e.km,cls:'k-'+kmKind(e.type),big:true,tip:`${date(e.date)} · ${dispType(c,e.type)} · ${number(e.km)} ${ku(c)}`})),...(c.fuels||[]).map(f=>({x:dayNum(f.date),y:f.km,cls:'k-fuel',tip:`${date(f.date)} · ${unitOf(c)==='kWh'?'Lataus':'Tankkaus'} · ${number(f.km)} ${ku(c)}`}))].sort((a,b)=>a.x-b.x||a.y-b.y);
-    if(pts.length<2||pts[0].x===pts[pts.length-1].x)return '';const first=pts[0],lastP=pts[pts.length-1],years=(lastP.x-first.x)/365.25,st=hourly(c)?10:100,per=years>=.25?Math.round((lastP.y-first.y)/years/st)*st:null;
+  // Odometer points for the chart, shared by the screen and the PDF (0.33); null when there is nothing to draw.
+  function kmData(c){const pts=[...c.events.filter(e=>e.km!==null&&e.km!==undefined).map(e=>({x:dayNum(e.date),y:e.km,cls:'k-'+kmKind(e.type),big:true,tip:`${date(e.date)} · ${dispType(c,e.type)} · ${number(e.km)} ${ku(c)}`})),...(c.fuels||[]).map(f=>({x:dayNum(f.date),y:f.km,cls:'k-fuel',tip:`${date(f.date)} · ${unitOf(c)==='kWh'?'Lataus':'Tankkaus'} · ${number(f.km)} ${ku(c)}`}))].sort((a,b)=>a.x-b.x||a.y-b.y);
+    if(pts.length<2||pts[0].x===pts[pts.length-1].x)return null;const first=pts[0],lastP=pts[pts.length-1],years=(lastP.x-first.x)/365.25,st=hourly(c)?10:100,per=years>=.25?Math.round((lastP.y-first.y)/years/st)*st:null;
+    return {pts,first,lastP,per};}
+  function kmChart(c){const k=kmData(c);if(!k)return '';const {pts,first,lastP,per}=k;
     const has=k=>pts.some(p=>p.cls==='k-'+k),lg=[['service','Huolto'],['repair','Korjaus'],['inspect','Katsastus'],['tyres','Renkaat'],['other','Muu merkintä'],['fuel',unitOf(c)==='kWh'?'Lataus':'Tankkaus']].filter(([k])=>has(k)).map(([k,l])=>`<span class="lg-dot k-${k}"></span>${l}`).join(' ');
     const fmtDate=x=>date(new Date(x*864e5).toISOString().slice(0,10));
     return `<div class="chart-card"><h3>${hourly(c)?'Käyttötuntien kehitys':'Kilometrien kehitys'}</h3>${per!==null&&per>0?`<p class="chart-sub">Keskimäärin ${number(per)} ${ku(c)} vuodessa</p>`:''}${lineChart(pts,{yFmt:v=>{const r=Math.max(...pts.map(p=>p.y))-Math.min(...pts.map(p=>p.y)),st=r>=20000?1000:r>=2000?100:r>=200?10:1;return number(Math.round(v/st)*st);},xLabels:[fmtDate(first.x),fmtDate(lastP.x)],cls:'km-chart'})}<p class="chart-legend">${lg}</p></div>`;}
@@ -846,6 +855,114 @@
       doc.text(105,fy,company.web,{size:7.5,color:grey,align:'center'});
       doc.text(R,fy,`${T('Sivu')} ${i} / ${n}`,{size:7.5,color:grey,align:'right'});doc.text(R,fy+3.3,rid,{size:7,color:grey,align:'right'});});
     return doc;}
+  // PDF of one vehicle's service history report (0.33, Niklas 27.10.2026). Replaces window.print() on the report page,
+  // which the installed iPhone app ignores. Same content and figures as the screen report (repCalc, anCalc, kmData,
+  // fuelStats); the charts are drawn into the PDF. App texts go through tl(); the user's own texts (names, notes, parts)
+  // are printed as written. Built in one go without waiting, so the phone still lets the share sheet open.
+  function vehiclePdf(id){const P=window.AjouraPDF,c=cars.find(c=>c.id===id);if(!P||!c)return;let file;
+    try{const r=repCalc(c),tag=(c.plate||'').normalize('NFD').replace(/[^A-Za-z0-9]/g,'')||'ajoneuvo';
+      file=new File([vehicleDoc(P,c,r).blob()],'ajoura-'+tag+'-'+today()+'.pdf',{type:'application/pdf'});}
+    catch(e){notice='PDF-tiedoston teko ei onnistunut. Yritä uudelleen.';render();return;}
+    saveFile(file,matchMedia('(pointer: coarse)').matches);}
+  function vehicleDoc(P,c,r){const {ev,total,receipts,perYear,byType,printed,reportId}=r,T=tl,hr=hourly(c),u=ku(c),fu=unitOf(c),fs=fuelStats(c),an=ev.length?anCalc(c,ev,total):null,kd=kmData(c);
+    const doc=P.create({title:'AJOURA – '+T('Huoltohistoriaraportti')+' – '+carName(c)}),L=12,R=198,CW=R-L,BOT=277;
+    const grey='#4f5f72',hair='#d6dee8',blue='#1769f4';
+    let y=0;
+    const head=()=>{doc.page();doc.logo(L,12,46);doc.text(R,17,T('Huoltohistoriaraportti'),{size:12,bold:true,align:'right'});
+      doc.text(R,21.5,T('Raportti '+reportId),{size:8,color:grey,align:'right'});doc.text(R,25.5,T('Tulostettu '+printed),{size:8,color:grey,align:'right'});
+      doc.rect(L,29.5,CW,.6,{fill:blue});y=37;};
+    // A new page when the next block would not fit; again draws the table's header row when one is given.
+    const room=(h,hdr)=>{if(y+h<=BOT)return;head();if(hdr)hdr();};
+    const thead=cols=>{doc.rect(L,y,CW,6.5,{fill:'#eef2f7'});for(const [t,x,al] of cols)doc.text(x,y+4.4,t,{size:7.5,bold:true,color:grey,align:al});y+=6.5;};
+    const h2=(s,need=26)=>{room(need);y+=5.5;doc.text(L,y,T(s),{size:12,bold:true});y+=3;};
+    const rule=()=>doc.line(L,y,R,y,{color:hair,lw:.2});
+    // Label–value rows like the screen's fact list.
+    const facts=list=>{for(const [k,v] of list){room(6.5);doc.text(L+1,y+4.4,k,{size:9,color:grey});doc.text(R-1,y+4.4,doc.fit(v,CW-70,9,true),{size:9,bold:true,align:'right'});y+=6.5;rule();}};
+    // Key figures as tiles: [value, label, small line].
+    const tiles=list=>{const n=list.length,tw=(CW-3*(n-1))/n,th=list.some(t=>t[2])?19.5:16;room(th+2);
+      list.forEach(([val,lab,sub],i)=>{const x=L+i*(tw+3);doc.rect(x,y,tw,th,{fill:'#f1f6fd',stroke:'#d9e6f4',r:2.5});
+        doc.text(x+3.5,y+7.5,doc.fit(String(val),tw-7,14,true),{size:14,bold:true,color:blue});
+        doc.text(x+3.5,y+12.3,doc.fit(lab,tw-7,8,true),{size:8,bold:true,color:grey});
+        if(sub)doc.text(x+3.5,y+16.4,doc.fit(sub,tw-7,7.5),{size:7.5,color:grey});});y+=th+2;};
+    head();
+    // Title and the vehicle's details.
+    doc.text(L,y+4,doc.fit(carName(c),CW,18,true),{size:18,bold:true});y+=10.5;
+    const sub=[c.nick?c.name:'',c.plate,T('vm. '+c.year),T(typeOf(c)),c.fuel?T(c.fuel):'',c.engine||''].filter(Boolean).join(' · ');
+    for(const l of doc.wrap(sub,CW,9.5)){doc.text(L,y,l,{size:9.5,color:grey});y+=4.5;}y+=2;
+    tiles([[String(ev.length),T('Merkintää')],[number(c.km),T(hr?'Tunnit nyt':'Km nyt')],[number(total)+' €',T('Kulut')]]);y+=1;
+    const f1=[];if(ev.length)f1.push([T('Aikaväli'),`${date(ev[0].date)} – ${date(ev[ev.length-1].date)}`]);
+    if(perYear!==null)f1.push([T('Ajoa keskimäärin'),T(`noin ${number(perYear)} ${u} / vuosi`)]);f1.push([T('Kuitteja tallessa'),T(`${receipts} kpl`)]);
+    if(fs.fills.length){if(fs.avg!==null)f1.push([T('Keskikulutus'),`${dec(fs.avg)} ${fu}/${per(c)}`]);f1.push([T(fu==='kWh'?'Latauskulut':'Polttoainekulut'),T(`${number(Math.round(fs.cost))} € · ${fs.fills.length} kirjausta`)]);}
+    rule();facts(f1);
+    // Analysis: four tiles, a few facts and the costs per year.
+    if(an){const {oil,svc,insp,owners,og,span,kmSpan,lastOil,biggest,perYearCost,perYearFuel,hasFuel,yrs,maxY}=an;
+      h2('Analyysi',40);y+=1.5;
+      tiles([[String(oil.length),T(oil.length===1?'Öljynvaihto':'Öljynvaihtoa'),lastOil?T('viimeksi '+date(lastOil.date)):T('ei kirjattu')],
+        [og.months===null?'–':T(fmtMonths(og.months)),T('Öljynvaihtojen väli'),og.km&&!hr?T('noin '+number(Math.round(og.km/500)*500)+' km'):''],
+        [String(svc.length),T(svc.length===1?'Huolto':'Huoltoa'),insp.length?T(insp.length+(insp.length===1?' katsastus':' katsastusta')):''],
+        [span>=0.5?number(Math.round(total/span))+' €':'–',T('Kulut / vuosi'),kmSpan>=1000&&!hr?T(number(Math.round(total/kmSpan*1000))+' € / 1000 km'):'']]);
+      const f2=[];if(lastOil&&og.months)f2.push([T('Seuraava öljynvaihto arviolta'),date(addMonths(lastOil.date,Math.round(og.months)))+(lastOil.km!==null&&og.km&&!hr?' / '+number(lastOil.km+Math.round(og.km/500)*500)+' km':'')]);
+      if(biggest)f2.push([T('Suurin yksittäinen kulu'),`${T(dispType(c,biggest.type))} · ${number(biggest.cost)} €`]);if(insp.length)f2.push([T('Viimeisin katsastus'),date(insp[insp.length-1].date)]);
+      f2.push([T('Omistajanvaihdoksia kirjattu'),String(owners.length)]);rule();facts(f2);
+      if(yrs.length>1){const bh=40;room(bh+10);y+=4;doc.rect(L,y,CW,bh,{stroke:'#e0e9f2',r:2.5});const sw=(CW-6)/yrs.length,top=y+4,ph=bh-15;
+        yrs.forEach((yr,i)=>{const cx=L+3+sw*(i+.5),bw=Math.min(sw*.7,14),h=Math.max(ph*.04,ph*perYearCost[yr]/maxY),by=top+ph-h;
+          doc.rect(cx-bw/2,by,bw,h,{fill:'#1464e8',r:Math.min(1,bw/4)});if(perYearFuel[yr]){const fh=h*perYearFuel[yr]/perYearCost[yr];doc.rect(cx-bw/2,by+h-fh,bw,fh,{fill:'#19b1c8'});}
+          doc.text(cx,top+ph+4,doc.fit(number(Math.round(perYearCost[yr]))+' €',sw-1,6.5,true),{size:6.5,bold:true,color:'#3d5670',align:'center'});
+          doc.text(cx,top+ph+7.5,yr,{size:6.5,color:grey,align:'center'});});
+        y+=bh+1.5;if(hasFuel){room(6);doc.rect(L+1,y+1.2,2.6,2.6,{fill:'#1464e8',r:.5});let x=L+5+doc.text(L+5,y+3.6,T('Huolto ja korjaus'),{size:7.5,color:grey})+4;
+          doc.rect(x,y+1.2,2.6,2.6,{fill:'#19b1c8',r:.5});doc.text(x+4,y+3.6,T('Polttoaine'),{size:7.5,color:grey});y+=5;}}}
+    // Count and cost per type.
+    const types=Object.entries(byType).sort((a,b)=>b[1].n-a[1].n);
+    if(types.length){const tc=()=>thead([[T('Tyyppi'),L+2],[T('Kpl'),R-40,'right'],['€',R-2,'right']]);h2('Yhteenveto',Math.min(19+types.length*6,90));y+=1.5;tc();
+      for(const [t,v] of types){room(6,tc);doc.text(L+2,y+4.2,doc.fit(T(t),CW-50,9),{size:9});doc.text(R-40,y+4.2,String(v.n),{size:9,align:'right'});doc.text(R-2,y+4.2,number(v.cost),{size:9,align:'right'});y+=6;rule();}}
+    // Line charts drawn with lines and dots, scaled like the screen (lineChart).
+    const chart=(x,w,title,subT,pts,{yFmt,xLabels,avg,avgLabel,lineCol,dotCol,legend})=>{const h=62,t0=y;doc.rect(x,t0,w,h,{stroke:'#e0e9f2',r:2.5});
+      doc.text(x+4,t0+6.5,doc.fit(title,w-8,10,true),{size:10,bold:true});if(subT)doc.text(x+4,t0+10.8,doc.fit(subT,w-8,8),{size:8,color:grey});
+      // Legend rows first, so the plot leaves room for a second row when the labels do not fit on one.
+      const lgw=([,lab,dash])=>(dash?4:2.4)+1.5+doc.width(lab,7)+3.5,rows=[[]];let acc=0;for(const it of legend){if(acc&&x+4+acc+lgw(it)-3.5>x+w-3){rows.push([]);acc=0;}rows[rows.length-1].push(it);acc+=lgw(it);}
+      const ex=(rows.length-1)*3.6,pl=x+17,pr=x+w-4,pt=t0+14,pb=t0+h-15-ex,xs=pts.map(p=>p.x),ys=pts.map(p=>p.y).concat(avg!=null?[avg]:[]);
+      let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);if(x1===x0)x1=x0+1;const pad=(y1-y0)*.15||Math.abs(y1)*.1||1;y0=Math.max(0,y0-pad);y1+=pad;
+      const X=v=>pl+(v-x0)/(x1-x0)*(pr-pl),Y=v=>pt+(1-(v-y0)/(y1-y0))*(pb-pt);
+      for(const k of [0,.5,1]){const v=y0+(y1-y0)*k;doc.line(pl,Y(v),pr,Y(v),{color:'#e6edf4',lw:.25});doc.text(pl-1.5,Y(v)+1.1,yFmt(v),{size:6.5,color:grey,align:'right'});}
+      if(avg!=null){for(let a=pl;a<pr;a+=2.4)doc.line(a,Y(avg),Math.min(a+1.4,pr),Y(avg),{color:'#d9822b',lw:.45});}
+      for(let i=1;i<pts.length;i++)doc.line(X(pts[i-1].x),Y(pts[i-1].y),X(pts[i].x),Y(pts[i].y),{color:lineCol,lw:.5});
+      for(const p of pts){const d=p.big?2.1:1.4;doc.rect(X(p.x)-d/2,Y(p.y)-d/2,d,d,{fill:dotCol(p),stroke:'#ffffff',lw:.25,r:d/2});}
+      if(avg!=null){const aw=doc.width(avgLabel,6.5,true);doc.rect(pr-aw-1,Y(avg)-4.2,aw+1.5,3.6,{fill:'#ffffff',r:.8});doc.text(pr,Y(avg)-1.4,avgLabel,{size:6.5,bold:true,color:'#b86a1d',align:'right'});}
+      doc.text(pl,pb+4.5,xLabels[0],{size:6.5,color:grey});doc.text(pr,pb+4.5,xLabels[1],{size:6.5,color:grey,align:'right'});
+      rows.forEach((row,ri)=>{let lx=x+4;const ly=t0+h-5-ex+ri*3.6;for(const [col,lab,dash] of row){
+        if(dash==='line')doc.line(lx,ly-1.1,lx+4,ly-1.1,{color:col,lw:.6});else if(dash)for(let a=0;a<4;a+=2)doc.line(lx+a,ly-1.1,lx+a+1.2,ly-1.1,{color:col,lw:.6});else doc.rect(lx,ly-2.3,2.4,2.4,{fill:col,r:1.2});
+        lx+=(dash?4:2.4)+1.5;doc.text(lx,ly,lab,{size:7,color:grey});lx+=doc.width(lab,7)+3.5;}});};
+    const fuelOn=fs.series.length>=2;
+    if(kd||fuelOn){room(66);y+=4;const both=kd&&fuelOn,w=both?(CW-4)/2:CW;let x=L;
+      if(kd){const {pts,first,lastP,per:pk}=kd,col={service:'#0b5ed7',inspect:'#1f9a62',tyres:'#7a8ca0',repair:'#d9822b',other:'#a7b1bc',fuel:'#b9c7d6'},rg=Math.max(...pts.map(p=>p.y))-Math.min(...pts.map(p=>p.y)),stp=rg>=20000?1000:rg>=2000?100:rg>=200?10:1;
+        const fmtD=v=>date(new Date(v*864e5).toISOString().slice(0,10)),has=k=>pts.some(p=>p.cls==='k-'+k);
+        chart(x,w,T(hr?'Käyttötuntien kehitys':'Kilometrien kehitys'),pk!==null&&pk>0?T(`Keskimäärin ${number(pk)} ${u} vuodessa`):'',pts,{yFmt:v=>number(Math.round(v/stp)*stp),xLabels:[fmtD(first.x),fmtD(lastP.x)],lineCol:'#9fb3c8',dotCol:p=>col[p.cls.slice(2)]||'#a7b1bc',
+          legend:[['service','Huolto'],['repair','Korjaus'],['inspect','Katsastus'],['tyres','Renkaat'],['other','Muu merkintä'],['fuel',fu==='kWh'?'Lataus':'Tankkaus']].filter(([k])=>has(k)).map(([k,l])=>[col[k],T(l)])});x+=w+4;}
+      if(fuelOn){const s=fs,cp=s.series.map(p=>({x:p.km,y:p.v}));
+        chart(x,w,T('Kulutus'),'',cp,{yFmt:v=>dec(v),xLabels:[number(s.series[0].km)+' '+u,number(s.series[s.series.length-1].km)+' '+u],avg:s.avg,avgLabel:T('Keskikulutus '+dec(s.avg)),lineCol:blue,dotCol:()=>blue,
+          legend:[[blue,T(`${fu}/${per(c)} täysien ${fu==='kWh'?'latausten':'tankkausten'} välillä`),'line'],['#d9822b',T('keskikulutus'),'dash']]});}
+      y+=62;}
+    // Every entry, newest first; done jobs and the owner's note under the type.
+    const ec=()=>thead([[T('Pvm'),L+2],[T('Tapahtuma'),L+27],[T(hr?'h':'Km'),R-24,'right'],['€',R-2,'right']]),tw=R-24-L-27-22;
+    h2('Kaikki merkinnät',30);
+    if(ev.length){y+=1.5;ec();
+      for(const e of [...ev].reverse()){const its=e.items?.length?doc.wrap(e.items.map(T).join(', '),tw,7.5):[],nt=e.note?doc.wrap(e.note,tw,7.5):[],h=6.6+(its.length+nt.length)*3.4+(its.length||nt.length?.8:0);
+        room(h,ec);doc.text(L+2,y+4.4,date(e.date),{size:9});doc.text(L+27,y+4.4,doc.fit(T(dispType(c,e.type)),tw,9,true),{size:9,bold:true});
+        doc.text(R-24,y+4.4,e.km===null?'–':number(e.km),{size:9,align:'right'});doc.text(R-2,y+4.4,e.cost!==''&&e.cost!==undefined?number(e.cost):'–',{size:9,align:'right'});
+        let ly=y+8.2;for(const l of [...its,...nt]){doc.text(L+27,ly,l,{size:7.5,color:grey});ly+=3.4;}y+=h;rule();}}
+    else{y+=6;doc.text(L,y,T('Ei vielä merkintöjä.'),{size:9,color:grey});y+=2;}
+    // Parts used, when any were logged.
+    if(ev.some(e=>e.parts?.length)){const pc=()=>thead([[T('Pvm'),L+2],[T('Osa'),L+27],[T('Määrä'),R-40,'right'],['€',R-2,'right']]);h2('Käytetyt varaosat');y+=1.5;pc();
+      for(const e of [...ev].reverse())for(const x of e.parts||[]){room(6,pc);doc.text(L+2,y+4.2,date(e.date),{size:9});doc.text(L+27,y+4.2,doc.fit(x.name,R-40-L-27-20,9),{size:9});
+        doc.text(R-40,y+4.2,doc.fit(x.qty||'–',18,9),{size:9,align:'right'});doc.text(R-2,y+4.2,x.price?number(x.price):'–',{size:9,align:'right'});y+=6;rule();}}
+    // The same closing note as the screen; it stays together on one page.
+    const nl=doc.wrap(T(`Raportti perustuu omistajan omiin merkintöihin${c.sample?' (esimerkkiauto, kuvitteelliset tiedot)':''}. Se ei korvaa valmistajan tai korjaamon virallista huoltokirjaa.`),CW,8);
+    room(nl.length*3.8+6);y+=6;for(const l of nl){doc.text(L,y,l,{size:8,color:grey});y+=3.8;}
+    doc.each((i,n)=>{const fy=285;doc.line(L,fy-4.5,R,fy-4.5,{color:'#cbd9e8',lw:.25});
+      doc.text(L,fy,company.name,{size:7.5,bold:true});doc.text(L,fy+3.3,company.id?`${T('Y-tunnus')} ${company.id}`:T('Kehitysvaiheen sovellus'),{size:7,color:grey});
+      doc.text(105,fy,company.web,{size:7.5,color:grey,align:'center'});
+      doc.text(R,fy,`${T('Sivu')} ${i} / ${n}`,{size:7.5,color:grey,align:'right'});doc.text(R,fy+3.3,reportId,{size:7,color:grey,align:'right'});});
+    return doc;}
   // Each screen remembers its scroll position, so going back (or re-rendering after a choice) does not jump to the top.
   const scrollMem={};let lastKey='';const keepScroll=['home','vehicle','help','me','report','event','notes','reports','menu','settings'];
   function render(){if(lastKey)scrollMem[lastKey]=screen.scrollTop;let {view,id,eventId}=route();const R=window.AjouraRoles;if(R){const to=R.redirect(view,id);if(to){history.replaceState(null,'','#'+to);({view,id,eventId}=route());}}if(R&&R.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;R.paint(screen,view,id);lastKey='';notice='';screen.focus({preventScroll:true});return;}const S=window.AjouraSync;if(S&&S.owns(view)){clearTimeout(launchTimer);launchTimer=0;glass.classList.remove('launcher-mode');draft=null;lookup=null;S.paint(screen,view);lastKey='';notice='';screen.focus({preventScroll:true});if(R)R.after(view);return;}let c=cars.find(c=>c.id===id);if(!guidance[view]||(['vehicle','add','event','edit','report','caredit','owner','fuel','notes'].includes(view)&&!c)){history.replaceState(null,'','#home');view='home';}let e=c?.events.find(e=>e.id===eventId);if((view==='event'||view==='edit')&&!e){history.replaceState(null,'','#vehicle/'+c.id);view='vehicle';}if(view!=='newcar'){draft=null;lookup=null;carPicked=false;}if(view!=='notes')memoEdit='';if(view!=='welcome')welcomeStep='';if(view!=='add'&&view!=='edit'){pending={photos:[],receipts:[]};pendingFor='';}clearTimeout(launchTimer);launchTimer=0;const now=new Date();document.getElementById('status-time').textContent=now.getHours()+'.'+String(now.getMinutes()).padStart(2,'0');glass.classList.toggle('launcher-mode',view==='launcher');let html=view==='launcher'?launcher():view==='welcome'?welcome():view==='home'?home():view==='newcar'?newcar():view==='vehicle'?vehicle(c):view==='add'?add(c):view==='edit'?add(c,e):view==='report'?report(c,eventId):view==='caredit'?carEdit(c):view==='owner'?owner(c):view==='fuel'?fuel(c):view==='notes'?notesPage(c):view==='me'?me():view==='help'?help():view==='reports'?reports():view==='menu'?menu():view==='settings'?settings():view==='feedback'?feedbackPage():detail(c,e);screen.innerHTML=view==='launcher'?html:'<div class="screen-content">'+html+'</div>'+(tabViews.includes(view)?tabBar(view):'');const key=location.hash||view;screen.scrollTop=keepScroll.includes(view)?(scrollMem[key]||0):(key===lastKey?scrollMem[key]||0:0);lastKey=key;screen.focus({preventScroll:true});const done=view==='vehicle'&&c&&c.events&&c.events.length,g=done?guidance.home:guidance[view],stepKey=done?'home':guideStep[view];document.getElementById('guide-number').textContent=g[0];document.getElementById('guide-title').textContent=g[1];document.getElementById('guide-copy').textContent=g[2];document.querySelectorAll('[data-step]').forEach(el=>el.classList.toggle('active',el.dataset.step===stepKey));document.title='AJOURA App — '+({launcher:'Aloitusnäyttö',welcome:'Tervetuloa',home:'Etusivu',newcar:'Uusi ajoneuvo',me:'Varmuuskopio ja tiedot',help:'Ohjeet',reports:'Raportit',menu:'Valikko',settings:'Asetukset',feedback:'Palaute',vehicle:c&&carName(c),add:'Uusi merkintä',edit:'Muokkaa merkintää',report:'Raportti',caredit:'Muokkaa ajoneuvoa',owner:'Omistajanvaihdos',fuel:'Tankkauskirja',notes:'Muistiinpanot',event:e?.type}[view]);notice='';if(R)R.after(view);}
@@ -944,7 +1061,7 @@
   screen.addEventListener('click',event=>{const t=event.target;if(t.closest('[data-login]')){loginNote=true;const y=screen.scrollTop;render();screen.scrollTop=y;return;}const pref=t.closest('[data-pref]');if(pref){const v=pref.dataset.value;if(pref.dataset.pref==='Teema')setTheme(v);else if(window.AjouraI18n)window.AjouraI18n.set(v);const y=screen.scrollTop;render();screen.scrollTop=y;return;}const icon=t.closest('[data-launch]');if(icon)launch(icon);if(t.closest('[data-reset]'))reset();const chip=t.closest('[data-plate]');if(chip)startLookup(chip.dataset.plate);const method=t.closest('[data-method]');if(method){if(method.dataset.method==='plate'){draft=null;lookup={plate:''};}else{draft={plate:lookup?.plate||'',name:'',year:'',body:'',fuel:'',color:'',source:'manual',step:'details'};lookup=null;}render();}
     const to=t.closest('[data-step-to]');if(to){const step=to.dataset.stepTo;if(step==='method'||step==='kind'){draft=null;lookup=null;if(step==='kind')carPicked=false;}else if(step==='plate'){lookup={plate:draft?.plate||''};draft=null;}else if(draft)draft.step=step;render();}
     if(t.closest('[data-add-part]')){const rows=screen.querySelector('.part-rows');if(rows&&rows.children.length<30){rows.insertAdjacentHTML('beforeend',partRow());rows.lastElementChild.querySelector('input').focus();}}
-    if(t.closest('[data-print]'))window.print();if(t.closest('[data-tutorial]'))tutorial();const tl=t.closest('[data-tl]');if(tl)filterTimeline(tl.dataset.tl);if(t.closest('[data-backup]'))backup();const ics=t.closest('[data-ics]');if(ics)calendar(ics.dataset.ics);const tr=t.closest('[data-transfer]');if(tr)transfer(tr.dataset.transfer);if(t.closest('[data-share-app]'))shareApp();const sl=t.closest('[data-sale]');if(sl)saleLink(sl.dataset.sale);
+    if(t.closest('[data-print]'))window.print();const vp=t.closest('[data-vehicle-pdf]');if(vp)vehiclePdf(vp.dataset.vehiclePdf);if(t.closest('[data-tutorial]'))tutorial();const tl=t.closest('[data-tl]');if(tl)filterTimeline(tl.dataset.tl);if(t.closest('[data-backup]'))backup();const ics=t.closest('[data-ics]');if(ics)calendar(ics.dataset.ics);const tr=t.closest('[data-transfer]');if(tr)transfer(tr.dataset.transfer);if(t.closest('[data-share-app]'))shareApp();const sl=t.closest('[data-sale]');if(sl)saleLink(sl.dataset.sale);
     const fr=t.closest('[data-fuel-remove]');if(fr)removeFill(fr.dataset.fuelRemove);const mv=t.closest('[data-memo-view]');if(mv){prefSet('ajoura-memo-view',mv.dataset.memoView);const y=screen.scrollTop;render();screen.scrollTop=y;return;}const me=t.closest('[data-memo-edit]');if(me){memoEdit=me.dataset.memoEdit;const y=screen.scrollTop;render();screen.scrollTop=y;screen.querySelector('#memo-edit-form textarea')?.focus({preventScroll:true});}if(t.closest('[data-memo-cancel]')){memoEdit='';const y=screen.scrollTop;render();screen.scrollTop=y;}const md=t.closest('[data-memo-del]');if(md)deleteMemo(md.dataset.memoDel);const cv=t.closest('[data-cover]');if(cv)setCover(cv);
     const de=t.closest('[data-delete-event]');if(de)deleteEvent(de.dataset.deleteEvent);
     const ar=t.closest('[data-att-remove]');if(ar)removeAtt(ar);const av=t.closest('[data-view-src]');if(av)viewAtt(av);
