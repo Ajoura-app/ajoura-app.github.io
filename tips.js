@@ -75,6 +75,51 @@
       (!w.maxYear || (year && year <= w.maxYear)) && (!w.minKm || c.km >= w.minKm) && (!w.months || w.months.includes(month));
     return T.filter(x => ok(x.w)).sort((a, b) => (b.w.brand ? 2 : 0) + (b.w.months ? 1 : 0) - (a.w.brand ? 2 : 0) - (a.w.months ? 1 : 0)).map(x => x.fi);
   }
-  const dict = k => Object.fromEntries(T.map(x => [x.fi, x[k]]));
-  window.AjouraTips = { forCar, en: dict('en'), sv: dict('sv') };
+  // Seasonal guide (v0.35, 27.10.2026, Niklas): Valikko → Kausi- ja huoltovinkit and the home screen's season chip.
+  // from/to are MM-DD (winter wraps over the new year). tyre: the season of the tyre reminder (tyreInfo in app.js).
+  // Legal lines: tyre rules as in v0.20 (checked 24.10.2026); tread depths 3 mm winter / 1.6 mm summer.
+  const t3 = (fi, en, sv) => ({ fi, en, sv });
+  const S = [
+    { id: 'autumn', from: '09-01', to: '09-30', icon: 'leaf', chip: t3('Syyshuolto', 'Autumn care', 'Höstvård'), title: t3('Syksyn huolto', 'Autumn care', 'Höstens skötsel'), when: t3('1.9.–30.9.', '1 Sep – 30 Sep', '1.9–30.9'), items: [
+      t3('Tarkista talvirenkaiden urasyvyys ja ikä jo nyt, niin uudet ehtii hankkia ennen kiirettä. Valmistusviikko ja -vuosi näkyvät renkaan kyljen DOT-merkinnässä.', 'Check the tread depth and age of your winter tyres now, so you have time to buy new ones before the rush. The week and year of manufacture are in the DOT code on the sidewall.', 'Kontrollera vinterdäckens mönsterdjup och ålder redan nu, så hinner du skaffa nya före rusningen. Tillverkningsvecka och -år står i DOT-märkningen på däcksidan.'),
+      t3('Varaa renkaanvaihtoaika ajoissa. Kiireisintä on yleensä ensimmäisten liukkaiden kelien jälkeen.', 'Book your tyre change early. The busiest time is usually right after the first slippery days.', 'Boka däckbytet i god tid. Mest bråttom är det oftast efter de första halkdagarna.'),
+      t3('Tarkista valot ja vaihda palaneet polttimot: päivät lyhenevät nopeasti.', 'Check the lights and replace any blown bulbs: the days are getting shorter fast.', 'Kontrollera lysena och byt trasiga glödlampor: dagarna blir snabbt kortare.'),
+      t3('Vaihda pyyhkijänsulat, jos ne jättävät raitoja.', 'Change the wiper blades if they leave streaks.', 'Byt torkarbladen om de lämnar ränder.'),
+      t3('Testauta akku ennen pakkasia, varsinkin jos se on yli viisi vuotta vanha.', 'Have the battery tested before the frosts, especially if it is over five years old.', 'Låt testa batteriet före kylan, särskilt om det är över fem år gammalt.'),
+    ] },
+    { id: 'winter-tyres', from: '10-01', to: '11-30', icon: 'snow', tyre: 'winter', chip: t3('Talvirenkaat', 'Winter tyres', 'Vinterdäck'), title: t3('Talvirenkaiden aika', 'Time for winter tyres', 'Dags för vinterdäck'), when: t3('1.10.–30.11.', '1 Oct – 30 Nov', '1.10–30.11'), items: [
+      t3('Talvirenkaat ovat pakolliset 1.11.–31.3., jos sää tai keli sitä edellyttää. Nastarenkaita saa käyttää 1.11.–31.3. ja muulloinkin, jos sää tai keli sitä edellyttää.', 'Winter tyres are mandatory from 1 Nov to 31 Mar when the weather or road conditions require them. Studded tyres may be used from 1 Nov to 31 Mar, and at other times if the weather or road conditions require them.', 'Vinterdäck är obligatoriska 1.11–31.3 om väder eller väglag kräver det. Dubbdäck får användas 1.11–31.3 och även annars om väder eller väglag kräver det.'),
+      t3('Talvirenkaan urasyvyyden on oltava vähintään 3 mm. Pidon kannalta turvallisempi raja on noin 4–5 mm.', 'Winter tyres must have a tread depth of at least 3 mm. For good grip, about 4–5 mm is a safer limit.', 'Vinterdäck ska ha ett mönsterdjup på minst 3 mm. För ett gott grepp är cirka 4–5 mm en säkrare gräns.'),
+      t3('Henkilö- ja pakettiautoissa pelkkä M+S-merkintä ei 1.12.2024 alkaen riitä talvirenkaaksi. Renkaassa pitää olla myös vuori- ja lumihiutalesymboli.', 'For cars and vans, an M+S marking alone has not been enough for a winter tyre since 1 Dec 2024. The tyre must also carry the mountain and snowflake symbol.', 'För personbilar och paketbilar räcker inte enbart M+S-märkning som vinterdäck sedan 1.12.2024. Däcket måste också ha berg- och snöflingesymbolen.'),
+      t3('Tarkista pakkasneste ja lisää talvilaatuista lasinpesunestettä ennen pakkasia.', 'Check the antifreeze and top up with winter-grade washer fluid before the frosts.', 'Kontrollera kylarvätskan och fyll på spolarvätska av vinterkvalitet före kylan.'),
+      t3('Kirjaa renkaanvaihto merkinnäksi, niin rengasmuistutus poistuu ja seuraava kausi on helppo tarkistaa.', 'Record the tyre change as an entry, so the tyre reminder goes away and next season is easy to check.', 'Registrera däckbytet som en anteckning, så försvinner däckpåminnelsen och nästa säsong är lätt att kontrollera.'),
+    ] },
+    { id: 'winter', from: '12-01', to: '03-14', icon: 'snow', chip: t3('Talviajo', 'Winter driving', 'Vinterkörning'), title: t3('Talviajo', 'Winter driving', 'Vinterkörning'), when: t3('1.12.–14.3.', '1 Dec – 14 Mar', '1.12–14.3'), items: [
+      t3('Käytä lohkolämmitintä pakkasella. Lämmin moottori kuluu vähemmän ja käynnistyy helpommin.', 'Use the engine block heater when it is freezing. A warm engine wears less and starts more easily.', 'Använd motorvärmaren när det är minusgrader. En varm motor slits mindre och startar lättare.'),
+      t3('Puhdista ikkunat, valot ja katto lumesta ja jäästä ennen ajoa.', 'Clear snow and ice from the windows, lights and roof before driving.', 'Ta bort snö och is från rutor, lysen och tak innan du kör.'),
+      t3('Rengaspaineet laskevat kylmässä. Tarkista ne vähintään kuukausittain.', 'Tyre pressures drop in the cold. Check them at least once a month.', 'Däcktrycket sjunker i kylan. Kontrollera det minst en gång i månaden.'),
+      t3('Suola syövyttää autoa. Pese auto ja alusta välillä myös talvella, esimerkiksi suojasään aikaan.', 'Road salt corrodes the car. Wash the car and its underbody now and then in winter too, for example during a thaw.', 'Saltet fräter på bilen. Tvätta bilen och underredet då och då även på vintern, till exempel vid töväder.'),
+      t3('Sähkö- ja lataushybridiautossa esilämmitä auto latauksen aikana, niin lämmitys ei kuluta ajoakkua.', 'In an electric or plug-in hybrid car, pre-heat while charging, so heating doesn’t drain the drive battery.', 'I en el- eller laddhybridbil, förvärm bilen medan den laddas, så tär värmen inte på drivbatteriet.'),
+    ] },
+    { id: 'spring', from: '03-15', to: '05-31', icon: 'tyre', tyre: 'summer', chip: t3('Kesärenkaat', 'Summer tyres', 'Sommardäck'), title: t3('Kesärenkaiden aika', 'Time for summer tyres', 'Dags för sommardäck'), when: t3('15.3.–31.5.', '15 Mar – 31 May', '15.3–31.5'), items: [
+      t3('Nastarenkaita saa käyttää 31.3. asti, sen jälkeen vain jos sää tai keli sitä edellyttää.', 'Studded tyres may be used until 31 Mar, and after that only if the weather or road conditions require them.', 'Dubbdäck får användas till och med 31.3, därefter bara om väder eller väglag kräver det.'),
+      t3('Kesärenkaan urasyvyyden on oltava vähintään 1,6 mm. Märällä tiellä turvallisempi raja on noin 3–4 mm.', 'Summer tyres must have a tread depth of at least 1.6 mm. On wet roads, about 3–4 mm is a safer limit.', 'Sommardäck ska ha ett mönsterdjup på minst 1,6 mm. På våt väg är cirka 3–4 mm en säkrare gräns.'),
+      t3('Pese talvirenkaat ennen säilytystä, merkitse niiden paikat (esim. VE = vasen etu) ja säilytä ne viileässä ja pimeässä.', 'Wash the winter tyres before storage, mark their positions (e.g. FL = front left) and keep them somewhere cool and dark.', 'Tvätta vinterdäcken före förvaringen, märk deras platser (t.ex. VF = vänster fram) och förvara dem svalt och mörkt.'),
+      t3('Pese auto ja alusta suolakauden jälkeen. Se hidastaa ruostumista.', 'Wash the car and its underbody after the salt season. It slows down rust.', 'Tvätta bilen och underredet efter saltsäsongen. Det bromsar rosten.'),
+      t3('Kirjaa renkaanvaihto merkinnäksi, niin rengasmuistutus poistuu ja seuraava kausi on helppo tarkistaa.', 'Record the tyre change as an entry, so the tyre reminder goes away and next season is easy to check.', 'Registrera däckbytet som en anteckning, så försvinner däckpåminnelsen och nästa säsong är lätt att kontrollera.'),
+    ] },
+    { id: 'summer', from: '06-01', to: '08-31', icon: 'sun', chip: t3('Kesähoito', 'Summer care', 'Sommarvård'), title: t3('Pesu ja kesähoito', 'Washing and summer care', 'Tvätt och sommarvård'), when: t3('1.6.–31.8.', '1 Jun – 31 Aug', '1.6–31.8'), items: [
+      t3('Pese lintujen jätökset, hyönteiset ja pihka pois pian. Auringossa ne voivat syövyttää maalipintaa.', 'Wash off bird droppings, insects and tree sap soon. In the sun they can etch the paint.', 'Tvätta snart bort fågelspillning, insekter och kåda. I solen kan de fräta på lacken.'),
+      t3('Vahaa auto kerran tai kahdesti vuodessa, esimerkiksi kesän alussa ja ennen talvea.', 'Wax the car once or twice a year, for example at the start of summer and before winter.', 'Vaxa bilen en eller två gånger om året, till exempel i början av sommaren och före vintern.'),
+      t3('Tarkista ennen pitkää matkaa moottoriöljy, jäähdytysneste ja rengaspaineet kuorman mukaan.', 'Before a long trip, check the engine oil, the coolant and the tyre pressures for the load.', 'Före en lång resa, kontrollera motoroljan, kylarvätskan och däcktrycket efter lasten.'),
+      t3('Jos ilmastointi jäähdyttää heikosti, huollata se. Teho heikkenee vuosien mittaan.', 'If the air conditioning cools poorly, have it serviced. Its performance drops over the years.', 'Om luftkonditioneringen kyler dåligt, låt serva den. Effekten minskar med åren.'),
+      t3('Perävaunu tai traileri: tarkista valot, renkaat ja kytkentä ennen lähtöä.', 'Trailer: check the lights, tyres and coupling before you set off.', 'Släp eller trailer: kontrollera lysen, däck och koppling innan du åker.'),
+    ] },
+  ];
+  // The season for a date 'MM-DD'; every day of the year has exactly one.
+  const inSeason = (x, md) => x.from <= x.to ? md >= x.from && md <= x.to : md >= x.from || md <= x.to;
+  const season = md => S.find(x => inSeason(x, md)) || S[0];
+  const sDict = k => Object.fromEntries(S.flatMap(x => [x.chip, x.title, x.when, ...x.items]).map(t => [t.fi, t[k]]));
+  const dict = k => ({ ...Object.fromEntries(T.map(x => [x.fi, x[k]])), ...sDict(k) });
+  window.AjouraTips = { forCar, season, seasons: S, en: dict('en'), sv: dict('sv') };
 })();

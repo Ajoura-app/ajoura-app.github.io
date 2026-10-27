@@ -696,3 +696,35 @@ html.dark .device-glass .rp-c,html.dark .device-glass .rp-dot,html.dark .device-
 .rp-pdf-ico{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:11px;background:var(--blue);color:#fff}
 .rp-pdf-ico svg{width:20px;height:20px}
 .rp-pdf .chevron{color:#8494a8;font-size:16px}
+/* Vehicle page: photo and edit buttons side by side (v0.35) */
+@media screen{
+.vehicle-hero .photo-actions{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+.vehicle-hero .photo-actions .photo-button{justify-content:center;text-align:center;min-width:0;padding:7px 6px;line-height:1.25}
+.vehicle-hero .photo-actions .photo-button.plain{background:#fff;border-color:#c9d9ea;color:#4f5f72}
+.vehicle-hero .photo-actions .photo-button.plain:hover{border-color:#b42a2a;color:#b42a2a}
+}
+/* Seasonal guide, season chip and add-vehicle button (v0.35) */
+@media screen{
+.history-heading a.garage-add{display:inline-flex;align-items:center;min-height:30px;padding:5px 11px;border-radius:999px;background:var(--soft-blue);border:1px solid #c9dcf5;color:var(--blue);font-size:11.5px;font-weight:700;text-decoration:none}
+.history-heading a.garage-add:hover{border-color:var(--blue)}
+.add-vehicle-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;min-height:46px;padding:9px 12px;border:1.5px dashed #b6cbe6;border-radius:16px;background:#fff;color:var(--blue);font-size:12.5px;font-weight:700;text-decoration:none}
+.add-vehicle-row:hover{border-color:var(--blue)}
+.add-vehicle-row:active{background:#f2f6fb}
+.add-vehicle-row .avr-plus{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:14px;line-height:1}
+a.today-chip{text-decoration:none}
+.season-card{background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow);padding:12px 13px 10px;margin:0 0 6px}
+.season-head{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.season-head .event-symbol{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;border-radius:11px;background:#e3f1fd;color:#1f86d6}
+.season-head .event-symbol svg{width:20px;height:20px}
+.season-head h3{margin:1px 0 0;font-size:15px;letter-spacing:-.02em}
+.season-head small{display:block;font-size:11px;color:#4f5f72;margin-top:1px}
+.season-card ul,.tips-faq ul{margin:0;padding:0 0 0 16px;font-size:11.5px;line-height:1.55;color:#33465b}
+.season-card li,.tips-faq li{margin:0 0 7px}
+.season-todo{margin-top:10px;border-top:1px solid var(--hairline);padding-top:9px}
+.season-todo strong{display:block;font-size:11.5px;margin-bottom:4px}
+.season-todo a{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:38px;font-size:11.5px;color:var(--ink);text-decoration:none;border-top:1px solid var(--hairline)}
+.season-todo a:first-of-type{border-top:0}
+.season-go{font-weight:700;color:var(--blue);white-space:nowrap}
+.tips-faq ul{padding-bottom:6px}
+.tips-n{font-weight:500;color:#4f5f72}
+}
