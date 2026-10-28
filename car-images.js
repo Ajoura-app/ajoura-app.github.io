@@ -1089,5 +1089,12 @@ window.AjouraImages = (() => {
     const f = files[[brand, model, body, from].join('|')];
     return f ? (/^https?:|^\//.test(f) ? f : base + f) : undefined;
   };
-  return { get, files };
+  // Pictures by body style and size class (v0.37), made with ChatGPT (white vehicle on white, background removed in the
+  // app). Used for body styles that have no model pictures: panel van, convertible and motorhome. Each entry is
+  // [file, the outline the picture shows in metres (length, wheelbase, front overhang, wheel diameter) for finding the wheels].
+  const generic = {
+    panel: { e: ['ajoneuvokuvat/car-panel-large.webp', { L: 6.0, WB: 3.93, fo: 0.955, wd: 0.82, lo: 180 }] }
+  };
+  const byBody = (body, size) => (generic[body] && generic[body][size]) || null;
+  return { get, files, byBody };
 })();

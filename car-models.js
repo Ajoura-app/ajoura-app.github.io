@@ -415,10 +415,14 @@ window.AjouraModels=(()=>{
     return r?{dims:[r[2]/1000,r[3]/1000,r[4]/1000],traits:r[6]||''}:null;};
   // Everything the car picture needs for one car: size class, character letters and real dimensions.
   const letter={rwd:'r',fast:'f',csuv:'f',box:'b',round:'o',rear:'m'};
-  // v0.37: a panel van uses the model's van outline and picture (car-shapes.js maps panel → van) and a convertible the
-  // coupé ones when the model has them; otherwise the drawn convertible. A motorhome is always the drawn motorhome: the
-  // base vehicle's picture and real size (a van) would be wrong for it.
-  const shape=(b,m,body,year,gen)=>{if(body==='motorhome')return {size:m?size(b,m):undefined,year:Number(year)||undefined};const sp=spec(b,m,body,year),tr=(sp?sp.traits:'')+(letter[trait(b,m)]||'');const S=window.AjouraShapes,form=S&&m?S.form(b,m,body,year,gen):null;return {size:m?size(b,m):undefined,trait:tr||undefined,dims:sp?sp.dims:undefined,year:Number(year)||undefined,form:form||undefined,img:form&&window.AjouraImages?window.AjouraImages.get(b,m,form.body,form.years[0]):undefined};};
+  // v0.37: panel van, convertible and motorhome. The picture for the body style and size class when there is one
+  // (car-images.js byBody). Otherwise drawn: a panel van from the model's van outline without rear windows, a convertible
+  // from the model's real size without the roof, a motorhome from its own shape. The model's own picture is not used,
+  // because it shows the windowed van or the coupé with its roof up.
+  const own={panel:'d',cabrio:'c',motorhome:'d'};
+  const shape=(b,m,body,year,gen)=>{if(own[body]){const sz=m?size(b,m):undefined,I=window.AjouraImages,g=I&&I.byBody?I.byBody(body,sz||own[body]):null,y=Number(year)||undefined;
+      if(g)return {size:sz,year:y,img:g[0],dimsOf:g[1]};if(body==='motorhome')return {size:sz,year:y};const sp=spec(b,m,body,year),S=window.AjouraShapes;
+      return {size:sz,year:y,trait:sp&&sp.traits||undefined,dims:sp?sp.dims:undefined,form:body==='panel'&&S&&m?S.form(b,m,body,year,gen)||undefined:undefined};}const sp=spec(b,m,body,year),tr=(sp?sp.traits:'')+(letter[trait(b,m)]||'');const S=window.AjouraShapes,form=S&&m?S.form(b,m,body,year,gen):null;return {size:m?size(b,m):undefined,trait:tr||undefined,dims:sp?sp.dims:undefined,year:Number(year)||undefined,form:form||undefined,img:form&&window.AjouraImages?window.AjouraImages.get(b,m,form.body,form.years[0]):undefined};};
   // Body styles that were actually built in the chosen model year (A-sarja 2003 → no sedan); all listed styles
   // when the year is unknown or outside every traced generation.
   const bodiesFor=(b,m,year)=>{const list=bodies(b,m),S=window.AjouraShapes,y=Number(year);if(!y||!S||!S.has(b,m))return list;
