@@ -70,7 +70,7 @@
   const kindItems=(c,t)=>{const p=planOf(c);return serviceKinds.includes(t)||t==='Muu huolto'||oldKindSvc.includes(t)?p.svc:t==='Korjaus ja osan vaihto'?p.fix:careSets[t]||(t==='Pohjamaalaus'?careSets.Venehoito:itemSets[t]&&/^(Renkaiden vaihto|Katsastus)$/.test(t)?itemSets[t]:[]);};
   const itemsFor=(c,t)=>!t?[]:!isCar(c)?kindItems(c,dispType(c,t)):itemSets[t]||itemSets[oldGroup[t]]||checkItems;
   // Order of the body-type picker; names come from car-render.js.
-  const bodyOrder=['suv','wagon','sedan','hatchback','coupe','van','pickup'];
+  const bodyOrder=['suv','wagon','sedan','hatchback','coupe','cabrio','van','panel','motorhome','pickup'];
   const guidance={
     launcher:['01 / 06','Avaa sovellus.','Napauta puhelimen aloitusnäytöllä AJOURA-kuvaketta. Puhelimen alareunan palkista pääset takaisin aloitusnäyttöön.'],
     welcome:['02 / 06','Aloita käyttö.','Valitse kieli ja aloita ilman kirjautumista. Tiedot tallentuvat vain tähän laitteeseen.'],
@@ -429,7 +429,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.36 (testiversio)';
+  const appVersion='0.37 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

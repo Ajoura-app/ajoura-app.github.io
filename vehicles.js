@@ -10,7 +10,7 @@
   const lum = h => { const [r, g, b] = rgb(h); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
 
   const KINDS = [
-    { id: 'car', name: 'Auto', hint: 'Henkilö-, paketti- tai maastoauto', unit: 'km' },
+    { id: 'car', name: 'Auto', hint: 'Henkilö-, paketti-, maasto- tai asuntoauto', unit: 'km' },
     { id: 'mc', name: 'Moottoripyörä', hint: 'Katu-, matka-, custom- tai crossipyörä', unit: 'km', types: { street: 'Katupyörä', sport: 'Sport', custom: 'Custom', touring: 'Matkapyörä', adventure: 'Seikkailupyörä', cross: 'Cross / enduro' } },
     { id: 'moped', name: 'Mopo tai skootteri', hint: 'Myös kevytmoottoripyörä', unit: 'km', types: { scooter: 'Skootteri', moped: 'Mopo', light: 'Kevytmoottoripyörä' } },
     { id: 'microcar', name: 'Mopoauto', hint: 'Kevyt nelipyörä', unit: 'km', types: { hatchback: 'Mopoauto', pickup: 'Lava-mopoauto' } },

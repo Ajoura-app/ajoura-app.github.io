@@ -134,64 +134,65 @@ window.AjouraModels=(()=>{
     'Iveco':['Daily']
   };
   // Body styles each model is sold in (first = most common), so the add-vehicle picture offers only
-  // real options. s sedan · h hatchback · w wagon · u SUV · c coupé/cabrio · v MPV/van · p pickup.
+  // real options. s sedan · h hatchback · w wagon · u SUV · c coupé · v MPV · p pickup · k panel van (v0.37) · a convertible (v0.37) ·
+  // m motorhome (v0.37, the base vehicles motorhomes are usually built on).
   const bodyRaw={
-    'Alfa Romeo':'33:h,w|75:s|145:h|146:h|147:h|155:s|156:s,w|159:s,w|164:s|Giulia:s|Giulietta:h|Junior:u|MiTo:h|Spider:c|Stelvio:u|Tonale:u',
-    'Audi':'80:s,w|90:s|100:s,w|200:s,w|A1:h|A2:h|A3 Cabriolet:c|A3 Sedan:s|A3 Sportback:h|A4:s|A4 allroad:w|A4 Avant:w|A5 Avant (2024–):w|A5 Coupé:c|A5 Sportback:h|A6:s|A6 allroad:w|A6 Avant:w|A6 e-tron:h,w|A7 Sportback:h|A8:s|Coupé:c|e-tron:u|e-tron GT:c|e-tron Sportback:u|Muu Audi:s,h,w,u,c|Q2:u|Q3:u|Q3 Sportback:u|Q4 e-tron:u|Q4 Sportback e-tron:u|Q5:u|Q5 Sportback:u|Q6 e-tron:u|Q7:u|Q8:u|Q8 e-tron:u|Quattro:c|R8:c|TT:c',
-    'BMW':'1-sarja:h|2-sarja Active Tourer:v|2-sarja Coupé:c|2-sarja Gran Coupé:s|2-sarja Gran Tourer:v|3-sarja:s,w|3-sarja Compact:h|3-sarja GT:h|3-sarja Touring:w|4-sarja Cabriolet:c|4-sarja Coupé:c|4-sarja Gran Coupé:h|5-sarja:s,w|5-sarja Touring:w|6-sarja:c|6-sarja GT:h|7-sarja:s|8-sarja:c|i3:h|i4:h|i5:s,w|i7:s|i8:c|iX:u|iX1:u|iX2:u|iX3:u|Muu BMW:s,w,h,u,c|X1:u|X2:u|X3:u|X4:u|X5:u|X6:u|X7:u|XM:u|Z1:c|Z3:c|Z4:c|Z8:c',
+    'Alfa Romeo':'33:h,w|75:s|145:h|146:h|147:h|155:s|156:s,w|159:s,w|164:s|Giulia:s|Giulietta:h|Junior:u|MiTo:h|Spider:a|Stelvio:u|Tonale:u',
+    'Audi':'80:s,w|90:s|100:s,w|200:s,w|A1:h|A2:h|A3 Cabriolet:a|A3 Sedan:s|A3 Sportback:h|A4:s,a|A4 allroad:w|A4 Avant:w|A5 Avant (2024–):w|A5 Coupé:c|A5 Sportback:h|A6:s|A6 allroad:w|A6 Avant:w|A6 e-tron:h,w|A7 Sportback:h|A8:s|Coupé:c|e-tron:u|e-tron GT:c|e-tron Sportback:u|Muu Audi:s,h,w,u,c,a|Q2:u|Q3:u|Q3 Sportback:u|Q4 e-tron:u|Q4 Sportback e-tron:u|Q5:u|Q5 Sportback:u|Q6 e-tron:u|Q7:u|Q8:u|Q8 e-tron:u|Quattro:c|R8:c|TT:c,a',
+    'BMW':'1-sarja:h,a|2-sarja Active Tourer:v|2-sarja Coupé:c,a|2-sarja Gran Coupé:s|2-sarja Gran Tourer:v|3-sarja:s,w,a|3-sarja Compact:h|3-sarja GT:h|3-sarja Touring:w|4-sarja Cabriolet:a|4-sarja Coupé:c|4-sarja Gran Coupé:h|5-sarja:s,w|5-sarja Touring:w|6-sarja:c,a|6-sarja GT:h|7-sarja:s|8-sarja:c,a|i3:h|i4:h|i5:s,w|i7:s|i8:c|iX:u|iX1:u|iX2:u|iX3:u|Muu BMW:s,w,h,u,c,a|X1:u|X2:u|X3:u|X4:u|X5:u|X6:u|X7:u|XM:u|Z1:a|Z3:c,a|Z4:c,a|Z8:a',
     'BYD':'Atto 2:u|Atto 3:u|Dolphin:h|Han:s|Seal:s|Seal U:u|Sealion 7:u|Tang:u',
-    'Chevrolet':'Aveo:h,s|Camaro:c|Captiva:u|Corvette:c|Cruze:s,h,w|Lacetti:s,h,w|Spark:h',
-    'Citroën':'2CV:s|AX:h|Berlingo:v|BX:h,w|C1:h|C3:h|C3 Aircross:u|C4:h|C4 Picasso:v|C5:s,w|C5 Aircross:u|C5 X:w|CX:s,w|ë-C4:h|Jumper:v|Jumpy:v|Saxo:h|Xantia:h,w|Xsara:h,w|Xsara Picasso:v|ZX:h,w',
+    'Chevrolet':'Aveo:h,s|Camaro:c,a|Captiva:u|Corvette:c,a|Cruze:s,h,w|Lacetti:s,h,w|Spark:h',
+    'Citroën':'2CV:s|AX:h|Berlingo:v,k|BX:h,w|C1:h|C3:h|C3 Aircross:u|C4:h|C4 Picasso:v|C5:s,w|C5 Aircross:u|C5 X:w|CX:s,w|ë-C4:h|Jumper:k,m|Jumpy:k,v|Saxo:h|Xantia:h,w|Xsara:h,w|Xsara Picasso:v|ZX:h,w',
     'Cupra':'Born:h|Formentor:u|Leon:h,w|Tavascan:u|Terramar:u',
     'Dacia':'Duster:u|Jogger:w|Logan:s,w|Sandero:h|Spring:h',
-    'Fiat':'500:h,c|500e:h,c|500X:u|Brava:h|Bravo:h|Doblo:v|Ducato:v|Fiorino:v|Multipla:v|Panda:h|Punto:h|Ritmo:h|Scudo:v|Seicento:h|Stilo:h,w|Talento:v|Tipo:h,s,w|Uno:h',
-    'Ford':'C-Max:v|Capri:c|Escort:s,h,w|Explorer:u|Fiesta:h|Focus:h,w,s|Galaxy:v|Granada:s,w|Ka:h|Kuga:u|Mondeo:w,s,h|Mustang:c|Mustang Mach-E:u|Orion:s|Puma:u|Ranger:p|S-Max:v|Scorpio:h,s,w|Sierra:h,s,w|Taunus:s,w|Tourneo:v|Transit:v|Transit Connect:v|Transit Courier:v|Transit Custom:v',
+    'Fiat':'500:h,c,a|500e:h,c,a|500X:u|Brava:h|Bravo:h|Doblo:v,k|Ducato:k,m|Fiorino:k|Multipla:v|Panda:h|Punto:h|Ritmo:h|Scudo:k,v|Seicento:h|Stilo:h,w|Talento:k,v|Tipo:h,s,w|Uno:h',
+    'Ford':'C-Max:v|Capri:c|Escort:s,h,w,a|Explorer:u|Fiesta:h|Focus:h,w,s,a|Galaxy:v|Granada:s,w|Ka:h|Kuga:u|Mondeo:w,s,h|Mustang:c,a|Mustang Mach-E:u|Orion:s|Puma:u|Ranger:p|S-Max:v|Scorpio:h,s,w|Sierra:h,s,w|Taunus:s,w|Tourneo:v|Transit:k,m|Transit Connect:k|Transit Courier:k|Transit Custom:k',
     'Honda':'Accord:s,w|Civic:h,s|CR-V:u|e:h|e:Ny1:u|HR-V:u|Jazz:h|Prelude:c',
-    'Hyundai':'Accent:h,s|Atos:h|Bayon:u|Coupe:c|Elantra:s,w,h|Getz:h|H-1:v|i10:h|i20:h|i30:h,w|i40:w,s|IONIQ:h|IONIQ 5:u|IONIQ 6:s|ix35:u|Kona:u|Matrix:v|Pony:h,s|Santa Fe:u|Sonata:s|Staria:v|Tucson:u',
-    'Jaguar':'E-Pace:u|E-type:c|F-Pace:u|F-Type:c|I-Pace:u|S-Type:s|X-Type:s,w|XE:s|XF:s,w|XJ:s|XJS:c',
+    'Hyundai':'Accent:h,s|Atos:h|Bayon:u|Coupe:c|Elantra:s,w,h|Getz:h|H-1:v,k|i10:h|i20:h|i30:h,w|i40:w,s|IONIQ:h|IONIQ 5:u|IONIQ 6:s|ix35:u|Kona:u|Matrix:v|Pony:h,s|Santa Fe:u|Sonata:s|Staria:v,k|Tucson:u',
+    'Jaguar':'E-Pace:u|E-type:c,a|F-Pace:u|F-Type:c,a|I-Pace:u|S-Type:s|X-Type:s,w|XE:s|XF:s,w|XJ:s|XJS:c,a',
     'Jeep':'Avenger:u|Cherokee:u|Compass:u|Grand Cherokee:u|Renegade:u|Wrangler:u',
     'Kia':'Carens:v|Carnival:v|Ceed:h|Ceed SW:w|EV3:u|EV6:u|EV9:u|Niro:u|Optima:s,w|Picanto:h|Pride:h|ProCeed:w|Rio:h|Sephia:s|Sorento:u|Soul:u|Sportage:u|Stonic:u|XCeed:u',
     'Land Rover':'Defender:u|Discovery:u|Discovery Sport:u|Freelander:u|Range Rover:u|Range Rover Evoque:u|Range Rover Sport:u|Range Rover Velar:u',
     'Lexus':'CT:h|ES:s|IS:s|LBX:u|NX:u|RX:u|RZ:u|UX:u',
-    'Mazda':'2:h|3:h,s|5:v|6:s,w|121:h|323:h,s|626:s,h,w|CX-3:u|CX-5:u|CX-30:u|CX-60:u|CX-80:u|MX-5:c|MX-30:u|Premacy:v|RX-7:c',
-    'Mercedes-Benz':'190:s|A-sarja:h,s|AMG GT:c|B-sarja:v|C-sarja:s,w,c|Citan:v|CL:c|CLA:s|CLA Shooting Brake:w|CLC:c|CLK:c|CLS:s|E-sarja:s,w,c|EQA:u|EQB:u|EQC:u|EQE:s|EQE SUV:u|EQS:s|EQS SUV:u|EQV:v|G-sarja:u|GL:u|GLA:u|GLB:u|GLC:u|GLC Coupé:u|GLE:u|GLE Coupé:u|GLK:u|GLS:u|ML:u|Muu Mercedes-Benz:s,w,h,u,c,v|R-sarja:v|S-sarja:s,c|SL:c|SLC:c|SLK:c|SLS AMG:c|Sprinter:v|T-sarja:v|V-sarja:v|Viano:v|Vito:v|W115:s|W123:s,w|W124:s,w,c|X-sarja:p',
-    'MG':'MG3:h|MG4:h|MG5:w|HS:u|ZS:u|Marvel R:u|Cyberster:c',
-    'Mini':'Cooper:h,c|Clubman:w|Countryman:u|Paceman:u|Aceman:u',
+    'Mazda':'2:h|3:h,s|5:v|6:s,w|121:h|323:h,s|626:s,h,w|CX-3:u|CX-5:u|CX-30:u|CX-60:u|CX-80:u|MX-5:a|MX-30:u|Premacy:v|RX-7:c',
+    'Mercedes-Benz':'190:s|A-sarja:h,s|AMG GT:c,a|B-sarja:v|C-sarja:s,w,c,a|Citan:k,v|CL:c|CLA:s|CLA Shooting Brake:w|CLC:c|CLK:c,a|CLS:s|E-sarja:s,w,c,a|EQA:u|EQB:u|EQC:u|EQE:s|EQE SUV:u|EQS:s|EQS SUV:u|EQV:v|G-sarja:u|GL:u|GLA:u|GLB:u|GLC:u|GLC Coupé:u|GLE:u|GLE Coupé:u|GLK:u|GLS:u|ML:u|Muu Mercedes-Benz:s,w,h,u,c,v,a,k,m|R-sarja:v|S-sarja:s,c,a|SL:a|SLC:a|SLK:a|SLS AMG:c|Sprinter:k,m|T-sarja:v|V-sarja:v|Viano:v|Vito:k,v|W115:s|W123:s,w|W124:s,w,c,a|X-sarja:p',
+    'MG':'MG3:h|MG4:h|MG5:w|HS:u|ZS:u|Marvel R:u|Cyberster:a',
+    'Mini':'Cooper:h,c,a|Clubman:w|Countryman:u|Paceman:u|Aceman:u',
     'Mitsubishi':'ASX:u|Carisma:h,s|Colt:h|Eclipse Cross:u|Galant:s,h,w|L200:p|Lancer:s,h,w|Outlander:u|Pajero:u|Space Star:h|Space Wagon:v',
-    'Nissan':'200SX:c|Almera:h,s|Ariya:u|Bluebird:s,h,w|Cherry:h|e-NV200:v|Juke:u|Leaf:h|Micra:h|Navara:p|Note:h|NV200:v|Pathfinder:u|Patrol:u|Primastar:v|Primera:s,h,w|Qashqai:u|Sunny:s,h,w|Terrano:u|X-Trail:u',
-    'Opel':'Ascona:s,h|Astra:h,w,s|Calibra:c|Combo:v|Corsa:h|Crossland:u|Grandland:u|Insignia:w,h|Kadett:s,h,w|Manta:c|Meriva:v|Mokka:u|Movano:v|Omega:s,w|Rekord:s,w|Vectra:s,h,w|Vivaro:v|Zafira:v',
-    'Peugeot':'104:h|106:h|107:h|108:h|205:h|206:h,w,c|207:h,w|208:h|306:h,s,w|307:h,w|308:h,w|309:h|405:s,w|406:s,w,c|407:s,w|505:s,w|508:h,w|2008:u|3008:u|5008:u|Boxer:v|Expert:v|Partner:v|Rifter:v',
+    'Nissan':'200SX:c|Almera:h,s|Ariya:u|Bluebird:s,h,w|Cherry:h|e-NV200:k,v|Juke:u|Leaf:h|Micra:h|Navara:p|Note:h|NV200:k,v|Pathfinder:u|Patrol:u|Primastar:k,v|Primera:s,h,w|Qashqai:u|Sunny:s,h,w|Terrano:u|X-Trail:u',
+    'Opel':'Ascona:s,h|Astra:h,w,s,a|Calibra:c|Combo:v,k|Corsa:h|Crossland:u|Grandland:u|Insignia:w,h|Kadett:s,h,w,a|Manta:c|Meriva:v|Mokka:u|Movano:k|Omega:s,w|Rekord:s,w|Vectra:s,h,w|Vivaro:k,v|Zafira:v',
+    'Peugeot':'104:h|106:h|107:h|108:h|205:h|206:h,w,c,a|207:h,w,a|208:h|306:h,s,w|307:h,w,a|308:h,w,a|309:h|405:s,w|406:s,w,c|407:s,w|505:s,w|508:h,w|2008:u|3008:u|5008:u|Boxer:k,m|Expert:k,v|Partner:v,k|Rifter:v',
     'Polestar':'Polestar 2:h|Polestar 3:u|Polestar 4:u',
-    'Porsche':'718 Boxster:c|718 Cayman:c|911:c|924:c|928:c|944:c|Cayenne:u|Macan:u|Panamera:h,w|Taycan:s,w',
-    'Renault':'4:h|5:h|9:s|19:h,s|21:s,w|Arkana:u|Austral:u|Captur:u|Clio:h|Espace:v|Kadjar:u|Kangoo:v|Laguna:h,w|Master:v|Megane:h,w|Megane E-Tech:u|Scenic:v,u|Trafic:v|Twingo:h|Zoe:h',
-    'Saab':'9-3:s,w,c|9-5:s,w|96:s|99:s|900:h,c|9000:h,s',
+    'Porsche':'718 Boxster:a|718 Cayman:c|911:c,a|924:c|928:c|944:c|Cayenne:u|Macan:u|Panamera:h,w|Taycan:s,w',
+    'Renault':'4:h|5:h|9:s|19:h,s|21:s,w|Arkana:u|Austral:u|Captur:u|Clio:h|Espace:v|Kadjar:u|Kangoo:v,k|Laguna:h,w|Master:k,m|Megane:h,w,a|Megane E-Tech:u|Scenic:v,u|Trafic:k,v|Twingo:h|Zoe:h',
+    'Saab':'9-3:s,w,c,a|9-5:s,w|96:s|99:s|900:h,c,a|9000:h,s',
     'Seat':'Alhambra:v|Altea:v|Arona:u|Ateca:u|Cordoba:s,w|Ibiza:h|Leon:h,w|Tarraco:u|Toledo:h,s,v',
     'Škoda':'120:s|Citigo:h|Elroq:u|Enyaq:u|Fabia:h,w|Favorit:h,w|Felicia:h,w|Kamiq:u|Karoq:u|Kodiaq:u|Octavia:w,h|Rapid:h|Scala:h|Superb:w,h|Yeti:u',
     'Subaru':'Forester:u|Impreza:h,s|Legacy:w,s|Outback:w|Solterra:u|XV:u',
     'Suzuki':'Alto:h|Baleno:h,s,w|Grand Vitara:u|Ignis:h|Jimny:u|S-Cross:u|Samurai:u|Swift:h|SX4:h,s|Vitara:u',
     'Tesla':'Model 3:s|Model S:h|Model X:u|Model Y:u',
-    'Toyota':'Auris:h,w|Avensis:w,s|Aygo:h|Aygo X:h|bZ4X:u|C-HR:u|Camry:s|Carina:s,h,w|Celica:c|Corolla:h,s,w|Corolla Touring Sports:w|Corona:s,w|Hiace:v|Hilux:p|Land Cruiser:u|Previa:v|Prius:h|Proace:v|Proace City:v|RAV4:u|Starlet:h|Supra:c|Yaris:h|Yaris Cross:u',
-    'Volkswagen':'Amarok:p|Arteon:h,w|Beetle:h|Bora:s,w|Caddy:v|Corrado:c|Crafter:v|Golf:h|Golf Variant:w|ID. Buzz:v|ID.3:h|ID.4:u|ID.5:u|ID.7:h,w|Jetta:s|Kupla:s|Passat:w,s|Passat Variant:w|Polo:h|Scirocco:c|Sharan:v|T-Cross:u|T-Roc:u|Taigo:u|Tiguan:u|Touareg:u|Touran:v|Transporter:v|Up!:h|Vento:s',
-    'Volvo':'140:s,w|240:s,w|340:h,s|440:h|460:s|480:c|740:s,w|760:s,w|850:s,w|940:s,w|960:s,w|Amazon:s,w|C30:h|C40:u|C70:c|EX30:u|EX40:u|EX90:u|S40:s|S60:s|S70:s|S80:s|S90:s|V40:h,w|V50:w|V60:w|V70:w|V90:w|XC40:u|XC60:u|XC70:w|XC90:u',
+    'Toyota':'Auris:h,w|Avensis:w,s|Aygo:h|Aygo X:h|bZ4X:u|C-HR:u|Camry:s|Carina:s,h,w|Celica:c,a|Corolla:h,s,w|Corolla Touring Sports:w|Corona:s,w|Hiace:k,v|Hilux:p|Land Cruiser:u|Previa:v|Prius:h|Proace:k,v|Proace City:k,v|RAV4:u|Starlet:h|Supra:c|Yaris:h|Yaris Cross:u',
+    'Volkswagen':'Amarok:p|Arteon:h,w|Beetle:h,a|Bora:s,w|Caddy:v,k|Corrado:c|Crafter:k,m|Golf:h,a|Golf Variant:w|ID. Buzz:v,k|ID.3:h|ID.4:u|ID.5:u|ID.7:h,w|Jetta:s|Kupla:s,a|Passat:w,s|Passat Variant:w|Polo:h|Scirocco:c|Sharan:v|T-Cross:u|T-Roc:u,a|Taigo:u|Tiguan:u|Touareg:u|Touran:v|Transporter:k,v,m|Up!:h|Vento:s',
+    'Volvo':'140:s,w|240:s,w|340:h,s|440:h|460:s|480:c|740:s,w|760:s,w|850:s,w|940:s,w|960:s,w|Amazon:s,w|C30:h|C40:u|C70:c,a|EX30:u|EX40:u|EX90:u|S40:s|S60:s|S70:s|S80:s|S90:s|V40:h,w|V50:w|V60:w|V70:w|V90:w|XC40:u|XC60:u|XC70:w|XC90:u',
     'Lada':'1200:s|2104:w|2105:s|2107:s|Niva:u|Samara:h,s',
     'Daihatsu':'Charade:h|Cuore:h|Sirion:h|Terios:u',
     'Datsun':'100A:h|120Y:s,w|Bluebird:s,w|Violet:s',
     'Chrysler':'300C:s,w|PT Cruiser:h|Voyager:v',
-    'Smart':'#1:u|#3:u|Forfour:h|Fortwo:h,c|Roadster:c',
+    'Smart':'#1:u|#3:u|Forfour:h|Fortwo:h,c,a|Roadster:c,a',
     'SsangYong':'Actyon:u|Korando:u|Kyron:u|Musso:p|Rexton:u|Rodius:v|Tivoli:u|Torres:u|XLV:u',
     'Lynk & Co':'01:u|02:u|08:u',
     'Isuzu':'D-Max:p|Trooper:u',
     'DS':'3:h|3 Crossback:u|4:h|5:h|7:u|9:s',
-    'Maserati':'Ghibli:s|GranCabrio:c|GranTurismo:c|Grecale:u|Levante:u|MC20:c|Quattroporte:s',
-    'Ferrari':'296:c|308:c|328:c|348:c|360:c|458:c|488:c|812:c|California:c|F430:c|F8:c|Portofino:c|Purosangue:u|Roma:c|SF90:c|Testarossa:c',
-    'Lamborghini':'Aventador:c|Gallardo:c|Huracán:c|Murciélago:c|Revuelto:c|Temerario:c|Urus:u',
-    'Bentley':'Bentayga:u|Continental GT:c|Flying Spur:s|Mulsanne:s',
-    'Dodge':'Avenger:s|Caliber:h|Challenger:c|Charger:s|Durango:u|Grand Caravan:v|Journey:u|Nitro:u|Ram:p|Viper:c',
+    'Maserati':'Ghibli:s|GranCabrio:a|GranTurismo:c|Grecale:u|Levante:u|MC20:c|Quattroporte:s',
+    'Ferrari':'296:c,a|308:c,a|328:c,a|348:c,a|360:c,a|458:c,a|488:c,a|812:c,a|California:a|F430:c,a|F8:c,a|Portofino:a|Purosangue:u|Roma:c|SF90:c,a|Testarossa:c',
+    'Lamborghini':'Aventador:c,a|Gallardo:c,a|Huracán:c,a|Murciélago:c,a|Revuelto:c|Temerario:c|Urus:u',
+    'Bentley':'Bentayga:u|Continental GT:c,a|Flying Spur:s|Mulsanne:s',
+    'Dodge':'Avenger:s|Caliber:h|Challenger:c|Charger:s|Durango:u|Grand Caravan:v|Journey:u|Nitro:u|Ram:p|Viper:c,a',
     'Cadillac':'ATS:s,c|BLS:s,w|CTS:s,w,c|DeVille:s|Escalade:u|Lyriq:u|Optiq:u|SRX:u|STS:s|XT4:u|XT5:u',
     'Lancia':'Dedra:s,w|Delta:h|Fulvia:c|Kappa:s,w|Lybra:s,w|Musa:v|Phedra:v|Prisma:s|Thema:s,w|Thesis:s|Voyager:v|Y10:h|Ypsilon:h',
-    'Iveco':'Daily:v'
+    'Iveco':'Daily:k,m'
   };
-  const codes={s:'sedan',h:'hatchback',w:'wagon',u:'suv',c:'coupe',v:'van',p:'pickup'};
+  const codes={s:'sedan',h:'hatchback',w:'wagon',u:'suv',c:'coupe',v:'van',p:'pickup',k:'panel',a:'cabrio',m:'motorhome'};
   const bodyIndex={};for(const [b,list] of Object.entries(bodyRaw)){bodyIndex[b]={};for(const item of list.split('|')){const i=item.lastIndexOf(':'),m=item.slice(0,i),c=item.slice(i+1);bodyIndex[b][m]=c.split(',').map(k=>codes[k]);}}
   // Empty array = unknown model: the form then offers every body style.
   const bodies=(b,m)=>(bodyIndex[b]&&bodyIndex[b][m])||[];
@@ -404,7 +405,7 @@ window.AjouraModels=(()=>{
     'Transit Custom':[[2012,2099,4973,1980,2933]],'Transit Connect':[[2014,2099,4418,1840,2662]]},
    'Tesla':{'Model 3':[[2017,2099,4720,1441,2875,'Sedan','f']],'Model Y':[[2020,2099,4751,1624,2890,'','f']],'Model S':[[2012,2099,4970,1445,2960,'Sedan','f']],'Model X':[[2015,2099,5036,1684,2965]]}
   };
-  const bodyName={sedan:'Sedan',wagon:'Farmari',hatchback:'Hatchback',coupe:'Coupé',suv:'SUV',van:'Tila-auto',pickup:'Pickup'};
+  const bodyName={sedan:'Sedan',wagon:'Farmari',hatchback:'Hatchback',coupe:'Coupé',suv:'SUV',van:'Tila-auto',pickup:'Pickup',cabrio:'Avoauto'};
   // Best match: same body and year, then any body that year, then the nearest generation.
   const spec=(b,m,body,year)=>{const table=specRaw[b];if(!table||!m)return null;const base=m.replace(/ (Sedan|Farmari|Coupé|Cabriolet|Cabrio|Touring|Avant|Variant)$/i,'');
     const key=Object.keys(table).find(k=>k.toLowerCase()===m.toLowerCase())||Object.keys(table).find(k=>k.toLowerCase()===base.toLowerCase());const list=key&&table[key];if(!list)return null;
@@ -414,11 +415,16 @@ window.AjouraModels=(()=>{
     return r?{dims:[r[2]/1000,r[3]/1000,r[4]/1000],traits:r[6]||''}:null;};
   // Everything the car picture needs for one car: size class, character letters and real dimensions.
   const letter={rwd:'r',fast:'f',csuv:'f',box:'b',round:'o',rear:'m'};
-  const shape=(b,m,body,year,gen)=>{const sp=spec(b,m,body,year),tr=(sp?sp.traits:'')+(letter[trait(b,m)]||'');const S=window.AjouraShapes,form=S&&m?S.form(b,m,body,year,gen):null;return {size:m?size(b,m):undefined,trait:tr||undefined,dims:sp?sp.dims:undefined,year:Number(year)||undefined,form:form||undefined,img:form&&window.AjouraImages?window.AjouraImages.get(b,m,form.body,form.years[0]):undefined};};
+  // v0.37: a panel van uses the model's van outline and picture (car-shapes.js maps panel → van) and a convertible the
+  // coupé ones when the model has them; otherwise the drawn convertible. A motorhome is always the drawn motorhome: the
+  // base vehicle's picture and real size (a van) would be wrong for it.
+  const shape=(b,m,body,year,gen)=>{if(body==='motorhome')return {size:m?size(b,m):undefined,year:Number(year)||undefined};const sp=spec(b,m,body,year),tr=(sp?sp.traits:'')+(letter[trait(b,m)]||'');const S=window.AjouraShapes,form=S&&m?S.form(b,m,body,year,gen):null;return {size:m?size(b,m):undefined,trait:tr||undefined,dims:sp?sp.dims:undefined,year:Number(year)||undefined,form:form||undefined,img:form&&window.AjouraImages?window.AjouraImages.get(b,m,form.body,form.years[0]):undefined};};
   // Body styles that were actually built in the chosen model year (A-sarja 2003 → no sedan); all listed styles
   // when the year is unknown or outside every traced generation.
   const bodiesFor=(b,m,year)=>{const list=bodies(b,m),S=window.AjouraShapes,y=Number(year);if(!y||!S||!S.has(b,m))return list;
-    const fit=list.filter(body=>{const f=S.form(b,m,body,y);return f&&y>=f.years[0]&&y<=f.years[1];});return fit.length?fit:list;};
+    const fits=body=>{const f=S.form(b,m,body,y);return f&&y>=f.years[0]&&y<=f.years[1];},drawn=body=>(body==='cabrio'||body==='motorhome')&&!S.form(b,m,body,y);
+    // A convertible or motorhome without a traced outline of its own is kept when the model was built that year in another body style.
+    const fit=list.filter(body=>fits(body)||(drawn(body)&&list.some(o=>o!==body&&fits(o))));return fit.length?fit:list;};
   // First and last model year of a model across all its generations (2099 = still built), or null when unknown.
   const years=(b,m)=>{const S=window.AjouraShapes;if(!S||!S.has(b,m))return null;const list=bodies(b,m).length?bodies(b,m):Object.values(codes);let lo=9999,hi=0;
     for(const body of list){const a=S.form(b,m,body,1),z=S.form(b,m,body,9999);if(a)lo=Math.min(lo,a.years[0]);if(z)hi=Math.max(hi,z.years[1]);}return hi?[lo,hi]:null;};

@@ -635,6 +635,9 @@ window.AjouraShapes = (() => {
    "300C":[[2004,2012,"s",502,148,305,85,72,20,55,6,85,175,103,250,146,375,146,425,112,497,110,60,103,108,395,300,4,15],[2005,2012,"w",502,150,305,85,72,20,55,6,85,175,103,250,146,480,146,495,110,497,108,60,103,108,460,300,4,15]]}
   };
   const bodies = { s: 'sedan', h: 'hatchback', w: 'wagon', u: 'suv', c: 'coupe', v: 'van', p: 'pickup' };
+  // Body styles added in v0.37 that reuse a traced outline: a panel van has the van's, a convertible the coupé's.
+  // A motorhome has none (vehicles drawn by car-render.js).
+  const alias = { panel: 'van', cabrio: 'coupe' };
   const decode = r => {
     const m = i => (r[i] || 0) / 100, pt = i => [m(i), m(i + 1)], f = String(r[31] || '');
     return { years: [r[0], r[1]], body: bodies[r[2]], L: m(3), H: m(4), WB: m(5), fo: m(6), wd: m(7), sill: m(8), bump: m(9),
@@ -647,7 +650,7 @@ window.AjouraShapes = (() => {
   const form = (brand, model, body, year, gen) => {
     const list = data[brand] && data[brand][model];
     if (!list) return null;
-    const rows = body ? list.filter(r => bodies[r[2]] === body) : list;
+    const want = alias[body] || body, rows = body ? list.filter(r => bodies[r[2]] === want) : list;
     if (!rows.length) return null;
     const y = Number(year) || 9999, dist = r => y < r[0] ? r[0] - y : y > r[1] ? y - r[1] : 0;
     const picked = gen && rows.find(r => r[0] === Number(gen) && dist(r) <= 1);
@@ -657,7 +660,8 @@ window.AjouraShapes = (() => {
   const gens = (brand, model, body, year) => {
     const list = data[brand] && data[brand][model], y = Number(year);
     if (!list || !y) return [];
-    return list.filter(r => bodies[r[2]] === body && y >= r[0] - 1 && y <= r[1] + 1).map(r => [r[0], r[1]]).sort((a, b) => a[0] - b[0]);
+    const want = alias[body] || body;
+    return list.filter(r => bodies[r[2]] === want && y >= r[0] - 1 && y <= r[1] + 1).map(r => [r[0], r[1]]).sort((a, b) => a[0] - b[0]);
   };
   return { form, gens, has: (brand, model) => !!(data[brand] && data[brand][model]) };
 })();

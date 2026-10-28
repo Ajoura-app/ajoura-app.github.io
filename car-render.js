@@ -22,10 +22,15 @@
     suv: { a: [3.65, 1.72, 2.25, 0.62, 0.68], b: [4.12, 1.56, 2.55, 0.82, 0.66], c: [4.50, 1.62, 2.68, 0.88, 0.70], d: [4.72, 1.67, 2.86, 0.88, 0.73], e: [4.94, 1.76, 2.98, 0.95, 0.77], f: [5.15, 1.84, 3.10, 0.95, 0.80] },
     coupe: { a: [3.70, 1.45, 2.30, 0.68, 0.58], b: [4.20, 1.30, 2.47, 0.84, 0.64], c: [4.54, 1.39, 2.74, 0.82, 0.66], d: [4.70, 1.38, 2.84, 0.84, 0.67], e: [4.98, 1.36, 2.94, 0.90, 0.70] },
     van: { b: [4.40, 1.80, 2.78, 0.86, 0.64], c: [4.53, 1.66, 2.79, 0.88, 0.66], d: [5.14, 1.90, 3.20, 0.95, 0.68], e: [5.93, 2.60, 3.66, 0.98, 0.72] },
-    pickup: { d: [5.33, 1.82, 3.09, 0.90, 0.78] }
+    pickup: { d: [5.33, 1.82, 3.09, 0.90, 0.78] },
+    // v0.37. Convertible: MX-5, Mini/Golf, A3/A4 cabriolet, C/E-class, 911-size. Panel van: Caddy/Berlingo, Vito/Transit
+    // Custom, Ducato/Sprinter. Motorhome: semi-integrated on a Ducato-type base (alcove and integrated ones are similar in size).
+    cabrio: { a: [3.92, 1.24, 2.31, 0.70, 0.60], b: [4.10, 1.40, 2.50, 0.80, 0.62], c: [4.45, 1.40, 2.62, 0.86, 0.65], d: [4.65, 1.38, 2.81, 0.84, 0.67], e: [4.95, 1.38, 2.94, 0.90, 0.70] },
+    panel: { b: [4.45, 1.83, 2.78, 0.88, 0.64], d: [5.00, 1.97, 3.10, 0.95, 0.68], e: [5.93, 2.55, 3.66, 0.98, 0.72] },
+    motorhome: { d: [6.99, 2.90, 4.04, 0.95, 0.72], e: [7.40, 2.95, 4.04, 0.98, 0.74] }
   };
   const order = ['a', 'b', 'c', 'd', 'e', 'f'];
-  const defaultSize = { sedan: 'd', hatchback: 'c', wagon: 'd', suv: 'd', coupe: 'c', van: 'c', pickup: 'd' };
+  const defaultSize = { sedan: 'd', hatchback: 'c', wagon: 'd', suv: 'd', coupe: 'c', van: 'c', pickup: 'd', cabrio: 'c', panel: 'd', motorhome: 'd' };
   const pickDims = (type, size) => {
     const table = dims[type];
     if (table[size]) return table[size];
@@ -37,11 +42,14 @@
   // 2 2000–2011, 3 from 2012 (high waist, raked glass).
   const eraOf = year => !year ? 3 : year < 1990 ? 0 : year < 2000 ? 1 : year < 2012 ? 2 : 3;
 
-  function profile(type, size, era, trait, real) {
+  function profile(body, size, era, trait, real) {
+    if (body === 'motorhome') return motorhome(size);
+    // A panel van is drawn as a van without rear side windows and a convertible as a coupé without the roof (v0.37).
+    const type = body === 'panel' ? 'van' : body === 'cabrio' ? 'coupe' : body;
     // trait: named traits and/or spec letters (r rear-drive, f fastback, b boxy, m mid/rear engine, t tall small car).
     const tr = String(trait || ''), named = { rwd: 'r', fast: 'f', csuv: 'f', box: 'b', round: 'o', rear: 'm' }[tr], letters = named || tr;
     const has = c => letters.includes(c), old = era === 0, e = Math.max(1, era);
-    let [L, H, WB, FO, D0] = pickDims(type, size);
+    let [L, H, WB, FO, D0] = pickDims(body, size);
     if (real) { const k = real[0] / L; [L, H, WB] = real; FO = Math.min(FO * k, (L - WB) * 0.55); }
     if (has('r')) FO -= 0.08;
     if (has('m')) FO -= 0.05;
@@ -109,14 +117,48 @@
       rear = [[(xa + L) / 2, H, 0.6], [L - 0.2, H - 0.06, 0.4], [L - 0.02, belt - 0.02, 0.2], [L, tail, 0.08]];
       dlo = [[L - 0.36, H - 0.09], [L - 0.42, belt + 0.03]];
     }
-    const top = [...front, ...rear, [L - 0.08, yb + 0.03, 0]];
-    const glass = [[xc + 0.1, belt + 0.03, 0.04], [xa + 0.04, H - 0.08, round * 0.6], [dlo[0][0], dlo[0][1], 0.12], [dlo[1][0], dlo[1][1], 0.04]];
-    return { L, H, D, xf, xr, yb, belt, hf, xc, top, glass, pillar, doors, tall, old };
+    let top = [...front, ...rear, [L - 0.08, yb + 0.03, 0]];
+    let glass = [[xc + 0.1, belt + 0.03, 0.04], [xa + 0.04, H - 0.08, round * 0.6], [dlo[0][0], dlo[0][1], 0.12], [dlo[1][0], dlo[1][1], 0.04]], extra;
+    if (body === 'panel') { pillar = Math.max(pillar, xa + 0.7); glass = panelGlass(glass, pillar, H - 0.1, belt + 0.03); }
+    if (body === 'cabrio') {
+      // Open top: a low windscreen frame, then the cockpit along the waist line to the rear deck.
+      const hw = belt + (H - belt) * 0.7, xw = xc + (hw - belt) * rake;
+      top = [...front.slice(0, 4), [xw, hw, 0.03], [xw + 0.1, hw - 0.015, 0.03], [xc + 0.34, belt + 0.03, 0.04], [L - 0.45, belt + 0.05, 0.1], [L - 0.03, belt + 0.04, 0.05], [L, tail, 0.08], [L - 0.08, yb + 0.03, 0]];
+      glass = [[xc + 0.07, belt + 0.025, 0.02], [xw - 0.005, hw - 0.035, 0.03], [xw + 0.06, hw - 0.045, 0.03], [xc + 0.26, belt + 0.025, 0.02]];
+      extra = cabrioTop(xf + WB * 0.6, xr + 0.15, belt);
+    }
+    return { L, H, D, xf, xr, yb, belt, hf, xc, top, glass, pillar, doors, tall, old, extra };
+  }
+
+  // Side glass of a panel van: windscreen and the front door window only, cut at the B-pillar.
+  const panelGlass = (glass, pillar, yTop, yLow) => [glass[0], glass[1], [pillar - 0.03, yTop, 0.08], [pillar - 0.05, yLow, 0.04]];
+  // Convertible: headrest and the folded soft top behind the seats, drawn above the waist line.
+  const cabrioTop = (seat, back, belt) => ({ X, Y, k }) => {
+    const f = n => n.toFixed(1), w = 0.17 * k;
+    return `<rect x="${f(X(seat) - w / 2)}" y="${f(Y(belt + 0.27))}" width="${f(w)}" height="${f(0.22 * k)}" rx="${f(0.06 * k)}" fill="#2a3036"/>` +
+      `<rect x="${f(X(seat + 0.35))}" y="${f(Y(belt + 0.1))}" width="${f(X(back) - X(seat + 0.35))}" height="${f(0.13 * k)}" rx="${f(0.06 * k)}" fill="#2a3036"/>`;
+  };
+  // Motorhome (semi-integrated): van cab with a short bonnet, the living box behind it rising to full height over the
+  // cab, habitation windows and an entry door. One shape for all base vehicles; the colour is the user's.
+  function motorhome(size) {
+    const [L, H, WB, FO, D] = pickDims('motorhome', size || 'd'), yb = 0.32, belt = 1.25, hf = 1.05, hc = 2.05;
+    const xf = FO, xr = FO + WB, xc = 0.78, xa = xc + (hc - belt) * 0.75, pillar = xa + 0.55;
+    const top = [[0.10, yb + 0.03, 0], [0, 0.62, 0.08], [0.06, hf, 0.1], [xc, belt, 0.12], [xa, hc, 0.14], [xa + 0.9, H, 0.7], [L - 0.08, H, 0.08], [L, H - 0.12, 0.06], [L, yb + 0.45, 0.05], [L - 0.08, yb + 0.03, 0]];
+    const glass = [[xc + 0.1, belt + 0.03, 0.04], [xa + 0.03, hc - 0.07, 0.08], [pillar - 0.05, hc - 0.07, 0.1], [pillar - 0.08, belt + 0.03, 0.04]];
+    const extra = ({ X, Y, k, id, ink }) => {
+      const f = n => n.toFixed(1), win = (x1, x2, y1, y2) => `<rect x="${f(X(x1))}" y="${f(Y(y2))}" width="${f((x2 - x1) * k)}" height="${f((y2 - y1) * k)}" rx="${f(0.06 * k)}" fill="url(#glass${id})" stroke="${ink}" stroke-width="1.2"/>`;
+      const d1 = L - 2.55, d2 = L - 1.95;
+      return win(pillar + 0.3, pillar + 1.1, 1.5, 1.95) + win(L - 1.65, L - 0.6, 1.5, 1.95) +
+        `<rect x="${f(X(d1))}" y="${f(Y(2.12))}" width="${f((d2 - d1) * k)}" height="${f((2.12 - yb - 0.06) * k)}" rx="${f(0.05 * k)}" fill="none" stroke="${ink}" stroke-opacity=".75" stroke-width="1.1"/>` +
+        win(d1 + 0.12, d2 - 0.12, 1.55, 1.9) +
+        `<path d="M${f(X(pillar + 0.1))} ${f(Y(H - 0.18))}H${f(X(L - 0.15))}" stroke="${ink}" stroke-opacity=".35" stroke-width="1"/>`;
+    };
+    return { L, H, D, xf, xr, yb, belt, hf, xc, top, glass, pillar, doors: 2, tall: true, old: false, tailY: 0.85, extra };
   }
 
   // Model-specific outline traced from the real car: key points of the side profile in metres
   // (x from the front bumper, y from the ground). See car-shapes.js for the field order.
-  function fromForm(f, era) {
+  function fromForm(f, era, panel) {
     const P = (x, y, r) => [x, y, r];
     const { L, H, fo, wd, sill } = f, xf = fo, xr = fo + f.WB, round = f.round, old = era === 0;
     const peak = f.peak || H - 0.005, mid = [(f.ws[0] + f.roof[0]) / 2, peak];
@@ -139,7 +181,8 @@
     const glass = [[g0, beltAt(g0) + 0.02, 0.03], [f.ws[0] + 0.03, f.ws[1] - 0.06, 0.04 + round * 0.12],
       [gx, roofAt(gx) - 0.065, 0.06 + round * 0.12], [f.dlo, beltAt(f.dlo) + 0.025, 0.04]];
     const tall = f.body === 'suv' || f.body === 'van' || f.body === 'pickup';
-    return { L, H, D: wd, xf, xr, yb: sill, belt: (bf + br) / 2, beltAt, xc: f.cowl[0], top, glass,
+    return { L, H, D: wd, xf, xr, yb: sill, belt: (bf + br) / 2, beltAt, xc: f.cowl[0], top,
+      glass: panel ? panelGlass(glass, f.bp, roofAt(f.bp - 0.03) - 0.065, beltAt(f.bp - 0.05) + 0.025) : glass,
       pillar: f.bp, doors: f.doors, tall, old, spare: f.spare, clad: f.clad, tailY: (f.deck[1] + f.tail) / 2 + 0.03,
       hf: f.bump + (f.nose[1] - f.bump) * 0.72, lampX: Math.max(0.03, f.nose[0] * 0.45), lamp: f.lamp,
       tallTail: f.tl === 'tall' ? [[f.roof[0] + (f.back[0] - f.roof[0]) * 0.25, roofAt(f.roof[0] + (f.back[0] - f.roof[0]) * 0.25)], f.back, [L, f.deck[1] - 0.04], [L, Math.max(f.tail, f.deck[1] - 0.3)]] : null };
@@ -170,7 +213,7 @@
   // make, model and model year.
   function render(type, color, label, shape) {
     if (!dims[type]) type = 'sedan';
-    const s = shape || {}, era = eraOf(Number(s.year)), p = s.form ? fromForm(s.form, era) :
+    const s = shape || {}, era = eraOf(Number(s.year)), p = s.form ? fromForm(s.form, era, type === 'panel') :
       profile(type, s.size || defaultSize[type], era, s.trait, Array.isArray(s.dims) && s.dims.length === 3 && s.dims.every(n => n > 0.5 && n < 8) ? s.dims : null);
     const beltAt = p.beltAt || (() => p.belt);
     const id = ++uid, c = /^#[0-9a-f]{6}$/i.test(color) ? color : '#c9d0d8', groundY = 150;
@@ -212,6 +255,7 @@
         `<path d="M0 ${sh(-x0 / k).toFixed(1)}L400 ${sh((400 - x0) / k).toFixed(1)}" stroke="#fff" stroke-opacity="${dark ? 0.3 : 0.55}" stroke-width="1.6"/><path d="M0 ${(sh(-x0 / k) + 3).toFixed(1)}L400 ${(sh((400 - x0) / k) + 3).toFixed(1)}" stroke="${line}" stroke-opacity=".3" stroke-width="1"/>` +
         `<path d="M0 ${by(-x0 / k).toFixed(1)}L400 ${by((400 - x0) / k).toFixed(1)}V${sill.toFixed(1)}H0Z" fill="url(#sheen${id})"/>` +
         `<path d="${doorLines}" fill="none" stroke="${ink}" stroke-opacity=".75" stroke-width="1.1"/>` +
+        (p.extra && type === 'motorhome' ? p.extra({ X, Y, k, id, ink }) : '') +
         `<path d="M0 ${(sill - 0.07 * k).toFixed(1)}H400" stroke="${ink}" stroke-opacity=".45" stroke-width=".9"/>` +
         (p.tallTail ? `<path d="${p.tallTail.map(([x, y], i) => (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(y).toFixed(1)).join('')}" fill="none" stroke="#c4323d" stroke-width="${(0.13 * k).toFixed(1)}" stroke-linejoin="round"/>` : '') +
         handle(bp - 0.28 * k) + (p.doors === 4 ? handle(rearDoor - 0.3 * k) : '') +
@@ -219,6 +263,7 @@
         (p.clad ? `<path d="M0 ${(sill - 0.15 * k).toFixed(1)}H400V170H0Z" fill="#262b31"/><circle cx="${X(p.xf).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch + 0.075 * k).toFixed(1)}" fill="#262b31"/><circle cx="${X(p.xr).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch + 0.075 * k).toFixed(1)}" fill="#262b31"/>` : '') +
         `<circle cx="${X(p.xf).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch + 0.035 * k).toFixed(1)}" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-width="1"/><circle cx="${X(p.xr).toFixed(1)}" cy="${wy.toFixed(1)}" r="${(arch + 0.035 * k).toFixed(1)}" fill="none" stroke="${ink}" stroke-opacity=".55" stroke-width="1"/>` +
       `</g>` +
+      (p.extra && type === 'cabrio' ? p.extra({ X, Y, k, id, ink }) : '') +
       `<path d="${body}" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>` +
       `<path d="${lamp}" fill="#eef6fc" stroke="${ink}" stroke-width="1.1"/>` +
       (p.tallTail ? '' : `<path d="${tail}" fill="#c4323d" stroke="${ink}" stroke-width="1"/>`) +
@@ -345,7 +390,7 @@
   if (window.MutationObserver) new MutationObserver(list => { for (const m of list) m.addedNodes.forEach(n => { if (n.nodeType === 1) hydrate(n.parentNode || n); }); })
     .observe(document.documentElement, { childList: true, subtree: true });
 
-  const names = { sedan: 'Sedan', hatchback: 'Viistoperä', wagon: 'Farmari', suv: 'Maastoauto / SUV', coupe: 'Coupé', van: 'Tila-auto', pickup: 'Avolava' };
+  const names = { sedan: 'Sedan', hatchback: 'Viistoperä', wagon: 'Farmari', suv: 'Maastoauto / SUV', coupe: 'Coupé', van: 'Tila-auto', pickup: 'Avolava', cabrio: 'Avoauto', panel: 'Pakettiauto', motorhome: 'Asuntoauto' };
   // Muted, real-world paint shades rather than pure UI colours.
   const colors = [
     ['Valkoinen', '#eef1f4'], ['Hopea', '#b9c1ca'], ['Harmaa', '#6b737c'], ['Musta', '#1f2329'],
