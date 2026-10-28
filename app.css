@@ -298,7 +298,7 @@ html.dark.standalone,html.dark.fullscreen,html.dark.standalone body,html.dark.fu
 .kind-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:4px 0 12px}
 .kind-card{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;width:100%;min-width:0;padding:10px 10px 11px;border:1px solid #d6e2ee;border-radius:14px;background:#fff;color:var(--ink);cursor:pointer;font:inherit;transition:border-color .2s,box-shadow .2s,transform .15s ease;animation:rise .38s cubic-bezier(.2,.7,.2,1) both}
 .kind-card:hover,.kind-card:focus-visible{border-color:var(--blue);box-shadow:0 6px 18px -12px #1464e8}.kind-card:active{transform:scale(.97)}
-.kind-art{display:block;width:100%;aspect-ratio:400/150;overflow:hidden;margin-bottom:2px}.kind-art svg{display:block;width:100%;height:auto;margin-top:-6%}
+.kind-art{display:block;width:100%;aspect-ratio:400/152;overflow:hidden;margin-bottom:2px}.kind-art svg{display:block;width:100%;height:auto;margin-top:-1%}
 .kind-card strong{font-size:12.5px;line-height:1.25}.kind-card small{font-size:9.5px;color:#62768a;line-height:1.4}
 .kind-chip{display:inline-flex;align-items:center;gap:6px;margin:-2px 0 8px;padding:3px 10px 3px 4px;border-radius:999px;background:#eef5ff;color:#1d4f91;font-size:11px;font-weight:600}
 .kind-chip span{display:block;width:44px}.kind-chip svg{display:block;width:100%;height:auto}
@@ -728,3 +728,10 @@ a.today-chip{text-decoration:none}
 .tips-faq ul{padding-bottom:6px}
 .tips-n{font-weight:500;color:#4f5f72}
 }
+
+/* Back links (v0.36): bigger, bold and blue so the way back is easy to see; tap area about 44 px. */
+@media screen{
+.app-back.nav-back{font-size:14px;font-weight:700;color:#0b5ed7;min-height:40px;gap:2px;padding-right:12px;letter-spacing:-.01em}
+.app-back.nav-back:hover{color:#1452c4}
+}
+@container (max-width:349.98px){.app-back.nav-back{min-height:44px}}
