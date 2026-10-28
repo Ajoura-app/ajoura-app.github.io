@@ -1094,10 +1094,16 @@ window.AjouraImages = (() => {
   // [file, the outline the picture shows in metres (length, wheelbase, front overhang, wheel diameter) for finding the wheels].
   const generic = {
     panel: {
-      d: ['ajoneuvokuvat/car-panel-mid.webp', { L: 5.4, WB: 3.49, fo: 0.945, wd: 0.68, lo: 180 }],
-      e: ['ajoneuvokuvat/car-panel-large.webp', { L: 6.0, WB: 3.93, fo: 0.955, wd: 0.82, lo: 180 }]
-    }
+      small: ['ajoneuvokuvat/car-panel-small.webp', { L: 4.5, WB: 3.05, fo: 0.725, wd: 0.80, lo: 160 }],
+      mid: ['ajoneuvokuvat/car-panel-mid.webp', { L: 5.4, WB: 3.49, fo: 0.945, wd: 0.72, lo: 160 }],
+      large: ['ajoneuvokuvat/car-panel-large.webp', { L: 6.0, WB: 3.93, fo: 0.955, wd: 0.82, lo: 160 }]
+    },
+    cabrio: {
+      two: ['ajoneuvokuvat/car-cabrio-two.webp', { L: 4.0, WB: 2.51, fo: 0.747, wd: 0.82, lo: 160 }],
+      four: ['ajoneuvokuvat/car-cabrio-four.webp', { L: 4.6, WB: 2.95, fo: 0.786, wd: 0.82, lo: 160 }]
+    },
+    motorhome: { any: ['ajoneuvokuvat/car-motorhome.webp', { L: 7.0, WB: 4.29, fo: 0.893, wd: 0.93, lo: 160 }] }
   };
-  const byBody = (body, size) => (generic[body] && generic[body][size]) || null;
+  const byBody = (body, key) => (generic[body] && generic[body][key]) || null;
   return { get, files, byBody };
 })();

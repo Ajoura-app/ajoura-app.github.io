@@ -419,8 +419,13 @@ window.AjouraModels=(()=>{
   // (car-images.js byBody). Otherwise drawn: a panel van from the model's van outline without rear windows, a convertible
   // from the model's real size without the roof, a motorhome from its own shape. The model's own picture is not used,
   // because it shows the windowed van or the coupé with its roof up.
-  const own={panel:'d',cabrio:'c',motorhome:'d'};
-  const shape=(b,m,body,year,gen)=>{if(own[body]){const sz=m?size(b,m):undefined,I=window.AjouraImages,g=I&&I.byBody?I.byBody(body,sz||own[body]):null,y=Number(year)||undefined;
+  // Which picture: a panel van by size class, a convertible by seats (roadsters below are two-seaters), one motorhome.
+  const own={panel:'d',cabrio:'c',motorhome:'d'},vanSize={a:'small',b:'small',c:'small',d:'mid',e:'large',f:'large'};
+  const roadsters={'Alfa Romeo':['Spider'],'Audi':['TT','R8'],'BMW':['Z1','Z3','Z4','Z8','i8'],'Chevrolet':['Corvette'],'Dodge':['Viper'],'Jaguar':['E-type','F-Type'],
+    'Mazda':['MX-5'],'Mercedes-Benz':['SLK','SLC','SL','AMG GT','SLS AMG'],'MG':['Cyberster'],'Porsche':['718 Boxster','911'],'Smart':['Fortwo','Roadster'],
+    'Ferrari':['296','308','328','348','360','458','488','812','F430','F8','SF90'],'Lamborghini':['Aventador','Gallardo','Huracán','Murciélago','Revuelto','Temerario']};
+  const bodyPic=(b,m,body,sz)=>body==='panel'?vanSize[sz||own.panel]:body==='cabrio'?((roadsters[b]||[]).includes(m)?'two':'four'):'any';
+  const shape=(b,m,body,year,gen)=>{if(own[body]){const sz=m?size(b,m):undefined,I=window.AjouraImages,g=I&&I.byBody?I.byBody(body,bodyPic(b,m,body,sz)):null,y=Number(year)||undefined;
       if(g)return {size:sz,year:y,img:g[0],dimsOf:g[1]};if(body==='motorhome')return {size:sz,year:y};const sp=spec(b,m,body,year),S=window.AjouraShapes;
       return {size:sz,year:y,trait:sp&&sp.traits||undefined,dims:sp?sp.dims:undefined,form:body==='panel'&&S&&m?S.form(b,m,body,year,gen)||undefined:undefined};}const sp=spec(b,m,body,year),tr=(sp?sp.traits:'')+(letter[trait(b,m)]||'');const S=window.AjouraShapes,form=S&&m?S.form(b,m,body,year,gen):null;return {size:m?size(b,m):undefined,trait:tr||undefined,dims:sp?sp.dims:undefined,year:Number(year)||undefined,form:form||undefined,img:form&&window.AjouraImages?window.AjouraImages.get(b,m,form.body,form.years[0]):undefined};};
   // Body styles that were actually built in the chosen model year (A-sarja 2003 → no sedan); all listed styles
