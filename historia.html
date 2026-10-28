@@ -8,13 +8,13 @@
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-25">
-<script src="car-render.js?v=ak-25" defer></script>
-<script src="car-shapes.js?v=ak-25" defer></script>
-<script src="car-images.js?v=ak-25" defer></script>
-<script src="car-models.js?v=ak-25" defer></script><script src="vehicles.js?v=ak-25" defer></script>
-<script src="i18n-sv.js?v=ak-25" defer></script>
-<script src="i18n.js?v=ak-25" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-26">
+<script src="car-render.js?v=ak-26" defer></script>
+<script src="car-shapes.js?v=ak-26" defer></script>
+<script src="car-images.js?v=ak-26" defer></script>
+<script src="car-models.js?v=ak-26" defer></script><script src="vehicles.js?v=ak-26" defer></script>
+<script src="i18n-sv.js?v=ak-26" defer></script>
+<script src="i18n.js?v=ak-26" defer></script>
 <style>
 body{background:var(--paper)}
 .hist{width:min(760px,calc(100% - 32px));margin:0 auto;padding:22px 0 48px}
@@ -95,7 +95,7 @@ h2{font-size:19px;margin:26px 0 8px}
     const items = ev.map(e => {
       const y = e[0].slice(0, 4), head = y !== lastYear ? `<li class="year" aria-hidden="true">${y}</li>` : ''; lastYear = y;
       const list = Array.isArray(e[5]) && e[5].length ? `<p class="ev-items">${e[5].map(esc).join(' · ')}</p>` : '';
-      return head + `<li><div class="ev-head"><strong>${esc(e[1])}</strong>${e[3] !== null ? `<b>${num(e[3])} €</b>` : ''}</div><div class="ev-meta">${day(e[0])}${e[2] !== null ? ' · ' + num(e[2]) + ' ' + u : ''}</div>${e[4] ? `<p class="ev-note">${esc(e[4])}</p>` : ''}${list}${e[6] > 0 ? `<span class="doc">✓ Kuitti tallessa omistajalla${e[6] > 1 ? ' (' + e[6] + ')' : ''}</span>` : ''}</li>`;
+      return head + `<li><div class="ev-head"><strong>${esc(e[1])}</strong>${e[3] !== null ? `<b>${num(e[3])} €</b>` : ''}</div><div class="ev-meta">${day(e[0])}${e[2] !== null ? ' · ' + num(e[2]) + ' ' + u : ''}${e[8] === 1 ? ' · <span>Työn teki:</span> <span>Itse</span>' : typeof e[8] === 'string' && e[8] ? ` · <span>Työn teki:</span> <span translate="no">${esc(e[8].slice(0, 80))}</span>` : ''}</div>${e[4] ? `<p class="ev-note">${esc(e[4])}</p>` : ''}${list}${e[6] > 0 ? `<span class="doc">✓ Kuitti tallessa omistajalla${e[6] > 1 ? ' (' + e[6] + ')' : ''}</span>` : ''}</li>`;
     }).join('');
     const span = ev.length ? `${day(ev[ev.length - 1][0])} – ${day(ev[0][0])}` : '';
     document.title = `${d.n} · huoltohistoria · AJOURA`;

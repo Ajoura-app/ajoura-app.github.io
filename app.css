@@ -735,3 +735,16 @@ a.today-chip{text-decoration:none}
 .app-back.nav-back:hover{color:#1452c4}
 }
 @container (max-width:349.98px){.app-back.nav-back{min-height:44px}}
+
+/* Work done by and entry times (v0.38): small, readable meta text (11 px, contrast over 6:1). */
+@media screen{
+.ev-by{margin:-2px 0 12px;padding:0 4px;font-size:11px;line-height:1.5;color:#4f5f72}
+.ev-by b{color:var(--ink);font-weight:650}
+.ev-by small{display:block;font-size:11px;color:#4f5f72;overflow-wrap:anywhere}
+.ev-by a{color:#0b5ed7;text-decoration:none}
+.ev-stamp{margin:14px 0 6px;padding:0 4px;font-size:11px;line-height:1.5;color:#4f5f72}
+.by-set .by-contact{padding-bottom:2px}
+.by-set .by-contact label{margin-bottom:10px}
+.report-table small.rep-meta{color:#4f5f72}
+.ev-by .nw,.ev-stamp .nw,.rep-meta .nw{white-space:nowrap}
+}
