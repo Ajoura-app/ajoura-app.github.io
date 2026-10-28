@@ -1093,7 +1093,10 @@ window.AjouraImages = (() => {
   // app). Used for body styles that have no model pictures: panel van, convertible and motorhome. Each entry is
   // [file, the outline the picture shows in metres (length, wheelbase, front overhang, wheel diameter) for finding the wheels].
   const generic = {
-    panel: { e: ['ajoneuvokuvat/car-panel-large.webp', { L: 6.0, WB: 3.93, fo: 0.955, wd: 0.82, lo: 180 }] }
+    panel: {
+      d: ['ajoneuvokuvat/car-panel-mid.webp', { L: 5.4, WB: 3.49, fo: 0.945, wd: 0.68, lo: 180 }],
+      e: ['ajoneuvokuvat/car-panel-large.webp', { L: 6.0, WB: 3.93, fo: 0.955, wd: 0.82, lo: 180 }]
+    }
   };
   const byBody = (body, size) => (generic[body] && generic[body][size]) || null;
   return { get, files, byBody };
