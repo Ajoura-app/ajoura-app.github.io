@@ -102,6 +102,10 @@ class Palvelin:
                 if tila.katki:
                     self.close_connection = True
                     return
+                # Aina uusi sisältö: kopiot tehdään samalla sekunnilla, joten muokkausaikaan perustuva
+                # "ei muuttunut" -vastaus (304) piilottaisi version vaihtumisen.
+                del self.headers["If-Modified-Since"]
+                del self.headers["If-None-Match"]
                 super().do_GET()
 
         self.s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Kasittelija)
