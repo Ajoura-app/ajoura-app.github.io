@@ -979,3 +979,11 @@ a.today-chip{text-decoration:none}
 @media screen and (orientation:landscape) and (max-height:500px){
   @container(min-width:440px){.screen-content,.tab-bar,.sheet{zoom:1.12}}
 }
+
+/* Phone browser in landscape (v0.49, AJ-28): the same full-screen view as in portrait (class set in app.html for coarse-pointer phones), content column kept at the installed app's width, slimmer top bar. */
+@media screen and (orientation:landscape) and (max-height:500px){
+  html.fullscreen .demo-header{height:40px;margin:0;padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right))}
+  html.fullscreen .demo-header .wordmark img{height:18px}
+  html.fullscreen .demo-header .install-button{min-height:30px;padding-block:4px}
+  html.fullscreen .device{height:calc(100dvh - 41px - env(safe-area-inset-top));max-width:560px;margin-inline:auto}
+}
