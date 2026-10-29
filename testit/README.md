@@ -15,7 +15,7 @@ Repon juurikansiossa:
 python3 -m pytest testit
 ```
 
-Perussarja kestää noin 3–4 minuuttia. Tulos on joko `N passed` (kaikki kunnossa) tai lista epäonnistuneista
+Perussarja kestää noin 4–5 minuuttia. Tulos on joko `N passed` (kaikki kunnossa) tai lista epäonnistuneista
 testeistä ja syy suomeksi, esim. `#tips: näkymä ei piirtynyt. JS-virhe: …`.
 
 Sarja käynnistää paikallisen palvelimen itse, joten erillistä taustapalvelinta ei tarvita.
@@ -42,6 +42,8 @@ git worktree remove ../edellinen
   puhelimessa vielä oleva vanha versio ei osaa lukea.
 - `test_laaja_pdf.py`: PDF-tiedostot suomeksi, englanniksi ja ruotsiksi (ehjä, A4, oikeat luvut, ei
   suomenkielisiä tekstejä vieraskielisessä).
+- `test_offline.py::test_laaja_paivitys_edellisesta`: päivitys edellisestä julkaistusta versiosta (puhelimessa
+  oleva vanha offline-osa) tähän versioon: uusi versio näkyy, uusi offline-osa asentuu ja tiedot säilyvät.
 - `vertaa_nakymat.py` (ei testi vaan raportti): listaa näkymät, joiden sisältö muuttui. Ero on odotettu
   niissä näkymissä, joita versio muutti; muualla se on todennäköisesti tahaton ja tarkistetaan.
 
@@ -57,6 +59,7 @@ git worktree remove ../edellinen
 | `test_haitallinen.py` | HTML-koodi käyttäjän teksteissä näkyy tekstinä (myös ostajan linkissä), CSV:n kaavasuoja |
 | `test_kielet.py` | Kääntämättömät tekstit englanniksi ja ruotsiksi |
 | `test_leveys.py` | Ei vaakavieritystä 320 ja 430 px leveydellä |
+| `test_offline.py` | Offline-osa (sw.js): asennus, avaus ilman verkkoa, hidas sivu avautuu tallennetusta 3 s:n jälkeen, palvelinvirhe, päivitys uuteen versioon hyvällä ja heikolla yhteydellä (sivu ja skriptit aina samaa versiota), tiedot säilyvät, sw.js:n numerot ja tiedostolista |
 
 ## Tunnetut puutteet
 
