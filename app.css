@@ -955,3 +955,17 @@ a.today-chip{text-decoration:none}
 .me-data p.bk-when{margin:10px 0 0;font-size:11px;font-weight:650;color:#3f4f63;text-align:center}
 .me-data p.bk-note{margin:2px 0 0;font-size:11px;color:#4f5f72;text-align:center}
 }
+/* Browser data card, install note and restore hint (v0.45, AJ-01/AJ-21/AJ-25); 11 px or more, contrast >= 4.5:1. */
+.install-dialog .install-ios-note{margin:0 0 8px;font-size:13px;line-height:1.5;color:#3f4f63}
+@media screen{
+.reminder-card.browser-data{border-color:#f0c987;background:#fffaf0}
+.reminder-card.browser-data .event-symbol{background:#fdecc8;color:#8a5a00}
+.reminder-card.browser-data .mini-label{font-size:11px;color:#7a4f00;letter-spacing:.04em}
+.reminder-card.browser-data strong{font-size:13px}
+.reminder-card.browser-data small{font-size:11px;color:#4f5f72}
+.reminder-card.browser-data small.bk-last{margin-top:4px;font-weight:650;color:#3f4f63}
+.reminder-card.browser-data .bd-actions{display:flex;flex-direction:column;align-items:flex-start;margin-top:4px}
+.reminder-card.browser-data .link-button{font-size:12px;min-height:36px;padding:4px 0;color:#0b5ed7;text-align:left}
+.empty-garage p.eg-restore{margin:12px 0 0;font-size:11px;color:#4f5f72}
+.empty-garage p.eg-restore a{color:#0b5ed7;font-weight:650;text-decoration:none}
+}

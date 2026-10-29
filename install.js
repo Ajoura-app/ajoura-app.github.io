@@ -29,14 +29,16 @@
   // Where the browser allows it (Chrome on Android, desktop Chrome/Edge) the button asks to install straight away; iPhone has no such prompt, so it shows the steps.
   // The landing page links to app.html?asenna=1 to open the install steps straight away.
   if (/[?&]asenna=1/.test(location.search) && !document.documentElement.classList.contains('standalone')) dialog.showModal();
-  document.querySelectorAll('[data-install-open]').forEach(button => button.addEventListener('click', async () => {
-    if (!deferred) { dialog.showModal(); return; }
+  // 0.45: one listener for the whole page, so buttons the app draws later (the home card) work as well.
+  document.addEventListener('click', async event => {
+    if (!event.target.closest || !event.target.closest('[data-install-open]')) return;
+    if (!deferred) { if (!dialog.open) dialog.showModal(); return; }
     const prompt = deferred;
     deferred = null;
     now.hidden = true;
     prompt.prompt();
     const choice = await prompt.userChoice.catch(() => null);
-    if (!choice || choice.outcome !== 'accepted') dialog.showModal();
-  }));
+    if ((!choice || choice.outcome !== 'accepted') && !dialog.open) dialog.showModal();
+  });
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
 })();
