@@ -1,0 +1,193 @@
+{
+ "app": "AJOURA",
+ "version": 1,
+ "saved": "2026-10-29T15:32:59.482Z",
+ "cars": [
+  {
+   "id": "tst1",
+   "name": "Skoda Octavia",
+   "plate": "TST-101",
+   "year": 2019,
+   "km": 152400,
+   "body": "wagon",
+   "color": "#2b4a6f",
+   "fuel": "Diesel",
+   "events": [
+    {
+     "id": "e1",
+     "type": "Huolto",
+     "date": "2025-03-14",
+     "km": 128900,
+     "cost": "289",
+     "note": "Määräaikaishuolto",
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Ilmansuodatin"
+     ],
+     "receipts": [
+      "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAMABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6UooorEZ//9k="
+     ]
+    },
+    {
+     "id": "e2",
+     "type": "Renkaiden vaihto",
+     "date": "2025-10-20",
+     "km": 141200,
+     "cost": "60",
+     "items": [
+      "Kausivaihto",
+      "Rengashotelli"
+     ]
+    },
+    {
+     "id": "e3",
+     "type": "Katsastus",
+     "date": "2026-02-10",
+     "km": 147800,
+     "cost": "54",
+     "items": [
+      "Määräaikaiskatsastus"
+     ]
+    },
+    {
+     "id": "e4",
+     "type": "Korjaus ja osan vaihto",
+     "date": "2026-06-02",
+     "km": 150900,
+     "cost": "412",
+     "items": [
+      "Jarrut"
+     ],
+     "note": "Etujarrut",
+     "photos": [
+      "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAMABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDkqKKK+dP0c//Z"
+     ],
+     "parts": [
+      {
+       "name": "Jarrupalat",
+       "qty": "1",
+       "price": "89"
+      }
+     ]
+    },
+    {
+     "id": "new101-dib8",
+     "type": "Huolto",
+     "date": "2026-09-15",
+     "km": 152300,
+     "cost": "245",
+     "note": "Lisätty versiolla 0.37",
+     "items": [
+      "Moottoriöljy"
+     ]
+    }
+   ],
+   "fuels": [
+    {
+     "id": "f1",
+     "date": "2026-07-01",
+     "km": 151000,
+     "qty": 50,
+     "cost": 85,
+     "full": true
+    },
+    {
+     "id": "f2",
+     "date": "2026-07-20",
+     "km": 151750,
+     "qty": 41.2,
+     "cost": 70.5,
+     "full": true
+    },
+    {
+     "id": "f3",
+     "date": "2026-08-05",
+     "km": 152400,
+     "qty": 38.9,
+     "cost": 66.8,
+     "full": true
+    }
+   ],
+   "memos": [
+    {
+     "id": "m1",
+     "date": "2026-05-01",
+     "title": "Renkaat",
+     "text": "205/55 R16"
+    }
+   ]
+  },
+  {
+   "id": "tst2",
+   "name": "Kia Niro EV",
+   "plate": "TST-202",
+   "year": 2022,
+   "km": 48200,
+   "body": "suv",
+   "color": "#d9dde2",
+   "fuel": "Sähkö",
+   "events": [
+    {
+     "id": "e5",
+     "type": "Huolto",
+     "date": "2026-04-04",
+     "km": 45100,
+     "cost": "199",
+     "items": [
+      "Jarruneste"
+     ]
+    }
+   ],
+   "fuels": [
+    {
+     "id": "f4",
+     "date": "2026-09-01",
+     "km": 47800,
+     "qty": 40,
+     "cost": 10,
+     "full": true
+    },
+    {
+     "id": "f5",
+     "date": "2026-09-20",
+     "km": 48200,
+     "qty": 45,
+     "cost": 11.5,
+     "full": true
+    }
+   ]
+  },
+  {
+   "id": "tst3",
+   "kind": "boat",
+   "body": "open",
+   "name": "Testivene",
+   "nick": "",
+   "plate": "TST-V1",
+   "year": 2015,
+   "km": 320,
+   "color": "#ffffff",
+   "fuel": "Bensiini",
+   "events": [
+    {
+     "id": "e6",
+     "type": "Kausihuolto",
+     "date": "2026-05-10",
+     "km": 300,
+     "cost": "150",
+     "items": [
+      "Moottoriöljy",
+      "Siipipyörä"
+     ]
+    }
+   ],
+   "fuels": []
+  }
+ ],
+ "profile": {
+  "name": "",
+  "months": 12,
+  "km": 15000
+ }
+}

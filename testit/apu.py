@@ -3,7 +3,23 @@ import json
 
 import tiedot
 
-ULKOINEN_SALLITTU = ()  # ulkoverkko on testeissä aina estetty (esim. CloudFront-autokuvat)
+KELLO = "2026-10-29T10:00:00"  # kiinteä "tänään" testeille, joiden tulos riippuu päivästä
+TANAAN = KELLO[:10]
+
+
+def odota_nakyma(sivu, alku, aika=5000):
+    """Odottaa, että osoite vaihtuu muotoon #alku… ja näkymä on piirtynyt."""
+    sivu.page.wait_for_function("a => location.hash.startsWith('#' + a)", arg=alku, timeout=aika)
+    sivu.page.wait_for_timeout(250)
+
+
+def ilmoitus(sivu):
+    """Näkymän onnistumis- tai virheilmoituksen teksti."""
+    return " ".join(sivu.page.locator(".success-note, .error-note, .info-note, [role=status]").all_inner_texts())
+
+
+def ilman(o, *avaimet):
+    return {k: v for k, v in o.items() if k not in avaimet}
 
 
 class Sivu:
@@ -26,7 +42,7 @@ class Sivu:
 
 def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, leveys=390, korkeus=844,
          mobiili=True, asennettu=False, ios=False, jako=None, extra=None, kello=None, odota=True,
-         polku="app.html"):
+         polku="app.html", leike=False):
     """Avaa sovelluksen uudessa, tyhjässä selainkontekstissa.
 
     autot: lista ajoneuvoja (None = tyhjä laite, ei tallennettua tilaa).
@@ -62,6 +78,9 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
     }})();""")
     if asennettu:
         ctx.add_init_script("Object.defineProperty(navigator,'standalone',{get:()=>true});")
+    if leike:  # ostajan linkki kopioidaan leikepöydälle: tallennetaan se muuttujaan window.__clip
+        ctx.add_init_script("delete Navigator.prototype.share;"
+                            "navigator.clipboard.writeText=async t=>{window.__clip=t;};")
     if jako:
         ctx.add_init_script(f"""(() => {{
       window.__shared = [];
@@ -75,6 +94,7 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
     }})();""")
 
     page = ctx.new_page()
+    page.set_default_timeout(8_000)  # nopea epäonnistuminen, jos painiketta tai kenttää ei löydy
     virheet = []
     page.on("pageerror", lambda e: virheet.append(f"JS-virhe: {e}"))
     page.on("console", lambda m: m.type == "error" and not m.text.startswith("Failed to load resource")
