@@ -1018,3 +1018,12 @@ html.dark .device-glass .ph img.ph-bg{filter:invert(1) hue-rotate(180deg) blur(6
 .rp-allpic{color:var(--blue);background:#eef4fb;border-radius:8px}
 .rp-allpic svg{width:26px!important;height:26px!important}
 }
+
+/* Ajoneuvokohtaiset kulut (v0.53): the cost type's name next to each amount, and what the change badge compares with. */
+@media screen{
+.rp-leg{gap:3px 11px;font-weight:400;color:#3f4f63}
+.rp-leg>span{gap:5px;white-space:nowrap}
+.rp-leg .rp-lk{color:#4f5f72}
+.rp-leg b{font-weight:700;color:var(--ink)}
+.rp-vsec .rp-vs-note{margin:-3px 0 9px}
+}

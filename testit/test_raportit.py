@@ -139,3 +139,26 @@ def test_yksi_ajoneuvo_ilman_valintaa(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.53: ajoneuvokortin selitteessä kululajin nimi summan vieressä, muutoksen vertailujakso näkyvissä ja pieni €/km "< 0,01".
+@pytest.mark.parametrize("kieli,nimi,vs", [("fi", "Korjaukset", "verrattuna edellisiin 12 kk"),
+                                           ("en", "Repairs", "compared with the previous 12 months"),
+                                           ("sv", "Reparationer", "jämfört med föregående 12 mån")])
+def test_ajoneuvokortin_selite(browser, base, kieli, nimi, vs):
+    autot = talli()
+    autot[0]["events"].append(M("x0", "Huolto", "2025-06-01", 130000, cost="300"))  # vertailujaksolle kuluja → muutos
+    autot.append(tiedot.auto("a4", name="Testi Halpa", plate="TST-204", km=120000,
+                             events=[M("w1", "Pesu ja hoito", "2025-11-01", 100000, cost="1")]))
+    s = avaa(browser, base, "reports", autot=autot, kieli=kieli, extra=RP, kello=KELLO)
+    try:
+        kortti = s.page.locator(".rp-vcard", has_text="Testi Pakettiauto")
+        leg = kortti.locator(".rp-leg > span").all_inner_texts()
+        assert any(nimi in x and "496" in x for x in leg), leg
+        assert kortti.locator(".rp-leg .sr-only").count() == 0  # nimet näkyvät, eivät vain ruudunlukijalle
+        assert kortti.locator(".rp-delta").count() == 1
+        assert vs in s.page.inner_text(".rp-vs-note")
+        assert "< 0,01" in s.page.locator(".rp-vcard", has_text="Testi Halpa").inner_text().replace(" ", " ")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
