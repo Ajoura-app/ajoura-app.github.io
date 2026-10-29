@@ -341,7 +341,7 @@
     const prevF=f?fills.filter(x=>x!==f&&(x.date<f.date||(x.date===f.date&&x.km<f.km))).pop():last,word=ev?'latauksesta':'tankkauksesta',kmNow=f?f.km:Math.max(c.km,last?.km||0),gap=prevF&&kmNow>prevF.km?kmNow-prevF.km:null;
     const lbl=(t,unit)=>`<span>${t}</span> <small>(<span data-cur>${sym}</span>${unit})</small>`;
     return `<div class="sheet-backdrop" data-sheet-close></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${f?(ev?'Muokkaa latausta':'Muokkaa tankkausta'):(ev?'Uusi lataus':'Uusi tankkaus')}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
-      <p class="sheet-car"><span class="sheet-thumb">${c.photo?`<img src="${c.photo}" alt="">`:art(c,'')}</span><span class="sheet-ctxt"><strong translate="no">${escape(carName(c))}</strong> <span translate="no">· ${plateTxt(c)}</span>${prevF?`<small><span>${ev?'Edellinen lataus':'Edellinen tankkaus'}</span> <span>${dm(prevF.date)}</span> · <span class="nw"><span>${number(prevF.km)}</span> <span>${ku(c)}</span></span></small>`:''}</span></p>
+      <p class="sheet-car"><span class="sheet-thumb">${rpThumb(c)}</span><span class="sheet-ctxt"><strong translate="no">${escape(carName(c))}</strong> <span translate="no">· ${plateTxt(c)}</span>${prevF?`<small><span>${ev?'Edellinen lataus':'Edellinen tankkaus'}</span> <span>${dm(prevF.date)}</span> · <span class="nw"><span>${number(prevF.km)}</span> <span>${ku(c)}</span></span></small>`:''}</span></p>
       <form class="app-form sheet-form" id="quickfuel-form" novalidate data-car="${c.id}"${prevF?` data-prev="${prevF.km}"`:''}${f?` data-edit="${f.id}" data-user="${sum!==null?'qty,ppu':'qty'}"${sum!==null?' data-auto="cost"':''}`:''}>
       <label class="sf-km">${meterLabel(c)}<input name="km" type="number" enterkeyhint="next" required min="0" max="2000000" inputmode="numeric" value="${kmNow}"><small class="sf-gap"${gap?'':' hidden'}><span data-gap>${gap?number(gap):''}</span> <span>${ku(c)}</span> <span>${ev?'edellisestä latauksesta':'edellisestä tankkauksesta'}</span></small></label>
       <div class="form-row three sf-calc"><label>${lbl(ev?'Hinta':'Litrahinta',ev?'/kWh':'/l')}<input name="ppu" type="text" enterkeyhint="next" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="${ev?'0,30':'1,85'}" value="${ppu!==null?dec(ppu,3):''}"></label><label>${lbl('Summa','')}<input name="cost" type="text" enterkeyhint="next" inputmode="decimal" autocomplete="off" maxlength="10" placeholder="89,40" value="${sum!==null?dec(sum,2):''}"></label><label><span>${ev?'kWh':'Litrat'}</span><input name="qty" type="text" enterkeyhint="done" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="${ev?'45':'48,2'}" value="${f?dec(f.qty,2):''}"></label></div>
@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.49 (testiversio)';
+  const appVersion='0.50 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1053,7 +1053,9 @@
   // Less money spent is green, more is red; the sign is always written out, so the colour is never the only cue.
   const rpDelta=(v,pill)=>v===null?'':`<span class="rp-delta ${v<0?'down':v>0?'up':'flat'}${pill?' pill':''}"><span aria-hidden="true">${v<0?'↓':v>0?'↑':'→'}</span> <span>${v>0?'+':v<0?'−':''}${number(Math.abs(v))} %</span></span>`;
   const eur=v=>`${number(Math.round(v))} €`,dec2=v=>v.toLocaleString('fi-FI',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const rpThumb=c=>c.photo?`<img src="${c.photo}" alt="">`:art(c,'');
+  // 0.50: a user's own photo is shown whole (contain) so the vehicle is never cut off, over a blurred copy of the same
+  // photo that fills the rest of the box. Used on Tankkaus, Raportit and the fill-up sheet.
+  const rpThumb=c=>c.photo?`<span class="ph"><img class="ph-bg" src="${c.photo}" alt=""><img class="ph-fg" src="${c.photo}" alt=""></span>`:art(c,'');
   const rpIcon={fuel:'fuel',service:'wrench',repair:'repair',inspect:'inspection',tyres:'tyre',other:'more'};
   const chev='<svg class="rp-chev" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>';
   // A native select under a styled label: the phone shows its own picker, and the 16 px font keeps iPhone from zooming.
