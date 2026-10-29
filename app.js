@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.53 (testiversio)';
+  const appVersion='0.54 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -661,7 +661,7 @@
     const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-fl-tab="car" aria-pressed="${o.t==='car'}">${svg(icons.fuel)}<span>Ajoneuvo</span></button><button type="button" data-fl-tab="cmp" aria-pressed="${o.t==='cmp'}">${svg('<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>')}<span>Vertailu</span></button></div>`;
     if(o.t==='cmp')return fuelCompare(o,head,tabs,notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'');
     const d=flCalc(c,o.p),{s,now,was,prev,mon,years,months}=d,u=unitOf(c),ev=u==='kWh',hr=hourly(c),pu=`${u}/${per(c)}`,msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    const chips=`<div class="fl-cars" role="group" aria-label="Ajoneuvo">${cars.map(x=>`<button type="button" class="fl-car" data-fl-car="${x.id}" aria-pressed="${x.id===c.id}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`;
+    const chips=`<div class="fl-cars${flN(cars.length)}" role="group" aria-label="Ajoneuvo">${cars.map(x=>`<button type="button" class="fl-car" data-fl-car="${x.id}" aria-pressed="${x.id===c.id}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`;
     const add=`<button type="button" class="app-button fl-add" data-quickfuel="${c.id}">${svg('<path d="M12 5v14M5 12h14"/>')}<span>${ev?'Uusi lataus':'Uusi tankkaus'}</span></button>`;
     const sample=c.sample?'<p class="app-note">Esimerkkiauto: kuvitteelliset tankkaukset ja hinnat.</p>':'';
     if(!s.fills.length)return `${top()}${head}${tabs}${chips}${msg}${add}<div class="rp-card"><p class="rp-empty">${ev?'Ei vielä latauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.':'Ei vielä tankkauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.'}</p></div>${sample}`;
@@ -749,7 +749,7 @@
     g+=keys.map((k,i)=>`<rect class="hit" data-fl-cm="${i}" x="${r(L+sw*i)}" y="${T}" width="${r(sw)}" height="${ph}"/>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Vertailu kuukausittain">${g}</svg>`;}
   function fuelCompare(o,head,tabs,msg){const {fueled,sel,rows}=flCompare(o),m=o.m,mName2=flMetrics.find(x=>x[0]===m)[1],pName=o.p==='year'?'Tämä vuosi':o.p==='12'?'12 kk':'Koko historia';
-    const chips=`<div class="rp-lbl fl-clbl"><span>Vertailtavat ajoneuvot</span>${sel.length<fueled.length?'<button type="button" class="rp-link" data-fl-cmpall>Valitse kaikki</button>':''}</div><div class="fl-cars fl-cmp" role="group" aria-label="Vertailtavat ajoneuvot">${cars.map(x=>{const has=(x.fuels||[]).length,on=has&&!o.off.includes(x.id),i=fueled.indexOf(x)%flCol.length;
+    const chips=`<div class="rp-lbl fl-clbl"><span>Vertailtavat ajoneuvot</span>${sel.length<fueled.length?'<button type="button" class="rp-link" data-fl-cmpall>Valitse kaikki</button>':''}</div><div class="fl-cars fl-cmp${flN(cars.length)}" role="group" aria-label="Vertailtavat ajoneuvot">${cars.map(x=>{const has=(x.fuels||[]).length,on=has&&!o.off.includes(x.id),i=fueled.indexOf(x)%flCol.length;
       return `<button type="button" class="fl-car" data-fl-cmpcar="${x.id}" aria-pressed="${on}"${has?'':' disabled'}><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${has?`<i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[i]}${flDash[i]?';border-top-style:'+(flDash[i].startsWith('1.5')?'dotted':'dashed'):''}"></i>`:'<small>ei tankkauksia</small>'}</button>`;}).join('')}</div>`;
     const seg=`<div class="fl-seg" role="group" aria-label="Vertailtava luku">${flMetrics.map(([k,n])=>`<button type="button" data-fl-metric="${k}" aria-pressed="${k===m}">${n}</button>`).join('')}</div>`;
     if(!fueled.length)return `${top()}${head}${tabs}${msg}<div class="rp-card"><p class="rp-empty">Vertailu näkyy, kun ajoneuvoilla on tankkauksia tai latauksia.</p></div>`;
@@ -775,6 +775,8 @@
       <p class="fl-sub">Ajon hinta (€/100 km) on luku, jota voi verrata kaikkien käyttövoimien kesken. Sähköauton hinta riippuu paljon siitä, lataatko kotona vai pikalaturilla.</p></section>`;
     return `${top()}${head}${tabs}${msg}${chips}${seg}${card1}${card2}${table}`;}
   // Keeps the chosen vehicle's button in view in a long row of vehicles.
+  // 0.54: vehicle buttons wrap onto rows; two or four vehicles fit on one row, others go three to a row.
+  const flN=n=>n===2?' n2':n===4?' n4':'';
   function flScrollChips(){const row=screen.querySelector('.fl-cars'),on=row&&row.querySelector('[aria-pressed="true"]');if(!on)return;const a=row.getBoundingClientRect(),b=on.getBoundingClientRect();if(b.left<a.left||b.right>a.right)row.scrollLeft+=b.left-a.left-(b.left-a.left>0?a.width-b.width-16:16);}
   // The tankkauskirja as a PDF (0.40): the tab's period and figures (flCalc), every fill-up of the period, and how the
   // figures are counted. Same pdf-writer.js and share sheet as the other PDFs; app texts through tl().
@@ -1092,11 +1094,12 @@
     const toCmp=cars.filter(c=>(c.fuels||[]).length).length>1?`<button type="button" class="rp-card rp-pdf fl-tocmp" data-fl-tocmp><span class="rp-pdf-ico fl-ico" aria-hidden="true">${svg('<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>')}</span><span class="rp-rtxt"><strong>Vertaa kulutusta ajoneuvoittain</strong><small>Avaa Tankkaus → Vertailu</small></span><span class="chevron" aria-hidden="true">›</span></button>`:'';
     const reps=`${toCmp}<p class="rp-sub rp-reps-lead">Jokaisen ajoneuvon omat raportit: huoltohistoria ja tankkauskirja.</p>${cars.map(c=>`<section class="rp-card rp-vreps" aria-label="${escape(carName(c))}"><div class="rp-vrh"><span class="rp-rthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong><small><span translate="no">${plateTxt(c)}</span> · <span>${'vm. '+c.year}</span>${c.fuel?` · <span>${escape(c.fuel)}</span>`:''}</small></span></div><a class="rp-rep" href="#report/${c.id}/raportit"><span class="rp-ri" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>Huoltohistoriaraportti</strong><small><span>Huollot, kulut ja tunnusluvut</span> · <span>PDF</span></small></span><span class="chevron" aria-hidden="true">›</span></a><a class="rp-rep" href="#fuel/${c.id}/raportit"><span class="rp-ri fuel" aria-hidden="true">${svg(unitOf(c)==='kWh'?'<path d="M13 3 6 13h5l-1 8 7-10h-5z"/>':icons.fuel)}</span><span class="rp-rtxt"><strong>${unitOf(c)==='kWh'?'Latauskirja':'Tankkauskirja'}</strong><small>${fuelLine(c)}</small></span><span class="chevron" aria-hidden="true">›</span></a></section>`).join('')}`;
     if(o.t==='cars')return `${top()}${head}${tabs}${reps}`;
-    // 0.52: the vehicle choice is at the top of the summary, as buttons like on the Tankkaus tab: "Kaikki" or one
-    // vehicle with one tap (tapping the chosen vehicle again goes back to all). Several vehicles can still be picked
+    // 0.52: the vehicle choice is at the top of the summary, as buttons like on the Tankkaus tab: one vehicle with one
+    // tap (tapping the chosen vehicle again goes back to all; 0.54 removed the separate "Kaikki" button). Several vehicles can still be picked
     // under "Näytä tarkemmin"; then each picked vehicle is shown as chosen here. The note is left for cost types only.
-    const only=sel.length<cars.length,carPick=cars.length>1?`<div class="fl-cars rp-cars" role="group" aria-label="Ajoneuvo"><button type="button" class="fl-car" data-rp-only="" aria-pressed="${!only}"><span class="fl-cpic rp-allpic" aria-hidden="true">${svg('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>')}</span><span class="fl-cname">Kaikki</span><small><span>${cars.length}</span> <span>ajoneuvoa</span></small></button>${cars.map(x=>`<button type="button" class="fl-car" data-rp-only="${x.id}" aria-pressed="${only&&!o.offCars.includes(x.id)}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`:'';
-    const note=o.offKinds.length?`<p class="rp-note"><span>Osa kululajeista on rajattu pois.</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
+    const only=sel.length<cars.length,carPick=cars.length>1?`<div class="fl-cars rp-cars${flN(cars.length)}" role="group" aria-label="Ajoneuvo">${cars.map(x=>`<button type="button" class="fl-car" data-rp-only="${x.id}" aria-pressed="${only&&!o.offCars.includes(x.id)}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`:'';
+    // 0.54: no "Kaikki" button; when vehicles or cost types are left out, the note offers "Näytä kaikki" (resets both).
+    const note=only||o.offKinds.length?`<p class="rp-note"><span>${only&&o.offKinds.length?'Osa ajoneuvoista tai kululajeista on rajattu pois.':only?'Osa ajoneuvoista on rajattu pois.':'Osa kululajeista on rajattu pois.'}</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
     const ck='<span class="rp-ck" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 3"/></svg></span>';
     const carChips=`<div class="rp-lbl"><span>Ajoneuvot</span>${sel.length<cars.length?'<button type="button" class="rp-link" data-rp-all>Valitse kaikki</button>':''}</div><div class="rp-chips">${cars.map(c=>{const on=!o.offCars.includes(c.id);return `<button type="button" class="rp-chip car" data-rp-car="${c.id}" aria-pressed="${on}"><span class="rp-thumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-cname" translate="no">${escape(carName(c))}</span>${on?ck:''}</button>`;}).join('')}</div>`;
     const kindChips=`<div class="rp-lbl"><span>Kulut</span></div><div class="rp-chips">${costKinds.map(([k])=>`<button type="button" class="rp-chip kind" data-rp-kind="${k}" aria-pressed="${kinds.includes(k)}"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span></button>`).join('')}</div>`;
@@ -1186,7 +1189,7 @@
     const one=t.closest('[data-rp-only]');if(one){const id=one.dataset.rpOnly;rpMonth=null;
       if(!id||(one.getAttribute('aria-pressed')==='true'&&cars.filter(c=>!o.offCars.includes(c.id)).length===1))o.offCars=[];
       else if(cars.some(c=>c.id===id))o.offCars=cars.filter(c=>c.id!==id).map(c=>c.id);
-      rpSave(o,`[data-rp-only="${o.offCars.length?id:''}"]`);return true;}
+      rpSave(o,`[data-rp-only="${id}"]`);return true;}
     if(t.closest('[data-rp-reset]')){rpMonth=null;o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
     const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
     if(car||kd||all){rpMonth=null;if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];

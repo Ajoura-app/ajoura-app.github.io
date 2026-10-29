@@ -99,34 +99,62 @@ def _rp(s):
         off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []})""")
 
 
-# 0.52: ajoneuvon valinta Yhteenvedon yläosassa: Kaikki tai yksi ajoneuvo yhdellä napautuksella.
+# 0.52: ajoneuvon valinta Yhteenvedon yläosassa yhdellä napautuksella; 0.54: ei Kaikki-nappia, paluu ilmoituksen
+# "Näytä kaikki" -linkillä tai valitun ajoneuvon uudella napautuksella.
 def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
     s = avaa(browser, base, "reports", autot=talli(), extra=RP, kello=KELLO)
     try:
         r = _rp(s)
-        assert r["napit"] == [["", "true"], ["a1", "false"], ["a2", "false"], ["a3", "false"]], r
-        assert r["summa"] == "1265€" and len(r["kortit"]) == 3, r
+        assert r["napit"] == [["a1", "false"], ["a2", "false"], ["a3", "false"]], r  # kaikki näkyvissä, ei Kaikki-nappia
+        assert r["summa"] == "1265€" and len(r["kortit"]) == 3 and not r["huom"], r
         s.page.click('[data-rp-only="a2"]'); s.page.wait_for_timeout(150)
         r = _rp(s)
-        assert r["napit"] == [["", "false"], ["a1", "false"], ["a2", "true"], ["a3", "false"]], r
+        assert r["napit"] == [["a1", "false"], ["a2", "true"], ["a3", "false"]], r
         assert r["summa"] == "190€" and r["kortit"] == ["Testi Farmari"] and sorted(r["off"]) == ["a1", "a3"], r
-        assert not r["huom"], r  # ajoneuvon valinta näkyy napeista, joten erillistä ilmoitusta ei tarvita
+        assert "ajoneuvoista" in r["huom"], r
         assert s.page.evaluate("document.activeElement?.dataset.rpOnly") == "a2"
         s.page.click('[data-rp-only="a3"]'); s.page.wait_for_timeout(150)
         assert _rp(s)["kortit"] == ["Testi Asuntoauto"]
         s.page.click('[data-rp-only="a3"]'); s.page.wait_for_timeout(150)  # valitun napautus palaa kaikkiin
         r = _rp(s)
-        assert r["napit"][0] == ["", "true"] and len(r["kortit"]) == 3 and r["off"] == [], r
+        assert r["napit"] == [["a1", "false"], ["a2", "false"], ["a3", "false"]] and len(r["kortit"]) == 3 and r["off"] == [], r
+        assert s.page.evaluate("document.activeElement?.dataset.rpOnly") == "a3"
         s.page.click('[data-rp-only="a1"]'); s.page.wait_for_timeout(150)
-        s.page.click('[data-rp-only=""]'); s.page.wait_for_timeout(150)
-        assert _rp(s)["off"] == [] and _rp(s)["summa"] == "1265€"
+        s.page.click('[data-rp-reset]'); s.page.wait_for_timeout(150)  # Näytä kaikki
+        assert _rp(s)["off"] == [] and _rp(s)["summa"] == "1265€" and not _rp(s)["huom"]
         # Useampi ajoneuvo Näytä tarkemmin -kohdasta: valitut näkyvät valittuina myös yläosassa.
         s.page.click("[data-rp-more]"); s.page.click('[data-rp-car="a3"]'); s.page.wait_for_timeout(150)
         r = _rp(s)
-        assert r["napit"] == [["", "false"], ["a1", "true"], ["a2", "true"], ["a3", "false"]], r
-        # Kululajin rajaus näyttää ilmoituksen.
+        assert r["napit"] == [["a1", "true"], ["a2", "true"], ["a3", "false"]], r
+        # Kululajin rajaus näyttää yhteisen ilmoituksen.
         s.page.click('[data-rp-kind="fuel"]'); s.page.wait_for_timeout(150)
-        assert "kululajeista" in _rp(s)["huom"]
+        assert "kululajeista" in _rp(s)["huom"] and "ajoneuvoista" in _rp(s)["huom"]
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.54: ajoneuvonapit rivittyvät eivätkä mene ruudun yli (Tankkaus, Vertailu, Raportit), myös kuudella ajoneuvolla.
+NAPIT_JS = """() => {const sc = document.querySelector('.screen-content').getBoundingClientRect();
+  const b = [...document.querySelectorAll('.fl-cars .fl-car')];
+  return {n: b.length, yli: b.filter(e => {const r = e.getBoundingClientRect(); return r.left < sc.left - 0.5 || r.right > sc.right + 0.5;}).length,
+          vieritys: [...document.querySelectorAll('.fl-cars')].some(e => e.scrollWidth > e.clientWidth + 1)};}"""
+
+
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+@pytest.mark.parametrize("nakyma,extra", [("reports", RP), ("fuel/a1", {}),
+                                          ("fuel/a1", {"ajoura-fuel": '{"p":"12","t":"cmp"}'})])
+def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra):
+    autot = talli() + [tiedot.auto(f"b{i}", name=f"Lisäauto {i}", plate=f"TST-30{i}",
+                                   fuels=[T(f"g{i}1", "2026-09-01", 1000, 40, 70), T(f"g{i}2", "2026-10-01", 1600, 40, 70)])
+                       for i in range(3)]
+    for a in autot[:3]:
+        a.setdefault("fuels", [])
+    autot[1]["fuels"] = [T("h1", "2026-09-01", 85000, 40, 70), T("h2", "2026-10-01", 85700, 40, 70)]
+    s = avaa(browser, base, nakyma, autot=autot, leveys=leveys, extra=extra, kello=KELLO)
+    try:
+        r = s.page.evaluate(NAPIT_JS)
+        assert r["n"] == 6 and r["yli"] == 0 and not r["vieritys"], r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

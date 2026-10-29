@@ -1015,8 +1015,6 @@ html.dark .device-glass .ph img.ph-bg{filter:invert(1) hue-rotate(180deg) blur(6
 /* Vehicle choice at the top of the Raportit summary (v0.52): the same buttons as on the Tankkaus tab, "Kaikki" first. */
 @media screen{
 .rp-cars{margin-bottom:11px}
-.rp-allpic{color:var(--blue);background:#eef4fb;border-radius:8px}
-.rp-allpic svg{width:26px!important;height:26px!important}
 }
 
 /* Ajoneuvokohtaiset kulut (v0.53): the cost type's name next to each amount, and what the change badge compares with. */
@@ -1026,4 +1024,17 @@ html.dark .device-glass .ph img.ph-bg{filter:invert(1) hue-rotate(180deg) blur(6
 .rp-leg .rp-lk{color:#4f5f72}
 .rp-leg b{font-weight:700;color:var(--ink)}
 .rp-vsec .rp-vs-note{margin:-3px 0 9px}
+}
+
+/* Vehicle buttons wrap onto rows (v0.54): the Tankkaus, Vertailu and Raportit vehicle buttons no longer run off the
+   screen edge in a sideways-scrolling row. Two or four vehicles fit on one row, otherwise three to a row (two on
+   the narrowest phones). */
+@media screen{
+.fl-cars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 12px;padding:2px 0 4px;overflow:visible;scroll-snap-type:none}
+.fl-cars.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fl-cars.n4{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.fl-cars.n4 .fl-car{padding-inline:4px}
+.fl-car{min-width:0}
+.fl-cpic{width:100%;max-width:88px}
+@container(max-width:250px){.fl-cars,.fl-cars.n4{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline:0;padding-inline:0}}
 }
