@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.54 (testiversio)';
+  const appVersion='0.55 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1055,9 +1055,10 @@
   // Less money spent is green, more is red; the sign is always written out, so the colour is never the only cue.
   const rpDelta=(v,pill)=>v===null?'':`<span class="rp-delta ${v<0?'down':v>0?'up':'flat'}${pill?' pill':''}"><span aria-hidden="true">${v<0?'↓':v>0?'↑':'→'}</span> <span>${v>0?'+':v<0?'−':''}${number(Math.abs(v))} %</span></span>`;
   const eur=v=>`${number(Math.round(v))} €`,dec2=v=>v.toLocaleString('fi-FI',{minimumFractionDigits:2,maximumFractionDigits:2});
-  // 0.50: a user's own photo is shown whole (contain) so the vehicle is never cut off, over a blurred copy of the same
-  // photo that fills the rest of the box. Used on Tankkaus, Raportit and the fill-up sheet.
-  const rpThumb=c=>c.photo?`<span class="ph"><img class="ph-bg" src="${c.photo}" alt=""><img class="ph-fg" src="${c.photo}" alt=""></span>`:art(c,'');
+  // 0.55: a user's own photo fills the box (no blurred side bars as in 0.50). Phone photos of a vehicle are usually
+  // portrait with the vehicle in the lower middle, so the crop keeps the lower middle (CSS .own-ph). Used on
+  // Tankkaus, Raportit and the fill-up sheet.
+  const rpThumb=c=>c.photo?`<img class="own-ph" src="${c.photo}" alt="">`:art(c,'');
   const rpIcon={fuel:'fuel',service:'wrench',repair:'repair',inspect:'inspection',tyres:'tyre',other:'more'};
   const chev='<svg class="rp-chev" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>';
   // A native select under a styled label: the phone shows its own picker, and the 16 px font keeps iPhone from zooming.

@@ -1,4 +1,4 @@
-"""9. Raportit ja Tankkaus: ajoneuvokuvat (0.50), kululajit (0.51), ajoneuvon valinta (0.52) ja ajoneuvokortit (0.53)."""
+"""9. Raportit ja Tankkaus: ajoneuvokuvat (0.50, 0.55), kululajit (0.51), ajoneuvon valinta (0.52) ja ajoneuvokortit (0.53)."""
 import pytest
 
 import tiedot
@@ -25,40 +25,43 @@ def talli(kuva=PYSTY):
 RP = {"ajoura-reports": '{"p":"12","t":"sum"}'}
 
 
-# 0.50: oma kuva näkyy kokonaisena (contain) eikä rajaudu; kuvan alla sumennettu kopio.
+# 0.55: oma kuva täyttää ruudun tarkasti (cover, ei sumennettua kopiota 0.50:n tapaan), rajaus painottuu kuvan
+# alaosaan (ajoneuvo on puhelinkuvassa yleensä alempana), eikä kuva veny ruudun ulkopuolelle (0.55:n korjaama vika:
+# kuva näkyi omassa korkeudessaan, jolloin ruudussa näkyi kuvan yläosa).
+KUVA_JS = """sel => [...document.querySelectorAll(sel)].filter(b => b.querySelector('img')).map(b => {
+    const im = b.querySelector('img'), r = b.getBoundingClientRect(), f = im.getBoundingClientRect(), cs = getComputedStyle(im);
+    return {luokka: im.className, fit: cs.objectFit, y: parseFloat(cs.objectPosition.split(' ')[1]), kpl: b.querySelectorAll('img').length,
+            sama: Math.abs(f.left - r.left) < 1 && Math.abs(f.top - r.top) < 1 && Math.abs(f.width - r.width) < 1 && Math.abs(f.height - r.height) < 1,
+            ladattu: im.naturalWidth > 0, korkeus: r.height};})"""
+
+
 @pytest.mark.parametrize("nakyma,laatikko,extra", [
     ("fuel/a1", ".fl-cpic", {}),
+    ("reports", ".fl-cpic", RP),
     ("reports", ".rp-vpic", RP),
     ("reports", ".rp-rthumb", {"ajoura-reports": '{"p":"12","t":"cars"}'}),
 ])
 @pytest.mark.parametrize("teema", [None, "dark"])
-def test_oma_kuva_kokonaan(browser, base, nakyma, laatikko, extra, teema):
+def test_oma_kuva_tayttaa_ruudun(browser, base, nakyma, laatikko, extra, teema):
     s = avaa(browser, base, nakyma, autot=talli(), extra=extra, teema=teema, kello=KELLO)
     try:
-        tulos = s.page.evaluate("""sel => [...document.querySelectorAll(sel)].filter(b => b.querySelector('img')).map(b => {
-            const fg = b.querySelector('img.ph-fg'), bg = b.querySelector('img.ph-bg'), r = b.getBoundingClientRect();
-            if (!fg || !bg) return {puuttuu: true};
-            const f = fg.getBoundingClientRect(), k = Math.min(f.width / fg.naturalWidth, f.height / fg.naturalHeight);
-            const w = fg.naturalWidth * k, h = fg.naturalHeight * k;  // kuvan näkyvä osa contain-sovituksessa
-            return {fit: getComputedStyle(fg).objectFit, bgfit: getComputedStyle(bg).objectFit, blur: getComputedStyle(bg).filter,
-                    mahtuu: w <= r.width + 0.5 && h <= r.height + 0.5 && f.left >= r.left - 0.5 && f.right <= r.right + 0.5,
-                    ladattu: fg.naturalWidth > 0};})""", laatikko)
+        tulos = s.page.evaluate(KUVA_JS, laatikko)
         assert len(tulos) == 2, tulos  # kaksi ajoneuvoa, joilla on oma kuva
         for t in tulos:
-            assert not t.get("puuttuu"), tulos
-            assert t["ladattu"] and t["fit"] == "contain" and t["bgfit"] == "cover" and t["mahtuu"], t
-            assert "blur" in t["blur"], t
+            assert t["luokka"] == "own-ph" and t["kpl"] == 1 and t["ladattu"], t
+            assert t["fit"] == "cover" and t["sama"] and 55 <= t["y"] <= 80 and t["korkeus"] > 20, t
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
 
 
-def test_tankkausikkunan_kuva_kokonaan(browser, base):
+def test_tankkausikkunan_kuva(browser, base):
     s = avaa(browser, base, "fuel/a1", autot=talli(), kello=KELLO)
     try:
         s.page.click("button.fl-add")
-        s.page.wait_for_selector(".sheet-thumb img.ph-fg")
-        assert s.page.eval_on_selector(".sheet-thumb img.ph-fg", "e => getComputedStyle(e).objectFit") == "contain"
+        s.page.wait_for_selector(".sheet-thumb img.own-ph")
+        t = s.page.evaluate(KUVA_JS, ".sheet-thumb")[0]
+        assert t["fit"] == "cover" and t["sama"], t
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
