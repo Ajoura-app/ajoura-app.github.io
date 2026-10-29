@@ -950,3 +950,8 @@ a.today-chip{text-decoration:none}
 .rp-pdf-ico.csv{background:#1f7a4d}
 .rp-csvnote{margin-top:-4px}
 }
+/* Backup (v0.44): the date and the share sheet hint on the backup page; 11 px, contrast >= 4.5:1 (AJ-05). */
+@media screen{
+.me-data p.bk-when{margin:10px 0 0;font-size:11px;font-weight:650;color:#3f4f63;text-align:center}
+.me-data p.bk-note{margin:2px 0 0;font-size:11px;color:#4f5f72;text-align:center}
+}
