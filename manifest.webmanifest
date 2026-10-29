@@ -1,13 +1,12 @@
 {
-  "name": "AJOURA – ajoneuvopäiväkirja (konseptidemo)",
+  "name": "AJOURA – ajoneuvopäiväkirja",
   "short_name": "AJOURA",
-  "description": "Autosi historia yhdessä paikassa. Konseptidemo kuvitteellisilla tiedoilla.",
+  "description": "Ajoneuvosi historia yhdessä paikassa: huollot, katsastukset, tankkaukset ja kulut. Maksuton testiversio.",
   "lang": "fi",
   "id": "./app.html?pwa=1",
   "start_url": "./app.html?pwa=1",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#f5f8fc",
   "theme_color": "#f5f8fc",
   "icons": [

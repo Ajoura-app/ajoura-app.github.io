@@ -974,3 +974,8 @@ a.today-chip{text-decoration:none}
 .me-data p.bk-priv{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#f1f5fa;font-size:11px;line-height:1.55;color:#3f4f63}
 .owner-steps small.bk-priv{display:block;margin:-4px 0 10px;font-size:11px;line-height:1.55;color:#4f5f72}
 }
+
+/* Landscape phone (v0.48): the screen is wide but short, so keep the portrait text size instead of the 1.3 zoom used for wide containers. */
+@media screen and (orientation:landscape) and (max-height:500px){
+  @container(min-width:440px){.screen-content,.tab-bar,.sheet{zoom:1.12}}
+}
