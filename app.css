@@ -874,3 +874,67 @@ a.today-chip{text-decoration:none}
 .sheet-xtra .fuel-guess{margin:0 12px;min-height:40px;font-size:12px;color:#0b5ed7}
 .sheet-xtra select,.sheet-xtra input{background:#fff}
 }
+/* Vertailu and Raportit links (v0.42): vehicles side by side in their own colour and line style, consumption only within one
+   unit, cost of driving across all. Texts at least 11 px. */
+@media screen{
+.fl-clbl{margin-top:2px}
+.fl-cmp .fl-car{position:relative}
+.fl-car:disabled{opacity:.55;cursor:default}
+.fl-sw{display:block;width:28px;height:0;margin:3px 0 2px;border-top:3px solid #0b5ed7}
+.fl-seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 12px;padding:4px;border-radius:12px;background:#e8eef6}
+.fl-seg button{min-height:40px;border:0;border-radius:9px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:#3f4f63;cursor:pointer}
+.fl-seg button[aria-pressed="true"]{background:#fff;box-shadow:0 1px 3px #12284a26;color:var(--ink);font-weight:700}
+.fl-gunit{margin:10px 0 2px;font-size:11px;font-weight:700;letter-spacing:.04em;color:#4f5f72}
+.fl-bar{margin:9px 0 0}
+.fl-bt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fl-bn{min-width:0;overflow:hidden;font-size:12.5px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.fl-bv{flex:none;font-size:12.5px;font-weight:700;color:var(--ink)}
+.fl-bv small{font-size:11px;font-weight:500;color:#4f5f72}
+.fl-cc{margin-left:4px;font-size:11.5px;font-weight:700;color:#4f5f72}
+.fl-cc.down{color:#0b7148}.fl-cc.up{color:#b42a2a}
+.fl-btrack{height:9px;margin-top:4px;border-radius:5px;background:#eef3fa;overflow:hidden}
+.fl-btrack i{display:block;height:100%;border-radius:5px}
+.fl-chart .cl{fill:none;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.fl-chart .cend{font-size:11px;font-weight:700}
+.fl-chart .cend.v{font-weight:600}
+.fl-chart .cdot{stroke:#fff;stroke-width:1.6}
+.fl-csel{margin:2px 0 6px;font-size:11.5px;line-height:1.7;color:#3f4f63}
+.fl-csel i{display:inline-block;width:8px;height:8px;margin-right:4px;border-radius:2px;vertical-align:1px}
+.fl-twrap{margin-top:8px;overflow-x:auto}
+.fl-ctable th,.fl-ctable td{padding-left:8px}
+.fl-ctable td small{font-size:11px;color:#4f5f72}
+.fl-ctable tbody th{max-width:96px;overflow:hidden;text-overflow:ellipsis}
+.fl-tsw{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px;vertical-align:0}
+.fl-tot th,.fl-tot td{border-top:2px solid var(--ink)!important}
+.fl-tocmp{margin-bottom:12px}
+.fl-ico{background:#2a78d6}
+.rp-reps-lead{margin:0 2px 8px}
+.rp-vreps{padding-top:10px;padding-bottom:4px}
+.rp-vrh{display:flex;align-items:center;gap:11px;padding-bottom:8px}
+.rp-vreps .rp-rep{border-top:1px solid var(--hairline);min-height:48px}
+.rp-ri{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:9px;background:#e8f0fe;color:#0b5ed7}
+.rp-ri.fuel{background:#e6f1fb;color:#1f62b0}
+.rp-ri svg{width:18px;height:18px}
+.rp-vreps .rp-rtxt small .nw{white-space:nowrap}
+}
+@media screen{
+.fl-csel{margin:4px 0 6px;font-size:11.5px;color:#3f4f63}
+.fl-csel ul{display:flex;flex-wrap:wrap;gap:2px 14px;margin:3px 0 0;padding:0;list-style:none}
+.fl-csel li{white-space:nowrap}
+.fl-ctable thead th{vertical-align:bottom;line-height:1.25}
+.fl-ctable thead th small{display:block;font-size:11px;font-weight:500;color:#4f5f72}
+.fl-ctable th,.fl-ctable td{padding-left:6px}
+.fl-ctable tbody th{max-width:104px}
+}
+@media screen{
+.fl-tn{display:block;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@container(max-width:349.98px){.fl-tn{max-width:86px}}
+}
+@media screen{.fl-ctable thead th{white-space:normal}}
+@media screen{
+.rp-hrow .fl-unit{flex:0 1 auto;min-width:0;text-align:right}
+.fl-ctable thead th{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
+@container(max-width:399.98px){.fl-ctable{font-size:11.5px}.fl-ctable th,.fl-ctable td{padding-left:5px}.fl-tn{max-width:90px}}
+@container(max-width:349.98px){.fl-tn{max-width:70px}}
+}
+@media screen{.fl-bar+.fl-note{margin-top:10px}}

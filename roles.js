@@ -33,7 +33,7 @@
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
-    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel"],.fuel-cost,[data-quickfuel]'],
+    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel"],.fuel-cost,[data-quickfuel],[data-fl-tocmp]'],
     ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"],.tab-bar a[href="#reports"]'],
     ['owner', 'asiakas', 'Omistajanvaihdos', 'Auton siirto uudelle omistajalle.', 'a[href^="#owner/"]'],
     ['tips', 'asiakas', 'Huoltovinkit', 'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.', '.tips-card'],
