@@ -88,3 +88,54 @@ def test_kululajit_rivit(browser, base, kieli, leveys, nelja, kuusi):
             assert not s.virheet, s.virheet
         finally:
             s.sulje()
+
+
+def _rp(s):
+    return s.page.evaluate("""() => ({
+        napit: [...document.querySelectorAll('.rp-cars [data-rp-only]')].map(b => [b.dataset.rpOnly, b.getAttribute('aria-pressed')]),
+        kortit: [...document.querySelectorAll('.rp-vcard strong')].map(e => e.textContent),
+        summa: document.querySelector('.rp-kpis b.big')?.textContent.replace(/\\s/g, ''),
+        huom: document.querySelector('.rp-note')?.textContent || '',
+        off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []})""")
+
+
+# 0.52: ajoneuvon valinta Yhteenvedon yläosassa: Kaikki tai yksi ajoneuvo yhdellä napautuksella.
+def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
+    s = avaa(browser, base, "reports", autot=talli(), extra=RP, kello=KELLO)
+    try:
+        r = _rp(s)
+        assert r["napit"] == [["", "true"], ["a1", "false"], ["a2", "false"], ["a3", "false"]], r
+        assert r["summa"] == "1265€" and len(r["kortit"]) == 3, r
+        s.page.click('[data-rp-only="a2"]'); s.page.wait_for_timeout(150)
+        r = _rp(s)
+        assert r["napit"] == [["", "false"], ["a1", "false"], ["a2", "true"], ["a3", "false"]], r
+        assert r["summa"] == "190€" and r["kortit"] == ["Testi Farmari"] and sorted(r["off"]) == ["a1", "a3"], r
+        assert not r["huom"], r  # ajoneuvon valinta näkyy napeista, joten erillistä ilmoitusta ei tarvita
+        assert s.page.evaluate("document.activeElement?.dataset.rpOnly") == "a2"
+        s.page.click('[data-rp-only="a3"]'); s.page.wait_for_timeout(150)
+        assert _rp(s)["kortit"] == ["Testi Asuntoauto"]
+        s.page.click('[data-rp-only="a3"]'); s.page.wait_for_timeout(150)  # valitun napautus palaa kaikkiin
+        r = _rp(s)
+        assert r["napit"][0] == ["", "true"] and len(r["kortit"]) == 3 and r["off"] == [], r
+        s.page.click('[data-rp-only="a1"]'); s.page.wait_for_timeout(150)
+        s.page.click('[data-rp-only=""]'); s.page.wait_for_timeout(150)
+        assert _rp(s)["off"] == [] and _rp(s)["summa"] == "1265€"
+        # Useampi ajoneuvo Näytä tarkemmin -kohdasta: valitut näkyvät valittuina myös yläosassa.
+        s.page.click("[data-rp-more]"); s.page.click('[data-rp-car="a3"]'); s.page.wait_for_timeout(150)
+        r = _rp(s)
+        assert r["napit"] == [["", "false"], ["a1", "true"], ["a2", "true"], ["a3", "false"]], r
+        # Kululajin rajaus näyttää ilmoituksen.
+        s.page.click('[data-rp-kind="fuel"]'); s.page.wait_for_timeout(150)
+        assert "kululajeista" in _rp(s)["huom"]
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_yksi_ajoneuvo_ilman_valintaa(browser, base):
+    s = avaa(browser, base, "reports", autot=talli()[:1], extra=RP, kello=KELLO)
+    try:
+        assert s.page.locator(".rp-cars").count() == 0
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

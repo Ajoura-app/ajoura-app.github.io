@@ -1011,3 +1011,10 @@ html.dark .device-glass .ph img.ph-bg{filter:invert(1) hue-rotate(180deg) blur(6
 .rp-kt small{-webkit-hyphens:auto;hyphens:auto}
 @container(max-width:349.98px){.rp-kinds,.rp-kinds.k3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 }
+
+/* Vehicle choice at the top of the Raportit summary (v0.52): the same buttons as on the Tankkaus tab, "Kaikki" first. */
+@media screen{
+.rp-cars{margin-bottom:11px}
+.rp-allpic{color:var(--blue);background:#eef4fb;border-radius:8px}
+.rp-allpic svg{width:26px!important;height:26px!important}
+}
