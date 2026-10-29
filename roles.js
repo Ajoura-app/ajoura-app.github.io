@@ -33,7 +33,7 @@
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
-    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel/"],.fuel-cost,[data-quickfuel]'],
+    ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel"],.fuel-cost,[data-quickfuel]'],
     ['report', 'asiakas', 'Huoltoraportti', 'Tulostettava historia esim. myyntiä varten.', 'a[href^="#report/"],.tab-bar a[href="#reports"]'],
     ['owner', 'asiakas', 'Omistajanvaihdos', 'Auton siirto uudelle omistajalle.', 'a[href^="#owner/"]'],
     ['tips', 'asiakas', 'Huoltovinkit', 'Merkki- ja mallikohtaiset huoltovinkit ajoneuvon sivulla.', '.tips-card'],
@@ -69,7 +69,8 @@
   function applyFeatures() {
     const off = FEATURES.filter(f => f[4] && !on(f[0]));
     style.textContent = off.map(f => f[4].split(',').map(s => `html.r-cust ${s}`).join(',') + '{display:none!important}').join('\n') +
-      (on('report') ? '' : '\nhtml.r-cust .tab-bar.main-tabs{grid-template-columns:repeat(2,1fr)}');
+      // The bottom tabs (0.40: Koti, Tankkaus, Raportit, Valikko) close up when Tankkaus or Raportit is switched off.
+      ((n => n < 4 ? `\nhtml.r-cust .tab-bar.main-tabs{grid-template-columns:repeat(${n},1fr)}` : '')(4 - !on('report') - !on('fuel')));
     if (!on('theme') && document.documentElement.classList.contains('dark')) document.documentElement.classList.remove('dark');
   }
   document.documentElement.classList.add('r-cust');
