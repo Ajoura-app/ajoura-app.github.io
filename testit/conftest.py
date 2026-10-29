@@ -48,3 +48,14 @@ def browser():
         b = p.chromium.launch()
         yield b
         b.close()
+
+
+@pytest.fixture(scope="session")
+def vanha_base():
+    """Edellinen versio vertailuun: kansio ympäristömuuttujassa AJOURA_VERTAILU (git worktree, ks. README)."""
+    kansio = os.environ.get("AJOURA_VERTAILU")
+    if not kansio or not (Path(kansio) / "app.html").is_file():
+        pytest.skip("AJOURA_VERTAILU puuttuu: anna edellisen version kansio (ks. testit/README.md)")
+    osoite, sammuta = palvelin(Path(kansio).resolve())
+    yield osoite
+    sammuta()

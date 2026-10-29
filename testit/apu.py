@@ -57,6 +57,7 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
     ctx = browser.new_context(viewport={"width": leveys, "height": korkeus}, is_mobile=mobiili,
                               has_touch=mobiili, device_scale_factor=2 if mobiili else 1,
                               service_workers="block", reduced_motion="reduce", user_agent=ua,
+                              timezone_id="Europe/Helsinki", locale="fi-FI",
                               accept_downloads=True)
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
     if kello:
