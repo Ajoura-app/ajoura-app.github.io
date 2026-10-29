@@ -459,7 +459,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.42 (testiversio)';
+  const appVersion='0.43 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1083,7 +1083,7 @@
     const table=sum?`<table class="rp-table"><caption class="sr-only">Kulut ajoneuvoittain</caption><thead><tr><th scope="col">Ajoneuvo</th><th scope="col">€</th></tr></thead>${rows.map(r=>`<tbody><tr class="rp-tcar"><th scope="row" translate="no">${escape(carName(r.c))}</th><td>${number(Math.round(r.t))}</td></tr>${kinds.filter(k=>r.s[k]>0).map(k=>`<tr><td>${kn(k)}</td><td>${number(Math.round(r.s[k]))}</td></tr>`).join('')}</tbody>`).join('')}</table>`:'';
     const label=o.p==='all'?'Koko historia':`${date(from)}–${date(to)}`;
     const explain=`<p class="rp-sub"><span>Jakso</span> <span>${label}</span>${prev?` · <span>muutos verrataan jaksoon</span> <span>${date(prev.from)}–${date(prev.to)}</span>`:''}</p>`;
-    const more=rpMore?`<section class="rp-card rp-detail" aria-labelledby="rp-hd"><h3 class="rp-h" id="rp-hd">Tarkemmat valinnat</h3>${explain}${carChips}${kindChips}${table}</section>`:'';
+    const more=rpMore?`<section class="rp-card rp-detail" aria-labelledby="rp-hd"><h3 class="rp-h" id="rp-hd">Tarkemmat valinnat</h3>${explain}${sum&&sel.length&&kinds.length?rpMonthCard(o,{from,to,sel,kinds,kn}):''}${carChips}${kindChips}${table}</section>`:'';
     let body;
     if(!sel.length)body='<div class="rp-card"><p class="rp-empty">Valitse vähintään yksi ajoneuvo.</p></div>';
     else if(!kinds.length)body='<div class="rp-card"><p class="rp-empty">Valitse vähintään yksi kululaji.</p></div>';
@@ -1104,20 +1104,65 @@
     const list=`<section class="rp-vsec" aria-labelledby="rp-hv"><div class="rp-hrow"><h3 class="rp-h2" id="rp-hv">Ajoneuvokohtaiset kulut</h3>${rows.length>1?rpPick('data-rp-sort','Järjestä',`<span>Järjestä:</span> <span>${sortNames.find(x=>x[0]===o.s)[1]}</span>`,sortNames,o.s):''}</div>${rows.map(card).join('')}</section>`;
     // PDF report of this summary (0.32): same period and choices as on the screen.
     const pdf=`<button type="button" class="rp-card rp-pdf" data-rp-pdf><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>Raportoi ajanjakso</strong><small><span>${sel.length<cars.length?'Valitut ajoneuvot':'Kaikki ajoneuvot'}</span> · <span>PDF-tiedosto</span></small></span><span class="chevron" aria-hidden="true">›</span></button>`;
+    // CSV export (0.43): every entry and fill-up of the period for Excel, with the same choices as the page.
+    const nRows=rpCsvRows(o,{from,to,sel,kinds}).length,csv=nRows?`<button type="button" class="rp-card rp-pdf rp-csv" data-rp-csv><span class="rp-pdf-ico csv" aria-hidden="true">${svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 15h16M10 4v16"/>')}</span><span class="rp-rtxt"><strong>Vie tiedot</strong><small><span>Excel / CSV</span> · <span class="nw"><span>${number(nRows)}</span> <span>${nRows===1?'rivi':'riviä'}</span></span></small></span><span class="chevron" aria-hidden="true">›</span></button><p class="fl-fine rp-csvnote">Jokainen merkintä ja tankkaus omalla rivillään. Tiedosto aukeaa Excelissä, Numbersissa ja Google Sheetsissä.</p>`:'';
     const msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    return `${top()}${head}${tabs}${note}${msg}${kpis}${cats}${more}${list}${pdf}`;}
+    return `${top()}${head}${tabs}${note}${msg}${kpis}${cats}${more}${list}${pdf}${csv}`;}
+  // Raportit 0.43: costs by month in "Näytä tarkemmin" (stacked bars in the cost-type colours, the total written on each
+  // bar, a tapped month's amounts by type as text) and the period's entries as a CSV file for Excel. Both use the page's
+  // period and choices, and the same rules as costsOf, so every sum matches the summary above.
+  let rpMonth=null;
+  const rpKc={fuel:'#2a78d6',service:'#1baf7a',repair:'#6250d6',inspect:'#eda100',tyres:'#e87ba4',other:'#8d99aa'};
+  function rpMonths(o,d){const {from,to,sel,kinds}=d,first=sel.flatMap(c=>[...c.events.map(e=>e.date),...(c.fuels||[]).map(f=>f.date)]).sort()[0]||to,start=o.p==='all'?first:from;
+    const keys=[];{let [y,m]=start.split('-').map(Number);const [ey,em]=to.split('-').map(Number);while(y<ey||(y===ey&&m<=em)){keys.push(y+'-'+String(m).padStart(2,'0'));if(++m>12){m=1;y++;}}}
+    const byYear=keys.length>24,list=byYear?[...new Set(keys.map(k=>k.slice(0,4)))]:keys;
+    return list.map(k=>{const a0=byYear?k+'-01-01':k+'-01',b0=byYear?k+'-12-31':monthEnd(k),a=a0<start?start:a0,b=b0>to?to:b0,s={};let t=0;
+      for(const kd of kinds)s[kd]=0;for(const c of sel){const x=costsOf(c,a,b);for(const kd of kinds){s[kd]+=x[kd];t+=x[kd];}}
+      return {k,year:byYear,s,t,partial:a!==a0||b!==b0};});}
+  function rpMonthChart(list,kinds,kn,sel){const W=320,H=170,T=18,B=22,ph=H-T-B,n=list.length,sw=W/n,bw=Math.min(20,sw*.64),mx=Math.max(1,...list.map(x=>x.t)),r=v=>Math.round(v*10)/10;
+    let g=(sel>=0?`<rect class="msel" x="${r(sw*sel+1)}" y="${T-14}" width="${r(sw-2)}" height="${ph+14}" rx="5"/>`:'')+`<line class="g" x1="0" x2="${W}" y1="${T+ph}" y2="${T+ph}"/>`;
+    list.forEach((x,i)=>{const cx=sw*(i+.5);let y=T+ph;for(const k of kinds){if(!x.s[k])continue;const h=x.s[k]/mx*ph;y-=h;g+=`<rect x="${r(cx-bw/2)}" y="${r(y)}" width="${r(bw)}" height="${r(Math.max(.8,h))}" style="fill:${rpKc[k]}"${x.partial?' opacity=".5"':''}/>`;}
+      if(x.t>0)g+=`<text class="bv" x="${r(cx)}" y="${r(y-5)}" text-anchor="middle">${number(Math.round(x.t))}</text>`;});
+    const every=n>13?2:1;g+=list.map((x,i)=>i%every&&i!==sel?'':`<text class="ax${i===sel?' on':''}" x="${r(sw*(i+.5))}" y="${H-6}" text-anchor="middle">${x.year?x.k:Number(x.k.slice(5))}</text>`).join('');
+    g+=list.map((x,i)=>`<rect class="hit" data-rp-m="${i}" x="${r(sw*i)}" y="0" width="${r(sw)}" height="${H}"/>`).join('');
+    return `<svg class="fl-chart rp-mchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kulut kuukausittain">${g}</svg>`;}
+  function rpMonthCard(o,d){const list=rpMonths(o,d),kinds=d.kinds;if(!list.length||!list.some(x=>x.t>0))return '';
+    let sel=rpMonth!==null&&rpMonth<list.length?rpMonth:-1;if(sel<0)for(let i=list.length-1;i>=0;i--)if(list[i].t>0){sel=i;break;}
+    const x=list[sel],yb=list[0].year,name=x.year?`<span>${x.k}</span>`:`<span>${ucFirst(mName(x.k))}</span> <span>${x.k.slice(0,4)}</span>`;
+    const used=kinds.filter(k=>list.some(m=>m.s[k]>0));
+    return `<div class="rp-month"><div class="rp-hrow"><h4 class="rp-h">${yb?'Kulut vuosittain':'Kulut kuukausittain'}</h4><small class="fl-unit">€</small></div>${rpMonthChart(list,kinds,d.kn,sel)}
+      <p class="rp-mleg">${used.map(k=>`<span><i aria-hidden="true" style="background:${rpKc[k]}"></i><span>${d.kn(k)}</span></span>`).join('')}</p>
+      <div class="fl-csel"><b>${name}</b>${x.partial?` <span>${yb?'(vajaa vuosi)':'(vajaa kuukausi)'}</span>`:''} · <b>${eur(x.t)}</b><ul>${used.filter(k=>x.s[k]>0).map(k=>`<li><i aria-hidden="true" style="background:${rpKc[k]}"></i><span>${d.kn(k)}</span> <b>${eur(x.s[k])}</b></li>`).join('')||'<li><span>Ei kuluja</span></li>'}</ul></div>
+      <p class="fl-note">${yb?'Napauta vuotta, niin näet kulut lajeittain.':'Napauta kuukautta, niin näet kulut lajeittain.'}${list.some(m=>m.partial)?` <span>${yb?'Vaalea pylväs on vajaa vuosi.':'Vaaleat pylväät ovat vajaita kuukausia.'}</span>`:''}</p></div>`;}
+  // CSV for Excel: one row per entry or fill-up of the period, for the chosen vehicles and cost types. Finnish and Swedish
+  // Excel read semicolons and decimal commas; the English file uses commas and decimal points. The BOM tells Excel the
+  // file is UTF-8 (ä, ö). A cell that would start a formula (=, +, -, @) gets a leading apostrophe, so a note typed in
+  // the app can never run as a formula in Excel.
+  function rpCsvRows(o,d){const {from,to,sel,kinds}=d,inP=x=>(o.p==='all'||x>=from)&&x<=to,rows=[];
+    for(const c of sel){const u=ku(c),fu=unitOf(c);
+      for(const e of c.events)if(inP(e.date)&&kinds.includes(costKind(e.type)))rows.push({date:e.date,c,kind:costKind(e.type),what:dispType(c,e.type),km:e.km,u,cost:e.cost!==''&&e.cost!=null&&Number.isFinite(Number(e.cost))?Number(e.cost):null,qty:null,qu:'',ppu:null,note:e.note||''});
+      if(kinds.includes('fuel'))for(const f of c.fuels||[])if(inP(f.date))rows.push({date:f.date,c,kind:'fuel',what:fu==='kWh'?'Lataus':'Tankkaus',km:f.km,u,cost:f.cost,qty:f.qty,qu:fu,ppu:f.cost!==null&&f.qty>0?f.cost/f.qty:null,note:[f.full?'':'osatankkaus',f.grade||'',f.country&&f.country!=='FI'?(countries.find(k=>k[0]===f.country)||['','',''])[1]:'',f.est?'hinta-arvio':''].filter(Boolean).map(tl).join(', ')});}
+    return rows.sort((a,b)=>a.date.localeCompare(b.date)||carName(a.c).localeCompare(carName(b.c),'fi'));}
+  function rpCsv(){const o=rpPrefs(),d=rpCalc(o),rows=rpCsvRows(o,d);if(!rows.length)return;
+    const en=lang()==='en',sep=en?',':';',num=(v,k)=>v===null||v===undefined||v===''?'':(en?(Math.round(v*10**k)/10**k).toFixed(k):(Math.round(v*10**k)/10**k).toFixed(k).replace('.',','));
+    const cell=v=>{let s=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return s.includes(sep)||/["\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+    const head=['Päivämäärä','Ajoneuvo','Rekisteritunnus','Kululaji','Tapahtuma','Mittarilukema','Yksikkö','Summa (€)','Määrä','Määrän yksikkö','Yksikköhinta (€)','Lisätieto'].map(tl);
+    const lines=[head.map(cell).join(sep),...rows.map(r=>[r.date,carName(r.c),r.c.plate||'',tl(d.kn(r.kind)),tl(r.what),r.km==null?'':r.km,r.u,num(r.cost,2),num(r.qty,2),r.qu,num(r.ppu,3),r.note].map(cell).join(sep))];
+    const file=new File(['﻿'+lines.join('\r\n')+'\r\n'],'ajoura-kulut-'+today()+'.csv',{type:'text/csv'});saveFile(file,matchMedia('(pointer: coarse)').matches);}
   function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
     // Keep the keyboard focus on the same control after the screen is redrawn.
     const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
-  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
+  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpMonth=null;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}
     if(t.closest('[data-rp-more]')){rpMore=!rpMore;rpSave(o,'[data-rp-more]');return true;}
     if(t.closest('[data-rp-pdf]')){fleetPdf();return true;}
+    if(t.closest('[data-rp-csv]')){rpCsv();return true;}
+    const rm=t.closest('[data-rp-m]');if(rm){rpMonth=Number(rm.dataset.rpM);const y=screen.scrollTop;render();screen.scrollTop=y;return true;}
     if(t.closest('[data-fl-tocmp]')){const f=flPrefs();f.t='cmp';flCm=null;flSave(f);go('fuel');return true;}
-    if(t.closest('[data-rp-reset]')){o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
+    if(t.closest('[data-rp-reset]')){rpMonth=null;o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
     const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
-    if(car||kd||all){if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];
+    if(car||kd||all){rpMonth=null;if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];
       rpSave(o,car?`[data-rp-car="${car.dataset.rpCar}"]`:kd?`[data-rp-kind="${kd.dataset.rpKind}"]`:'.rp-chip.car');return true;}
     return false;}
   // PDF report of the Raportit summary (0.32, Niklas 26.10.2026). The installed iPhone app ignores window.print(), so the

@@ -938,3 +938,15 @@ a.today-chip{text-decoration:none}
 @container(max-width:349.98px){.fl-tn{max-width:70px}}
 }
 @media screen{.fl-bar+.fl-note{margin-top:10px}}
+/* Raportit (v0.43): costs by month in Näytä tarkemmin, and the CSV export button. */
+@media screen{
+.rp-month{margin:2px 0 16px;padding-bottom:12px;border-bottom:1px solid var(--hairline)}
+.rp-month .rp-hrow{margin-bottom:4px}
+.rp-mchart .msel{fill:#e8f0fe}
+.rp-mleg{display:flex;flex-wrap:wrap;gap:3px 12px;margin:4px 0 6px;font-size:11px;color:#3f4f63}
+.rp-mleg>span{display:inline-flex;align-items:center;gap:5px}
+.rp-mleg i{display:inline-block;width:9px;height:9px;border-radius:2px}
+.rp-csv{margin-top:2px}
+.rp-pdf-ico.csv{background:#1f7a4d}
+.rp-csvnote{margin-top:-4px}
+}
