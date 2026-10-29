@@ -998,3 +998,16 @@ a.today-chip{text-decoration:none}
 html.dark .device-glass .ph img.ph-bg{filter:invert(1) hue-rotate(180deg) blur(6px) saturate(1.1)!important}
 .fl-cpic{height:44px}
 }
+
+/* Kulut kategorioittain (v0.51): up to four cost types on one row so the box stays low; five or six go three per row,
+   and the narrowest phones (no zoom) use two columns. Long names (Reparationer, Besiktningar) may hyphenate. */
+@media screen{
+.rp-cats .rp-bar.big{margin-bottom:11px}
+.rp-kinds{grid-template-columns:repeat(4,minmax(0,1fr));gap:11px 6px}
+.rp-kinds.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rp-kinds li{gap:4px}
+.rp-kinds .rp-ico{width:26px;height:26px;border-radius:7px}
+.rp-kinds .rp-ico svg{width:15px;height:15px}
+.rp-kt small{-webkit-hyphens:auto;hyphens:auto}
+@container(max-width:349.98px){.rp-kinds,.rp-kinds.k3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+}

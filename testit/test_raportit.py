@@ -62,3 +62,29 @@ def test_tankkausikkunan_kuva_kokonaan(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def kuusi_lajia():
+    t = talli()
+    t[2]["events"] += [M("z2", "Katsastus", "2026-06-01", 60000, cost="55"), M("z3", "Renkaiden vaihto", "2026-06-02", 60000, cost="70")]
+    return t
+
+
+LAJIT_JS = """() => {const L = [...document.querySelectorAll('.rp-kinds li')], top = L.map(l => Math.round(l.getBoundingClientRect().top));
+  return {n: L.length, rivit: [...new Set(top)].map(y => top.filter(x => x === y).length),
+          yli: [...document.querySelectorAll('.rp-kt small, .rp-kt b')].filter(e => e.scrollWidth > e.clientWidth + 1
+                 || e.getBoundingClientRect().right > e.closest('li').getBoundingClientRect().right + 1).map(e => e.textContent)};}"""
+
+
+# 0.51: Kulut kategorioittain: enintään neljä lajia yhdelle riville, viisi tai kuusi kolmen riveihin, kapeimmalla kaksi.
+@pytest.mark.parametrize("kieli", ["fi", "en", "sv"])
+@pytest.mark.parametrize("leveys,nelja,kuusi", [(390, [4], [3, 3]), (430, [4], [3, 3]), (320, [2, 2], [2, 2, 2])])
+def test_kululajit_rivit(browser, base, kieli, leveys, nelja, kuusi):
+    for autot, odotus in [(talli(), nelja), (kuusi_lajia(), kuusi)]:
+        s = avaa(browser, base, "reports", autot=autot, kieli=kieli, leveys=leveys, extra=RP, kello=KELLO)
+        try:
+            r = s.page.evaluate(LAJIT_JS)
+            assert r["rivit"] == odotus and not r["yli"], r
+            assert not s.virheet, s.virheet
+        finally:
+            s.sulje()

@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.50 (testiversio)';
+  const appVersion='0.51 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1110,9 +1110,10 @@
       <div><small><span>Keskimäärin</span> <span class="nw">/ kk</span></small><b>${eur(sum/months)}</b>${dMonth!==null?`<em class="rp-dl">${rpDelta(dMonth)}</em><em class="rp-vs">${vs}</em>`:''}</div>
       <div><small>Ajetut kilometrit</small><b>${km?`<span>${number(km)}</span> <span>km</span>`:'–'}</b><em>${km?`<span>${dec2(kmCost/km)}</span> <span>€/km</span>`:'ei mittarilukemia'}</em>${dKm!==null?`<em class="rp-dl">${rpDelta(dKm,true)}</em>`:''}</div></div>`;
     const pct=v=>{const p=v/sum*100;return p>0&&p<1?'<1 %':`${number(Math.round(p))} %`;};
+    // 0.51: up to four cost types fit on one row (a smaller box); five or six go three to a row.
     const cats=`<section class="rp-card rp-cats" aria-labelledby="rp-hc"><div class="rp-hrow"><h3 class="rp-h" id="rp-hc">Kulut kategorioittain</h3><button type="button" class="rp-link" data-rp-more aria-expanded="${rpMore}"><span>${rpMore?'Piilota tarkemmat':'Näytä tarkemmin'}</span><span aria-hidden="true"> ›</span></button></div>
       <div class="rp-bar big" aria-hidden="true">${used.map(k=>`<i class="rp-c rpk-${k}" style="flex:${tot[k].toFixed(2)}"></i>`).join('')}</div>
-      <ul class="rp-kinds">${used.map(k=>`<li><span class="rp-ico rpk-${k}" aria-hidden="true">${svg(icons[rpIcon[k]])}</span><span class="rp-kt"><small>${kn(k)}</small><b>${eur(tot[k])}</b><em>${pct(tot[k])}</em></span></li>`).join('')}</ul></section>`;
+      <ul class="rp-kinds${used.length>4?' k3':''}">${used.map(k=>`<li><span class="rp-ico rpk-${k}" aria-hidden="true">${svg(icons[rpIcon[k]])}</span><span class="rp-kt"><small>${kn(k)}</small><b>${eur(tot[k])}</b><em>${pct(tot[k])}</em></span></li>`).join('')}</ul></section>`;
     const card=r=>{const c=r.c,on=kinds.filter(k=>r.s[k]>0),dl=prev&&r.late===''?pctOf(r.t,r.pt):null;
       const meta=[r.per!==null?`<span class="nw"><span>${number(r.d)}</span> <span>${r.u}</span></span> · <span class="nw"><span>${dec2(r.per)}</span> <span>€/${r.u}</span></span>`:'',r.late?`<span class="nw"><span>tiedot alkaen</span> <span>${date(r.late)}</span></span>`:'',!r.t?'<span>ei kuluja</span>':''].filter(Boolean).join(' · ');
       return `<a class="rp-vcard" href="#report/${c.id}/raportit"><span class="rp-vpic" aria-hidden="true">${rpThumb(c)}</span><span class="rp-vbody"><span class="rp-vtop"><strong translate="no">${escape(carName(c))}</strong><b>${eur(r.t)}</b><span class="chevron" aria-hidden="true">›</span></span><span class="rp-vmid"><small>${meta}</small>${rpDelta(dl,true)}</span>${r.t?`<span class="rp-bar" aria-hidden="true">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span><span class="rp-leg">${on.map(k=>`<span><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span class="sr-only">${kn(k)}</span> <span>${eur(r.s[k])}</span></span>`).join('')}</span>`:''}</span></a>`;};
