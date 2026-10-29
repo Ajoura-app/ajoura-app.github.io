@@ -803,9 +803,9 @@ a.today-chip{text-decoration:none}
 .fl-note,.fl-sub{margin:0;font-size:11px;line-height:1.5;color:#4f5f72}
 .fl-sub{margin-top:6px}
 .fl-more{border-top:1px solid var(--hairline);padding-top:2px}
-.fl-more summary,.fl-xform summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;list-style:none;font-size:12px;font-weight:650;color:var(--blue);cursor:pointer}
-.fl-more summary::-webkit-details-marker,.fl-xform summary::-webkit-details-marker,.fl-g summary::-webkit-details-marker{display:none}
-.fl-more[open] .rp-chev,.fl-xform[open] .rp-chev,.fl-g[open] .rp-chev{transform:rotate(180deg)}
+.fl-more summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;list-style:none;font-size:12px;font-weight:650;color:var(--blue);cursor:pointer}
+.fl-more summary::-webkit-details-marker,.fl-g summary::-webkit-details-marker,.sheet-xtra summary::-webkit-details-marker{display:none}
+.fl-more[open] .rp-chev,.fl-g[open] .rp-chev,.sheet-xtra[open] .rp-chev{transform:rotate(180deg)}
 .fl-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}
 .fl-kpis>div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .fl-kpis small{font-size:11px;font-weight:600;color:#4f5f72}
@@ -840,11 +840,37 @@ a.today-chip{text-decoration:none}
 .fl-rc.none{background:none;color:#4f5f72}
 .fl-moreb{display:block;width:100%;min-height:44px;margin-top:6px;border:1px solid var(--hairline);border-radius:12px;background:#fff;font:inherit;font-size:12.5px;font-weight:700;color:var(--blue);cursor:pointer}
 .fl-fine{margin:-4px 2px 14px;font-size:11px;line-height:1.5;color:#4f5f72}
-.fl-xform{margin:0 0 14px;padding:2px 14px;border:1px solid var(--hairline);border-radius:16px;background:#fff}
-.fl-xform[open]{padding-bottom:14px}
-.fl-xform .form-title{display:none}
 .sheet-del{display:block;margin:10px auto 0;min-height:40px;font-size:11.5px}
 .fl-list .nw,.fl-foot .nw,.fl-dl .nw{white-space:nowrap}
 @container(max-width:250px){.fl-cars{margin-inline:-12px;padding-inline:12px;scroll-padding-inline:12px}}
 @container(max-width:349.98px){.fl-big b{font-size:32px}.fl-kpis b{font-size:16.5px}.fl-row{grid-template-columns:minmax(0,1fr) auto 40px;gap:6px}.fl-mini b{font-size:14px}}
+}
+/* One fill-up sheet (v0.41, AJ-12 and AJ-04): odometer with the distance since the last fill-up, price / total / litres in
+   one row, extra choices (abroad, price estimate) behind Lisävalinnat. Texts at least 11 px. */
+@media screen{
+.sheet-car{align-items:center}
+.sheet-ctxt{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px;min-width:0;font-size:12px;color:#4f5f72}
+.sheet-ctxt strong{color:var(--ink);font-size:12.5px}
+.sheet-ctxt small{flex-basis:100%;font-size:11px;color:#4f5f72}
+.sheet-ctxt .nw{white-space:nowrap}
+.sheet-form label{font-size:11px;font-weight:600;color:#3f4f63}
+.sheet-form label small{font-size:11px;font-weight:500;color:#4f5f72}
+.sf-km{margin:6px 0 10px!important}
+.sf-gap{display:block;margin-top:4px;font-size:11px!important;font-weight:500;color:#4f5f72}
+.sf-gap[hidden]{display:none}
+.sheet-form .sf-calc{gap:7px;margin-top:0}
+.sheet-form .sf-calc label{margin-bottom:4px}
+.sheet-help{margin:7px 0 10px;font-size:11px;line-height:1.45;color:#4f5f72}
+.sheet-opts{font-size:11px}.sheet-opts .check-line{font-size:12px}
+.sheet-opt{color:#4f5f72}
+.sheet-xtra{margin:0 0 12px;border-radius:12px;background:#eef3fa}
+.sheet-xtra summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:44px;padding:6px 12px;list-style:none;cursor:pointer;color:var(--ink)}
+.sx-t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sx-t b{font-size:12.5px;font-weight:700}
+.sx-t small{font-size:11px;color:#4f5f72}
+.sheet-xtra[open]{padding-bottom:10px}
+.sheet-xtra .sx-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px;padding:2px 12px 0}
+.sheet-xtra .fx-rate[hidden]{display:none}
+.sheet-xtra .fuel-guess{margin:0 12px;min-height:40px;font-size:12px;color:#0b5ed7}
+.sheet-xtra select,.sheet-xtra input{background:#fff}
 }
