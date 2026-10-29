@@ -969,3 +969,8 @@ a.today-chip{text-decoration:none}
 .empty-garage p.eg-restore{margin:12px 0 0;font-size:11px;color:#4f5f72}
 .empty-garage p.eg-restore a{color:#0b5ed7;font-weight:650;text-decoration:none}
 }
+/* Backup privacy note (v0.46, AJ-24): the file is not encrypted; 11 px, contrast >= 4.5:1. */
+@media screen{
+.me-data p.bk-priv{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#f1f5fa;font-size:11px;line-height:1.55;color:#3f4f63}
+.owner-steps small.bk-priv{display:block;margin:-4px 0 10px;font-size:11px;line-height:1.55;color:#4f5f72}
+}
