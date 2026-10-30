@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.56 (testiversio)';
+  const appVersion='0.57 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -652,16 +652,20 @@
     const every=n>13?2:1;g+=b.map((x,i)=>i%every&&i!==n-1?'':`<text class="ax" x="${r(sw*(i+.5))}" y="${H-6}" text-anchor="middle">${x.year?x.k:Number(x.k.slice(5))}</text>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Polttoainekulut kuukausittain">${g}</svg>`;}
   function fuel(c,from){const periods=[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
-    const head=`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2><p class="rp-lead">Tankkaukset ja kulutus ajoneuvoittain</p></div>${c?rpPick('data-fl-period','Jakso',periods.find(x=>x[0]===o.p)[1],periods,o.p):''}</div>`;
+    const head=`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2></div></div>`;
     if(!c)return `${top()}${head}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
     // the tab itself (#fuel) keeps the view the user left.
     if(o.t==='cmp'&&!flFromTab&&lastKey!==location.hash)o.t='car';
     if(o.car!==c.id||o.t!==flPrefs().t){o.car=c.id;const {cm,...keep}=o;prefSet(flKey,JSON.stringify(keep));}
     const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-fl-tab="car" aria-pressed="${o.t==='car'}">${svg(icons.fuel)}<span>Ajoneuvo</span></button><button type="button" data-fl-tab="cmp" aria-pressed="${o.t==='cmp'}">${svg('<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>')}<span>Vertailu</span></button></div>`;
-    if(o.t==='cmp')return fuelCompare(o,head,tabs,notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'');
+    // 0.57: as on Raportit, the vehicle and the period are drop-down lists under the tabs (the big vehicle buttons and the
+    // lead text were dropped). Vertailu picks its vehicles with small buttons, so it shows the period list only.
+    const pPick=rpPick('data-fl-period','Jakso',periods.find(x=>x[0]===o.p)[1],periods,o.p),
+      cPick=cars.length>1?rpPick('data-fl-carpick','Ajoneuvo',`<span translate="no">${escape(carName(c))}</span>`,cars.map(x=>[x.id,escape(carName(x))+(x.plate?' · '+escape(x.plate):'')]),c.id):'';
+    if(o.t==='cmp')return fuelCompare(o,head,tabs+`<div class="rp-filters">${pPick}</div>`,notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'');
     const d=flCalc(c,o.p),{s,now,was,prev,mon,years,months}=d,u=unitOf(c),ev=u==='kWh',hr=hourly(c),pu=`${u}/${per(c)}`,msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    const chips=`<div class="fl-cars${flN(cars.length)}" role="group" aria-label="Ajoneuvo">${cars.map(x=>`<button type="button" class="fl-car" data-fl-car="${x.id}" aria-pressed="${x.id===c.id}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`;
+    const chips=`<div class="rp-filters">${cPick}${pPick}</div>`;
     const add=`<button type="button" class="app-button fl-add" data-quickfuel="${c.id}">${svg('<path d="M12 5v14M5 12h14"/>')}<span>${ev?'Uusi lataus':'Uusi tankkaus'}</span></button>`;
     const sample=c.sample?'<p class="app-note">Esimerkkiauto: kuvitteelliset tankkaukset ja hinnat.</p>':'';
     if(!s.fills.length)return `${top()}${head}${tabs}${chips}${msg}${add}<div class="rp-card"><p class="rp-empty">${ev?'Ei vielä latauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.':'Ei vielä tankkauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.'}</p></div>${sample}`;
@@ -713,7 +717,7 @@
     const pd=t.closest('[data-fl-pdf]');if(pd){fuelPdf(pd.dataset.flPdf);return true;}
     const ed=t.closest('[data-fl-edit]');if(ed){const c=cars.find(c=>c.id===route().id),f=c&&(c.fuels||[]).find(x=>x.id===ed.dataset.flEdit);if(f)openSheet(c,ed,f);return true;}
     return false;}
-  function fuelChange(t){if(!t.matches('[data-fl-period]')||!['year','12','all'].includes(t.value))return;const o=flPrefs();o.p=t.value;flAll=false;flCm=null;flSave(o,'[data-fl-period]');}
+  function fuelChange(t){if(t.matches('[data-fl-carpick]')){const id=t.value;if(!cars.some(c=>c.id===id))return;const o=flPrefs();o.car=id;flAll=false;history.replaceState(null,'','#fuel/'+id);flSave(o,'[data-fl-carpick]');return;}if(!t.matches('[data-fl-period]')||!['year','12','all'].includes(t.value))return;const o=flPrefs();o.p=t.value;flAll=false;flCm=null;flSave(o,'[data-fl-period]');}
   // Vertailu (0.42, havainnekuva hyväksytty 28.10.2026): the chosen vehicles side by side for the same period, with the
   // figures of the Ajoneuvo view (flCalc), so the two never disagree. Consumption is compared only within one unit
   // (l/100 km, kWh/100 km, l/h): litres and kilowatt-hours are not on the same scale, so the cost of driving (€/100 km)
@@ -749,7 +753,7 @@
     g+=keys.map((k,i)=>`<rect class="hit" data-fl-cm="${i}" x="${r(L+sw*i)}" y="${T}" width="${r(sw)}" height="${ph}"/>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Vertailu kuukausittain">${g}</svg>`;}
   function fuelCompare(o,head,tabs,msg){const {fueled,sel,rows}=flCompare(o),m=o.m,mName2=flMetrics.find(x=>x[0]===m)[1],pName=o.p==='year'?'Tämä vuosi':o.p==='12'?'12 kk':'Koko historia';
-    const chips=`<div class="rp-lbl fl-clbl"><span>Vertailtavat ajoneuvot</span>${sel.length<fueled.length?'<button type="button" class="rp-link" data-fl-cmpall>Valitse kaikki</button>':''}</div><div class="fl-cars fl-cmp${flN(cars.length)}" role="group" aria-label="Vertailtavat ajoneuvot">${cars.map(x=>{const has=(x.fuels||[]).length,on=has&&!o.off.includes(x.id),i=fueled.indexOf(x)%flCol.length;
+    const chips=`<div class="rp-lbl fl-clbl"><span>Vertailtavat ajoneuvot</span>${sel.length<fueled.length?'<button type="button" class="rp-link" data-fl-cmpall>Valitse kaikki</button>':''}</div><div class="fl-cars fl-cmp" role="group" aria-label="Vertailtavat ajoneuvot">${cars.map(x=>{const has=(x.fuels||[]).length,on=has&&!o.off.includes(x.id),i=fueled.indexOf(x)%flCol.length;
       return `<button type="button" class="fl-car" data-fl-cmpcar="${x.id}" aria-pressed="${on}"${has?'':' disabled'}><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${has?`<i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[i]}${flDash[i]?';border-top-style:'+(flDash[i].startsWith('1.5')?'dotted':'dashed'):''}"></i>`:'<small>ei tankkauksia</small>'}</button>`;}).join('')}</div>`;
     const seg=`<div class="fl-seg" role="group" aria-label="Vertailtava luku">${flMetrics.map(([k,n])=>`<button type="button" data-fl-metric="${k}" aria-pressed="${k===m}">${n}</button>`).join('')}</div>`;
     if(!fueled.length)return `${top()}${head}${tabs}${msg}<div class="rp-card"><p class="rp-empty">Vertailu näkyy, kun ajoneuvoilla on tankkauksia tai latauksia.</p></div>`;
@@ -775,8 +779,6 @@
       <p class="fl-sub">Ajon hinta (€/100 km) on luku, jota voi verrata kaikkien käyttövoimien kesken. Sähköauton hinta riippuu paljon siitä, lataatko kotona vai pikalaturilla.</p></section>`;
     return `${top()}${head}${tabs}${msg}${chips}${seg}${card1}${card2}${table}`;}
   // Keeps the chosen vehicle's button in view in a long row of vehicles.
-  // 0.54: vehicle buttons wrap onto rows; two or four vehicles fit on one row, others go three to a row.
-  const flN=n=>n===2?' n2':n===4?' n4':'';
   function flScrollChips(){const row=screen.querySelector('.fl-cars'),on=row&&row.querySelector('[aria-pressed="true"]');if(!on)return;const a=row.getBoundingClientRect(),b=on.getBoundingClientRect();if(b.left<a.left||b.right>a.right)row.scrollLeft+=b.left-a.left-(b.left-a.left>0?a.width-b.width-16:16);}
   // The tankkauskirja as a PDF (0.40): the tab's period and figures (flCalc), every fill-up of the period, and how the
   // figures are counted. Same pdf-writer.js and share sheet as the other PDFs; app texts through tl().

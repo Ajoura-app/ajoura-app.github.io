@@ -1026,16 +1026,13 @@ img.own-ph{position:absolute;inset:0;display:block;width:100%;height:100%;object
 }
 
 /* Vehicle buttons wrap onto rows (v0.54): the Tankkaus, Vertailu and Raportit vehicle buttons no longer run off the
-   screen edge in a sideways-scrolling row. Two or four vehicles fit on one row, otherwise three to a row (two on
-   the narrowest phones). */
+   screen edge in a sideways-scrolling row; three to a row (two on the narrowest phones). 0.57: only Vertailu still has
+   vehicle buttons, as small pills (below). */
 @media screen{
 .fl-cars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 12px;padding:2px 0 4px;overflow:visible;scroll-snap-type:none}
-.fl-cars.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.fl-cars.n4{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.fl-cars.n4 .fl-car{padding-inline:4px}
 .fl-car{min-width:0}
 .fl-cpic{width:100%;max-width:92px}
-@container(max-width:250px){.fl-cars,.fl-cars.n4{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline:0;padding-inline:0}}
+@container(max-width:250px){.fl-cars{grid-template-columns:repeat(2,minmax(0,1fr));margin-inline:0;padding-inline:0}}
 }
 
 /* Raportit filters (v0.56): the vehicle and the period as two drop-down lists side by side under the tabs, replacing
@@ -1047,4 +1044,15 @@ img.own-ph{position:absolute;inset:0;display:block;width:100%;height:100%;object
 .rp-pick-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rp-filters .rp-pick-t{flex:1}
 .rp-vpic{width:70px;height:70px}
+}
+
+/* Tankkaus like Raportit (v0.57): the vehicle and period lists come from the v0.56 .rp-filters block; the Vertailu
+   vehicle buttons are small pills that wrap (a small picture, the name and the line style of the chart). */
+@media screen{
+.fl-cars.fl-cmp{display:flex;flex-wrap:wrap;gap:6px}
+.fl-cmp .fl-car{flex:0 1 auto;flex-direction:row;align-items:center;gap:6px;max-width:100%;min-height:38px;padding:4px 10px 4px 4px;border-radius:999px}
+.fl-cmp .fl-cpic{flex:none;width:36px;max-width:none;height:26px;aspect-ratio:auto;border-radius:999px}
+.fl-cmp .fl-cname{min-width:0;max-width:150px;font-size:12px}
+.fl-cmp .fl-sw{flex:none;width:18px;margin:0}
+.fl-cmp .fl-car small{font-size:11px}
 }

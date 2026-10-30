@@ -36,7 +36,7 @@ KUVA_JS = """sel => [...document.querySelectorAll(sel)].filter(b => b.querySelec
 
 
 @pytest.mark.parametrize("nakyma,laatikko,extra", [
-    ("fuel/a1", ".fl-cpic", {}),
+    ("fuel", ".fl-cpic", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}),
     ("reports", ".rp-vpic", RP),
     ("reports", ".rp-rthumb", {"ajoura-reports": '{"p":"12","t":"cars"}'}),
 ])
@@ -160,27 +160,52 @@ def test_valikot_ruudulla(browser, base, kieli, leveys):
         s.sulje()
 
 
-# 0.54: ajoneuvonapit rivittyvät eivätkä mene ruudun yli (Tankkaus, Vertailu, Raportit), myös kuudella ajoneuvolla.
+# 0.54: ajoneuvonapit eivät mene ruudun yli; 0.57: Tankkaus-välilehdellä ei enää isoja nappeja (alasvetovalikko),
+# Vertailun napit ovat pieniä rivittyviä nappeja, myös kuudella ajoneuvolla.
 NAPIT_JS = """() => {const sc = document.querySelector('.screen-content').getBoundingClientRect();
-  const b = [...document.querySelectorAll('.fl-cars .fl-car')];
-  return {n: b.length, yli: b.filter(e => {const r = e.getBoundingClientRect(); return r.left < sc.left - 0.5 || r.right > sc.right + 0.5;}).length,
+  const b = [...document.querySelectorAll('.fl-cars .fl-car, .rp-filters .rp-pick')];
+  return {napit: document.querySelectorAll('.fl-car').length, valikot: document.querySelectorAll('.rp-filters .rp-pick').length,
+          alaotsikko: document.querySelectorAll('.rp-lead').length,
+          yli: b.filter(e => {const r = e.getBoundingClientRect(); return r.left < sc.left - 0.5 || r.right > sc.right + 0.5;}).length,
           vieritys: [...document.querySelectorAll('.fl-cars')].some(e => e.scrollWidth > e.clientWidth + 1)};}"""
 
 
-@pytest.mark.parametrize("leveys", [320, 390, 430])
-@pytest.mark.parametrize("nakyma,extra", [("fuel/a1", {}),
-                                          ("fuel/a1", {"ajoura-fuel": '{"p":"12","t":"cmp"}'})])
-def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra):
+def kuusi_autoa():
     autot = talli() + [tiedot.auto(f"b{i}", name=f"Lisäauto {i}", plate=f"TST-30{i}",
                                    fuels=[T(f"g{i}1", "2026-09-01", 1000, 40, 70), T(f"g{i}2", "2026-10-01", 1600, 40, 70)])
                        for i in range(3)]
-    for a in autot[:3]:
-        a.setdefault("fuels", [])
     autot[1]["fuels"] = [T("h1", "2026-09-01", 85000, 40, 70), T("h2", "2026-10-01", 85700, 40, 70)]
-    s = avaa(browser, base, nakyma, autot=autot, leveys=leveys, extra=extra, kello=KELLO)
+    return autot
+
+
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+@pytest.mark.parametrize("nakyma,extra,napit,valikot", [("fuel/a1", {}, 0, 2),
+                                                        ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}, 6, 1),
+                                                        ("reports", RP, 0, 2)])
+def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra, napit, valikot):
+    s = avaa(browser, base, nakyma, autot=kuusi_autoa(), leveys=leveys, extra=extra, kello=KELLO)
     try:
         r = s.page.evaluate(NAPIT_JS)
-        assert r["n"] == 6 and r["yli"] == 0 and not r["vieritys"], r
+        assert r["napit"] == napit and r["valikot"] == valikot and r["alaotsikko"] == 0, r
+        assert r["yli"] == 0 and not r["vieritys"], r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.57: Tankkaus-välilehden ajoneuvovalikko vaihtaa ajoneuvon ja muistaa sen.
+def test_tankkaus_ajoneuvovalikko(browser, base):
+    s = avaa(browser, base, "fuel/a1", autot=kuusi_autoa(), kello=KELLO)
+    try:
+        assert s.page.input_value("[data-fl-carpick]") == "a1"
+        s.page.select_option("[data-fl-carpick]", "a2"); s.page.wait_for_timeout(150)
+        assert s.page.evaluate("location.hash") == "#fuel/a2"
+        assert s.page.input_value("[data-fl-carpick]") == "a2"
+        assert "Testi Farmari" in s.page.inner_text(".rp-filters")
+        assert '"car":"a2"' in s.page.evaluate("localStorage.getItem('ajoura-fuel')")
+        assert s.page.evaluate("document.activeElement?.matches('[data-fl-carpick]')")
+        s.page.select_option("[data-fl-period]", "all"); s.page.wait_for_timeout(150)
+        assert s.page.input_value("[data-fl-period]") == "all" and s.page.input_value("[data-fl-carpick]") == "a2"
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
