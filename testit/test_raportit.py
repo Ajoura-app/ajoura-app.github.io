@@ -36,7 +36,6 @@ KUVA_JS = """sel => [...document.querySelectorAll(sel)].filter(b => b.querySelec
 
 
 @pytest.mark.parametrize("nakyma,laatikko,extra", [
-    ("fuel", ".fl-cpic", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}),
     ("reports", ".rp-vpic", RP),
     ("reports", ".rp-rthumb", {"ajoura-reports": '{"p":"12","t":"cars"}'}),
 ])
@@ -161,7 +160,7 @@ def test_valikot_ruudulla(browser, base, kieli, leveys):
 
 
 # 0.54: ajoneuvonapit eivät mene ruudun yli; 0.57: Tankkaus-välilehdellä ei enää isoja nappeja (alasvetovalikko),
-# Vertailun napit ovat pieniä rivittyviä nappeja, myös kuudella ajoneuvolla.
+# 0.60: myös Vertailussa ajoneuvot valitaan valikosta (kaksi valikkoa), myös kuudella ajoneuvolla.
 NAPIT_JS = """() => {const sc = document.querySelector('.screen-content').getBoundingClientRect();
   const b = [...document.querySelectorAll('.fl-cars .fl-car, .rp-filters .rp-pick')];
   return {napit: document.querySelectorAll('.fl-car').length, valikot: document.querySelectorAll('.rp-filters .rp-pick').length,
@@ -180,7 +179,7 @@ def kuusi_autoa():
 
 @pytest.mark.parametrize("leveys", [320, 390, 430])
 @pytest.mark.parametrize("nakyma,extra,napit,valikot", [("fuel/a1", {}, 0, 2),
-                                                        ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}, 6, 1),
+                                                        ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}, 0, 2),
                                                         ("reports", RP, 0, 2)])
 def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra, napit, valikot):
     s = avaa(browser, base, nakyma, autot=kuusi_autoa(), leveys=leveys, extra=extra, kello=KELLO)
@@ -238,6 +237,44 @@ def test_ajoneuvokortin_selite(browser, base, kieli, nimi, vs):
         assert kortti.locator(".rp-delta").count() == 1
         assert vs in s.page.inner_text(".rp-vs-note")
         assert "< 0,01" in s.page.locator(".rp-vcard", has_text="Testi Halpa").inner_text().replace(" ", " ")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.60: Vertailun ajoneuvovalikko: useampi valinta, valikko pysyy auki valittaessa, ajoneuvo ilman tankkauksia ei valittavissa.
+VERT_JS = """() => {const d = document.querySelector('.fl-cmenu'), sc = document.querySelector('.screen-content').getBoundingClientRect();
+  const l = d?.querySelector('.fl-cmenu-list').getBoundingClientRect();
+  return {auki: d?.open, teksti: d?.querySelector('.rp-pick-t').textContent.replace(/\\s+/g, ' ').trim(),
+    valitut: [...document.querySelectorAll('.fl-mi')].map(b => [b.dataset.flCmpcar, b.getAttribute('aria-pressed'), b.disabled]),
+    rivit: [...document.querySelectorAll('.fl-ctable .fl-tn')].map(e => e.textContent),
+    sisalla: !d?.open || (l.left >= sc.left - 0.5 && l.right <= sc.right + 0.5),
+    off: JSON.parse(localStorage.getItem('ajoura-fuel') || '{}').off || []};}"""
+
+
+@pytest.mark.parametrize("leveys", [320, 390])
+def test_vertailu_ajoneuvovalikko(browser, base, leveys):
+    s = avaa(browser, base, "fuel", autot=kuusi_autoa(), leveys=leveys, extra={"ajoura-fuel": '{"p":"12","t":"cmp"}'}, kello=KELLO)
+    pg = s.page
+    try:
+        r = pg.evaluate(VERT_JS)
+        assert r["auki"] is False and r["teksti"] == "Kaikki ajoneuvot", r
+        assert ["a3", "false", True] in r["valitut"] and ["a1", "true", False] in r["valitut"], r  # a3:lla ei tankkauksia
+        pg.click(".fl-cmenu summary"); assert pg.evaluate(VERT_JS)["sisalla"]
+        pg.click('[data-fl-cmpcar="b0"]'); pg.wait_for_timeout(150)
+        r = pg.evaluate(VERT_JS)
+        assert r["auki"] and r["off"] == ["b0"] and r["teksti"] == "4 ajoneuvoa" and "Lisäauto 0" not in r["rivit"], r
+        assert pg.evaluate("document.activeElement?.dataset.flCmpcar") == "b0"
+        for i in ("b1", "b2", "a1"):
+            pg.click(f'[data-fl-cmpcar="{i}"]'); pg.wait_for_timeout(100)
+        r = pg.evaluate(VERT_JS)
+        assert r["teksti"] == "Testi Farmari" and r["auki"] and r["rivit"] == ["Testi Farmari"], r
+        pg.click("[data-fl-cmpall]"); pg.wait_for_timeout(150)
+        r = pg.evaluate(VERT_JS)
+        assert r["off"] == [] and r["teksti"] == "Kaikki ajoneuvot", r
+        pg.click(".fl-cmenu summary"); assert pg.evaluate(VERT_JS)["auki"] is False
+        pg.select_option("[data-fl-period]", "all"); pg.wait_for_timeout(150)
+        assert pg.evaluate(VERT_JS)["auki"] is False  # muu valinta sulkee listan
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
