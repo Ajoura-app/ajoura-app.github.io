@@ -136,3 +136,27 @@ def test_ala_huomioi_edellisessa_versiossa(browser, vanha_base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.59: Raportit-tyylinen kooste heti valikoiden ja Uusi tankkaus -painikkeen alla (vanha neljän luvun kortti pois).
+def test_kooste(browser, base):
+    T = tiedot.tankkaus
+    autot = [tiedot.auto(km=151000, fuels=[T("f1", "2026-06-01", 150000, 50.0, 90.0), T("f2", "2026-07-01", 150500, 40.0, 72.0),
+                                T("f3", "2026-08-01", 151000, 45.0, 81.0)])]
+    s = avaa(browser, base, "fuel/tst1", autot=autot, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate("""() => {const k = document.querySelector('.fl-sum');
+          return {n: document.querySelectorAll('.fl-sum').length, vanha: document.querySelectorAll('.fl-kpis').length,
+            ennenHeroa: !!k && !!(k.compareDocumentPosition(document.querySelector('.fl-hero')) & Node.DOCUMENT_POSITION_FOLLOWING),
+            addEnnen: !!(document.querySelector('.fl-add').compareDocumentPosition(k) & Node.DOCUMENT_POSITION_FOLLOWING),
+            sarakkeet: [...k.querySelectorAll('.rp-kpis > div')].map(d => d.innerText.replace(/\\s+/g, ' ')),
+            alarivi: k.querySelector('.fl-foot').innerText.replace(/\\s+/g, ' ')};}""")
+        assert r["n"] == 1 and r["vanha"] == 0 and r["ennenHeroa"] and r["addEnnen"], r
+        assert len(r["sarakkeet"]) == 3, r
+        assert "Polttoainekulut" in r["sarakkeet"][0] and "243 €" in r["sarakkeet"][0] and "3 tankkausta" in r["sarakkeet"][0], r
+        assert "/ kk" in r["sarakkeet"][1], r
+        assert "Ajetut kilometrit" in r["sarakkeet"][2] and "1 000 km" in r["sarakkeet"][2] and "15,30 €/100 km" in r["sarakkeet"][2]  # (72 + 81) € / 1 000 km; ensimmäinen tankkaus on ajettu ennen jaksoa, r
+        assert "135 l" in r["alarivi"] and "Keskihinta 1,800 €/l" in r["alarivi"], r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
