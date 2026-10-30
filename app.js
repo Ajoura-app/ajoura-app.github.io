@@ -466,7 +466,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.55 (testiversio)';
+  const appVersion='0.56 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1088,19 +1088,24 @@
     const o=rpPrefs(),{from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,filtered}=rpCalc(o);
     const vs=o.p==='year'?'verrattuna viime vuoteen':'verrattuna edellisiin 12 kk';
     if(!sel.length||!kinds.length)rpMore=true;
-    const head=`<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2><p class="rp-lead">Yhteenveto ajoneuvojen kuluista</p></div>${o.t==='sum'?rpPick('data-rp-period','Jakso',[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']].find(x=>x[0]===o.p)[1],[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o.p):''}</div>`;
+    // 0.56: the title alone at the top (the lead text was dropped); the vehicle and the period are two drop-down lists
+    // under the tabs, replacing the big vehicle buttons of 0.52–0.55.
+    const head=`<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2></div></div>`;
     const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-rp-tab="sum" aria-pressed="${o.t==='sum'}">${svg(icons.chart)}<span>Yhteenveto</span></button><button type="button" data-rp-tab="cars" aria-pressed="${o.t==='cars'}">${svg(icons.car)}<span>Ajoneuvot</span></button></div>`;
     // 0.42: every vehicle with its two reports (service history and fuel log) and a way to the fuel comparison.
     const fp=flPrefs().p,fpn=fp==='year'?'Tämä vuosi':fp==='12'?'12 kk':'Koko historia',fuelLine=c=>{if(!(c.fuels||[]).length)return unitOf(c)==='kWh'?'<span>Ei vielä latauksia</span>':'<span>Ei vielä tankkauksia</span>';const d=flCalc(c,fp);return [d.now.avg!==null?`<span class="nw">${dec(d.now.avg)} ${unitOf(c)}/${per(c)}</span>`:'',`<span class="nw">${eur(d.now.cost)}</span>`,`<span class="nw">${fpn}</span>`,'<span>PDF</span>'].filter(Boolean).join(' · ');};
     const toCmp=cars.filter(c=>(c.fuels||[]).length).length>1?`<button type="button" class="rp-card rp-pdf fl-tocmp" data-fl-tocmp><span class="rp-pdf-ico fl-ico" aria-hidden="true">${svg('<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>')}</span><span class="rp-rtxt"><strong>Vertaa kulutusta ajoneuvoittain</strong><small>Avaa Tankkaus → Vertailu</small></span><span class="chevron" aria-hidden="true">›</span></button>`:'';
     const reps=`${toCmp}<p class="rp-sub rp-reps-lead">Jokaisen ajoneuvon omat raportit: huoltohistoria ja tankkauskirja.</p>${cars.map(c=>`<section class="rp-card rp-vreps" aria-label="${escape(carName(c))}"><div class="rp-vrh"><span class="rp-rthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong><small><span translate="no">${plateTxt(c)}</span> · <span>${'vm. '+c.year}</span>${c.fuel?` · <span>${escape(c.fuel)}</span>`:''}</small></span></div><a class="rp-rep" href="#report/${c.id}/raportit"><span class="rp-ri" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>Huoltohistoriaraportti</strong><small><span>Huollot, kulut ja tunnusluvut</span> · <span>PDF</span></small></span><span class="chevron" aria-hidden="true">›</span></a><a class="rp-rep" href="#fuel/${c.id}/raportit"><span class="rp-ri fuel" aria-hidden="true">${svg(unitOf(c)==='kWh'?'<path d="M13 3 6 13h5l-1 8 7-10h-5z"/>':icons.fuel)}</span><span class="rp-rtxt"><strong>${unitOf(c)==='kWh'?'Latauskirja':'Tankkauskirja'}</strong><small>${fuelLine(c)}</small></span><span class="chevron" aria-hidden="true">›</span></a></section>`).join('')}`;
     if(o.t==='cars')return `${top()}${head}${tabs}${reps}`;
-    // 0.52: the vehicle choice is at the top of the summary, as buttons like on the Tankkaus tab: one vehicle with one
-    // tap (tapping the chosen vehicle again goes back to all; 0.54 removed the separate "Kaikki" button). Several vehicles can still be picked
-    // under "Näytä tarkemmin"; then each picked vehicle is shown as chosen here. The note is left for cost types only.
-    const only=sel.length<cars.length,carPick=cars.length>1?`<div class="fl-cars rp-cars${flN(cars.length)}" role="group" aria-label="Ajoneuvo">${cars.map(x=>`<button type="button" class="fl-car" data-rp-only="${x.id}" aria-pressed="${only&&!o.offCars.includes(x.id)}"><span class="fl-cpic" aria-hidden="true">${rpThumb(x)}</span><span class="fl-cname" translate="no">${escape(carName(x))}</span>${x.plate?`<small translate="no">${escape(x.plate)}</small>`:`<small>${escape(typeOf(x))}</small>`}</button>`).join('')}</div>`:'';
-    // 0.54: no "Kaikki" button; when vehicles or cost types are left out, the note offers "Näytä kaikki" (resets both).
-    const note=only||o.offKinds.length?`<p class="rp-note"><span>${only&&o.offKinds.length?'Osa ajoneuvoista tai kululajeista on rajattu pois.':only?'Osa ajoneuvoista on rajattu pois.':'Osa kululajeista on rajattu pois.'}</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
+    // 0.56: vehicle choice as a drop-down list: all vehicles or one. Several vehicles picked under "Näytä tarkemmin"
+    // show as "Valitut ajoneuvot" (that entry does nothing when chosen again).
+    const only=sel.length<cars.length,carCur=!only?'':sel.length===1?sel[0].id:'__sel',
+      carOpts=[['','Kaikki ajoneuvot'],...(carCur==='__sel'?[['__sel','Valitut ajoneuvot']]:[]),...cars.map(x=>[x.id,escape(carName(x))])],
+      carShown=carCur===''?'Kaikki ajoneuvot':carCur==='__sel'?'Valitut ajoneuvot':`<span translate="no">${escape(carName(sel[0]))}</span>`,
+      periods=[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],
+      carPick=`<div class="rp-filters">${cars.length>1?rpPick('data-rp-carpick','Ajoneuvo',carShown,carOpts,carCur):''}${rpPick('data-rp-period','Jakso',periods.find(x=>x[0]===o.p)[1],periods,o.p)}</div>`;
+    // The vehicle choice shows in its list, so the note is about cost types only ("Näytä kaikki" resets both).
+    const note=o.offKinds.length?`<p class="rp-note"><span>Osa kululajeista on rajattu pois.</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
     const ck='<span class="rp-ck" aria-hidden="true"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 3"/></svg></span>';
     const carChips=`<div class="rp-lbl"><span>Ajoneuvot</span>${sel.length<cars.length?'<button type="button" class="rp-link" data-rp-all>Valitse kaikki</button>':''}</div><div class="rp-chips">${cars.map(c=>{const on=!o.offCars.includes(c.id);return `<button type="button" class="rp-chip car" data-rp-car="${c.id}" aria-pressed="${on}"><span class="rp-thumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-cname" translate="no">${escape(carName(c))}</span>${on?ck:''}</button>`;}).join('')}</div>`;
     const kindChips=`<div class="rp-lbl"><span>Kulut</span></div><div class="rp-chips">${costKinds.map(([k])=>`<button type="button" class="rp-chip kind" data-rp-kind="${k}" aria-pressed="${kinds.includes(k)}"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span></button>`).join('')}</div>`;
@@ -1179,7 +1184,7 @@
   function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
     // Keep the keyboard focus on the same control after the screen is redrawn.
     const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
-  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpMonth=null;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
+  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-carpick]')){const id=t.value;if(id==='__sel')return;if(id&&!cars.some(c=>c.id===id))return;o.offCars=id?cars.filter(c=>c.id!==id).map(c=>c.id):[];rpMonth=null;rpSave(o,'[data-rp-carpick]');}else if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpMonth=null;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}
     if(t.closest('[data-rp-more]')){rpMore=!rpMore;rpSave(o,'[data-rp-more]');return true;}
@@ -1187,10 +1192,6 @@
     if(t.closest('[data-rp-csv]')){rpCsv();return true;}
     const rm=t.closest('[data-rp-m]');if(rm){rpMonth=Number(rm.dataset.rpM);const y=screen.scrollTop;render();screen.scrollTop=y;return true;}
     if(t.closest('[data-fl-tocmp]')){const f=flPrefs();f.t='cmp';flCm=null;flSave(f);go('fuel');return true;}
-    const one=t.closest('[data-rp-only]');if(one){const id=one.dataset.rpOnly;rpMonth=null;
-      if(!id||(one.getAttribute('aria-pressed')==='true'&&cars.filter(c=>!o.offCars.includes(c.id)).length===1))o.offCars=[];
-      else if(cars.some(c=>c.id===id))o.offCars=cars.filter(c=>c.id!==id).map(c=>c.id);
-      rpSave(o,`[data-rp-only="${id}"]`);return true;}
     if(t.closest('[data-rp-reset]')){rpMonth=null;o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
     const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]'),all=t.closest('[data-rp-all]');
     if(car||kd||all){rpMonth=null;if(car)o.offCars=flip(o.offCars,car.dataset.rpCar);if(kd)o.offKinds=flip(o.offKinds,kd.dataset.rpKind);if(all)o.offCars=[];

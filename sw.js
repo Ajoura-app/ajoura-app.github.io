@@ -11,8 +11,8 @@
 // Install fetches every file with this release's tag, so the saved set is one release (the tag also
 // bypasses GitHub's 10-minute cache). The user's own data (IndexedDB, localStorage) is never touched here.
 // VERSION must match the ?v=ak-N tag in app.html; CACHE is ajoura-pwa-(N + 50). testit/test_offline.py checks both.
-const VERSION = 'ak-43';
-const CACHE = 'ajoura-pwa-93';
+const VERSION = 'ak-44';
+const CACHE = 'ajoura-pwa-94';
 const WAIT = 3000;
 const FILES = ['./', 'app.html', 'app.css', 'ajoura.css', 'app.js', 'pdf-writer.js', 'roles.js', 'roles.css', 'sync.js', 'features.json', 'car-render.js','car-shapes.js','car-images.js','car-models.js','video.js','tips.js','vehicles.js','i18n-sv.js','i18n.js','tutorial.js','share.js', 'install.js', 'historia.html', 'tietosuoja.html', 'index.html', 'logo.svg', 'mark.svg', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 
