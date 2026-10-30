@@ -1056,3 +1056,11 @@ img.own-ph{position:absolute;inset:0;display:block;width:100%;height:100%;object
 .fl-cmp .fl-sw{flex:none;width:18px;margin:0}
 .fl-cmp .fl-car small{font-size:11px}
 }
+
+/* "Älä huomioi kulutuksessa" (v0.58): the choice in the fill-up sheet and the tag on a fill-up row. */
+@media screen{
+.sf-skip{margin:8px 0 2px}
+.sf-skip small{display:block;margin:2px 0 0 26px;font-size:11px;line-height:1.35;color:#4f5f72}
+.fl-row .fl-skip{color:#8a5a00;font-weight:600}
+}
+
