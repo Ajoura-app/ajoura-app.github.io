@@ -100,38 +100,58 @@ def _rp(s):
         off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []})""")
 
 
-# 0.56: ajoneuvo ja jakso alasvetovalikkoina Yhteenvedon yläosassa (0.52–0.55 isot kuvanapit, poistettu).
-VALINTA_JS = """() => {const sel = document.querySelector('[data-rp-carpick]');
-  return {arvo: sel?.value, valinnat: sel ? [...sel.options].map(o => o.value) : null,
-    naytetty: sel?.closest('.rp-pick').querySelector('.rp-pick-t').textContent.trim(),
+# 0.56: ajoneuvo ja jakso valikkoina Yhteenvedon yläosassa (0.52–0.55 isot kuvanapit, poistettu). 0.62: ajoneuvot
+# valitaan yhdestä luettelosta (Kaikki ajoneuvot tai mikä tahansa joukko; rivillä kuva, nimi ja rekisteritunnus), ja
+# Näytä tarkemmin -osio isoine nappeineen poistui.
+VALINTA_JS = """() => {const m = document.querySelector('.rp-cmenu');
+  const rivit = m ? [...m.querySelectorAll('[data-rp-car]')] : [];
+  return {auki: !!m?.open, naytetty: m?.querySelector('summary .rp-pick-t').textContent.trim(),
+    kaikki: m?.querySelector('[data-rp-all]')?.getAttribute('aria-pressed'),
+    rivit: rivit.map(b => [b.dataset.rpCar, b.getAttribute('aria-pressed'), b.querySelector('small')?.textContent, !!b.querySelector('.rp-mthumb')]),
     jakso: document.querySelector('.rp-filters [data-rp-period]')?.value,
-    napit: document.querySelectorAll('.fl-car, .rp-cars').length, alaotsikko: document.querySelectorAll('.rp-lead').length,
+    napit: document.querySelectorAll('.fl-car, .rp-cars, .rp-chip, [data-rp-more], .rp-detail, [data-rp-carpick]').length,
+    alaotsikko: document.querySelectorAll('.rp-lead').length,
     kortit: [...document.querySelectorAll('.rp-vcard strong')].map(e => e.textContent),
     summa: document.querySelector('.rp-kpis b.big')?.textContent.replace(/\\s/g, ''),
     huom: document.querySelector('.rp-note')?.textContent || '',
     off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []};}"""
 
 
+def _valitse(s, *idt):
+    for i in idt:
+        s.page.click(".rp-cmenu>summary"); s.page.click(f'[data-rp-car="{i}"]'); s.page.wait_for_timeout(150)
+
+
 def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
     s = avaa(browser, base, "reports", autot=talli(), extra=RP, kello=KELLO)
     try:
         r = s.page.evaluate(VALINTA_JS)
-        assert r["napit"] == 0 and r["alaotsikko"] == 0, r
-        assert r["arvo"] == "" and r["valinnat"] == ["", "a1", "a2", "a3"] and r["naytetty"] == "Kaikki ajoneuvot" and r["jakso"] == "12", r
+        assert r["napit"] == 0 and r["alaotsikko"] == 0 and not r["auki"], r
+        assert r["naytetty"] == "Kaikki ajoneuvot" and r["kaikki"] == "true" and r["jakso"] == "12", r
+        assert r["rivit"] == [["a1", "false", "TST-201", True], ["a2", "false", "TST-202", True], ["a3", "false", "TST-203", True]], r
         assert r["summa"] == "1265€" and len(r["kortit"]) == 3 and not r["huom"], r
-        s.page.select_option("[data-rp-carpick]", "a2"); s.page.wait_for_timeout(150)
+        # Kaikki-tilasta napautus näyttää vain sen ajoneuvon, ja luettelo sulkeutuu.
+        _valitse(s, "a2")
         r = s.page.evaluate(VALINTA_JS)
-        assert r["arvo"] == "a2" and r["naytetty"] == "Testi Farmari" and r["summa"] == "190€", r
+        assert not r["auki"] and r["naytetty"] == "Testi Farmari" and r["summa"] == "190€" and r["kaikki"] == "false", r
         assert r["kortit"] == ["Testi Farmari"] and sorted(r["off"]) == ["a1", "a3"] and not r["huom"], r
-        # 0.61: kosketusnäytöllä valikko ei saa fokusta takaisin (iPhone avaisi sen uudelleen), ks. test_valikon_fokus.
-        assert not s.page.evaluate("document.activeElement?.matches('select')")
-        s.page.select_option("[data-rp-carpick]", ""); s.page.wait_for_timeout(150)
+        # Seuraava napautus lisää ajoneuvon: "2 ajoneuvoa".
+        _valitse(s, "a3")
         r = s.page.evaluate(VALINTA_JS)
-        assert r["off"] == [] and r["summa"] == "1265€" and r["naytetty"] == "Kaikki ajoneuvot", r
-        # Kaksi ajoneuvoa Näytä tarkemmin -kohdasta: valikossa "Valitut ajoneuvot".
-        s.page.click("[data-rp-more]"); s.page.click('[data-rp-car="a3"]'); s.page.wait_for_timeout(150)
+        assert r["naytetty"] == "2 ajoneuvoa" and r["summa"] == "250€" and r["off"] == ["a1"], r
+        assert [x[1] for x in r["rivit"]] == ["false", "true", "true"], r
+        # Viimeisen poisto palauttaa kaikki (ei tyhjää valintaa).
+        _valitse(s, "a3", "a2")
         r = s.page.evaluate(VALINTA_JS)
-        assert r["arvo"] == "__sel" and r["naytetty"] == "Valitut ajoneuvot" and r["valinnat"][:2] == ["", "__sel"], r
+        assert r["off"] == [] and r["naytetty"] == "Kaikki ajoneuvot" and r["summa"] == "1265€", r
+        # Kaikki ajoneuvot -rivi.
+        _valitse(s, "a1")
+        s.page.click(".rp-cmenu>summary"); s.page.click("[data-rp-all]"); s.page.wait_for_timeout(150)
+        assert s.page.evaluate(VALINTA_JS)["off"] == []
+        # Napautus luettelon ulkopuolelle ja Escape sulkevat sen.
+        s.page.click(".rp-cmenu>summary"); assert s.page.evaluate(VALINTA_JS)["auki"]
+        s.page.click(".rp-head h2"); assert not s.page.evaluate(VALINTA_JS)["auki"]
+        s.page.click(".rp-cmenu>summary"); s.page.keyboard.press("Escape"); assert not s.page.evaluate(VALINTA_JS)["auki"]
         s.page.select_option("[data-rp-period]", "all"); s.page.wait_for_timeout(150)
         assert s.page.evaluate(VALINTA_JS)["jakso"] == "all"
         # Kululajin rajaus näyttää ilmoituksen.
@@ -142,7 +162,47 @@ def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
         s.sulje()
 
 
-# 0.56: valikkorivi mahtuu ruudulle pitkillä nimillä kaikilla leveyksillä ja kielillä.
+# 0.62: kulut kategorioittain ja kuukausittain samassa kortissa: pinotut kuukausipylväät ja niiden alla kululajiruudut,
+# joista napautus piilottaa lajin tai tuo sen takaisin. Pylväiden summa = kokonaiskulut.
+KAAVIO_JS = """() => {const c = document.querySelector('.rp-cats');
+  const nro = t => Number((t || '').replace(/[^0-9]/g, ''));
+  return {otsikko: c?.querySelector('h3').textContent, kaavio: c?.querySelectorAll('.rp-mchart').length,
+    pylvaat: [...(c?.querySelectorAll('.rp-mchart text.bv') || [])].reduce((m, t) => m + nro(t.textContent), 0),
+    summa: nro(document.querySelector('.rp-kpis b.big')?.textContent), palkki: document.querySelectorAll('.rp-bar.big').length,
+    ruudut: [...(c?.querySelectorAll('.rp-kbtn') || [])].map(b => [b.dataset.rpKind, b.getAttribute('aria-pressed'), b.querySelector('em').textContent]),
+    tyhja: c?.querySelector('.rp-empty')?.textContent || '', kortit: document.querySelectorAll('.rp-vcard').length};}"""
+
+
+@pytest.mark.parametrize("leveys", [320, 390])
+def test_kulukaavio(browser, base, leveys):
+    s = avaa(browser, base, "reports", autot=talli(), extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, leveys=leveys, kello=KELLO)
+    try:
+        r = s.page.evaluate(KAAVIO_JS)
+        assert r["otsikko"] == "Kulut kuukausittain" and r["kaavio"] == 1 and r["palkki"] == 0, r
+        assert r["pylvaat"] == r["summa"] == 1265, r
+        assert [x[0] for x in r["ruudut"]] == ["fuel", "service", "repair", "other"] and all(x[1] == "true" for x in r["ruudut"]), r
+        s.page.click('[data-rp-kind="repair"]'); s.page.wait_for_timeout(150)
+        r = s.page.evaluate(KAAVIO_JS)
+        assert r["summa"] == r["pylvaat"] == 1265 - 496, r
+        assert ["repair", "false", "Piilotettu"] in r["ruudut"] and len(r["ruudut"]) == 4, r
+        assert s.page.evaluate("document.activeElement?.dataset.rpKind") == "repair"
+        # Kaikki lajit piilossa: ruudut jäävät näkyviin, jotta lajin voi tuoda takaisin.
+        for k in ["fuel", "service", "other"]:
+            s.page.click(f'[data-rp-kind="{k}"]'); s.page.wait_for_timeout(120)
+        r = s.page.evaluate(KAAVIO_JS)
+        assert "Valitse vähintään yksi kululaji" in r["tyhja"] and len(r["ruudut"]) == 4 and r["kortit"] == 0, r
+        s.page.click('[data-rp-kind="service"]'); s.page.wait_for_timeout(150)
+        r = s.page.evaluate(KAAVIO_JS)
+        assert r["summa"] == r["pylvaat"] == 475 and r["kortit"] == 3, r  # kulutonkin ajoneuvo näkyy ("ei kuluja")
+        # Kuukauden napautus näyttää sen kuukauden kulut.
+        s.page.click('.rp-mchart rect.hit[data-rp-m="3"]'); s.page.wait_for_timeout(150)
+        assert "Huhtikuu 2026" in s.page.inner_text(".rp-cats .fl-csel")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.56: valikkorivi mahtuu ruudulle pitkillä nimillä kaikilla leveyksillä ja kielillä; 0.62: myös avattu ajoneuvoluettelo.
 @pytest.mark.parametrize("kieli", ["fi", "en", "sv"])
 @pytest.mark.parametrize("leveys", [320, 390, 430])
 def test_valikot_ruudulla(browser, base, kieli, leveys):
@@ -150,11 +210,15 @@ def test_valikot_ruudulla(browser, base, kieli, leveys):
     autot[1]["name"] = "Mercedes-Benz Sprinter 319 CDI Pitkä"
     s = avaa(browser, base, "reports", autot=autot, kieli=kieli, leveys=leveys, extra=RP, kello=KELLO)
     try:
-        s.page.select_option("[data-rp-carpick]", "a2"); s.page.wait_for_timeout(150)
+        _valitse(s, "a2")
+        s.page.click(".rp-cmenu>summary")
         r = s.page.evaluate("""() => {const sc = document.querySelector('.screen-content').getBoundingClientRect();
-          return [...document.querySelectorAll('.rp-filters .rp-pick')].map(p => {const b = p.getBoundingClientRect();
-            return {sisalla: b.left >= sc.left - 0.5 && b.right <= sc.right + 0.5, korkeus: b.height};});}""")
-        assert len(r) == 2 and all(x["sisalla"] and x["korkeus"] >= 40 for x in r), r
+          const sis = e => {const b = e.getBoundingClientRect(); return b.left >= sc.left - 0.5 && b.right <= sc.right + 0.5;};
+          return {valikot: [...document.querySelectorAll('.rp-filters .rp-pick')].map(p => ({sisalla: sis(p), korkeus: p.getBoundingClientRect().height})),
+                  lista: sis(document.querySelector('.rp-cmenu .fl-cmenu-list')),
+                  rivit: [...document.querySelectorAll('.rp-cmenu .fl-mi')].map(b => b.getBoundingClientRect().height)};}""")
+        assert len(r["valikot"]) == 2 and all(x["sisalla"] and x["korkeus"] >= 40 for x in r["valikot"]), r
+        assert r["lista"] and len(r["rivit"]) == 4 and min(r["rivit"]) >= 42, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -286,7 +350,6 @@ def test_vertailu_ajoneuvovalikko(browser, base, leveys):
 # ei palauteta valikkoon; tietokoneella (näppäimistö) se palautetaan kuten ennen.
 @pytest.mark.parametrize("mobiili", [True, False])
 @pytest.mark.parametrize("nakyma,extra,valikko,arvo", [
-    ("reports", RP, "[data-rp-carpick]", "a2"),
     ("reports", RP, "[data-rp-period]", "all"),
     ("fuel/a1", {}, "[data-fl-carpick]", "a2"),
     ("fuel/a1", {}, "[data-fl-period]", "all"),

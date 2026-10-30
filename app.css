@@ -1089,3 +1089,26 @@ img.own-ph{position:absolute;inset:0;display:block;width:100%;height:100%;object
 .fl-mi small{flex:none;font-size:11px;font-weight:500;color:#4f5f72}
 .fl-cmall{display:block;margin:4px 9px 3px;min-height:32px}
 }
+
+/* Raportit costs chart and vehicle list (v0.62): month bars, cost-type tiles that hide or bring back a type, and the
+   vehicle list with a photo, name and plate on each row (shares the look of the v0.60 Vertailu list). */
+@media screen{
+.rp-cats .rp-hrow{margin-bottom:2px}
+.rp-cats .rp-per{margin:0 0 4px}
+.rp-cats .rp-month{margin:0 0 4px;padding-bottom:0;border-bottom:0}
+.rp-cats .fl-csel{margin:4px 0 12px}
+.rp-cats .rp-kinds{padding-top:12px;border-top:1px solid var(--hairline)}
+.rp-cats .rp-empty{margin:10px 0 14px}
+.rp-cats>.rp-cnote{margin:12px 0 0}
+.rp-kbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;min-width:0;min-height:44px;padding:0;border:0;border-radius:8px;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rp-kbtn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.rp-kbtn[aria-pressed="false"] .rp-ico{background:#c3ccd7}
+.rp-kbtn[aria-pressed="false"] .rp-kt b{color:#4f5f72;font-weight:600;text-decoration:line-through}
+.rp-cmenu .fl-cmenu-list{max-height:min(62vh,430px);overflow-y:auto;overscroll-behavior:contain}
+.rp-cmenu .rp-mall{margin-bottom:5px;box-shadow:0 5px 0 -4px var(--hairline)}
+.rp-mthumb{position:relative;flex:none;display:grid;place-items:center;width:40px;height:30px;overflow:hidden;border-radius:6px;background:#eef1f4}
+.rp-mthumb svg{width:100%;height:auto}
+.rp-mt{flex:1;display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.rp-mt small{font-size:11px;font-weight:500;color:#4f5f72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.dark .device-glass .fl-mi[aria-pressed="true"] .fl-mck{filter:invert(1) hue-rotate(180deg)}
+}
