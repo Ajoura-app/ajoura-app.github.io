@@ -467,7 +467,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.60 (testiversio)';
+  const appVersion='0.61 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -602,7 +602,10 @@
   // the interval ends. The choices (period, vehicle) are a view setting on this device; nothing here changes stored data.
   const flKey='ajoura-fuel';let flPick=null,flPickFor='',flAll=false,flCm=null,flFromTab=false,flCmOpen=false;
   function flPrefs(){let o={};try{o=JSON.parse(prefGet(flKey)||'{}')||{};}catch(e){}return {p:['year','12','all'].includes(o.p)?o.p:'12',car:typeof o.car==='string'?o.car.slice(0,40):'',t:o.t==='cmp'?'cmp':'car',off:Array.isArray(o.off)?o.off.filter(x=>typeof x==='string').slice(0,500):[],m:['cons','price','cost'].includes(o.m)?o.m:'cons',cm:flCm};}
-  function flSave(o,focus){const {cm,...keep}=o;prefSet(flKey,JSON.stringify(keep));const y=screen.scrollTop;render();screen.scrollTop=y;const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
+  // Return the keyboard focus to the same control after a redraw. On a touch screen a drop-down list (select)
+  // is left unfocused: iPhone opens the list again whenever a select gets the focus (v0.61).
+  function refocus(sel){const f=sel&&screen.querySelector(sel);if(!f)return;if(f.tagName==='SELECT'&&matchMedia('(pointer: coarse)').matches)return;f.focus({preventScroll:true});}
+  function flSave(o,focus){const {cm,...keep}=o;prefSet(flKey,JSON.stringify(keep));const y=screen.scrollTop;render();screen.scrollTop=y;refocus(focus);}
   const monthNames=['tammikuu','helmikuu','maaliskuu','huhtikuu','toukokuu','kesäkuu','heinäkuu','elokuu','syyskuu','lokakuu','marraskuu','joulukuu'];
   const ucFirst=s=>s.charAt(0).toUpperCase()+s.slice(1),ymOf=d=>d.slice(0,7),mName=k=>monthNames[Number(k.slice(5,7))-1];
   const flMonths=(a,b)=>Math.max(1,(new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5/30.44);
@@ -1198,7 +1201,7 @@
     const file=new File(['﻿'+lines.join('\r\n')+'\r\n'],'ajoura-kulut-'+today()+'.csv',{type:'text/csv'});saveFile(file,matchMedia('(pointer: coarse)').matches);}
   function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
     // Keep the keyboard focus on the same control after the screen is redrawn.
-    const f=focus&&screen.querySelector(focus);if(f)f.focus({preventScroll:true});}
+    refocus(focus);}
   function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-carpick]')){const id=t.value;if(id==='__sel')return;if(id&&!cars.some(c=>c.id===id))return;o.offCars=id?cars.filter(c=>c.id!==id).map(c=>c.id):[];rpMonth=null;rpSave(o,'[data-rp-carpick]');}else if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpMonth=null;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}

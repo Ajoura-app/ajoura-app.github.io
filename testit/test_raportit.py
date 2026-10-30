@@ -123,7 +123,8 @@ def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
         r = s.page.evaluate(VALINTA_JS)
         assert r["arvo"] == "a2" and r["naytetty"] == "Testi Farmari" and r["summa"] == "190€", r
         assert r["kortit"] == ["Testi Farmari"] and sorted(r["off"]) == ["a1", "a3"] and not r["huom"], r
-        assert s.page.evaluate("document.activeElement?.matches('[data-rp-carpick]')")
+        # 0.61: kosketusnäytöllä valikko ei saa fokusta takaisin (iPhone avaisi sen uudelleen), ks. test_valikon_fokus.
+        assert not s.page.evaluate("document.activeElement?.matches('select')")
         s.page.select_option("[data-rp-carpick]", ""); s.page.wait_for_timeout(150)
         r = s.page.evaluate(VALINTA_JS)
         assert r["off"] == [] and r["summa"] == "1265€" and r["naytetty"] == "Kaikki ajoneuvot", r
@@ -202,7 +203,7 @@ def test_tankkaus_ajoneuvovalikko(browser, base):
         assert s.page.input_value("[data-fl-carpick]") == "a2"
         assert "Testi Farmari" in s.page.inner_text(".rp-filters")
         assert '"car":"a2"' in s.page.evaluate("localStorage.getItem('ajoura-fuel')")
-        assert s.page.evaluate("document.activeElement?.matches('[data-fl-carpick]')")
+        assert not s.page.evaluate("document.activeElement?.matches('select')")  # 0.61
         s.page.select_option("[data-fl-period]", "all"); s.page.wait_for_timeout(150)
         assert s.page.input_value("[data-fl-period]") == "all" and s.page.input_value("[data-fl-carpick]") == "a2"
         assert not s.virheet, s.virheet
@@ -275,6 +276,29 @@ def test_vertailu_ajoneuvovalikko(browser, base, leveys):
         pg.click(".fl-cmenu summary"); assert pg.evaluate(VERT_JS)["auki"] is False
         pg.select_option("[data-fl-period]", "all"); pg.wait_for_timeout(150)
         assert pg.evaluate(VERT_JS)["auki"] is False  # muu valinta sulkee listan
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.61: iPhone avaa alasvetovalikon aina, kun se saa fokuksen. Valinnan jälkeen sivu piirretään uudelleen, ja
+# ennen 0.61:tä fokus palautettiin valikkoon, jolloin valikko aukesi itsestään uudelleen. Kosketusnäytöllä fokusta
+# ei palauteta valikkoon; tietokoneella (näppäimistö) se palautetaan kuten ennen.
+@pytest.mark.parametrize("mobiili", [True, False])
+@pytest.mark.parametrize("nakyma,extra,valikko,arvo", [
+    ("reports", RP, "[data-rp-carpick]", "a2"),
+    ("reports", RP, "[data-rp-period]", "all"),
+    ("fuel/a1", {}, "[data-fl-carpick]", "a2"),
+    ("fuel/a1", {}, "[data-fl-period]", "all"),
+])
+def test_valikon_fokus(browser, base, mobiili, nakyma, extra, valikko, arvo):
+    s = avaa(browser, base, nakyma, autot=kuusi_autoa(), extra=extra, mobiili=mobiili, kello=KELLO)
+    try:
+        s.page.focus(valikko)
+        s.page.select_option(valikko, arvo); s.page.wait_for_timeout(150)
+        assert s.page.input_value(valikko) == arvo
+        fokus = s.page.evaluate(f"document.activeElement?.matches('{valikko}')")
+        assert fokus is (not mobiili), (mobiili, fokus)
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
