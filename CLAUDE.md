@@ -15,7 +15,7 @@ Kun Niklas antaa tehtävän tai tehtäväjonon, suunnittele, toteuta, testaa ja 
 Pysähdy vasta, kun
 
 1. tehtävä tai jono on tehty,
-2. porras vaihtuu (portaat: perusta, toimiva ydin, testikäyttäjät, nimi ja juridiikka, julkinen julkaisu, yritys, sovelluskaupat, maksulliset ominaisuudet; nyt ollaan portaassa 2),
+2. porras vaihtuu (nyt ollaan portaassa 2, toimiva ydin),
 3. tarvitaan kuvia (ajoneuvokuvat tekee Niklas ChatGPT:llä),
 4. testit kaatuvat eikä korjaus onnistu parilla yrityksellä, tai
 5. muutos kuuluu kysy-ensin-listaan.
@@ -38,7 +38,7 @@ Julkaisun kulku
 6. Versionumero (0.xx) nousee 0,01 jokaisesta sovellusmuutoksesta ja on neljässä paikassa: app.js (appVersion), index.html, i18n.js ja i18n-sv.js. Välimuistin numerot nousevat yhdessä: ak-N sivujen ?v=-tunnuksissa (app.html, index.html, tietosuoja.html, historia.html) ja sw.js:n VERSION-rivillä, sekä sw.js:n CACHE = 'ajoura-pwa-N', jossa N = ak-numero + 50. Testi test_offline.py huomaa, jos ne eivät täsmää. Uusi skriptitiedosto lisätään app.html:ään ja sw.js:n FILES-listaan.
 7. Pelkkä testi- tai dokumenttimuutos (testit/, VERSIOT.md, CLAUDE.md) ei nosta versionumeroa eikä välimuistin numeroita.
 8. Kirjaa versio VERSIOT.md:hen (merkintä "Tämä on nyt julkaistu versio." siirretään uudelle riville).
-9. Vie main-haaraan, kun testit menevät läpi. Älä käytä pakotettua pushia (--force). Tarkista lopuksi, että Pages-julkaisu onnistui (GitHubin Actions-ajo "pages build and deployment").
+9. Vie main-haaraan, kun testit menevät läpi. Älä käytä pakotettua pushia (--force). Tarkista lopuksi, että Pages-julkaisu onnistui (GitHubin Actions-ajo "pages build and deployment"). Jos tarkistus ei onnistu (pilviympäristö voi estää GitHubin rajapinnan ja sivun), kerro se ja pyydä Niklasta tarkistamaan.
 
 Koodin säännöt
 
@@ -56,7 +56,6 @@ Julkinen repo: ei salaisuuksia
 Mitä Code ei tiedä
 
 * Hankkeen päätökset, avoimet asiat ja korjauslista (AJ-numerot) ovat Niklaksen claude.ai-projektissa, eivät tässä repossa. Jos tarvitset sieltä jotain, pyydä Niklasta liittämään se. Älä arvaa päätöksiä, jotka eivät näy koodista, VERSIOT.md:stä tai testeistä.
-* Testit löytävät tunnetut virheet: AJ-26 ja AJ-27 ovat testien TUNNETUT-listoilla (testit/test_kielet.py ja testit/test_leveys.py).
 * Oikean iPhonen testit tekee Niklas käsin. Mainitse jokaisen julkaisun jälkeen, mitä iPhonella pitää tarkistaa.
 
 Lopuksi kerro
