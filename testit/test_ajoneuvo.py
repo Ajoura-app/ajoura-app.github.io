@@ -74,3 +74,33 @@ def test_veneen_lisays(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def test_muun_ajoneuvon_lisays_onnistuu_ilman_varin_valintaa(browser, base):
+    # AJ-11 (0.66): väri on valmiiksi valittuna eikä se ole pakollinen valinta; muu kuin henkilöauto tallentuu
+    # pelkällä Tallenna-napilla. Väri on silti vaihdettavissa.
+    for muuta in (False, True):
+        s = avaa(browser, base, "newcar", autot=None, kello=KELLO)
+        pg = s.page
+        try:
+            pg.click("[data-kind=boat]")
+            f = "#kind-form"
+            pg.select_option(f + " [name=brand]", index=1)
+            pg.fill(f + " [name=model]", "Testi 500")
+            pg.fill(f + " [name=reg]", "tst-v9")
+            pg.select_option(f + " [name=year]", "2012")
+            pg.fill(f + " [name=km]", "410")
+            pg.click(f + " [type=submit]")
+            pg.wait_for_selector("#klook-form")
+            valittu = pg.locator("#klook-form [name=color]:checked")
+            assert valittu.count() == 1, "väri ei ole valmiiksi valittuna"
+            oletus = valittu.get_attribute("value")
+            if muuta:
+                pg.locator("#klook-form label:has([name=color][value='#a8232d'])").click()
+            pg.click("#klook-form [type=submit]")
+            odota_nakyma(s, "vehicle/")
+            c = s.talli()["cars"][0]
+            assert c["color"] == ("#a8232d" if muuta else oletus)
+            assert not s.virheet, s.virheet
+        finally:
+            s.sulje()

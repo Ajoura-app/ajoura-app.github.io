@@ -467,7 +467,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.65 (testiversio)';
+  const appVersion='0.66 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1532,7 +1532,7 @@
   screen.addEventListener('change',event=>{const att=event.target.closest('[data-att]');if(att){addAtt(att);return;}const cp=event.target.closest('[data-car-photos]');if(cp){addCarPhotos(cp);return;}if(event.target.matches('[data-restore]')){restore(event.target);return;}const mk=event.target.closest('[data-make]');if(mk&&draft){const form=mk.form;if(mk.dataset.make==='brand'){draft.model='';draft.version='';draft.modelText='';}if(mk.dataset.make==='model')draft.version='';syncDetails(form);if(mk.dataset.make==='version')return;const y=screen.scrollTop;render();screen.scrollTop=y;const next=document.querySelector(mk.dataset.make==='brand'?(draft.brand==='__other'?'[name=brandText]':'[name=model]'):(draft.model==='__other'?'[name=modelText]':'[name=version]:not([disabled])'));if(next)next.focus({preventScroll:true});return;}const input=event.target.closest('[data-photo]');if(input)setPhoto(input);});
   screen.addEventListener('change',event=>{if(event.target.matches('#event-form [name=type]')){syncItems(event.target.form);syncBy(event.target.form);}if(event.target.matches('#event-form [name=by]'))syncBy(event.target.form);if(event.target.matches('#event-form [name=by_n]'))fillShop(event.target.form);});
   screen.addEventListener('input',event=>{if(event.target.matches('#event-form [name=by_n]'))fillShop(event.target.form);});
-  screen.addEventListener('click',event=>{const k=event.target.closest('.kind-card[data-kind]');if(!k)return;const id=k.dataset.kind;if(id==='car')carPicked=true;else draft={kind:id,step:'details',brand:'',brandText:'',model:'',name:'',plate:'',nick:'',year:'',km:'',fuel:'',engine:'',body:Kinds.types(id)[0],color:''};render();screen.scrollTop=0;});
+  screen.addEventListener('click',event=>{const k=event.target.closest('.kind-card[data-kind]');if(!k)return;const id=k.dataset.kind;if(id==='car')carPicked=true;else draft={kind:id,step:'details',brand:'',brandText:'',model:'',name:'',plate:'',nick:'',year:'',km:'',fuel:'',engine:'',body:Kinds.types(id)[0],color:'#b9c1ca'};render();screen.scrollTop=0;});
   screen.addEventListener('change',event=>{if(event.target.matches('#kind-form [name=brand]'))kindBrand(event.target);const kf=event.target.closest('#kind-form');if(kf)syncKind(kf);const kl=event.target.closest('#klook-form');if(kl&&draft&&draft.kind)syncKindLook(kl);});
   screen.addEventListener('input',event=>{const kf=event.target.closest('#kind-form');if(kf)syncKind(kf);});
   screen.addEventListener('submit',event=>{const handler=submitters[event.target.id];if(!handler)return;event.preventDefault();handler(event.target);});
