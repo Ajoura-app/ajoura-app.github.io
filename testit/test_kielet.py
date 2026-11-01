@@ -17,9 +17,7 @@ POIKKEUKSET = {
     "OK", "Diesel", "Beige", "Coupé", "Sedan", "Km",
 }
 # Tunnetut puutteet, jotka korjataan omana versionaan. Poista rivi, kun käännös on lisätty.
-TUNNETUT = {
-    "Selaa merkintöjä",  # merkintäsivun selausnappien aria-label (ruudunlukija), löydetty 29.10.2026
-}
+TUNNETUT = set()
 TUNNUS = re.compile(r"^AJ-[A-Z0-9-]+$")  # raportin tunniste, esim. AJ-TST101-20261029
 POIKKEUKSET_SV = {"Summa"}
 # Yksiköt ja merkit, jotka jäävät ennalleen kaikilla kielillä (poistetaan ennen vertailua).
