@@ -45,3 +45,53 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.75: alavalikon kapseli on alustalla (.tab-dock), jonka tausta on näkymän taustaväri: sisältö ei näy kapselin
+# ympäriltä eikä alta, sivun lopussa viimeinen kortti jää kokonaan näkyviin kapselin yläpuolelle (myös iPhonen
+# kotipalkin alueen kanssa), varjo on kevyt ja tummassa tilassa ei ole hehkua. Näppäimistön ollessa auki alusta piiloon.
+LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scrollTop = sc.scrollHeight;
+  const n = document.querySelector('.main-tabs'), d = n.closest('.tab-dock'), b = n.getBoundingClientRect(), g = sc.getBoundingClientRect();
+  const sis = [...document.querySelectorAll('.screen-content > *')].filter(e => e.getBoundingClientRect().height);
+  const viim = sis[sis.length - 1].getBoundingClientRect(), dc = d && getComputedStyle(d), nc = getComputedStyle(n);
+  return {alusta: !!d, rako: b.top - viim.bottom, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
+          kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', sticky: dc ? dc.position : '',
+          varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
+
+
+@pytest.mark.parametrize("teema", [None, "dark"])
+@pytest.mark.parametrize("kotipalkki", [0, 34])
+@pytest.mark.parametrize("nakyma,extra", [("reports", {"ajoura-reports": '{"p":"year","t":"sum"}'}), ("fuel/tst1", {}), ("home", {})])
+def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, extra):
+    s = avaa(browser, base, nakyma, autot=tiedot.talli(), teema=teema, extra=extra, asennettu=True, ios=True, kello=KELLO)
+    try:
+        if kotipalkki:  # iPhonen kotipalkin alue (safe-area-inset-bottom)
+            s.context.new_cdp_session(s.page).send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 47, "bottom": kotipalkki}})
+            s.page.wait_for_timeout(200)
+        r = s.page.evaluate(LOPPU_JS)
+        s.page.wait_for_timeout(150)
+        r = s.page.evaluate(LOPPU_JS)
+        assert r["alusta"] and r["sticky"] == "sticky" and "gradient" in r["tausta"], r
+        assert r["alaReuna"] <= 0.5, r  # alusta ulottuu näytön alareunaan asti: sisältö ei näy kapselin alta
+        assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
+        assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r  # 0.74:n paikka säilyy
+        if teema == "dark":
+            assert r["varjo"] == "none", r  # käänteisvärisuodatin tekisi varjosta vaalean hehkun
+        else:
+            assert 0 < r["sumeus"] <= 14, r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_alavalikko_piiloon_kirjoitettaessa(browser, base):
+    s = avaa(browser, base, "feedback", autot=[tiedot.auto()], kello=KELLO)
+    try:
+        assert s.page.locator(".tab-dock").is_visible()
+        s.page.focus("#app-screen textarea")
+        assert not s.page.locator(".tab-dock").is_visible()
+        s.page.evaluate("document.activeElement.blur()")
+        assert s.page.locator(".tab-dock").is_visible()
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

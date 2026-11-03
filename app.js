@@ -201,7 +201,8 @@
   // 0.68: the main tabs show only icons (the name stays as aria-label for screen readers); the fuel tab's icon is a pump
   // with a bolt, since fuel and charging are logged on the same tab.
   const fuelTabIcon='<path d="M3.5 20V5.5A1.5 1.5 0 0 1 5 4h6a1.5 1.5 0 0 1 1.5 1.5V20M2.5 20h11M3.5 10h9"/><path d="M19 5l-3.2 7h3L17.200 19l4-8.200h-3z"/>';
-  const tabBar=view=>`<nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#fuel" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#reports" aria-label="Raportit"${tabOf(view)==='reports'?here:''}>${svg(icons.chart)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav>`;
+  // 0.75: the capsule sits on a dock (app.css .tab-dock) so content never shows around or under it.
+  const tabBar=view=>`<div class="tab-dock"><nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#fuel" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#reports" aria-label="Raportit"${tabOf(view)==='reports'?here:''}>${svg(icons.chart)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
     ['Miten lisään auton?','Etusivu → ＋ Lisää ajoneuvo. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
@@ -488,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.74 (testiversio)';
+  const appVersion='0.75 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

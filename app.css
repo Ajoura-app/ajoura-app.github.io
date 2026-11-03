@@ -1126,3 +1126,14 @@ html .tab-bar.main-tabs a svg{width:22px;height:22px}
 /* 0.70: Yhteensä-näkymä */
 .fl-allh{margin:0;padding:14px 14px 0}
 .fl-allbody{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px}
+/* 0.75: alavalikon alusta. Kapseli on alustalla, jonka tausta on näkymän taustaväri ja yläreuna häivytetty: sisältö ei näy
+   kapselin ympäriltä eikä sen alta (iPhonen kotipalkin alue), ja sivun lopussa viimeinen kortti jää kokonaan näkyviin kapselin
+   yläpuolelle (alustan korkeus on kapselin todellinen korkeus + nosto, ei kiinteää marginaalia). Nosto on sama kuin 0.74:ssä:
+   iPhonessa kotipalkin yläpuolella, muualla 6 px. Varjo kevyempi; tummassa tilassa ei varjoa, koska käänteisvärisuodatin
+   tekisi tummasta varjosta vaalean hehkun. Kun kosketusnäytöllä kirjoitetaan tekstikenttään (näppäimistö auki), alusta
+   piilotetaan, jottei se peitä kenttää. */
+.tab-dock{position:sticky;bottom:0;z-index:3;margin-top:-16px;padding:16px 0 max(6px,calc(env(safe-area-inset-bottom) - 12px));background:linear-gradient(#f5f8fc00,#f5f8fc 16px);pointer-events:none}
+html .tab-dock>.tab-bar.main-tabs{position:relative;bottom:auto;pointer-events:auto;border-color:#d3dfee;box-shadow:0 3px 12px #10243f1f,0 1px 2px #10243f14}
+html .tab-dock>.tab-bar.main-tabs a[aria-current]{box-shadow:0 2px 6px #1769f42e}
+html.dark .device-glass .tab-dock>.tab-bar.main-tabs,html.dark .device-glass .tab-dock>.tab-bar.main-tabs a[aria-current]{box-shadow:none}
+@media(pointer:coarse){#app-screen:has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus) .tab-dock{display:none}}
