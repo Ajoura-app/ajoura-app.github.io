@@ -427,3 +427,71 @@ def test_vienti_vastaa_nakymaa(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.79: Ajoneuvot-välilehti on vertailutyökalu samoilla suodattimilla kuin Yhteenveto: kokonaiskulut samalla asteikolla
+# (lajeittain nimettyinä), €/km vain luotettavilla kilometreillä, kertyneet kulut samalla aika-akselilla ja jokaiselle
+# ajoneuvolle avattava kortti (lajit nimineen, kuukaudet, kilometrit, €/km, muutos, raportit). Yhteenvedon ajoneuvorivi
+# avaa saman ajoneuvon kortin. Ajoneuvon väri on sama täällä ja Tankkaus → Vertailussa.
+AJ_JS = """() => {const v = document.querySelector('.rp-cmp'), nro = s => Number((s || '').replace(/[^0-9]/g, ''));
+  return {vertailu: !!v, yksi: !!document.querySelector('.rp-one'),
+    kokonais: v ? [...v.querySelectorAll('.rp-cr')].slice(0, document.querySelectorAll('.rp-vdet').length).map(c => [c.querySelector('.rp-crt span[translate]').textContent, nro(c.querySelector('.rp-crt b').textContent), c.querySelector('.rp-cks')?.innerText.replace(/\\s+/g, ' ') || c.innerText]) : [],
+    km: v ? [...v.querySelectorAll('.rp-cr')].slice(document.querySelectorAll('.rp-vdet').length).map(c => [c.querySelector('.rp-crt b').textContent.replace(/\\s+/g, ' '), !!c.querySelector('.rp-kbar'), c.querySelector('.rp-cnone')?.textContent || '']) : [],
+    kayra: document.querySelectorAll('.rp-cum polyline, .rp-cum circle').length,
+    kortit: [...document.querySelectorAll('.rp-vdet')].map(d => [d.dataset.rpDet, d.open]),
+    auki: [...document.querySelectorAll('.rp-vdet[open]')].map(d => d.innerText.replace(/\\s+/g, ' ')),
+    varit: [...document.querySelectorAll('.rp-cmp .rp-crt .rp-vsw')].map(e => e.style.background)};}"""
+
+
+def test_ajoneuvot_vertailu(browser, base):
+    autot = talli()
+    autot[0]["km"], autot[1]["km"], autot[2]["km"] = 149500, 99000, 60000  # nykyinen lukema = viimeisin kirjattu
+    autot[1]["fuels"] = [T("v1", "2026-01-05", 84000, 40, 70), T("v2", "2026-10-20", 99000, 40, 70)]
+    s = avaa(browser, base, "reports", autot=autot, extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, kello=KELLO)
+    try:
+        s.page.click('[data-rp-open="a1"]'); s.page.wait_for_timeout(200)
+        r = s.page.evaluate(AJ_JS)
+        assert r["vertailu"] and not r["yksi"], r
+        assert [x[:2] for x in r["kokonais"]] == [["Testi Pakettiauto", 1015], ["Testi Farmari", 330], ["Testi Asuntoauto", 60]], r
+        assert "Korjaukset 496 €" in r["kokonais"][0][2].replace(" ", " "), r  # lajin nimi summan vieressä (0.53)
+        # €/km: Pakettiautolla (tiedot alkavat 2.3., 1 015 € / 9 500 km) ja Farmarilla (5.1.) kilometrit ja kulut samalta ajalta → palkit;
+        # Asuntoautolla vain yksi lukema → ei €/km:ää, syy kerrotaan (ei nollapalkkia).
+        assert [x[0] for x in r["km"]] == ["0,11 €/km", "0,02 €/km", "–"] and [x[1] for x in r["km"]] == [True, True, False], r
+        assert "mittarilukemat eivät kata" in r["km"][2][2], r
+        assert r["kayra"] == 3, r
+        assert ["a1", True] in r["kortit"] and ["a2", False] in r["kortit"], r
+        auki = r["auki"][0].replace(" ", " ")
+        assert "Korjaukset 496 €" in auki and "Huoltohistoriaraportti" in auki and "Tankkauskirja" in auki, auki
+        assert "Ajetut kilometrit" in auki and "Muutos" not in auki or "vertailu" in auki.lower(), auki
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_ajoneuvot_yksi_ja_tyhja(browser, base):
+    autot = talli() + [tiedot.auto("a4", name="Testi Tyhjä", plate="TST-204", km=50000)]
+    s = avaa(browser, base, "reports", autot=autot, extra={"ajoura-reports": '{"p":"year","t":"cars","offCars":["a1","a2","a3"]}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate(AJ_JS)
+        assert not r["vertailu"] and r["yksi"] and r["kortit"] == [["a4", True]], r  # yksi ajoneuvo: ei teeskenneltyä vertailua
+        assert "Puuttuva kirjaus ei tarkoita, että kuluja ei olisi ollut." in r["auki"][0], r
+        assert "Huoltohistoriaraportti" in r["auki"][0], r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_ajoneuvon_vari_sama(browser, base):
+    autot = kuusi_autoa()
+    s = avaa(browser, base, "reports", autot=autot, extra={"ajoura-reports": '{"p":"12","t":"cars"}'}, kello=KELLO)
+    try:
+        rp = {n: c for n, c in s.page.evaluate("""() => [...document.querySelectorAll('.rp-cmp .rp-crt')].map(p =>
+            [p.querySelector('span[translate]').textContent, p.querySelector('.rp-vsw').style.background])""")}
+        s.page.evaluate("localStorage.setItem('ajoura-fuel', '{\"p\":\"12\",\"t\":\"cmp\",\"m\":\"cost\"}')")
+        s.page.goto(base + "/app.html#fuel"); s.page.wait_for_selector(".fl-bar")
+        fl = {n: c for n, c in s.page.evaluate("""() => [...document.querySelectorAll('.fl-bar')].map(b =>
+            [b.querySelector('.fl-bn').textContent, b.querySelector('.fl-btrack i').style.background])""")}
+        assert fl and all(rp[n] == c for n, c in fl.items()), (rp, fl)
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
