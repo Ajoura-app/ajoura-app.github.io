@@ -1117,3 +1117,5 @@ html.dark .device-glass .fl-mi[aria-pressed="true"] .fl-mck{filter:invert(1) hue
 /* 0.67: Tankkaus / Lataus -valitsin kirjausikkunassa ja Polttoaine / Sähkö -valitsin Tankkaus-välilehdellä */
 .sf-kinds{margin:0 0 10px}
 .fl-kinds{margin:0 0 12px}
+/* 0.68: päävälilehdissä vain kuvakkeet */
+.main-tabs a svg{width:26px;height:26px}
