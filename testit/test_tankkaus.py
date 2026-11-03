@@ -2,7 +2,7 @@
 import pytest
 
 import tiedot
-from apu import KELLO, TANAAN, avaa
+from apu import KELLO, TANAAN, avaa, ikkuna_valmis
 
 
 def keskikulutus(fills):
@@ -32,7 +32,7 @@ def test_uusi_tankkaus_ja_muokkaus(browser, base):
 
         pg.click(".fl-add")
         f = "#quickfuel-form"
-        pg.wait_for_selector(f)
+        pg.wait_for_selector(f); ikkuna_valmis(pg)
         pg.fill(f + " [name=km]", "152400")
         pg.fill(f + " [name=ppu]", "1.80")
         pg.fill(f + " [name=cost]", "72")
@@ -98,7 +98,7 @@ def test_ala_huomioi_kulutuksessa(browser, base):
         assert "skip" not in f3 and f3["qty"] == 50
         assert fi(keskikulutus(s.talli()["cars"][0]["fuels"])) in pg.inner_text(".fl-big")
         # Uusi tankkaus merkinnällä: tallentuu skip: true, kulut mukana.
-        pg.click(".fl-add"); pg.wait_for_selector(f)
+        pg.click(".fl-add"); pg.wait_for_selector(f); ikkuna_valmis(pg)
         pg.fill(f + " [name=km]", "152000"); pg.fill(f + " [name=qty]", "60"); pg.fill(f + " [name=cost]", "108")
         pg.check(f + " [name=skip]"); pg.click(f + " [type=submit]"); pg.wait_for_selector(f, state="detached")
         fuels = s.talli()["cars"][0]["fuels"]
@@ -216,7 +216,7 @@ def test_epatodennakoinen_vali_varmistetaan(browser, base, kieli, teksti):
     s = avaa(browser, base, "fuel/tst1", autot=autot, kieli=kieli, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
     f = "#quickfuel-form"
     try:
-        s.page.click(".fl-add"); s.page.wait_for_selector(f)
+        s.page.click(".fl-add"); s.page.wait_for_selector(f); ikkuna_valmis(s.page)
         s.page.fill(f + " [name=km]", "152410"); s.page.fill(f + " [name=qty]", "50"); s.page.fill(f + " [name=cost]", "90")
         s.page.click(f + " [type=submit]"); s.page.wait_for_timeout(150)
         assert teksti in s.page.inner_text(f + " [role=alert]").replace(" ", " ")

@@ -117,3 +117,10 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
 def nakyma(sivu):
     """Nykyinen näkymä osoitteesta (#vehicle/tst1 → 'vehicle')."""
     return sivu.page.evaluate("(location.hash.slice(1)||'').split('/')[0]")
+
+
+def ikkuna_valmis(page):
+    """Odottaa, että tankkausikkuna on siirtänyt kohdistuksen omaan kenttäänsä (seuraavassa ruudunpäivityksessä).
+    Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken
+    kirjoituksen (ihmiskäyttäjälle ei tapahdu: kohdistus siirtyy ennen kuin ehtii kirjoittaa)."""
+    page.wait_for_function("() => !!document.activeElement && !!document.activeElement.closest('.sheet')")

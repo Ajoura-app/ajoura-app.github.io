@@ -8,7 +8,7 @@ import json
 import pytest
 
 import tiedot
-from apu import KELLO, avaa
+from apu import KELLO, avaa, ikkuna_valmis
 from test_tankkaus import fi, keskikulutus
 from test_varmuuskopio import kanoninen, palauta, tallenna_ladaten
 
@@ -35,7 +35,7 @@ def test_kaikki_polttoainelajit_valittavissa(browser, base, polttoaine, ensin):
     s = avaa(browser, base, "fuel/tst1", autot=[tiedot.auto(fuel=polttoaine, fuels=[T("f1", "2026-07-01", 151000, 50.0, 85.0)])],
              extra=PREF, kello=KELLO)
     try:
-        s.page.click(".fl-add"); s.page.wait_for_selector(F)
+        s.page.click(".fl-add"); s.page.wait_for_selector(F); ikkuna_valmis(s.page)
         v = valinnat(s.page)
         assert v[0] == ensin and set(v) == {"95 E10", "98 E5", "E85", "Diesel", "HVO100"}, v
         assert s.page.query_selector(".fl-kinds") is None and s.page.query_selector(".sf-kinds") is None
@@ -61,7 +61,7 @@ def test_kaasu_kiloina(browser, base):
         pg.click("[data-fl-kind=gas]"); pg.wait_for_selector(".fl-big")
         assert "kg/100 km" in pg.inner_text(".fl-big") and fi(14.0 / 500 * 100) in pg.inner_text(".fl-big")
         assert "Kaasu" in pg.inner_text("[data-fl-kind=gas]") and pg.get_attribute("[data-fl-kind=gas]", "aria-pressed") == "true"
-        pg.click(".fl-add"); pg.wait_for_selector(F)
+        pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert valinnat(pg) == ["Biokaasu", "Maakaasu"] and "kg" in pg.inner_text(F + " .sf-calc")
         assert "Litrat" not in pg.inner_text(F + " .sf-calc")
         pg.select_option(F + " [name=grade]", "Maakaasu")
@@ -71,7 +71,7 @@ def test_kaasu_kiloina(browser, base):
         assert uusi["grade"] == "Maakaasu" and uusi["qty"] == 13 and "el" not in uusi
         # Bensiini varapolttoaineena: oma laji, litrat, ei sekoitu kaasun kiloihin.
         pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
-        pg.click(".fl-add"); pg.wait_for_selector(F)
+        pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert valinnat(pg)[0] == "95 E10" and "Litrat" in pg.inner_text(F + " .sf-calc")
         pg.fill(F + " [name=km]", "151100"); pg.fill(F + " [name=qty]", "20"); pg.fill(F + " [name=cost]", "36")
         pg.click(F + " [type=submit]"); pg.wait_for_selector(F, state="detached")
@@ -106,7 +106,7 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
         assert "Latauskulut" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
         assert "Uusi lataus" in pg.inner_text(".fl-add")
         # Uusi lataus: tallentuu el: true, kWh, ei litroja.
-        pg.click(".fl-add"); pg.wait_for_selector(F)
+        pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert pg.query_selector(F + " [name=grade]") is None, "sähkölle ei polttoainelajia"
         pg.fill(F + " [name=km]", "152000"); pg.fill(F + " [name=ppu]", "0.30"); pg.fill(F + " [name=qty]", "15")
         assert pg.input_value(F + " [name=cost]").replace(",", ".").startswith("4.5")
@@ -120,7 +120,7 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
         pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
         assert fi(keskikulutus(fuel_fills)) in pg.inner_text(".fl-big")
         # Uusi tankkaus: ei el-merkintää.
-        pg.click(".fl-add"); pg.wait_for_selector(F)
+        pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert "98 E5" in pg.inner_text(F + " [name=grade]")
         pg.fill(F + " [name=km]", "152100"); pg.fill(F + " [name=qty]", "20"); pg.fill(F + " [name=cost]", "36")
         pg.click(F + " [type=submit]"); pg.wait_for_selector(F, state="detached")
@@ -163,7 +163,7 @@ def test_sahkoauto_lataus_ilman_merkintaa(browser, base):
     s = avaa(browser, base, "fuel/ev1", autot=[ev], extra=PREF, kello=KELLO)
     try:
         assert s.page.query_selector(".fl-kinds") is None
-        s.page.click(".fl-add"); s.page.wait_for_selector(F)
+        s.page.click(".fl-add"); s.page.wait_for_selector(F); ikkuna_valmis(s.page)
         assert s.page.query_selector(F + " [name=grade]") is None
         s.page.fill(F + " [name=km]", "150500"); s.page.fill(F + " [name=qty]", "42"); s.page.fill(F + " [name=cost]", "12")
         s.page.click(F + " [type=submit]"); s.page.wait_for_selector(F, state="detached")
