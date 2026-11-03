@@ -1,0 +1,3114 @@
+{
+ "app": "AJOURA",
+ "version": 1,
+ "saved": "2026-11-03T08:00:00.000Z",
+ "cars": [
+  {
+   "id": "tk-auto",
+   "name": "Volvo V60",
+   "nick": "Perheauto",
+   "plate": "TST-301",
+   "year": 2021,
+   "km": 76627,
+   "body": "wagon",
+   "color": "#3b4d61",
+   "fuel": "Lataushybridi",
+   "engine": "T6 Recharge",
+   "events": [
+    {
+     "id": "ae17",
+     "type": "Renkaiden vaihto",
+     "date": "2026-10-27",
+     "km": 76298,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Kausivaihto",
+      "Rengashotelli"
+     ],
+     "note": "Talvirenkaat alle.",
+     "created": "2026-10-27T12:53:00.000Z"
+    },
+    {
+     "id": "ae16",
+     "type": "Korjaus ja osan vaihto",
+     "date": "2026-06-17",
+     "km": 71420,
+     "cost": "391",
+     "by": {
+      "t": "shop",
+      "n": "Länsi-Auto Oy",
+      "tel": "010 000 0001",
+      "mail": "huolto@lansiauto.example",
+      "addr": "Esimerkkikatu 1, 00100 Helsinki",
+      "yt": "0000000-0"
+     },
+     "items": [
+      "Jarrut"
+     ],
+     "note": "Etujarrulevyt ja -palat uusittu (suositus marraskuun huollosta). Koeajo ok.",
+     "parts": [
+      {
+       "name": "Jarrulevyt, etu (2 kpl)",
+       "qty": "2",
+       "price": "189"
+      },
+      {
+       "name": "Jarrupalat, etu (1 sarja)",
+       "qty": "1",
+       "price": "74"
+      }
+     ],
+     "labor": "120",
+     "other": "8",
+     "receipts": [
+      "data:image/jpeg;base64,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eRLmRsk5wy88DJyQfSupooAxvDtlNZCdJLbyUITaWZSzHnOSpw3b5iAT3HFbNFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH//Z"
+     ],
+     "created": "2026-06-17T12:33:00.000Z"
+    },
+    {
+     "id": "ae15",
+     "type": "Autohoito",
+     "date": "2026-05-16",
+     "km": 70399,
+     "cost": "32",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Käsinpesu",
+      "Kestovaha",
+      "Muoviosien ja tiivisteiden hoito"
+     ],
+     "note": "Kestovaha ja tiivisteiden hoito.",
+     "created": "2026-05-16T12:30:00.000Z"
+    },
+    {
+     "id": "ae14",
+     "type": "Renkaiden vaihto",
+     "date": "2026-04-21",
+     "km": 69705,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Kausivaihto",
+      "Rengashotelli"
+     ],
+     "note": "Kesärenkaat alle.",
+     "created": "2026-04-21T12:57:00.000Z"
+    },
+    {
+     "id": "ae13",
+     "type": "Muu huolto",
+     "date": "2026-01-15",
+     "km": 66824,
+     "cost": "9",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Polttimon vaihto"
+     ],
+     "note": "Vasen lähivalo.",
+     "created": "2026-01-15T12:27:00.000Z"
+    },
+    {
+     "id": "ae12",
+     "type": "Vuosihuolto",
+     "date": "2025-11-20",
+     "km": 65028,
+     "cost": "389",
+     "by": {
+      "t": "shop",
+      "n": "Länsi-Auto Oy",
+      "tel": "010 000 0001",
+      "mail": "huolto@lansiauto.example",
+      "addr": "Esimerkkikatu 1, 00100 Helsinki",
+      "yt": "0000000-0"
+     },
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Raitisilmasuodatin",
+      "Jäähdytysneste",
+      "Akku tarkistettu",
+      "Valot tarkistettu",
+      "Rengaspaineet",
+      "Huoltovälinäyttö nollattu"
+     ],
+     "note": "Vuosihuolto. Korjaamo suositteli seuraavaksi etujarrujen tarkistusta.",
+     "receipts": [
+      "data:image/jpeg;base64,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CiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//2Q=="
+     ],
+     "created": "2025-11-20T12:45:00.000Z"
+    },
+    {
+     "id": "ae11",
+     "type": "Renkaiden vaihto",
+     "date": "2025-10-23",
+     "km": 63800,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Kausivaihto",
+      "Rengashotelli"
+     ],
+     "note": "Talvirenkaat alle.",
+     "created": "2025-10-23T12:16:00.000Z"
+    },
+    {
+     "id": "ae10",
+     "type": "Korjaus ja osan vaihto",
+     "date": "2025-08-09",
+     "km": 61401,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Lasihuolto Kirkas",
+      "tel": "010 000 0003"
+     },
+     "items": [
+      "Lasit"
+     ],
+     "note": "Kivenisku tuulilasissa, korjattu ennen kuin halkeama levisi. Uuden lasin hinta olisi ollut moninkertainen.",
+     "created": "2025-08-09T12:44:00.000Z"
+    },
+    {
+     "id": "ae09",
+     "type": "Muu huolto",
+     "date": "2025-06-05",
+     "km": 58470,
+     "cost": "119",
+     "by": {
+      "t": "shop",
+      "n": "Länsi-Auto Oy",
+      "tel": "010 000 0001",
+      "mail": "huolto@lansiauto.example",
+      "addr": "Esimerkkikatu 1, 00100 Helsinki",
+      "yt": "0000000-0"
+     },
+     "items": [
+      "Ilmastointihuolto"
+     ],
+     "note": "Ilmastoinnin huolto ennen kesää.",
+     "created": "2025-06-05T12:14:00.000Z"
+    },
+    {
+     "id": "ae08",
+     "type": "Autohoito",
+     "date": "2025-05-17",
+     "km": 57970,
+     "cost": "18",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Käsinpesu",
+      "Kevytvaha"
+     ],
+     "note": "Kevätpesu.",
+     "created": "2025-05-17T12:20:00.000Z"
+    },
+    {
+     "id": "ae07",
+     "type": "Katsastus",
+     "date": "2025-04-22",
+     "km": 57160,
+     "cost": "64",
+     "by": {
+      "t": "shop",
+      "n": "Katsastus Lehti"
+     },
+     "items": [
+      "Määräaikaiskatsastus"
+     ],
+     "note": "Ensimmäinen katsastus, hyväksytty ilman huomautuksia.",
+     "created": "2025-04-22T12:10:00.000Z"
+    },
+    {
+     "id": "ae06",
+     "type": "Renkaiden vaihto",
+     "date": "2025-04-14",
+     "km": 56935,
+     "cost": "772",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Uudet renkaat",
+      "Tasapainotus",
+      "Kausivaihto"
+     ],
+     "note": "Uudet kesärenkaat, vanhat olivat kuluneet. Asennus ja tasapainotus samalla käynnillä.",
+     "parts": [
+      {
+       "name": "Kesärenkaat 235/45 R18 (4 kpl)",
+       "qty": "4",
+       "price": "696"
+      },
+      {
+       "name": "Venttiilit",
+       "qty": "4",
+       "price": "16"
+      }
+     ],
+     "labor": "60",
+     "receipts": [
+      "data:image/jpeg;base64,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4dJ1IwXSrB9mlla1YHKFQ6zFnYDPOBg5Y5OPwp8mm3pksdtjtaB4iZFdTyJcyNknOGXngZOSD6V1NFAGN4dsprITpJbeShCbSzKWY85yVOG7fMQCe44rZoooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z"
+     ],
+     "created": "2025-04-14T12:19:00.000Z"
+    },
+    {
+     "id": "ae05",
+     "type": "Huolto",
+     "date": "2024-11-19",
+     "km": 52135,
+     "cost": "362",
+     "by": {
+      "t": "shop",
+      "n": "Länsi-Auto Oy",
+      "tel": "010 000 0001",
+      "mail": "huolto@lansiauto.example",
+      "addr": "Esimerkkikatu 1, 00100 Helsinki",
+      "yt": "0000000-0"
+     },
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Jarruneste",
+      "Akku tarkistettu",
+      "Valot tarkistettu",
+      "Rengaspaineet",
+      "Huoltovälinäyttö nollattu"
+     ],
+     "note": "Vuosihuolto ennen talvea. Jarruneste uusittu. Ei huomautettavaa.",
+     "created": "2024-11-19T12:28:00.000Z"
+    },
+    {
+     "id": "ae04",
+     "type": "Renkaiden vaihto",
+     "date": "2024-10-24",
+     "km": 51103,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Kausivaihto",
+      "Rengashotelli"
+     ],
+     "note": "Talvirenkaat alle.",
+     "created": "2024-10-24T12:01:00.000Z"
+    },
+    {
+     "id": "ae03",
+     "type": "Autohoito",
+     "date": "2024-05-18",
+     "km": 45359,
+     "cost": "14",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Käsinpesu",
+      "Kevytvaha",
+      "Vanteiden pesu"
+     ],
+     "note": "Kevätpesu ja vaha.",
+     "created": "2024-05-18T12:24:00.000Z"
+    },
+    {
+     "id": "ae02",
+     "type": "Renkaiden vaihto",
+     "date": "2024-04-20",
+     "km": 44406,
+     "cost": "49",
+     "by": {
+      "t": "shop",
+      "n": "Rengas-Pirkka",
+      "tel": "010 000 0002",
+      "addr": "Rengastie 5, 33100 Tampere"
+     },
+     "items": [
+      "Kausivaihto",
+      "Tasapainotus",
+      "Rengashotelli"
+     ],
+     "note": "Kesärenkaat alle, talvirenkaat rengashotelliin.",
+     "created": "2024-04-20T12:18:00.000Z"
+    },
+    {
+     "id": "ae01",
+     "type": "Muu huolto",
+     "date": "2024-03-12",
+     "km": 43450,
+     "cost": "58",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Ilmansuodatin",
+      "Raitisilmasuodatin",
+      "Pyyhkijät"
+     ],
+     "note": "Osat verkkokaupasta, vaihdettu itse. Säästö korjaamohintoihin verrattuna noin 60 €.",
+     "parts": [
+      {
+       "name": "Raitisilmasuodatin",
+       "qty": "1",
+       "price": "24"
+      },
+      {
+       "name": "Ilmansuodatin",
+       "qty": "1",
+       "price": "22"
+      },
+      {
+       "name": "Pyyhkijänsulat",
+       "qty": "1",
+       "price": "12"
+      }
+     ],
+     "created": "2024-03-12T12:20:00.000Z"
+    }
+   ],
+   "fuels": [
+    {
+     "id": "af001",
+     "date": "2024-01-03",
+     "km": 41315,
+     "qty": 38.4,
+     "cost": 70.9,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al001",
+     "date": "2024-01-07",
+     "km": 41407,
+     "qty": 21.0,
+     "cost": 3.05,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al002",
+     "date": "2024-01-14",
+     "km": 41570,
+     "qty": 33.12,
+     "cost": 6.65,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al003",
+     "date": "2024-01-21",
+     "km": 41759,
+     "qty": 39.51,
+     "cost": 7.06,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al004",
+     "date": "2024-01-28",
+     "km": 41958,
+     "qty": 42.2,
+     "cost": 8.41,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al005",
+     "date": "2024-02-04",
+     "km": 42133,
+     "qty": 35.74,
+     "cost": 6.56,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al006",
+     "date": "2024-02-11",
+     "km": 42407,
+     "qty": 46.61,
+     "cost": 9.02,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al007",
+     "date": "2024-02-18",
+     "km": 42670,
+     "qty": 44.7,
+     "cost": 8.26,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af002",
+     "date": "2024-02-24",
+     "km": 42880,
+     "qty": 38.58,
+     "cost": 67.62,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al008",
+     "date": "2024-02-25",
+     "km": 42880,
+     "qty": 39.57,
+     "cost": 7.93,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al009",
+     "date": "2024-03-03",
+     "km": 43203,
+     "qty": 48.93,
+     "cost": 6.69,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al010",
+     "date": "2024-03-10",
+     "km": 43381,
+     "qty": 38.72,
+     "cost": 5.79,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al011",
+     "date": "2024-03-17",
+     "km": 43549,
+     "qty": 36.84,
+     "cost": 5.66,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al012",
+     "date": "2024-03-24",
+     "km": 43744,
+     "qty": 42.46,
+     "cost": 6.63,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al013",
+     "date": "2024-03-31",
+     "km": 43933,
+     "qty": 42.33,
+     "cost": 6.08,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al014",
+     "date": "2024-04-07",
+     "km": 44134,
+     "qty": 39.15,
+     "cost": 5.92,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al015",
+     "date": "2024-04-14",
+     "km": 44268,
+     "qty": 26.18,
+     "cost": 3.63,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al016",
+     "date": "2024-04-21",
+     "km": 44406,
+     "qty": 26.81,
+     "cost": 3.92,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al017",
+     "date": "2024-04-28",
+     "km": 44670,
+     "qty": 40.06,
+     "cost": 5.71,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al018",
+     "date": "2024-05-05",
+     "km": 44938,
+     "qty": 41.44,
+     "cost": 6.0,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al019",
+     "date": "2024-05-12",
+     "km": 45187,
+     "qty": 40.83,
+     "cost": 6.36,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al020",
+     "date": "2024-05-19",
+     "km": 45462,
+     "qty": 44.06,
+     "cost": 6.23,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al021",
+     "date": "2024-05-26",
+     "km": 45703,
+     "qty": 42.23,
+     "cost": 6.02,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af003",
+     "date": "2024-06-02",
+     "km": 46076,
+     "qty": 38.7,
+     "cost": 74.49,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "al022",
+     "date": "2024-06-02",
+     "km": 46076,
+     "qty": 46.26,
+     "cost": 6.71,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al023",
+     "date": "2024-06-09",
+     "km": 46349,
+     "qty": 46.67,
+     "cost": 6.5,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al024",
+     "date": "2024-06-16",
+     "km": 46533,
+     "qty": 35.93,
+     "cost": 5.42,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al025",
+     "date": "2024-06-23",
+     "km": 46804,
+     "qty": 47.06,
+     "cost": 6.67,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al026",
+     "date": "2024-06-30",
+     "km": 46996,
+     "qty": 37.26,
+     "cost": 5.23,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al027",
+     "date": "2024-07-07",
+     "km": 47587,
+     "qty": 41.55,
+     "cost": 6.49,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al028",
+     "date": "2024-07-14",
+     "km": 47781,
+     "qty": 37.37,
+     "cost": 5.12,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af004",
+     "date": "2024-07-20",
+     "km": 47946,
+     "qty": 32.01,
+     "cost": 59.78,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al029",
+     "date": "2024-07-21",
+     "km": 48376,
+     "qty": 41.69,
+     "cost": 6.22,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al030",
+     "date": "2024-07-28",
+     "km": 48553,
+     "qty": 34.58,
+     "cost": 5.41,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al031",
+     "date": "2024-08-04",
+     "km": 48719,
+     "qty": 32.57,
+     "cost": 4.77,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al032",
+     "date": "2024-08-11",
+     "km": 48915,
+     "qty": 38.63,
+     "cost": 5.56,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al033",
+     "date": "2024-08-18",
+     "km": 49088,
+     "qty": 33.62,
+     "cost": 5.27,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al034",
+     "date": "2024-08-25",
+     "km": 49249,
+     "qty": 31.52,
+     "cost": 4.53,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al035",
+     "date": "2024-09-01",
+     "km": 49515,
+     "qty": 45.84,
+     "cost": 6.26,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al036",
+     "date": "2024-09-08",
+     "km": 49774,
+     "qty": 36.22,
+     "cost": 4.84,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al037",
+     "date": "2024-09-15",
+     "km": 49960,
+     "qty": 36.74,
+     "cost": 5.28,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af005",
+     "date": "2024-09-22",
+     "km": 50295,
+     "qty": 44.97,
+     "cost": 80.34,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al038",
+     "date": "2024-09-22",
+     "km": 50295,
+     "qty": 40.51,
+     "cost": 5.47,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al039",
+     "date": "2024-09-29",
+     "km": 50472,
+     "qty": 34.59,
+     "cost": 4.73,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al040",
+     "date": "2024-10-06",
+     "km": 50622,
+     "qty": 29.34,
+     "cost": 4.5,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al041",
+     "date": "2024-10-13",
+     "km": 50792,
+     "qty": 33.53,
+     "cost": 4.6,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al042",
+     "date": "2024-10-20",
+     "km": 50998,
+     "qty": 40.54,
+     "cost": 6.05,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al043",
+     "date": "2024-10-27",
+     "km": 51168,
+     "qty": 32.99,
+     "cost": 4.45,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al044",
+     "date": "2024-11-03",
+     "km": 51384,
+     "qty": 44.83,
+     "cost": 6.87,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al045",
+     "date": "2024-11-10",
+     "km": 51728,
+     "qty": 43.77,
+     "cost": 6.43,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al046",
+     "date": "2024-11-17",
+     "km": 52063,
+     "qty": 43.38,
+     "cost": 6.76,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al047",
+     "date": "2024-11-24",
+     "km": 52327,
+     "qty": 50.12,
+     "cost": 7.34,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al048",
+     "date": "2024-12-01",
+     "km": 52517,
+     "qty": 43.63,
+     "cost": 8.31,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al049",
+     "date": "2024-12-08",
+     "km": 52674,
+     "qty": 36.81,
+     "cost": 6.71,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al050",
+     "date": "2024-12-15",
+     "km": 52817,
+     "qty": 32.43,
+     "cost": 5.96,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af006",
+     "date": "2024-12-20",
+     "km": 52958,
+     "qty": 30.46,
+     "cost": 52.84,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al051",
+     "date": "2024-12-22",
+     "km": 53276,
+     "qty": 44.7,
+     "cost": 8.67,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al052",
+     "date": "2024-12-29",
+     "km": 53489,
+     "qty": 26.36,
+     "cost": 5.19,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al053",
+     "date": "2025-01-05",
+     "km": 53643,
+     "qty": 31.11,
+     "cost": 5.99,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af007",
+     "date": "2025-01-11",
+     "km": 53816,
+     "qty": 38.4,
+     "cost": 64.22,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al054",
+     "date": "2025-01-12",
+     "km": 53816,
+     "qty": 36.16,
+     "cost": 7.0,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al055",
+     "date": "2025-01-19",
+     "km": 54152,
+     "qty": 40.03,
+     "cost": 8.19,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al056",
+     "date": "2025-01-26",
+     "km": 54324,
+     "qty": 36.31,
+     "cost": 7.25,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al057",
+     "date": "2025-02-02",
+     "km": 54466,
+     "qty": 32.47,
+     "cost": 6.45,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al058",
+     "date": "2025-02-09",
+     "km": 54763,
+     "qty": 46.26,
+     "cost": 9.51,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al059",
+     "date": "2025-02-16",
+     "km": 54925,
+     "qty": 36.23,
+     "cost": 7.5,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af008",
+     "date": "2025-02-21",
+     "km": 55104,
+     "qty": 37.13,
+     "cost": 65.27,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al060",
+     "date": "2025-02-23",
+     "km": 55376,
+     "qty": 42.91,
+     "cost": 8.91,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al061",
+     "date": "2025-03-02",
+     "km": 55550,
+     "qty": 38.01,
+     "cost": 5.81,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al062",
+     "date": "2025-03-09",
+     "km": 55734,
+     "qty": 39.58,
+     "cost": 6.25,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al063",
+     "date": "2025-03-16",
+     "km": 55998,
+     "qty": 47.05,
+     "cost": 7.8,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al064",
+     "date": "2025-03-23",
+     "km": 56176,
+     "qty": 39.76,
+     "cost": 5.89,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al065",
+     "date": "2025-03-30",
+     "km": 56367,
+     "qty": 42.54,
+     "cost": 6.85,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al066",
+     "date": "2025-04-06",
+     "km": 56639,
+     "qty": 49.64,
+     "cost": 8.21,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al067",
+     "date": "2025-04-13",
+     "km": 56914,
+     "qty": 43.82,
+     "cost": 6.7,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al068",
+     "date": "2025-04-20",
+     "km": 57098,
+     "qty": 35.94,
+     "cost": 5.94,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al069",
+     "date": "2025-04-27",
+     "km": 57261,
+     "qty": 31.92,
+     "cost": 4.87,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al070",
+     "date": "2025-05-04",
+     "km": 57466,
+     "qty": 39.77,
+     "cost": 6.15,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al071",
+     "date": "2025-05-11",
+     "km": 57770,
+     "qty": 40.82,
+     "cost": 6.38,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al072",
+     "date": "2025-05-18",
+     "km": 57970,
+     "qty": 39.08,
+     "cost": 5.75,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al073",
+     "date": "2025-05-25",
+     "km": 58165,
+     "qty": 38.16,
+     "cost": 6.19,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al074",
+     "date": "2025-06-01",
+     "km": 58337,
+     "qty": 33.62,
+     "cost": 5.31,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al075",
+     "date": "2025-06-08",
+     "km": 58519,
+     "qty": 35.09,
+     "cost": 5.53,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al076",
+     "date": "2025-06-15",
+     "km": 58659,
+     "qty": 27.53,
+     "cost": 4.36,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al077",
+     "date": "2025-06-22",
+     "km": 58819,
+     "qty": 30.8,
+     "cost": 4.75,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af009",
+     "date": "2025-06-29",
+     "km": 59142,
+     "qty": 43.79,
+     "cost": 81.8,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al078",
+     "date": "2025-06-29",
+     "km": 59142,
+     "qty": 45.61,
+     "cost": 7.38,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af010",
+     "date": "2025-07-05",
+     "km": 59819,
+     "qty": 31.68,
+     "cost": 48.67,
+     "full": true,
+     "grade": "95 E10",
+     "country": "SE",
+     "cur": "SEK",
+     "amt": 535.39,
+     "rate": 11.0
+    },
+    {
+     "id": "al079",
+     "date": "2025-07-06",
+     "km": 59849,
+     "qty": 46.2,
+     "cost": 7.31,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al080",
+     "date": "2025-07-13",
+     "km": 60000,
+     "qty": 29.52,
+     "cost": 4.58,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al081",
+     "date": "2025-07-20",
+     "km": 60726,
+     "qty": 49.95,
+     "cost": 7.5,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af011",
+     "date": "2025-07-27",
+     "km": 61047,
+     "qty": 38.51,
+     "cost": 69.99,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al082",
+     "date": "2025-07-27",
+     "km": 61047,
+     "qty": 45.95,
+     "cost": 7.11,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al083",
+     "date": "2025-08-03",
+     "km": 61251,
+     "qty": 40.01,
+     "cost": 6.26,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al084",
+     "date": "2025-08-10",
+     "km": 61529,
+     "qty": 39.29,
+     "cost": 6.53,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al085",
+     "date": "2025-08-17",
+     "km": 61721,
+     "qty": 37.19,
+     "cost": 6.21,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al086",
+     "date": "2025-08-24",
+     "km": 61987,
+     "qty": 44.62,
+     "cost": 7.37,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al087",
+     "date": "2025-08-31",
+     "km": 62224,
+     "qty": 41.62,
+     "cost": 6.11,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al088",
+     "date": "2025-09-07",
+     "km": 62389,
+     "qty": 32.35,
+     "cost": 5.19,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al089",
+     "date": "2025-09-14",
+     "km": 62541,
+     "qty": 29.45,
+     "cost": 4.67,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al090",
+     "date": "2025-09-21",
+     "km": 62801,
+     "qty": 45.77,
+     "cost": 6.83,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al091",
+     "date": "2025-09-28",
+     "km": 63008,
+     "qty": 40.29,
+     "cost": 6.83,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al092",
+     "date": "2025-10-05",
+     "km": 63205,
+     "qty": 38.27,
+     "cost": 6.5,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al093",
+     "date": "2025-10-12",
+     "km": 63500,
+     "qty": 44.5,
+     "cost": 7.18,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al094",
+     "date": "2025-10-19",
+     "km": 63696,
+     "qty": 38.55,
+     "cost": 6.55,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al095",
+     "date": "2025-10-26",
+     "km": 63942,
+     "qty": 41.75,
+     "cost": 6.68,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al096",
+     "date": "2025-11-02",
+     "km": 64280,
+     "qty": 42.67,
+     "cost": 6.93,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al097",
+     "date": "2025-11-09",
+     "km": 64604,
+     "qty": 43.85,
+     "cost": 6.9,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af012",
+     "date": "2025-11-16",
+     "km": 64921,
+     "qty": 44.12,
+     "cost": 73.75,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al098",
+     "date": "2025-11-16",
+     "km": 64921,
+     "qty": 45.21,
+     "cost": 6.85,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al099",
+     "date": "2025-11-23",
+     "km": 65110,
+     "qty": 41.84,
+     "cost": 6.84,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al100",
+     "date": "2025-11-30",
+     "km": 65249,
+     "qty": 30.94,
+     "cost": 4.91,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al101",
+     "date": "2025-12-07",
+     "km": 65405,
+     "qty": 37.64,
+     "cost": 7.42,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al102",
+     "date": "2025-12-14",
+     "km": 65603,
+     "qty": 44.1,
+     "cost": 9.48,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al103",
+     "date": "2025-12-21",
+     "km": 66060,
+     "qty": 39.55,
+     "cost": 8.28,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al104",
+     "date": "2025-12-28",
+     "km": 66268,
+     "qty": 25.97,
+     "cost": 5.49,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af013",
+     "date": "2026-01-02",
+     "km": 66427,
+     "qty": 39.9,
+     "cost": 72.37,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al105",
+     "date": "2026-01-04",
+     "km": 66498,
+     "qty": 44.11,
+     "cost": 8.96,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al106",
+     "date": "2026-01-11",
+     "km": 66711,
+     "qty": 38.45,
+     "cost": 7.76,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al107",
+     "date": "2026-01-18",
+     "km": 66899,
+     "qty": 42.33,
+     "cost": 7.88,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al108",
+     "date": "2026-01-25",
+     "km": 67079,
+     "qty": 36.23,
+     "cost": 7.45,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al109",
+     "date": "2026-02-01",
+     "km": 67251,
+     "qty": 33.56,
+     "cost": 6.41,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al110",
+     "date": "2026-02-08",
+     "km": 67413,
+     "qty": 36.89,
+     "cost": 7.29,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al111",
+     "date": "2026-02-15",
+     "km": 67582,
+     "qty": 33.13,
+     "cost": 6.13,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af014",
+     "date": "2026-02-20",
+     "km": 67732,
+     "qty": 24.93,
+     "cost": 47.16,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al112",
+     "date": "2026-02-22",
+     "km": 67992,
+     "qty": 39.01,
+     "cost": 7.75,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al113",
+     "date": "2026-03-01",
+     "km": 68169,
+     "qty": 38.46,
+     "cost": 5.48,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al114",
+     "date": "2026-03-08",
+     "km": 68344,
+     "qty": 39.83,
+     "cost": 6.17,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al115",
+     "date": "2026-03-15",
+     "km": 68611,
+     "qty": 39.76,
+     "cost": 5.89,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al116",
+     "date": "2026-03-22",
+     "km": 68769,
+     "qty": 35.43,
+     "cost": 5.05,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al117",
+     "date": "2026-03-29",
+     "km": 68947,
+     "qty": 37.68,
+     "cost": 5.85,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al118",
+     "date": "2026-04-05",
+     "km": 69164,
+     "qty": 44.43,
+     "cost": 7.18,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al119",
+     "date": "2026-04-12",
+     "km": 69396,
+     "qty": 43.29,
+     "cost": 6.63,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al120",
+     "date": "2026-04-19",
+     "km": 69642,
+     "qty": 43.48,
+     "cost": 6.92,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al121",
+     "date": "2026-04-26",
+     "km": 69785,
+     "qty": 27.66,
+     "cost": 4.13,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al122",
+     "date": "2026-05-03",
+     "km": 69968,
+     "qty": 36.12,
+     "cost": 5.76,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al123",
+     "date": "2026-05-10",
+     "km": 70212,
+     "qty": 45.56,
+     "cost": 7.44,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al124",
+     "date": "2026-05-17",
+     "km": 70399,
+     "qty": 36.33,
+     "cost": 5.51,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al125",
+     "date": "2026-05-24",
+     "km": 70589,
+     "qty": 37.14,
+     "cost": 6.07,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af015",
+     "date": "2026-05-31",
+     "km": 70948,
+     "qty": 38.68,
+     "cost": 75.56,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al126",
+     "date": "2026-05-31",
+     "km": 70948,
+     "qty": 45.41,
+     "cost": 7.31,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al127",
+     "date": "2026-06-07",
+     "km": 71115,
+     "qty": 32.56,
+     "cost": 4.99,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al128",
+     "date": "2026-06-14",
+     "km": 71327,
+     "qty": 41.66,
+     "cost": 6.05,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al129",
+     "date": "2026-06-21",
+     "km": 71524,
+     "qty": 38.34,
+     "cost": 5.8,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al130",
+     "date": "2026-06-28",
+     "km": 71712,
+     "qty": 36.66,
+     "cost": 5.31,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af016",
+     "date": "2026-07-04",
+     "km": 72239,
+     "qty": 23.08,
+     "cost": 44.75,
+     "full": true,
+     "grade": "95 E10",
+     "country": "EE"
+    },
+    {
+     "id": "al131",
+     "date": "2026-07-05",
+     "km": 72294,
+     "qty": 46.79,
+     "cost": 7.27,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al132",
+     "date": "2026-07-12",
+     "km": 72492,
+     "qty": 37.73,
+     "cost": 6.03,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al133",
+     "date": "2026-07-19",
+     "km": 73031,
+     "qty": 39.12,
+     "cost": 5.89,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al134",
+     "date": "2026-07-26",
+     "km": 73330,
+     "qty": 46.84,
+     "cost": 7.39,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al135",
+     "date": "2026-08-02",
+     "km": 73501,
+     "qty": 33.4,
+     "cost": 5.22,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al136",
+     "date": "2026-08-09",
+     "km": 73654,
+     "qty": 29.96,
+     "cost": 4.32,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al137",
+     "date": "2026-08-16",
+     "km": 73916,
+     "qty": 46.85,
+     "cost": 7.41,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al138",
+     "date": "2026-08-23",
+     "km": 74091,
+     "qty": 34.23,
+     "cost": 5.23,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al139",
+     "date": "2026-08-30",
+     "km": 74267,
+     "qty": 34.35,
+     "cost": 5.29,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al140",
+     "date": "2026-09-06",
+     "km": 74466,
+     "qty": 38.47,
+     "cost": 6.19,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al141",
+     "date": "2026-09-13",
+     "km": 74698,
+     "qty": 39.33,
+     "cost": 6.26,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al142",
+     "date": "2026-09-20",
+     "km": 74877,
+     "qty": 35.12,
+     "cost": 5.59,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "af017",
+     "date": "2026-09-27",
+     "km": 75225,
+     "qty": 38.68,
+     "cost": 72.21,
+     "full": true,
+     "grade": "95 E10"
+    },
+    {
+     "id": "al143",
+     "date": "2026-09-27",
+     "km": 75225,
+     "qty": 45.1,
+     "cost": 7.39,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al144",
+     "date": "2026-10-04",
+     "km": 75401,
+     "qty": 34.4,
+     "cost": 5.17,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al145",
+     "date": "2026-10-11",
+     "km": 75765,
+     "qty": 45.25,
+     "cost": 6.68,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al146",
+     "date": "2026-10-18",
+     "km": 76053,
+     "qty": 52.67,
+     "cost": 7.94,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al147",
+     "date": "2026-10-25",
+     "km": 76237,
+     "qty": 35.76,
+     "cost": 5.35,
+     "full": true,
+     "el": true
+    },
+    {
+     "id": "al148",
+     "date": "2026-11-01",
+     "km": 76565,
+     "qty": 34.48,
+     "cost": 4.91,
+     "full": true,
+     "el": true
+    }
+   ],
+   "notes": "Ladataan kotona yöllä. Ajastettu lataus talvella, jotta akku on lämmin aamulla.",
+   "memos": [
+    {
+     "id": "am1",
+     "date": "2024-02-10",
+     "title": "Rengaspaineet",
+     "text": "Kesällä 2,5 bar, talvella 2,6 bar. Tarkista kuukausittain."
+    },
+    {
+     "id": "am2",
+     "date": "2025-03-18",
+     "title": "Huoltosopimus",
+     "text": "Korjaamon kanssa sovittu: vuosihuolto marraskuussa ennen talvea."
+    },
+    {
+     "id": "am3",
+     "date": "2026-06-17",
+     "title": "Seuraavat",
+     "text": "Jarrut uusittu kesäkuussa 2026. Seuraava iso kohta: katsastus huhtikuussa 2027."
+    }
+   ]
+  },
+  {
+   "id": "tk-moto",
+   "kind": "mc",
+   "name": "Yamaha Tracer 9",
+   "nick": "Kesäpyörä",
+   "plate": "TST-302",
+   "year": 2021,
+   "km": 36525,
+   "body": "touring",
+   "color": "#2a2f3a",
+   "fuel": "Bensiini",
+   "events": [
+    {
+     "id": "me15",
+     "type": "Talvisäilytykseen",
+     "date": "2026-10-10",
+     "km": 36525,
+     "cost": "15",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu"
+     ],
+     "note": "Talvikuntoon, kausi 2026 päättyi.",
+     "created": "2026-10-10T12:04:00.000Z"
+    },
+    {
+     "id": "me14",
+     "type": "Huolto",
+     "date": "2026-09-05",
+     "km": 35238,
+     "cost": "168",
+     "by": {
+      "t": "shop",
+      "n": "Moto-Pajo Oy",
+      "tel": "010 000 0004",
+      "mail": "info@motopajo.example",
+      "addr": "Pajakatu 2, 40100 Jyväskylä"
+     },
+     "items": [
+      "Jarrupalat",
+      "Jarruneste"
+     ],
+     "note": "Jarrupalat ja jarruneste uusittu.",
+     "created": "2026-09-05T12:30:00.000Z"
+    },
+    {
+     "id": "me13",
+     "type": "Pesu ja hoito",
+     "date": "2026-07-18",
+     "km": 33044,
+     "cost": "10",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Pesu",
+      "Vahaus"
+     ],
+     "note": "Pesu ja vaha.",
+     "created": "2026-07-18T12:32:00.000Z"
+    },
+    {
+     "id": "me12",
+     "type": "Huolto",
+     "date": "2026-05-09",
+     "km": 28912,
+     "cost": "59",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Ketjun huolto"
+     ],
+     "note": "Öljynvaihto itse, työ onnistui hyvin. Kuvitteellinen esimerkki.",
+     "parts": [
+      {
+       "name": "Moottoriöljy 10W-40, 3,5 l",
+       "qty": "1",
+       "price": "36"
+      },
+      {
+       "name": "Öljynsuodatin",
+       "qty": "1",
+       "price": "14"
+      },
+      {
+       "name": "Ketjuvoide",
+       "qty": "1",
+       "price": "9"
+      }
+     ],
+     "created": "2026-05-09T12:40:00.000Z"
+    },
+    {
+     "id": "me11",
+     "type": "Käyttöönotto keväällä",
+     "date": "2026-04-25",
+     "km": 28359,
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu",
+      "Valot tarkistettu",
+      "Rengaspaineet"
+     ],
+     "note": "Kevään käyttöönotto.",
+     "created": "2026-04-25T12:57:00.000Z"
+    },
+    {
+     "id": "me10",
+     "type": "Talvisäilytykseen",
+     "date": "2025-10-12",
+     "km": 28192,
+     "cost": "15",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu"
+     ],
+     "note": "Sama rutiini kuin viime talvena.",
+     "created": "2025-10-12T12:22:00.000Z"
+    },
+    {
+     "id": "me09",
+     "type": "Korjaus ja osan vaihto",
+     "date": "2025-08-30",
+     "km": 26328,
+     "cost": "86",
+     "by": {
+      "t": "shop",
+      "n": "Moto-Pajo Oy",
+      "tel": "010 000 0004",
+      "mail": "info@motopajo.example",
+      "addr": "Pajakatu 2, 40100 Jyväskylä"
+     },
+     "items": [
+      "Sähkö ja valot"
+     ],
+     "note": "Jarruvalokatkaisin vaihdettu.",
+     "parts": [
+      {
+       "name": "Jarruvalokatkaisin",
+       "qty": "1",
+       "price": "38"
+      }
+     ],
+     "labor": "48",
+     "created": "2025-08-30T12:26:00.000Z"
+    },
+    {
+     "id": "me08",
+     "type": "Katsastus",
+     "date": "2025-05-20",
+     "km": 20057,
+     "cost": "62",
+     "by": {
+      "t": "shop",
+      "n": "Katsastus Lehti"
+     },
+     "items": [],
+     "note": "Katsastettu ilman huomautuksia.",
+     "created": "2025-05-20T12:04:00.000Z"
+    },
+    {
+     "id": "me07",
+     "type": "Huolto",
+     "date": "2025-05-06",
+     "km": 19571,
+     "cost": "548",
+     "by": {
+      "t": "shop",
+      "n": "Moto-Pajo Oy",
+      "tel": "010 000 0004",
+      "mail": "info@motopajo.example",
+      "addr": "Pajakatu 2, 40100 Jyväskylä"
+     },
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Ilmansuodatin",
+      "Sytytystulpat",
+      "Venttiilien säätö",
+      "Jarruneste"
+     ],
+     "note": "Isompi huolto: venttiilit säädetty.",
+     "receipts": [
+      "data:image/jpeg;base64,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mtpVrFdPZJDPbWluEIKAtKjPvQYPVwwA9c8811sU8czzJG2WhfZIMHhtobH5MPzqSgDBv9KvG07ToLRws8UrSSyZwMtHJuPryzYyORuz2qHULO7NrepaacQLvTlt0jWRAImHmcHn/bGMZ6V0lNZguM55OOATQBh3GlvLqPnS2izRf2iJfm2n939nCZ59HA468Z9Kb4ftJ9Oe3iks2jDWUELFdpVXQyFycHuWH13fXG5PPHboHlbapdUBwT8zMFA/MipKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAqlrME1zp0sVuSJGKnAIBZQwLDnjkAjnjnmrtFAGDY6bPCbMiKRI471pSrtHlEMLp0QBR8xHAz1z61V1DSbyaO8SK2/wBIkFzm43r++R0cJH1zwSnXAGyuoooA5y50y/fUdQljA8udm+zncB5LmFFEvXnkFfUduCahXSbhbd1WykMUkke+KQw5wA2WCrhDyVHzZJxnHArqaKAOX1LTdQn0CwthbGW4jsyrHepZJtihTljjrn5hkjt1JpzaXdfbZmjtMI9xHI0jOuWxOj8EHJG0McMMjGATXTUUAcnDpOpGC6VYPs0srWrA5QqHWYs7AZ5wMHLHJx+FPk029MljtsdrQPETIrqeRLmRsk5wy88DJyQfSupooAxvDtlNZCdJLbyUITaWZSzHnOSpw3b5iAT3HFbNFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k="
+     ],
+     "created": "2025-05-06T12:01:00.000Z"
+    },
+    {
+     "id": "me06",
+     "type": "Käyttöönotto keväällä",
+     "date": "2025-04-26",
+     "km": 19451,
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu",
+      "Valot tarkistettu",
+      "Rengaspaineet"
+     ],
+     "note": "Kevään käyttöönotto.",
+     "created": "2025-04-26T12:31:00.000Z"
+    },
+    {
+     "id": "me05",
+     "type": "Talvisäilytykseen",
+     "date": "2024-10-12",
+     "km": 19309,
+     "cost": "15",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu"
+     ],
+     "note": "Akku laturille, tankki täyteen ja stabilointiaine, pesu ja rasvaus. Peite päälle.",
+     "created": "2024-10-12T12:38:00.000Z"
+    },
+    {
+     "id": "me04",
+     "type": "Pesu ja hoito",
+     "date": "2024-08-24",
+     "km": 17954,
+     "cost": "12",
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Pesu",
+      "Vahaus",
+      "Satulan / istuimen hoito"
+     ],
+     "note": "Pesu ja vaha lomamatkan jälkeen.",
+     "created": "2024-08-24T12:13:00.000Z"
+    },
+    {
+     "id": "me03",
+     "type": "Renkaiden vaihto",
+     "date": "2024-06-15",
+     "km": 13939,
+     "cost": "484",
+     "by": {
+      "t": "shop",
+      "n": "Moto-Pajo Oy",
+      "tel": "010 000 0004",
+      "mail": "info@motopajo.example",
+      "addr": "Pajakatu 2, 40100 Jyväskylä"
+     },
+     "items": [
+      "Uudet renkaat"
+     ],
+     "note": "Uudet matkarenkaat eteen ja taakse.",
+     "parts": [
+      {
+       "name": "Etu 120/70 ZR17",
+       "qty": "1",
+       "price": "189"
+      },
+      {
+       "name": "Taka 180/55 ZR17",
+       "qty": "1",
+       "price": "239"
+      }
+     ],
+     "labor": "56",
+     "created": "2024-06-15T12:21:00.000Z"
+    },
+    {
+     "id": "me02",
+     "type": "Huolto",
+     "date": "2024-05-04",
+     "km": 12534,
+     "cost": "285",
+     "by": {
+      "t": "shop",
+      "n": "Moto-Pajo Oy",
+      "tel": "010 000 0004",
+      "mail": "info@motopajo.example",
+      "addr": "Pajakatu 2, 40100 Jyväskylä"
+     },
+     "items": [
+      "Moottoriöljy",
+      "Öljynsuodatin",
+      "Ilmansuodatin",
+      "Ketjun huolto",
+      "Jarruneste"
+     ],
+     "note": "Kevythuolto kauden alussa.",
+     "created": "2024-05-04T12:58:00.000Z"
+    },
+    {
+     "id": "me01",
+     "type": "Käyttöönotto keväällä",
+     "date": "2024-04-27",
+     "km": 12350,
+     "by": {
+      "t": "self"
+     },
+     "items": [
+      "Akku tarkistettu",
+      "Valot tarkistettu",
+      "Rengaspaineet"
+     ],
+     "note": "Akku takaisin paikalleen, rengaspaineet ja valot tarkistettu. Kausi alkaa.",
+     "created": "2024-04-27T12:55:00.000Z"
+    }
+   ],
+   "fuels": [
+    {
+     "id": "mf001",
+     "date": "2024-05-05",
+     "km": 12634,
+     "qty": 15.4,
+     "cost": 29.5,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf002",
+     "date": "2024-05-11",
+     "km": 12878,
+     "qty": 13.23,
+     "cost": 25.58,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf003",
+     "date": "2024-05-19",
+     "km": 13172,
+     "qty": 15.3,
+     "cost": 29.13,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf004",
+     "date": "2024-05-25",
+     "km": 13424,
+     "qty": 13.67,
+     "cost": 26.2,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf005",
+     "date": "2024-06-02",
+     "km": 13666,
+     "qty": 13.81,
+     "cost": 25.74,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf006",
+     "date": "2024-06-16",
+     "km": 13963,
+     "qty": 16.47,
+     "cost": 31.72,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf007",
+     "date": "2024-06-22",
+     "km": 14246,
+     "qty": 15.62,
+     "cost": 30.45,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf008",
+     "date": "2024-06-23",
+     "km": 14497,
+     "qty": 14.67,
+     "cost": 27.35,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf009",
+     "date": "2024-07-13",
+     "km": 14738,
+     "qty": 13.91,
+     "cost": 26.16,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf010",
+     "date": "2024-07-15",
+     "km": 14978,
+     "qty": 13.77,
+     "cost": 25.93,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf011",
+     "date": "2024-07-20",
+     "km": 15250,
+     "qty": 16.41,
+     "cost": 30.94,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf012",
+     "date": "2024-07-20",
+     "km": 15450,
+     "qty": 12.58,
+     "cost": 23.99,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf013",
+     "date": "2024-07-21",
+     "km": 15695,
+     "qty": 14.2,
+     "cost": 27.44,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf014",
+     "date": "2024-07-22",
+     "km": 15912,
+     "qty": 12.63,
+     "cost": 23.88,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf015",
+     "date": "2024-07-22",
+     "km": 16126,
+     "qty": 12.54,
+     "cost": 24.23,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf016",
+     "date": "2024-07-23",
+     "km": 16348,
+     "qty": 12.6,
+     "cost": 24.03,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf017",
+     "date": "2024-07-26",
+     "km": 16575,
+     "qty": 13.1,
+     "cost": 24.64,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf018",
+     "date": "2024-07-28",
+     "km": 16870,
+     "qty": 16.09,
+     "cost": 29.95,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf019",
+     "date": "2024-08-02",
+     "km": 17142,
+     "qty": 15.26,
+     "cost": 28.77,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf020",
+     "date": "2024-08-11",
+     "km": 17453,
+     "qty": 16.49,
+     "cost": 31.15,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf021",
+     "date": "2024-08-18",
+     "km": 17713,
+     "qty": 14.44,
+     "cost": 27.28,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf022",
+     "date": "2024-08-22",
+     "km": 17952,
+     "qty": 14.14,
+     "cost": 26.47,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf023",
+     "date": "2024-09-08",
+     "km": 18224,
+     "qty": 15.13,
+     "cost": 29.12,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf024",
+     "date": "2024-09-15",
+     "km": 18496,
+     "qty": 16.34,
+     "cost": 31.76,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf025",
+     "date": "2024-09-20",
+     "km": 18747,
+     "qty": 14.77,
+     "cost": 28.38,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf026",
+     "date": "2024-09-28",
+     "km": 18965,
+     "qty": 12.67,
+     "cost": 24.69,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf027",
+     "date": "2024-09-29",
+     "km": 19220,
+     "qty": 15.2,
+     "cost": 29.21,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf028",
+     "date": "2024-10-06",
+     "km": 19309,
+     "qty": 5.3,
+     "cost": 10.07,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf029",
+     "date": "2025-05-10",
+     "km": 19597,
+     "qty": 15.89,
+     "cost": 29.05,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf030",
+     "date": "2025-05-11",
+     "km": 19838,
+     "qty": 13.87,
+     "cost": 25.37,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf031",
+     "date": "2025-05-25",
+     "km": 20123,
+     "qty": 15.72,
+     "cost": 29.6,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf032",
+     "date": "2025-05-31",
+     "km": 20359,
+     "qty": 12.8,
+     "cost": 24.0,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf033",
+     "date": "2025-06-01",
+     "km": 20649,
+     "qty": 16.21,
+     "cost": 29.99,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf034",
+     "date": "2025-06-08",
+     "km": 20916,
+     "qty": 15.05,
+     "cost": 28.36,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf035",
+     "date": "2025-06-14",
+     "km": 21189,
+     "qty": 14.68,
+     "cost": 26.6,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf036",
+     "date": "2025-06-21",
+     "km": 21425,
+     "qty": 13.47,
+     "cost": 24.3,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf037",
+     "date": "2025-06-29",
+     "km": 21704,
+     "qty": 15.93,
+     "cost": 29.44,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf038",
+     "date": "2025-07-12",
+     "km": 21994,
+     "qty": 16.43,
+     "cost": 30.95,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf039",
+     "date": "2025-07-12",
+     "km": 22255,
+     "qty": 14.61,
+     "cost": 26.96,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf040",
+     "date": "2025-07-13",
+     "km": 22511,
+     "qty": 15.4,
+     "cost": 28.78,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf041",
+     "date": "2025-07-14",
+     "km": 22725,
+     "qty": 13.55,
+     "cost": 24.2,
+     "full": true,
+     "grade": "98 E5",
+     "country": "NO",
+     "cur": "NOK",
+     "amt": 283.19,
+     "rate": 11.7
+    },
+    {
+     "id": "mf042",
+     "date": "2025-07-14",
+     "km": 22973,
+     "qty": 16.22,
+     "cost": 28.97,
+     "full": true,
+     "grade": "98 E5",
+     "country": "NO",
+     "cur": "NOK",
+     "amt": 339.0,
+     "rate": 11.7
+    },
+    {
+     "id": "mf043",
+     "date": "2025-07-15",
+     "km": 23176,
+     "qty": 13.05,
+     "cost": 24.58,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf044",
+     "date": "2025-07-15",
+     "km": 23391,
+     "qty": 13.53,
+     "cost": 24.82,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf045",
+     "date": "2025-07-16",
+     "km": 23597,
+     "qty": 13.22,
+     "cost": 24.81,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf046",
+     "date": "2025-07-19",
+     "km": 23820,
+     "qty": 14.41,
+     "cost": 26.96,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf047",
+     "date": "2025-07-25",
+     "km": 24094,
+     "qty": 15.23,
+     "cost": 27.87,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf048",
+     "date": "2025-07-27",
+     "km": 24382,
+     "qty": 15.75,
+     "cost": 28.59,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf049",
+     "date": "2025-08-02",
+     "km": 24661,
+     "qty": 15.6,
+     "cost": 28.76,
+     "full": true,
+     "grade": "98 E5",
+     "skip": true
+    },
+    {
+     "id": "mf050",
+     "date": "2025-08-09",
+     "km": 24902,
+     "qty": 13.67,
+     "cost": 24.85,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf051",
+     "date": "2025-08-10",
+     "km": 25135,
+     "qty": 13.72,
+     "cost": 25.93,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf052",
+     "date": "2025-08-17",
+     "km": 25418,
+     "qty": 16.09,
+     "cost": 30.3,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf053",
+     "date": "2025-08-23",
+     "km": 25664,
+     "qty": 14.34,
+     "cost": 26.07,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf054",
+     "date": "2025-08-24",
+     "km": 25898,
+     "qty": 13.95,
+     "cost": 25.91,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf055",
+     "date": "2025-08-30",
+     "km": 26162,
+     "qty": 14.45,
+     "cost": 26.21,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf056",
+     "date": "2025-08-31",
+     "km": 26439,
+     "qty": 14.4,
+     "cost": 26.39,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf057",
+     "date": "2025-09-10",
+     "km": 26709,
+     "qty": 15.01,
+     "cost": 27.13,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf058",
+     "date": "2025-09-27",
+     "km": 26964,
+     "qty": 14.77,
+     "cost": 26.91,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf059",
+     "date": "2025-09-28",
+     "km": 27203,
+     "qty": 13.5,
+     "cost": 24.37,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf060",
+     "date": "2025-10-05",
+     "km": 27462,
+     "qty": 14.09,
+     "cost": 25.75,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf061",
+     "date": "2025-10-11",
+     "km": 27721,
+     "qty": 14.14,
+     "cost": 25.99,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf062",
+     "date": "2025-10-12",
+     "km": 27981,
+     "qty": 14.73,
+     "cost": 27.62,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf063",
+     "date": "2025-10-12",
+     "km": 28189,
+     "qty": 12.54,
+     "cost": 23.62,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf064",
+     "date": "2026-05-02",
+     "km": 28475,
+     "qty": 15.05,
+     "cost": 30.25,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf065",
+     "date": "2026-05-09",
+     "km": 28717,
+     "qty": 13.09,
+     "cost": 26.46,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf066",
+     "date": "2026-05-10",
+     "km": 29002,
+     "qty": 15.93,
+     "cost": 32.21,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf067",
+     "date": "2026-05-17",
+     "km": 29301,
+     "qty": 16.37,
+     "cost": 31.77,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf068",
+     "date": "2026-05-24",
+     "km": 29555,
+     "qty": 13.81,
+     "cost": 26.89,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf069",
+     "date": "2026-05-30",
+     "km": 29839,
+     "qty": 16.06,
+     "cost": 31.21,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf070",
+     "date": "2026-06-03",
+     "km": 30099,
+     "qty": 14.31,
+     "cost": 28.43,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf071",
+     "date": "2026-06-07",
+     "km": 30341,
+     "qty": 13.87,
+     "cost": 28.14,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf072",
+     "date": "2026-06-14",
+     "km": 30615,
+     "qty": 14.52,
+     "cost": 29.23,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf073",
+     "date": "2026-06-20",
+     "km": 30861,
+     "qty": 14.03,
+     "cost": 28.26,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf074",
+     "date": "2026-06-21",
+     "km": 31112,
+     "qty": 15.01,
+     "cost": 29.79,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf075",
+     "date": "2026-06-21",
+     "km": 31343,
+     "qty": 12.92,
+     "cost": 25.85,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf076",
+     "date": "2026-06-22",
+     "km": 31605,
+     "qty": 15.23,
+     "cost": 30.41,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf077",
+     "date": "2026-06-27",
+     "km": 31883,
+     "qty": 16.24,
+     "cost": 32.43,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf078",
+     "date": "2026-07-03",
+     "km": 32171,
+     "qty": 16.35,
+     "cost": 32.01,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf079",
+     "date": "2026-07-05",
+     "km": 32439,
+     "qty": 15.24,
+     "cost": 30.46,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf080",
+     "date": "2026-07-11",
+     "km": 32719,
+     "qty": 15.93,
+     "cost": 32.25,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf081",
+     "date": "2026-07-12",
+     "km": 32944,
+     "qty": 13.16,
+     "cost": 25.9,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf082",
+     "date": "2026-07-19",
+     "km": 33178,
+     "qty": 14.07,
+     "cost": 28.33,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf083",
+     "date": "2026-07-25",
+     "km": 33477,
+     "qty": 16.41,
+     "cost": 32.57,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf084",
+     "date": "2026-07-28",
+     "km": 33795,
+     "qty": 16.42,
+     "cost": 32.39,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf085",
+     "date": "2026-08-02",
+     "km": 34031,
+     "qty": 14.14,
+     "cost": 28.39,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf086",
+     "date": "2026-08-16",
+     "km": 34281,
+     "qty": 14.63,
+     "cost": 28.95,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf087",
+     "date": "2026-08-28",
+     "km": 34568,
+     "qty": 16.37,
+     "cost": 32.9,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf088",
+     "date": "2026-08-30",
+     "km": 34857,
+     "qty": 16.01,
+     "cost": 31.89,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf089",
+     "date": "2026-09-05",
+     "km": 35141,
+     "qty": 15.57,
+     "cost": 30.26,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf090",
+     "date": "2026-09-08",
+     "km": 35378,
+     "qty": 12.97,
+     "cost": 25.66,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf091",
+     "date": "2026-09-17",
+     "km": 35659,
+     "qty": 15.77,
+     "cost": 31.85,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf092",
+     "date": "2026-09-27",
+     "km": 35924,
+     "qty": 13.79,
+     "cost": 27.54,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf093",
+     "date": "2026-10-03",
+     "km": 36161,
+     "qty": 12.77,
+     "cost": 25.86,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf094",
+     "date": "2026-10-04",
+     "km": 36434,
+     "qty": 15.25,
+     "cost": 30.47,
+     "full": true,
+     "grade": "98 E5"
+    },
+    {
+     "id": "mf095",
+     "date": "2026-10-10",
+     "km": 36525,
+     "qty": 4.99,
+     "cost": 9.88,
+     "full": true,
+     "grade": "98 E5"
+    }
+   ],
+   "notes": "Kausiajoneuvo: ajossa huhti–lokakuussa, talvisäilytys rutiinilla.",
+   "memos": [
+    {
+     "id": "mm1",
+     "date": "2024-10-12",
+     "title": "Talvisäilytys",
+     "text": "Akku laturille, tankki täyteen + stabilointiaine, rengaspaineet +0,5 bar, peite päälle."
+    },
+    {
+     "id": "mm2",
+     "date": "2025-05-06",
+     "title": "Ketju",
+     "text": "Voitele ketju noin 500 km välein ja aina sateen jälkeen."
+    }
+   ]
+  }
+ ],
+ "profile": {
+  "name": "Testikäyttäjä",
+  "months": 12,
+  "km": 15000
+ }
+}
