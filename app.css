@@ -1117,9 +1117,9 @@ html.dark .device-glass .fl-mi[aria-pressed="true"] .fl-mck{filter:invert(1) hue
 /* 0.67: Tankkaus / Lataus -valitsin kirjausikkunassa ja Polttoaine / Sähkö -valitsin Tankkaus-välilehdellä */
 .sf-kinds{margin:0 0 10px}
 .fl-kinds{margin:0 0 12px}
-/* 0.68: päävälilehdissä vain kuvakkeet. 0.72: alavalikko kelluva kapseli (Instagram-tyyliin): ei koko leveyttä, pyöreät
+/* 0.68: päävälilehdissä vain kuvakkeet. 0.72: alavalikko kelluva kapseli (Instagram-tyyliin). 0.73: leveys sama kuin ajoneuvoikkunan sisällä (50 px = kaksi kertaa sivumarginaali 25 px), kuvakkeet tasavälein; ei koko leveyttä, pyöreät
    reunat, himmeä tausta ja varjo, valittu välilehti korostettuna kapselina. Tumma tila syntyy sivun yleisestä käänteisvärisuodattimesta. */
-html .tab-bar.main-tabs{width:max-content;margin:0 auto 8px;padding:4px;gap:2px;grid-template-columns:repeat(4,52px);bottom:calc(8px + env(safe-area-inset-bottom));background:#ffffffe6;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--hairline);border-radius:999px;box-shadow:0 6px 20px #10243f26}
+html .tab-bar.main-tabs{width:calc(100% - 50px);box-sizing:border-box;margin:0 auto 8px;padding:4px;gap:2px;grid-template-columns:repeat(4,1fr);bottom:calc(8px + env(safe-area-inset-bottom));background:#ffffffe6;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--hairline);border-radius:999px;box-shadow:0 6px 20px #10243f26}
 html .tab-bar.main-tabs a{min-height:42px;border-radius:999px}
 html .tab-bar.main-tabs a[aria-current]{background:#e4edfb}
 html .tab-bar.main-tabs a svg{width:22px;height:22px}

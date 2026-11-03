@@ -24,17 +24,22 @@ def test_valilehdissa_vain_kuvakkeet(browser, base, kieli):
         s.sulje()
 
 
-def test_alavalikko_kelluva_kapseli(browser, base):
-    """0.72: alavalikko on kapea kelluva kapseli (ei koko näytön levyinen), keskellä ja pyöristetty; valittu välilehti korostettu."""
-    s = avaa(browser, base, "fuel/tst1", autot=[tiedot.auto()], leveys=390, kello=KELLO)
+@pytest.mark.parametrize("leveys", [320, 360, 390, 430])
+def test_alavalikko_kelluva_kapseli(browser, base, leveys):
+    """0.72: alavalikko on kelluva kapseli (pyöristetty, keskellä, valittu korostettu). 0.73: sen leveys on sama kuin
+    ajoneuvoikkunan sisällön (Koti-näkymän tilarivi ja napit) ja kuvakkeet ovat tasavälein."""
+    s = avaa(browser, base, "home", autot=[tiedot.auto()], leveys=leveys, kello=KELLO)
     try:
         r = s.page.evaluate("""() => {const n = document.querySelector('.main-tabs'), b = n.getBoundingClientRect(),
-          g = document.querySelector('#app-screen').getBoundingClientRect(), cs = getComputedStyle(n),
-          a = getComputedStyle(n.querySelector('a[aria-current]'));
-          return {w: b.width, ruutu: g.width, vasen: b.left - g.left, oikea: g.right - b.right, py: parseFloat(cs.borderTopLeftRadius),
-                  h: b.height, korostus: a.backgroundColor}}""")
-        assert r["w"] < r["ruutu"] * 0.8 and abs(r["vasen"] - r["oikea"]) < 2 and r["py"] >= r["h"] / 2 - 1, r
-        assert r["korostus"] != "rgba(0, 0, 0, 0)", r
+          g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.row-actions').getBoundingClientRect(),
+          cs = getComputedStyle(n), a = getComputedStyle(n.querySelector('a[aria-current]')),
+          xs = [...n.querySelectorAll('a svg')].map(v => {const q = v.getBoundingClientRect(); return q.left + q.width / 2});
+          return {vasen: b.left - k.left, oikea: b.right - k.right, keski: (b.left + b.right) / 2 - (g.left + g.right) / 2,
+                  py: parseFloat(cs.borderTopLeftRadius), h: b.height, korostus: a.backgroundColor,
+                  valit: xs.slice(1).map((x, i) => x - xs[i])}}""")
+        assert abs(r["vasen"]) <= 2 and abs(r["oikea"]) <= 2 and abs(r["keski"]) <= 1, r
+        assert r["py"] >= r["h"] / 2 - 1 and r["korostus"] != "rgba(0, 0, 0, 0)", r
+        assert max(r["valit"]) - min(r["valit"]) <= 1.5, r  # kuvakkeet tasavälein
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
