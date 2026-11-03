@@ -489,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.80 (testiversio)';
+  const appVersion='0.81 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -821,19 +821,16 @@
     return {fueled,sel,rows,style};}
   function flCmpChart(rows,keys,sel,fmt){const vals=rows.flatMap(x=>keys.map(k=>x.pts[k])).filter(v=>v!=null);if(!vals.length)return '';
     let y0=Math.min(...vals),y1=Math.max(...vals);const pad=(y1-y0)*.12||y1*.08||1;y0=Math.max(0,y0-pad);y1+=pad;const st=niceStep((y1-y0)/4);y0=Math.floor(y0/st)*st;y1=Math.ceil(y1/st)*st;
-    const W=320,H=196,L=Math.max(24,String(fmt(y1,st)).length*6.6+8),R=70,T=12,B=24,pw=W-L-R,ph=H-T-B,n=keys.length,sw=pw/n,cx=i=>L+sw*(i+.5),r=v=>Math.round(v*10)/10;
+    const W=320,H=180,L=Math.max(24,String(fmt(y1,st)).length*6.6+8),R=8,T=12,B=24,pw=W-L-R,ph=H-T-B,n=keys.length,sw=pw/n,cx=i=>L+sw*(i+.5),r=v=>Math.round(v*10)/10;
     const Y=v=>T+(1-(v-y0)/(y1-y0))*ph;let g='';
     for(let v=y0;v<=y1+st/1e3;v+=st)g+=`<line class="g" x1="${L}" x2="${L+pw}" y1="${r(Y(v))}" y2="${r(Y(v))}"/><text class="ax" x="${L-5}" y="${r(Y(v))+4}" text-anchor="end">${fmt(v,st)}</text>`;
     if(keys[0].length>4)keys.forEach((k,i)=>{if(i&&k.slice(5)==='01')g+=`<line class="yr" x1="${r(L+sw*i)}" x2="${r(L+sw*i)}" y1="${T}" y2="${H-B}"/>`;});
     if(sel>=0)g+=`<line class="guide" x1="${r(cx(sel))}" x2="${r(cx(sel))}" y1="${T}" y2="${H-B}"/>`;
-    const ends=[];
     for(const x of rows){let pts=[],out='';const flush=()=>{if(pts.length>1)out+=`<polyline class="cl" points="${pts.join(' ')}" style="stroke:${flCol[x.st]}${flDash[x.st]?`;stroke-dasharray:${flDash[x.st]}`:''}"/>`;else if(pts.length===1){const [px,py]=pts[0].split(',');out+=`<circle cx="${px}" cy="${py}" r="2.8" style="fill:${flCol[x.st]}"/>`;}pts=[];};
       keys.forEach((k,i)=>{const v=x.pts[k];if(v==null)flush();else pts.push(r(cx(i))+','+r(Y(v)));});flush();g+=out;
       if(sel>=0&&x.pts[keys[sel]]!=null)g+=`<circle cx="${r(cx(sel))}" cy="${r(Y(x.pts[keys[sel]]))}" r="4" style="fill:${flCol[x.st]}" class="cdot"/>`;
-      let li=-1;for(let i=keys.length-1;i>=0;i--)if(x.pts[keys[i]]!=null){li=i;break;}if(li>=0)ends.push({y:Y(x.pts[keys[li]]),x:cx(li),t:`${carName(x.c)}`,v:fmt(x.pts[keys[li]]),st:x.st});}
-    // End labels: name and the last value, pushed apart so they never overlap.
-    ends.sort((a,b)=>a.y-b.y);for(let i=1;i<ends.length;i++)if(ends[i].y-ends[i-1].y<14)ends[i].y=ends[i-1].y+14;const over=ends.length?ends[ends.length-1].y-(H-B):0;if(over>0)ends.forEach(e=>e.y-=over);
-    for(const e of ends)g+=`<text class="cend" x="${r(L+pw+6)}" y="${r(e.y+4)}" style="fill:${flCol[e.st]}" translate="no">${escape(e.t.length>9?e.t.slice(0,8)+'…':e.t)}</text>`;
+}
+    // 0.81: the vehicles' names are in the legend under the chart (whole names), not cut at the line ends.
     const every=n>13?2:1;g+=keys.map((k,i)=>i%every&&i!==sel?'':`<text class="ax${i===sel?' on':''}" x="${r(cx(i))}" y="${H-6}" text-anchor="middle">${k.length>4?Number(k.slice(5)):k}</text>`).join('');
     g+=keys.map((k,i)=>`<rect class="hit" data-fl-cm="${i}" x="${r(L+sw*i)}" y="${T}" width="${r(sw)}" height="${ph}"/>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Vertailu kuukausittain">${g}</svg>`;}
@@ -855,22 +852,30 @@
     // Bars per unit group, longest bar = largest value in the group.
     const groups=[];for(const x of rows.filter(x=>!(x.mix&&m==='cons'))){let g=groups.find(z=>z.unit===x.unit);if(!g){g={unit:x.unit,list:[]};groups.push(g);}g.list.push(x);}
     groups.sort((a,b)=>b.list.length-a.list.length);const main=groups[0]||{unit:'',list:[]};
-    const bars=groups.map(g=>{const mx=Math.max(1e-9,...g.list.map(x=>x.val||0));return `${m!=='cost'?`<p class="fl-gunit">${g.unit}</p>`:''}${g.list.map(x=>`<div class="fl-bar"><div class="fl-bt"><span class="fl-bn" translate="no">${escape(carName(x.c))}</span><span class="fl-bv"><span class="nw">${fmtV(x.val)}</span> ${chg(x)}</span></div><div class="fl-btrack" aria-hidden="true"><i style="width:${x.val?Math.max(2,x.val/mx*100).toFixed(1):0}%;background:${flCol[x.st]}"></i></div></div>`).join('')}`;}).join('');
+    // 0.81: every row has the vehicle's whole name (it may wrap), the value with its unit and a bar on the group's
+    // scale. A missing value is said in words with the reason ("Ei tietoa"), never drawn as an empty (zero) bar.
+    const why=x=>(x.mix?!(x.d.now.cost>0):!(x.d.now.fills&&x.d.now.fills.length))?'ei kirjauksia jaksolla':m==='cons'?'vähintään kaksi täyttä kirjausta tarvitaan':m==='price'?'ei laskettavaa kulutusta jaksolla':'';
+    const bars=groups.map(g=>{const mx=Math.max(1e-9,...g.list.map(x=>x.val||0));return `${m!=='cost'?`<p class="fl-gunit">${g.unit}</p>`:''}${g.list.map(x=>`<div class="fl-bar"><div class="fl-bt"><span class="fl-bn"><i class="rp-vsw" aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span></span><span class="fl-bv">${x.val!==null?`<span class="nw">${fmtV(x.val)}</span> ${chg(x)}`:'<span class="fl-none">Ei tietoa</span>'}</span></div>${x.val!==null?`<div class="fl-btrack" aria-hidden="true"><i style="width:${Math.max(2,x.val/mx*100).toFixed(1)}%;background:${flCol[x.st]}"></i></div>`:`<small class="fl-why">${why(x)}</small>`}</div>`).join('')}`;}).join('');
     const susCars=sel.filter(c0=>chargeKinds(c0).some(k=>fuelStats(fcar(c0,k)).sus.length)),susTxt=susCars.length&&m!=='cost'?`<p class="fl-warn" role="note">${susCars.map(c0=>`<span translate="no">${escape(carName(c0))}</span>`).join(', ')}: <span>epätodennäköinen kulutusväli on korjattu laskennassa.</span> <span>Tarkista mittarilukema Ajoneuvo-näkymästä.</span></p>`:'';
     const mixNote=rows.some(x=>x.mix)?`<p class="fl-note">Useaa lajia käyttävän ajoneuvon kulutusta ei voi laskea yhteen. Sen Ajon hinta ja Kulut sisältävät kaikki lajit.</p>`:'';
     const multi=m==='cons'&&groups.length>1?`<p class="fl-note">Kilowattitunteja, litroja ja käyttötunteja ei voi verrata samalla asteikolla. Vertaa eri käyttövoimia kohdassa Ajon hinta.</p>`:m==='price'&&groups.length>1?`<p class="fl-note">Tuntimittarilliset ajoneuvot näkyvät omana ryhmänään (€/h).</p>`:'';
-    const card1=`<section class="rp-card" aria-labelledby="fl-c1"><div class="rp-hrow"><h3 class="rp-h" id="fl-c1"><span>${m==='cons'?'Keskikulutus':m==='price'?'Ajon hinta':'Polttoainekulut'}</span> · <span>${pName}</span></h3><small class="fl-unit">${o.p==='all'?'':'muutos vertailujaksoon'}</small></div>${bars}${multi}${mixNote}${susTxt}</section>`;
+    const card1=`<section class="rp-card" aria-labelledby="fl-c1"><div class="rp-hrow"><h3 class="rp-h" id="fl-c1"><span>${m==='cons'?'Keskikulutus':m==='price'?'Ajon hinta':'Polttoainekulut'}</span> · <span>${pName}</span></h3></div><p class="rp-sub fl-crng">${o.p==='all'?'<span>Koko historia</span>':(r0=>`<span class="nw">${rng(r0.from,r0.to)}</span> · <span>muutos: sama jakso vuotta aiemmin</span>`)(rpRange(o.p))}</p>${bars}${multi}${mixNote}${susTxt}</section>`;
     // Line chart for the largest unit group.
     const keys=[...new Set(main.list.flatMap(x=>Object.keys(x.pts)))].sort(),fmtA=(v,st)=>m==='cost'?number(Math.round(v)):dec(v,st===undefined?(m==='price'?2:1):st<.1?2:st<1?1:0);
     let csel=o.cm!=null&&o.cm<keys.length?o.cm:-1;if(csel<0)for(let i=keys.length-1;i>=0;i--)if(main.list.some(x=>x.pts[keys[i]]!=null)){csel=i;break;}
     const chart=keys.length>1?flCmpChart(main.list,keys,csel,fmtA):'',kName=k=>k.length>4?`<span>${ucFirst(mName(k))}</span> <span>${k.slice(0,4)}</span>`:`<span>${k}</span>`;
-    const selTxt=csel>=0?`<div class="fl-csel"><b>${kName(keys[csel])}</b><ul>${main.list.map(x=>`<li><i aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span> <b>${x.pts[keys[csel]]!=null?(m==='cost'?eur(x.pts[keys[csel]]):fmtA(x.pts[keys[csel]])):'–'}</b></li>`).join('')}</ul></div>`:'';
-    const card2=chart?`<section class="rp-card" aria-labelledby="fl-c2"><div class="rp-hrow"><h3 class="rp-h" id="fl-c2">${o.p==='all'?(m==='cons'?'Kulutus vuosittain':m==='price'?'Ajon hinta vuosittain':'Kulut vuosittain'):(m==='cons'?'Kulutus kuukausittain':m==='price'?'Ajon hinta kuukausittain':'Kulut kuukausittain')}</h3><small class="fl-unit">${m==='cost'?'€':main.unit}</small></div>${chart}${selTxt}<p class="fl-note">${o.p==='all'?'Napauta vuotta, niin näet kaikkien valittujen tarkat luvut.':'Napauta kuukautta, niin näet kaikkien valittujen tarkat luvut.'}${groups.length>1?` <span>Kaaviossa ovat ajoneuvot, joiden yksikkö on</span> <span>${m==='cost'?'€':main.unit}</span>.`:''}</p></section>`:'';
-    // Summary table: the same figures for every vehicle and the total cost.
+    const partK=new Set(main.list.flatMap(x=>(x.d.mon||[]).filter(b=>b.partial).map(b=>b.k)));
+    const selTxt=csel>=0?`<div class="fl-csel"><b>${kName(keys[csel])}</b>${partK.has(keys[csel])?' <span class="rp-part">– <span>keskeneräinen kuukausi</span></span>':''}<ul>${main.list.map(x=>`<li><i aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span> <b>${x.pts[keys[csel]]!=null?(m==='cost'?eur(x.pts[keys[csel]]):fmtA(x.pts[keys[csel]])):'–'}</b></li>`).join('')}</ul></div>`:'';
+    const lgd=`<p class="rp-legend fl-lgd">${main.list.filter(x=>keys.some(k=>x.pts[k]!=null)).map(x=>`<span class="nw"><i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[x.st]}${flDash[x.st]?';border-top-style:'+(flDash[x.st].startsWith('1.5')?'dotted':'dashed'):''}"></i><span translate="no">${escape(carName(x.c))}</span></span>`).join('')}</p>`;
+    const card2=chart?`<section class="rp-card" aria-labelledby="fl-c2"><div class="rp-hrow"><h3 class="rp-h" id="fl-c2">${o.p==='all'?(m==='cons'?'Kulutus vuosittain':m==='price'?'Ajon hinta vuosittain':'Kulut vuosittain'):(m==='cons'?'Kulutus kuukausittain':m==='price'?'Ajon hinta kuukausittain':'Kulut kuukausittain')}</h3><small class="fl-unit">${m==='cost'?'€':main.unit}</small></div>${chart}${lgd}${selTxt}<p class="fl-note">${o.p==='all'?'Napauta vuotta, niin näet luvut.':'Napauta kuukautta, niin näet luvut.'}${m==='cons'?' <span>Pisteet ovat mitattuja kuukausia; viiva yhdistää vain peräkkäiset kuukaudet.</span>':''}${groups.length>1?` <span>Kaaviossa ovat ajoneuvot, joiden yksikkö on</span> <span>${m==='cost'?'€':main.unit}</span>.`:''}</p></section>`:'';
+    // 0.81: the summary as one compact row per vehicle (whole name; consumption, cost of driving and costs with their
+    // units) instead of the four-column table whose names were cut on a phone; the total of the fuel and charging costs
+    // under it. Consumption figures of different vehicles are never added together.
     const tot=rows.reduce((s,x)=>s+x.d.now.cost,0);
-    const table=`<section class="rp-card" aria-labelledby="fl-c3"><h3 class="rp-h" id="fl-c3"><span>Yhteenveto</span> · <span>${pName}</span></h3><div class="fl-twrap"><table class="fl-table fl-ctable"><thead><tr><th scope="col">Ajoneuvo</th><th scope="col"><span>Kulutus</span><small>/100 km</small></th><th scope="col"><span>Ajon hinta</span><small>€/100 km</small></th><th scope="col"><span>Kulut</span><small>€</small></th></tr></thead><tbody>${rows.map(x=>{const d=x.d;
-      return `<tr><th scope="row"><span class="fl-tn"><i class="fl-tsw" aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span></span></th><td>${x.mix?(x.mixCons?`<small>${x.mixCons}</small>`:'–'):d.now.avg!==null?`${dec(d.now.avg)} <small>${x.u}${x.hr?'/h':''}</small>`:'–'}</td><td>${d.now.per100!==null?`${dec2(d.now.per100)}${x.hr?' <small>€/h</small>':''}`:'–'}</td><td><b>${number(Math.round(d.now.cost))}</b></td></tr>`;}).join('')}<tr class="fl-tot"><th scope="row">Yhteensä</th><td></td><td></td><td><b>${number(Math.round(tot))}</b></td></tr></tbody></table></div>
-      <p class="fl-sub">Ajon hinta (€/100 km) on luku, jota voi verrata kaikkien käyttövoimien kesken. Sähköauton hinta riippuu paljon siitä, lataatko kotona vai pikalaturilla.</p></section>`;
+    const table=`<section class="rp-card" aria-labelledby="fl-c3"><h3 class="rp-h" id="fl-c3"><span>Yhteenveto</span> · <span>${pName}</span></h3><ul class="fl-srows">${rows.map(x=>{const d=x.d,cons=x.mix?(x.mixCons||''):d.now.avg!==null?`${dec(d.now.avg)} ${x.pu}`:'';
+      return `<li><p class="fl-srn"><i class="rp-vsw" aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span><b>${eur(d.now.cost)}</b></p><p class="fl-srm"><span class="nw"><span>Kulutus</span> <b>${cons||'–'}</b></span> · <span class="nw"><span>Ajon hinta</span> <b>${d.now.per100!==null?`${dec2(d.now.per100)} €/${per(x.c)}`:'–'}</b></span></p></li>`;}).join('')}</ul>
+      <p class="fl-stot"><span>${rows.some(x=>x.u==='kWh'||x.mix)?'Polttoaine- ja latauskulut yhteensä':'Polttoainekulut yhteensä'}</span><b>${eur(tot)}</b></p>
+      <p class="fl-sub">Ajon hinta (€/100 km) on vertailukelpoinen eri käyttövoimien kesken.</p></section>`;
     return `${top()}${head}${tabs}${chips}${msg}${seg}${card1}${card2}${table}`;}
   // Keeps the chosen vehicle's button in view in a long row of vehicles.
   function flScrollChips(){const row=screen.querySelector('.fl-cars'),on=row&&row.querySelector('[aria-pressed="true"]');if(!on)return;const a=row.getBoundingClientRect(),b=on.getBoundingClientRect();if(b.left<a.left||b.right>a.right)row.scrollLeft+=b.left-a.left-(b.left-a.left>0?a.width-b.width-16:16);}

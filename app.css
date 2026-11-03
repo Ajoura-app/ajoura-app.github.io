@@ -1290,3 +1290,23 @@ html.dark .device-glass .rp-kbar{background:#d6dde7}
 .rp-custom .error-note{grid-column:1/-1;margin:0}
 html.dark .device-glass .rp-custom input{background:#e9eef4;border-color:#dce3ec}
 .rp-filters{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+/* 0.81: Tankkaus → Vertailu: koko nimet (rivittyvät), puuttuva arvo tekstinä ilman nollapalkkia, nimet kaavion selitteessä,
+   yhteenveto riveinä (ei neljän sarakkeen taulukkoa). */
+.fl-crng{margin:-6px 0 10px}
+.fl-bar .fl-bn{display:flex;align-items:baseline;gap:6px;min-width:0;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+.fl-bar .fl-bn .rp-vsw{transform:translateY(1px)}
+.fl-bar .fl-bt{align-items:baseline}
+.fl-none{font-size:12px;font-weight:600;color:#4f5f72;white-space:nowrap}
+.fl-why{display:block;margin:1px 0 0 16px;font-size:11.5px;color:#4f5f72}
+.fl-lgd{margin-top:6px}
+.fl-lgd .fl-sw{display:inline-block;width:16px;height:0;border-top:3px solid;vertical-align:middle}
+.fl-srows{list-style:none;margin:8px 0 0;padding:0}
+.fl-srows li{padding:8px 0;border-top:1px solid var(--hairline)}
+.fl-srows li:first-child{border-top:0;padding-top:2px}
+.fl-srn{display:flex;align-items:baseline;gap:7px;margin:0;font-size:13.5px;font-weight:650;color:var(--ink)}
+.fl-srn>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.fl-srn b{white-space:nowrap}
+.fl-srm{margin:3px 0 0 17px;font-size:12px;line-height:1.5;color:#4f5f72}
+.fl-srm b{font-weight:650;color:var(--ink)}
+.fl-stot{display:flex;justify-content:space-between;gap:10px;margin:4px 0 8px;padding-top:8px;border-top:1px solid var(--hairline);font-size:13px;font-weight:650;color:var(--ink)}
+.fl-csel .rp-part{font-size:12px;font-weight:600;color:#5a4300}

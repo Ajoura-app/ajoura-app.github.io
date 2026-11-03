@@ -234,8 +234,8 @@ def test_vertailu_hybridi_kokonaishinta(browser, base):
     pg = s.page
     try:
         pg.wait_for_selector("[data-fl-tab=cmp]"); pg.click("[data-fl-tab=cmp]")
-        pg.wait_for_selector(".fl-ctable")
-        rivi = next(r for r in pg.eval_on_selector_all(".fl-ctable tbody tr", "t => t.map(x => x.innerText.replace(/\\s+/g, ' '))") if "Prius" in r)
+        pg.wait_for_selector(".fl-srows")  # 0.81: yhteenveto riveinä (ennen taulukko .fl-ctable)
+        rivi = next(r for r in pg.eval_on_selector_all(".fl-srows li", "t => t.map(x => x.innerText.replace(/\\s+/g, ' '))") if "Prius" in r)
         kulut = round(sum(f["cost"] for f in h["fuels"]))  # 160 € = 149 € polttoaine + 11 € sähkö
         assert f"{kulut}" in rivi and "8,01" in rivi, rivi  # 160,2 € / 2 000 km
         assert "3,8 l" in rivi and "1,9 kWh" in rivi, rivi

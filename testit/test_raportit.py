@@ -315,7 +315,7 @@ VERT_JS = """() => {const d = document.querySelector('.fl-cmenu'), sc = document
   const l = d?.querySelector('.fl-cmenu-list').getBoundingClientRect();
   return {auki: d?.open, teksti: d?.querySelector('.rp-pick-t').textContent.replace(/\\s+/g, ' ').trim(),
     valitut: [...document.querySelectorAll('.fl-mi')].map(b => [b.dataset.flCmpcar, b.getAttribute('aria-pressed'), b.disabled]),
-    rivit: [...document.querySelectorAll('.fl-ctable .fl-tn')].map(e => e.textContent),
+    rivit: [...document.querySelectorAll('.fl-srows .fl-srn span[translate]')].map(e => e.textContent),
     sisalla: !d?.open || (l.left >= sc.left - 0.5 && l.right <= sc.right + 0.5),
     off: JSON.parse(localStorage.getItem('ajoura-fuel') || '{}').off || []};}"""
 
@@ -562,6 +562,39 @@ def test_valikon_kehys_vain_nappaimistolla(browser, base, mobiili):
             pg.evaluate("document.querySelector('.rp-cmenu>summary').focus()")
             pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Tab")
             assert "solid" in pg.evaluate(KEHYS_JS), pg.evaluate(KEHYS_JS)
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.81: Tankkaus → Vertailu mobiilissa: ajoneuvon koko nimi (ei katkaistu), puuttuva arvo "Ei tietoa" syineen ilman
+# nollapalkkia, nimet kaavion selitteessä (ei katkaistuja nimiä viivojen päissä), yhteenveto riveinä ja kulujen summa.
+VERT2_JS = """() => {const sc = document.querySelector('.screen-content'), b = sc.getBoundingClientRect();
+  const katki = e => e.scrollWidth > e.clientWidth + 1 || getComputedStyle(e).textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth;
+  return {palkit: [...document.querySelectorAll('.fl-bar')].map(r => [r.querySelector('.fl-bn span[translate]').textContent, !!r.querySelector('.fl-btrack'), r.querySelector('.fl-none, .fl-bv')?.innerText.replace(/\\s+/g, ' '), r.querySelector('.fl-why')?.textContent || '']),
+    katkenneet: [...document.querySelectorAll('.fl-bn, .fl-srn span[translate], .fl-lgd span[translate]')].filter(katki).map(e => e.textContent),
+    paat: document.querySelectorAll('.fl-chart .cend').length, selite: [...document.querySelectorAll('.fl-lgd span[translate]')].map(e => e.textContent),
+    rivit: [...document.querySelectorAll('.fl-srows li')].map(l => l.innerText.replace(/\\s+/g, ' ')), yht: document.querySelector('.fl-stot')?.innerText.replace(/\\s+/g, ' '),
+    yli: sc.scrollWidth - sc.clientWidth, taulukko: document.querySelectorAll('.fl-ctable').length};}"""
+
+
+@pytest.mark.parametrize("kieli", ["fi", "sv"])
+@pytest.mark.parametrize("leveys", [320, 390])
+def test_tankkaus_vertailu_mobiilissa(browser, base, kieli, leveys):
+    autot = kuusi_autoa()[:3]
+    pitka = "Volkswagen Passat Variant 2.0 TDI Highline"
+    autot[1]["name"] = pitka
+    autot[0]["fuels"] = [T("f1", "2026-09-01", 148000, 60, 110)]  # yksi tankkaus: kulutusta ei voi laskea
+    autot[2]["fuels"] = [T("q1", "2026-08-01", 60000, 40, 70), T("q2", "2026-09-01", 60600, 45, 80), T("q3", "2026-10-01", 61200, 44, 79)]
+    s = avaa(browser, base, "fuel", autot=autot, kieli=kieli, leveys=leveys, extra={"ajoura-fuel": '{"p":"12","t":"cmp","m":"cons"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate(VERT2_JS)
+        nimet = [x[0] for x in r["palkit"]]
+        assert pitka in nimet and not r["katkenneet"] and r["yli"] <= 0, r
+        puuttuu = next(x for x in r["palkit"] if x[0] == "Testi Pakettiauto")
+        assert not puuttuu[1] and puuttuu[2] in ("Ei tietoa", "Ingen data") and puuttuu[3], r  # ei nollapalkkia, syy kerrottu
+        assert r["paat"] == 0 and pitka in r["selite"] and "Testi Pakettiauto" not in r["selite"], r  # vain ajoneuvot, joilla on pisteitä
+        assert len(r["rivit"]) == 3 and r["taulukko"] == 0 and "479" in r["yht"].replace("\u00a0", ""), r  # 110 + 140 + 229 €
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
