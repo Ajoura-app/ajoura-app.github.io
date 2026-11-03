@@ -1114,3 +1114,6 @@ html.dark .device-glass .fl-mi[aria-pressed="true"] .fl-mck{filter:invert(1) hue
 }
 /* Ownership change (v0.64, AJ-27): date and odometer fields stacked on narrow screens. The date input's own minimum width (~155 px) and a long label ("Mätarställning (km)") pushed the cards 2–4 px past the screen at 320 and 360 px in Swedish. */
 @container(max-width:380px){#owner-form .form-row{grid-template-columns:1fr;gap:0}}
+/* 0.67: Tankkaus / Lataus -valitsin kirjausikkunassa ja Polttoaine / Sähkö -valitsin Tankkaus-välilehdellä */
+.sf-kinds{margin:0 0 10px}
+.fl-kinds{margin:0 0 12px}
