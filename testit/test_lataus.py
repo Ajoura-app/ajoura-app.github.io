@@ -57,6 +57,8 @@ def test_kaasu_kiloina(browser, base):
     pg = s.page
     try:
         pg.wait_for_selector(".fl-kinds")
+        assert pg.get_attribute("[data-fl-kind=all]", "aria-pressed") == "true"
+        pg.click("[data-fl-kind=gas]"); pg.wait_for_selector(".fl-big")
         assert "kg/100 km" in pg.inner_text(".fl-big") and fi(14.0 / 500 * 100) in pg.inner_text(".fl-big")
         assert "Kaasu" in pg.inner_text("[data-fl-kind=gas]") and pg.get_attribute("[data-fl-kind=gas]", "aria-pressed") == "true"
         pg.click(".fl-add"); pg.wait_for_selector(F)
@@ -89,6 +91,13 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
     pg = s.page
     try:
         pg.wait_for_selector(".fl-kinds")
+        # 0.70: oletuksena Yhteensä: molemmat lajit, kulut yhteensä ja ajon hinta (62 + 11 € ... laskettu alla).
+        assert pg.get_attribute("[data-fl-kind=all]", "aria-pressed") == "true"
+        kk = pg.inner_text(".fl-all").replace("\u00a0", " ")
+        assert "l/100 km" in kk and "kWh/100 km" in kk and "Polttoaine" in kk and "Sähkö" in kk, kk
+        kulut = round(sum(f["cost"] for f in h["fuels"]))  # 160 € (aikaväli 12 kk kattaa kaikki)
+        assert f"{kulut} €" in kk, kk
+        pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
         assert pg.get_attribute("[data-fl-kind=fuel]", "aria-pressed") == "true"
         assert fi(keskikulutus(fuel_fills)) in pg.inner_text(".fl-big") and "l/100 km" in pg.inner_text(".fl-big")
         assert "Polttoainekulut" in pg.inner_text(".fl-sum") and "149 €" in pg.inner_text(".fl-sum")  # 54 + 45 + 50,4

@@ -1119,3 +1119,6 @@ html.dark .device-glass .fl-mi[aria-pressed="true"] .fl-mck{filter:invert(1) hue
 .fl-kinds{margin:0 0 12px}
 /* 0.68: päävälilehdissä vain kuvakkeet */
 .main-tabs a svg{width:26px;height:26px}
+/* 0.70: Yhteensä-näkymä */
+.fl-allh{margin:0;padding:14px 14px 0}
+.fl-allbody{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px}
