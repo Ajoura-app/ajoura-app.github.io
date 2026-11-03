@@ -56,7 +56,6 @@ git worktree remove ../edellinen
 | `test_merkinta.py` | Merkinnän lisäys, muokkaus ja poisto, huoltolaskuri, työn tekijä, tuleva päivä hylätään |
 | `test_tankkaus.py` | Tankkausikkuna, litrojen laskenta, keskikulutus, muokkaus ja poisto |
 | `test_varmuuskopio.py` | Tallennus (lataus ja iPhonen jakovalikko), identtinen palautus kuvineen, aito 0.37:n varmuuskopio, yhdistäminen, viallinen tiedosto hylätään |
-| `test_testikayttaja.py` | Keksitty testikäyttäjä `aineisto/testikayttaja.json` (auto + moottoripyörä, 1.1.2024–3.11.2026): tiedosto eheä, palautuu varmuuskopiona muuttumattomana, kaikki näkymät aukeavat FI/EN/SV. Tiedoston tekee `python3 testit/tee_testikayttaja.py` |
 | `test_haitallinen.py` | HTML-koodi käyttäjän teksteissä näkyy tekstinä (myös ostajan linkissä), CSV:n kaavasuoja |
 | `test_kielet.py` | Kääntämättömät tekstit englanniksi ja ruotsiksi |
 | `test_leveys.py` | Ei vaakavieritystä 320 ja 430 px leveydellä |
