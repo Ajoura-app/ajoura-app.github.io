@@ -1137,3 +1137,6 @@ html .tab-dock>.tab-bar.main-tabs{position:relative;bottom:auto;pointer-events:a
 html .tab-dock>.tab-bar.main-tabs a[aria-current]{box-shadow:0 2px 6px #1769f42e}
 html.dark .device-glass .tab-dock>.tab-bar.main-tabs,html.dark .device-glass .tab-dock>.tab-bar.main-tabs a[aria-current]{box-shadow:none}
 @media(pointer:coarse){#app-screen:has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus) .tab-dock{display:none}}
+/* 0.76: muutosta ei merkitä hyväksi tai huonoksi (ei vihreää eikä punaista): vähemmän ajoa tai pienemmät kulut eivät
+   sellaisenaan ole onnistumista. Suunta näkyy nuolesta ja etumerkistä. */
+.rp-delta.down,.rp-delta.up,.fl-cc.down,.fl-cc.up{color:#3d4b5c}.rp-delta.pill.down,.rp-delta.pill.up{background:#edf1f6}

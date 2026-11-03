@@ -285,12 +285,14 @@ def test_yksi_ajoneuvo_ilman_valintaa(browser, base):
 
 
 # 0.53: ajoneuvokortin selitteessä kululajin nimi summan vieressä, muutoksen vertailujakso näkyvissä ja pieni €/km "< 0,01".
-@pytest.mark.parametrize("kieli,nimi,vs", [("fi", "Korjaukset", "verrattuna edellisiin 12 kk"),
-                                           ("en", "Repairs", "compared with the previous 12 months"),
-                                           ("sv", "Reparationer", "jämfört med föregående 12 mån")])
+# 0.76: vertailujakso on sama jakso vuotta aiemmin, ja muutos näkyy vain, kun kirjauksia on koko vertailujaksolta.
+@pytest.mark.parametrize("kieli,nimi,vs", [("fi", "Korjaukset", "verrattuna samaan jaksoon vuotta aiemmin"),
+                                           ("en", "Repairs", "compared with the same period a year earlier"),
+                                           ("sv", "Reparationer", "jämfört med samma period ett år tidigare")])
 def test_ajoneuvokortin_selite(browser, base, kieli, nimi, vs):
     autot = talli()
     autot[0]["events"].append(M("x0", "Huolto", "2025-06-01", 130000, cost="300"))  # vertailujaksolle kuluja → muutos
+    autot[0]["fuels"].insert(0, T("f0", "2024-11-15", 120000, 50, 90))  # tankkauksia koko vertailujaksolta
     autot.append(tiedot.auto("a4", name="Testi Halpa", plate="TST-204", km=120000,
                              events=[M("w1", "Pesu ja hoito", "2025-11-01", 100000, cost="1")]))
     s = avaa(browser, base, "reports", autot=autot, kieli=kieli, extra=RP, kello=KELLO)
