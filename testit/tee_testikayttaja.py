@@ -169,6 +169,13 @@ def auto_tiedot():
         return e
 
     tapahtumat = [
+        ev(18, "Määräaikaishuolto", "2024-02-14", cost="329", by=korjaamo,
+           items=["Moottoriöljy", "Öljynsuodatin", "Ilmansuodatin", "Jarruneste", "Valot tarkistettu", "Rengaspaineet",
+                  "Huoltovälinäyttö nollattu"],
+           note="Määräaikaishuolto, ei huomautettavaa.",
+           receipts=[kuitti(["LANSI-AUTO OY", "Esimerkkikuitti", "", "Maaraaikaishuolto    249,00",
+                             "Ilmansuodatin         38,00", "Jarruneste             42,00", "",
+                             "YHTEENSA EUR        329,00", "", "Keksitty kuitti,", "ei oikea asiakas"])]),
         ev(1, "Muu huolto", "2024-03-12", cost="58", by=omat, items=["Ilmansuodatin", "Raitisilmasuodatin", "Pyyhkijät"],
            note="Osat verkkokaupasta, vaihdettu itse. Säästö korjaamohintoihin verrattuna noin 60 €.",
            parts=[dict(name="Raitisilmasuodatin", qty="1", price="24"), dict(name="Ilmansuodatin", qty="1", price="22"),
@@ -228,7 +235,7 @@ def auto_tiedot():
         dict(id="am3", date="2026-06-17", title="Seuraavat",
              text="Jarrut uusittu kesäkuussa 2026. Seuraava iso kohta: katsastus huhtikuussa 2027."),
     ]
-    auto = dict(id="tk-auto", name="Volvo V60", nick="Perheauto", plate="TST-301", year=2021, km=km_pv(LOPPU), body="wagon",
+    auto = dict(id="tk-auto", name="Volvo V90", nick="Perheauto", plate="TST-301", year=2021, km=km_pv(LOPPU), body="wagon",
                 color="#3b4d61", fuel="Lataushybridi", engine="T6 Recharge", events=list(reversed(tapahtumat)),
                 fuels=sorted(tankkaukset + lataukset, key=lambda f: (f["date"], f["id"])),
                 notes="Ladataan kotona yöllä. Ajastettu lataus talvella, jotta akku on lämmin aamulla.",
