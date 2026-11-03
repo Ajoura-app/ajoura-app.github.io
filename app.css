@@ -1277,3 +1277,16 @@ html.dark .device-glass .rp-kbar{background:#d6dde7}
 .rp-cks .nw{display:inline-flex;align-items:center;gap:5px}
 .rp-cks .rp-dot{width:9px;height:9px}
 .rp-cks b{color:var(--ink)}
+/* 0.80: jakson valinnat Edellinen vuosi ja Mukautettu (alku- ja loppupäivä). Valikon sininen kehys vain näppäimistöllä
+   kohdistettaessa (ennen 0.80 kehys jäi pysyväksi napautuksen jälkeen); avoin ajoneuvoluettelo korostetaan hillitysti. */
+.rp-pick:focus-within{outline:none}
+.rp-pick:has(select:focus-visible),.rp-pick:has(>summary:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+.rp-pick>summary:focus{outline:none}
+.rp-cmenu[open]{border-color:#9fbfe8}
+.rp-custom{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-4px 0 12px}
+.rp-custom label{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:12px;font-weight:600;color:#4f5f72}
+.rp-custom input{width:100%;min-width:0;min-height:42px;padding:6px 8px;border:1px solid var(--hairline);border-radius:12px;background:#fff;font:inherit;font-size:16px;font-weight:500;color:var(--ink);-webkit-appearance:none;appearance:none}
+.rp-custom input:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.rp-custom .error-note{grid-column:1/-1;margin:0}
+html.dark .device-glass .rp-custom input{background:#e9eef4;border-color:#dce3ec}
+.rp-filters{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}

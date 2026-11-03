@@ -495,3 +495,73 @@ def test_ajoneuvon_vari_sama(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.80: jaksot Edellinen vuosi ja Mukautettu (Raportit) sekä Edellinen vuosi (Tankkaus); kaikki luvut, kaavio ja
+# ajoneuvorivit päivittyvät. Valikon sininen kehys vain näppäimistökohdistuksessa, ei napautuksen jälkeen.
+JAKSO_JS = """() => ({ctx: document.querySelector('.rp-total .rp-ctx')?.innerText || '', iso: document.querySelector('.rp-total .rp-big')?.textContent.replace(/\\s/g, ''),
+  kk: document.querySelectorAll('.rp-col').length, osat: document.querySelectorAll('.rp-col.part').length,
+  mukautettu: !!document.querySelector('[data-rp-custom]'), virhe: document.querySelector('[data-rp-custom] [role=alert]')?.textContent || '',
+  prefs: JSON.parse(localStorage.getItem('ajoura-reports') || '{}')})"""
+
+
+def test_jakso_edellinen_ja_mukautettu(browser, base):
+    autot = talli()
+    autot[0]["events"].append(M("x9", "Huolto", "2025-06-01", 130000, cost="300"))
+    s = avaa(browser, base, "reports", autot=autot, extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, kello=KELLO)
+    pg = s.page
+    try:
+        pg.select_option("[data-rp-period]", "prev"); pg.wait_for_timeout(150)
+        r = pg.evaluate(JAKSO_JS)
+        assert "1.1.–31.12.2025" in r["ctx"] and r["iso"] == "300€" and r["kk"] == 12 and r["osat"] == 0, r
+        pg.select_option("[data-rp-period]", "custom"); pg.wait_for_timeout(150)
+        r = pg.evaluate(JAKSO_JS)
+        assert r["mukautettu"] and r["prefs"]["p"] == "custom" and r["prefs"]["cf"] == "2025-10-01" and r["prefs"]["ct"] == "2026-10-29", r
+        pg.fill("[data-rp-custom] [name=cf]", "2026-03-01"); pg.dispatch_event("[data-rp-custom] [name=cf]", "change"); pg.wait_for_timeout(150)
+        pg.fill("[data-rp-custom] [name=ct]", "2026-05-31"); pg.dispatch_event("[data-rp-custom] [name=ct]", "change"); pg.wait_for_timeout(150)
+        r = pg.evaluate(JAKSO_JS)
+        assert "1.3.–31.5.2026" in r["ctx"] and r["iso"] == str(496 + 285 + 190) + "€" and r["kk"] == 3, r
+        # Alku loppua myöhemmin: virhe, valinta ennallaan.
+        pg.fill("[data-rp-custom] [name=cf]", "2026-06-15"); pg.dispatch_event("[data-rp-custom] [name=cf]", "change"); pg.wait_for_timeout(150)
+        r = pg.evaluate(JAKSO_JS)
+        assert "loppupäivän jälkeen" in r["virhe"] and r["prefs"]["cf"] == "2026-03-01", r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_tankkaus_edellinen_vuosi(browser, base):
+    autot = talli()
+    autot[0]["fuels"] = [T("g1", "2025-03-01", 120000, 50, 90), T("g2", "2025-04-01", 120800, 60, 108)]
+    s = avaa(browser, base, "fuel/a1", autot=autot, extra={"ajoura-fuel": '{"p":"prev","t":"car"}'}, kello=KELLO)
+    try:
+        assert s.page.input_value("[data-fl-period]") == "prev"
+        assert "198 €" in s.page.inner_text(".fl-sum").replace(" ", " ")
+        assert "7,5" in s.page.inner_text(".fl-big")  # 60 l / 800 km
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+KEHYS_JS = "() => [...document.querySelectorAll('.rp-filters .rp-pick')].map(p => getComputedStyle(p).outlineStyle)"
+
+
+@pytest.mark.parametrize("mobiili", [True, False])
+def test_valikon_kehys_vain_nappaimistolla(browser, base, mobiili):
+    s = avaa(browser, base, "reports", autot=talli(), extra=RP, mobiili=mobiili, kello=KELLO)
+    pg = s.page
+    try:
+        # Valinnan jälkeen kohdistus palaa valikkoon (0.61), mutta kehystä ei näytetä (Niklaksen kuvassa pysyvä kehys).
+        pg.click(".rp-cmenu>summary"); pg.click("[data-rp-car='a2']"); pg.wait_for_timeout(150)
+        assert pg.evaluate(KEHYS_JS) == ["none", "none"], pg.evaluate(KEHYS_JS)
+        if mobiili:  # tietokoneella ohjelmallinen valinta (select_option) vastaa näppäimistöä, joten kehys saa näkyä
+            pg.select_option("[data-rp-period]", "all"); pg.wait_for_timeout(150)
+            assert pg.evaluate(KEHYS_JS) == ["none", "none"], pg.evaluate(KEHYS_JS)
+        if not mobiili:
+            # Näppäimistö: kehys näkyy kohdistetussa valikossa.
+            pg.evaluate("document.querySelector('.rp-cmenu>summary').focus()")
+            pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Tab")
+            assert "solid" in pg.evaluate(KEHYS_JS), pg.evaluate(KEHYS_JS)
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

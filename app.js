@@ -489,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.79 (testiversio)';
+  const appVersion='0.80 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -643,10 +643,10 @@
   // tabs show the same euros. Consumption comes from fuelStats (full tank to full tank) and belongs to the month in which
   // the interval ends. The choices (period, vehicle) are a view setting on this device; nothing here changes stored data.
   const flKey='ajoura-fuel';let flPick=null,flPickFor='',flAll=false,flCm=null,flFromTab=false,flCmOpen=false;
-  function flPrefs(){let o={};try{o=JSON.parse(prefGet(flKey)||'{}')||{};}catch(e){}return {p:['year','12','all'].includes(o.p)?o.p:'12',k:['all','fuel','gas','el'].includes(o.k)?o.k:'',car:typeof o.car==='string'?o.car.slice(0,40):'',t:o.t==='cmp'?'cmp':'car',off:Array.isArray(o.off)?o.off.filter(x=>typeof x==='string').slice(0,500):[],m:['cons','price','cost'].includes(o.m)?o.m:'cons',cm:flCm};}
+  function flPrefs(){let o={};try{o=JSON.parse(prefGet(flKey)||'{}')||{};}catch(e){}return {p:['year','prev','12','all'].includes(o.p)?o.p:'12',k:['all','fuel','gas','el'].includes(o.k)?o.k:'',car:typeof o.car==='string'?o.car.slice(0,40):'',t:o.t==='cmp'?'cmp':'car',off:Array.isArray(o.off)?o.off.filter(x=>typeof x==='string').slice(0,500):[],m:['cons','price','cost'].includes(o.m)?o.m:'cons',cm:flCm};}
   // Return the keyboard focus to the same control after a redraw. On a touch screen a drop-down list (select)
   // is left unfocused: iPhone opens the list again whenever a select gets the focus (v0.61).
-  function refocus(sel){const f=sel&&screen.querySelector(sel);if(!f)return;if(f.tagName==='SELECT'&&matchMedia('(pointer: coarse)').matches)return;f.focus({preventScroll:true});}
+  function refocus(sel){const f=sel&&screen.querySelector(sel);if(!f)return;if((f.tagName==='SELECT'||f.type==='date')&&matchMedia('(pointer: coarse)').matches)return;f.focus({preventScroll:true});}
   function flSave(o,focus){const {cm,...keep}=o;prefSet(flKey,JSON.stringify(keep));const y=screen.scrollTop;render();screen.scrollTop=y;refocus(focus);}
   const monthNames=['tammikuu','helmikuu','maaliskuu','huhtikuu','toukokuu','kesäkuu','heinäkuu','elokuu','syyskuu','lokakuu','marraskuu','joulukuu'];
   const ucFirst=s=>s.charAt(0).toUpperCase()+s.slice(1),ymOf=d=>d.slice(0,7),mName=k=>monthNames[Number(k.slice(5,7))-1];
@@ -704,7 +704,7 @@
   // 0.77: what was done with an impossible interval (fuelStats sus): the date and value, and that the reading is checked.
   function susNote(c,s,ev){if(!s.sus.length)return '';const pu=`${unitOf(c)}/${per(c)}`,join=s.sus.some(x=>x.how==='join'),drop=s.sus.some(x=>x.how==='drop');
     return `<p class="fl-warn" role="note"><b>${s.sus.length===1?'Epätodennäköinen kulutusväli':'Epätodennäköisiä kulutusvälejä'}</b> <span>${s.sus.map(x=>`<span class="nw">${dm(x.date)} (${dec(x.v,0)} ${pu})</span>`).join(', ')}.</span> <span>${join&&!drop?'Mittarilukema on todennäköisesti väärin, joten väli on laskettu yhdessä seuraavan kanssa.':drop&&!join?'Mittarilukema on todennäköisesti väärin, joten väli on jätetty pois kulutuksesta.':'Mittarilukema on todennäköisesti väärin, joten väli on yhdistetty seuraavaan tai jätetty pois kulutuksesta.'}</span> <span>${ev?'Tarkista lataus alla olevasta listasta.':'Tarkista tankkaus alla olevasta listasta.'}</span></p>`;}
-  function fuel(c,from){const periods=[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
+  function fuel(c,from){const periods=[['year','Tämä vuosi'],['prev','Edellinen vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
     const head=`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
     if(!c)return `${top()}${head}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
@@ -725,7 +725,7 @@
     const sample=c.sample?'<p class="app-note">Esimerkkiauto: kuvitteelliset tankkaukset ja hinnat.</p>':'';
     if(kd==='all')return `${top()}${head}${tabs}${chips}${msg}${kinds.map(k=>`<button type="button" class="app-button fl-add" data-quickfuel="${real.id}" data-kind="${k}">${svg('<path d="M12 5v14M5 12h14"/>')}<span>${k==='el'?'Uusi lataus':k==='gas'?'Uusi kaasutankkaus':'Uusi tankkaus'}</span></button>`).join('')}${fuelAll(real,kinds,o)}${sample}`;
     if(!s.fills.length)return `${top()}${head}${tabs}${chips}${msg}${add}<div class="rp-card"><p class="rp-empty">${ev?'Ei vielä latauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.':'Ei vielä tankkauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.'}</p></div>${sample}`;
-    const pName=o.p==='year'?'Tämä vuosi':o.p==='12'?'12 kk':'Koko historia',vs='sama jakso vuotta aiemmin';
+    const pName=pLabel(o.p),vs='sama jakso vuotta aiemmin';
     // Key figure: average consumption with its change, the latest interval and the lowest and highest month.
     const dAvg=was&&now.avg!==null&&was.avg!==null?now.avg-was.avg:null,dPc=dAvg!==null?pct1(now.avg,was.avg):null;
     const dR=dAvg===null?0:Math.round(dAvg*10)/10,badge=dAvg===null?'':`<span class="rp-delta pill ${dR<0?'down':dR>0?'up':'flat'}"><span aria-hidden="true">${dR<0?'↓':dR>0?'↑':'→'}</span> <span class="nw">${dR>0?'+':dR<0?'−':''}${dec(Math.abs(dR))} ${pu}</span> · <span class="nw">${dPc>0?'+':dPc<0?'−':''}${number(Math.abs(dPc))} %</span></span>`;
@@ -770,7 +770,7 @@
   function fuelAll(c,kinds,o){const parts=kinds.map(k=>{const v=fcar(c,k),d=flCalc(v,o.p);return {k,v,d,u:unitOf(v)};}),d0=parts[0].d,fk=hourly(c)?1:100;
     if(!(c.fuels||[]).length)return `<div class="rp-card"><p class="rp-empty">Ei vielä tankkauksia. Kirjaa ensimmäinen, niin näet kulutuksen ja kulut kuukausittain.</p></div>`;
     const sum=(l,f)=>l.reduce((m,x)=>m+f(x),0),tot=sum(parts,x=>x.d.now.cost),wasTot=parts.some(x=>x.d.was)&&parts.filter(x=>x.d.now.cost>0).every(x=>x.d.cov)?sum(parts,x=>x.d.was?x.d.was.cost:0):null,km=drivenIn(c,d0.from,d0.to),run=km>0&&tot>0?tot/km*fk:null,
-      wasKm=d0.prev?drivenIn(c,d0.prev.from,d0.prev.to):0,wasRun=wasKm>0&&wasTot>0?wasTot/wasKm*fk:null,pName=o.p==='year'?'Tämä vuosi':o.p==='12'?'12 kk':'Koko historia',lab={el:'Sähkö',gas:'Kaasu',fuel:'Polttoaine'};
+      wasKm=d0.prev?drivenIn(c,d0.prev.from,d0.prev.to):0,wasRun=wasKm>0&&wasTot>0?wasTot/wasKm*fk:null,pName=pLabel(o.p),lab={el:'Sähkö',gas:'Kaasu',fuel:'Polttoaine'};
     const dl=(a,b)=>a!==null&&b!==null?`<em class="rp-dl">${rpDelta(pctOf(a,b),a===run)}</em>`:'';
     const rows=parts.map(x=>`<tr><th scope="row">${lab[x.k]}</th><td>${x.d.now.avg!==null?`<span class="nw">${dec(x.d.now.avg)} ${x.u}/${per(c)}</span>`:'–'}</td><td><span class="nw">${dec(x.d.now.qty,0)} ${x.u}</span></td><td><b>${eur(x.d.now.cost)}</b></td></tr>`).join('');
     return `<section class="rp-card fl-sum fl-all" aria-labelledby="fl-all"><h3 class="rp-h fl-allh" id="fl-all"><span>Todellinen kulutus</span> · <span>${pName}</span></h3>
@@ -790,7 +790,7 @@
     const pd=t.closest('[data-fl-pdf]');if(pd){fuelPdf(pd.dataset.flPdf);return true;}
     const ed=t.closest('[data-fl-edit]');if(ed){const c=cars.find(c=>c.id===route().id),f=c&&(c.fuels||[]).find(x=>x.id===ed.dataset.flEdit);if(f)openSheet(c,ed,f);return true;}
     return false;}
-  function fuelChange(t){if(t.matches('[data-fl-carpick]')){const id=t.value;if(!cars.some(c=>c.id===id))return;const o=flPrefs();o.car=id;flAll=false;history.replaceState(null,'','#fuel/'+id);flSave(o,'[data-fl-carpick]');return;}if(!t.matches('[data-fl-period]')||!['year','12','all'].includes(t.value))return;const o=flPrefs();o.p=t.value;flAll=false;flCm=null;flSave(o,'[data-fl-period]');}
+  function fuelChange(t){if(t.matches('[data-fl-carpick]')){const id=t.value;if(!cars.some(c=>c.id===id))return;const o=flPrefs();o.car=id;flAll=false;history.replaceState(null,'','#fuel/'+id);flSave(o,'[data-fl-carpick]');return;}if(!t.matches('[data-fl-period]')||!['year','prev','12','all'].includes(t.value))return;const o=flPrefs();o.p=t.value;flAll=false;flCm=null;flSave(o,'[data-fl-period]');}
   // Vertailu (0.42, havainnekuva hyväksytty 28.10.2026): the chosen vehicles side by side for the same period, with the
   // figures of the Ajoneuvo view (flCalc), so the two never disagree. Consumption is compared only within one unit
   // (l/100 km, kWh/100 km, l/h): litres and kilowatt-hours are not on the same scale, so the cost of driving (€/100 km)
@@ -837,7 +837,7 @@
     const every=n>13?2:1;g+=keys.map((k,i)=>i%every&&i!==sel?'':`<text class="ax${i===sel?' on':''}" x="${r(cx(i))}" y="${H-6}" text-anchor="middle">${k.length>4?Number(k.slice(5)):k}</text>`).join('');
     g+=keys.map((k,i)=>`<rect class="hit" data-fl-cm="${i}" x="${r(L+sw*i)}" y="${T}" width="${r(sw)}" height="${ph}"/>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Vertailu kuukausittain">${g}</svg>`;}
-  function fuelCompare(o,head,tabs,msg,pPick=''){const {fueled,sel,rows}=flCompare(o),m=o.m,mName2=flMetrics.find(x=>x[0]===m)[1],pName=o.p==='year'?'Tämä vuosi':o.p==='12'?'12 kk':'Koko historia';
+  function fuelCompare(o,head,tabs,msg,pPick=''){const {fueled,sel,rows}=flCompare(o),m=o.m,mName2=flMetrics.find(x=>x[0]===m)[1],pName=pLabel(o.p);
     // 0.60: the vehicles to compare are chosen from a drop-down list like the period (several can be ticked; the list
     // stays open while ticking, flCmOpen), replacing the small buttons of 0.57. Vehicles without fill-ups are greyed.
     const open=flCmOpen;flCmOpen=false;
@@ -1167,14 +1167,16 @@
   // The choices are a view setting kept on this device only (not part of the backup); everything starts selected.
   const rpKey='ajoura-reports';
   function rpPrefs(){let o={};try{o=JSON.parse(prefGet(rpKey)||'{}')||{};}catch(e){}const list=a=>Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,500):[];
-    return {p:['year','12','all'].includes(o.p)?o.p:'year',offCars:list(o.offCars),offKinds:list(o.offKinds).filter(k=>costKinds.some(([x])=>x===k)),s:['cost','name','km'].includes(o.s)?o.s:'cost',t:o.t==='cars'?'cars':'sum'};}
+    const okD=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&x>='1950-01-01'&&x<=today(),cu=okD(o.cf)&&okD(o.ct)&&o.cf<=o.ct?{from:o.cf,to:o.ct}:null;
+    return {p:['year','prev','12','all'].includes(o.p)||(o.p==='custom'&&cu)?o.p:'year',cf:cu?cu.from:'',ct:cu?cu.to:'',cu,offCars:list(o.offCars),offKinds:list(o.offKinds).filter(k=>costKinds.some(([x])=>x===k)),s:['cost','name','km'].includes(o.s)?o.s:'cost',t:o.t==='cars'?'cars':'sum'};}
   // 0.76: 12 kk is twelve calendar months, the month going on included (3.11.2026: 1.12.2025–3.11.2026). Until 0.75 it was
   // the 365 days back from today, which touched 13 calendar months and drew 13 month bars.
-  const rpRange=p=>{const t=today();if(p==='year')return {from:t.slice(0,4)+'-01-01',to:t};if(p==='12'){let y=Number(t.slice(0,4)),m=Number(t.slice(5,7))-11;if(m<1){m+=12;y--;}return {from:y+'-'+String(m).padStart(2,'0')+'-01',to:t};}return {from:'',to:t};};
+  // 0.80: Edellinen vuosi (prev) and Mukautettu (custom: the dates the user chose, kept with the Raportit choices).
+  const rpRange=(p,cu)=>{const t=today(),y=Number(t.slice(0,4));if(p==='year')return {from:t.slice(0,4)+'-01-01',to:t};if(p==='prev')return {from:(y-1)+'-01-01',to:(y-1)+'-12-31'};if(p==='custom'&&cu)return {from:cu.from,to:cu.to};if(p==='12'){let y=Number(t.slice(0,4)),m=Number(t.slice(5,7))-11;if(m<1){m+=12;y--;}return {from:y+'-'+String(m).padStart(2,'0')+'-01',to:t};}return {from:'',to:t};};
   const yBack=s=>{const md=s.slice(5);return (Number(s.slice(0,4))-1)+'-'+(md==='02-29'?'02-28':md);};
   // 0.76: both periods are compared with the same dates a year earlier (until 0.75 12 kk was compared with the 12 months
   // before it, which were longer than the period going on).
-  const rpPrev=p=>{if(p==='all')return null;const {from,to}=rpRange(p);return {from:yBack(from),to:yBack(to)};};
+  const rpPrev=(p,cu)=>{if(p==='all')return null;const {from,to}=rpRange(p,cu);return {from:yBack(from),to:yBack(to)};};
   const pctOf=(now,was)=>was>0&&Number.isFinite(now)?Math.round((now-was)/was*100):null;
   // 0.76: a change is not marked good or bad (no green or red): less driving or lower costs are not a success by
   // themselves. The arrow and the sign show the direction.
@@ -1190,7 +1192,7 @@
   const rpPick=(attr,label,shown,opts,cur)=>`<label class="rp-pick"><span class="rp-pick-t">${shown}</span>${chev}<select ${attr} aria-label="${label}">${opts.map(([v,n])=>`<option value="${v}"${v===cur?' selected':''}>${n}</option>`).join('')}</select></label>`;
   // The Raportit figures in one place: the screen and the PDF report (0.32) use the same numbers.
   function rpCalc(o){
-    const {from,to}=rpRange(o.p),prev=rpPrev(o.p),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
+    const {from,to}=rpRange(o.p,o.cu),prev=rpPrev(o.p,o.cu),kinds=costKinds.map(([k])=>k).filter(k=>!o.offKinds.includes(k)),sel=cars.filter(c=>!o.offCars.includes(c.id));
     const ev=cars.some(c=>c.fuel==='Sähkö'||c.fuel==='Lataushybridi'||c.fuel==='Hybridi (bensiini/sähkö)'||(c.fuels||[]).some(f=>f.el)),kn=k=>k==='fuel'&&ev?'Polttoaine ja lataus':costKinds.find(([x])=>x===k)[1];
     const pick=(s,ks)=>{const r={};let t=0;for(const k of ks){r[k]=s[k];t+=s[k];}return [r,t];};
     const rows=sel.map(c=>{const [s,t]=pick(costsOf(c,from,to),kinds),u=ku(c),d=drivenIn(c,from,to),min=u==='h'?1:100;
@@ -1220,7 +1222,7 @@
     const head=`<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2></div></div>`;
     const tabs=`<div class="rp-tabs" role="group" aria-label="Näkymä"><button type="button" data-rp-tab="sum" aria-pressed="${o.t==='sum'}">${svg(icons.chart)}<span>Yhteenveto</span></button><button type="button" data-rp-tab="cars" aria-pressed="${o.t==='cars'}">${svg(icons.car)}<span>Ajoneuvot</span></button></div>`;
     // 0.42: every vehicle with its two reports (service history and fuel log) and a way to the fuel comparison.
-    const fp=flPrefs().p,fpn=fp==='year'?'Tämä vuosi':fp==='12'?'12 kk':'Koko historia',fuelRow=(c0,k)=>{const c=fcar(c0,k),el=unitOf(c)==='kWh',gs=k==='gas';return `<a class="rp-rep" href="#fuel/${c0.id}/raportit" data-fl-kindlink="${k}"><span class="rp-ri fuel" aria-hidden="true">${svg(el?bolt:icons.fuel)}</span><span class="rp-rtxt"><strong>${el?'Latauskirja':gs?'Kaasukirja':'Tankkauskirja'}</strong><small>${fuelLine(c)}</small></span><span class="chevron" aria-hidden="true">›</span></a>`;},fuelLine=c=>{if(!(c.fuels||[]).length)return unitOf(c)==='kWh'?'<span>Ei vielä latauksia</span>':'<span>Ei vielä tankkauksia</span>';const d=flCalc(c,fp);return [d.now.avg!==null?`<span class="nw">${dec(d.now.avg)} ${unitOf(c)}/${per(c)}</span>`:'',`<span class="nw">${eur(d.now.cost)}</span>`,`<span class="nw">${fpn}</span>`,'<span>PDF</span>'].filter(Boolean).join(' · ');};
+    const fp=flPrefs().p,fpn=pLabel(fp),fuelRow=(c0,k)=>{const c=fcar(c0,k),el=unitOf(c)==='kWh',gs=k==='gas';return `<a class="rp-rep" href="#fuel/${c0.id}/raportit" data-fl-kindlink="${k}"><span class="rp-ri fuel" aria-hidden="true">${svg(el?bolt:icons.fuel)}</span><span class="rp-rtxt"><strong>${el?'Latauskirja':gs?'Kaasukirja':'Tankkauskirja'}</strong><small>${fuelLine(c)}</small></span><span class="chevron" aria-hidden="true">›</span></a>`;},fuelLine=c=>{if(!(c.fuels||[]).length)return unitOf(c)==='kWh'?'<span>Ei vielä latauksia</span>':'<span>Ei vielä tankkauksia</span>';const d=flCalc(c,fp);return [d.now.avg!==null?`<span class="nw">${dec(d.now.avg)} ${unitOf(c)}/${per(c)}</span>`:'',`<span class="nw">${eur(d.now.cost)}</span>`,`<span class="nw">${fpn}</span>`,'<span>PDF</span>'].filter(Boolean).join(' · ');};
     const toCmp=cars.filter(c=>(c.fuels||[]).length).length>1?`<button type="button" class="rp-card rp-pdf fl-tocmp" data-fl-tocmp><span class="rp-pdf-ico fl-ico" aria-hidden="true">${svg('<path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/>')}</span><span class="rp-rtxt"><strong>Vertaa kulutusta ajoneuvoittain</strong><small>Avaa Tankkaus → Vertailu</small></span><span class="chevron" aria-hidden="true">›</span></button>`:'';
     // 0.62: one list for the vehicles at the top: "Kaikki ajoneuvot" or any set of vehicles (photo, name and plate on
     // each row). From "Kaikki" a tap shows that vehicle alone; after that a tap adds or removes a vehicle, and taking
@@ -1230,8 +1232,9 @@
     const carShown=!sel.length?'Valitse ajoneuvot':all?'Kaikki ajoneuvot':sel.length===1?`<span translate="no">${escape(carName(sel[0]))}</span>`:`<span>${sel.length}</span> <span>ajoneuvoa</span>`;
     const carRows=`<button type="button" class="fl-mi rp-mall" data-rp-all aria-pressed="${all}"><span class="fl-mck" aria-hidden="true">${all?ckm:''}</span><span class="fl-mn">Kaikki ajoneuvot</span></button>${cars.map(c=>{const on=!all&&sel.includes(c);return `<button type="button" class="fl-mi rp-mi" data-rp-car="${c.id}" aria-pressed="${on}"><span class="fl-mck" aria-hidden="true">${on?ckm:''}</span><span class="rp-mthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-mt"><span class="fl-mn" translate="no">${escape(carName(c))}</span><small translate="no">${plateTxt(c)}</small></span></button>`;}).join('')}`;
     const carMenu=`<details class="rp-pick fl-cmenu rp-cmenu"><summary><span class="sr-only">Ajoneuvot</span><span class="rp-pick-t">${carShown}</span>${chev}</summary><div class="fl-cmenu-list" role="group" aria-label="Ajoneuvot">${carRows}</div></details>`;
-    const periods=[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],
-      carPick=`<div class="rp-filters">${cars.length>1?carMenu:''}${rpPick('data-rp-period','Jakso',periods.find(x=>x[0]===o.p)[1],periods,o.p)}</div>`;
+    const periods=[['year','Tämä vuosi'],['prev','Edellinen vuosi'],['12','12 kk'],['all','Kaikki'],['custom','Mukautettu…']],
+      custom=o.p==='custom'?`<form class="rp-custom" data-rp-custom novalidate><label><span>Alkaa</span><input type="date" name="cf" value="${o.cf}" max="${today()}" required></label><label><span>Päättyy</span><input type="date" name="ct" value="${o.ct}" max="${today()}" required></label><p class="error-note" role="alert"></p></form>`:'',
+      carPick=`<div class="rp-filters">${cars.length>1?carMenu:''}${rpPick('data-rp-period','Jakso',o.p==='custom'?'Mukautettu':periods.find(x=>x[0]===o.p)[1],periods,o.p)}</div>${custom}`;
     // The vehicle choice shows in its list, so the note is about cost types only ("Näytä kaikki" resets both).
     const note=o.offKinds.length?`<p class="rp-note"><span>Osa kululajeista on rajattu pois.</span> <button type="button" class="rp-link" data-rp-reset>Näytä kaikki</button></p>`:'';
     // Every cost type of the chosen vehicles, hidden ones too, so a hidden type keeps its tile and can be brought back.
@@ -1280,6 +1283,7 @@
     const msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
     return `${top()}${head}${tabs}${carPick}${note}${msg}${kpis}${cats}${dist}${list}${exp}`;}
   const rng=(a,b)=>a.slice(0,4)===b.slice(0,4)?`${dm(a)}–${date(b)}`:`${date(a)}–${date(b)}`;
+  const pLabel=p=>({year:'Tämä vuosi',prev:'Edellinen vuosi','12':'12 kk',custom:'Mukautettu'})[p]||'Koko historia';
   // 0.79: Ajoneuvot = the vehicles in detail and side by side, with the same vehicles, period and cost types as
   // Yhteenveto (rpCalc). Two or more vehicles: total costs as bars on one scale (stacked by cost type), each cost type
   // per vehicle, €/km only for vehicles with a reliable distance (kmIn) and the costs accumulated month by month on one
@@ -1366,16 +1370,21 @@
     const head=['Päivämäärä','Ajoneuvo','Rekisteritunnus','Kululaji','Tapahtuma','Mittarilukema','Yksikkö','Summa (€)','Määrä','Määrän yksikkö','Yksikköhinta (€)','Lisätieto'].map(tl);
     const lines=[head.map(cell).join(sep),...rows.map(r=>[r.date,carName(r.c),r.c.plate||'',tl(d.kn(r.kind)),tl(r.what),r.km==null?'':r.km,r.u,num(r.cost,2),num(r.qty,2),r.qu,num(r.ppu,3),r.note].map(cell).join(sep))];
     const file=new File(['﻿'+lines.join('\r\n')+'\r\n'],'ajoura-kulut-'+today()+'.csv',{type:'text/csv'});saveFile(file,matchMedia('(pointer: coarse)').matches);}
-  function rpSave(o,focus){prefSet(rpKey,JSON.stringify(o));const y=screen.scrollTop;render();screen.scrollTop=y;
+  function rpSave(o,focus){const {cu,...keep}=o;prefSet(rpKey,JSON.stringify(keep));const y=screen.scrollTop;render();screen.scrollTop=y;
     // Keep the keyboard focus on the same control after the screen is redrawn.
     refocus(focus);}
-  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','12','all'].includes(t.value)){o.p=t.value;rpMonth=null;rpSave(o,'[data-rp-period]');}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
+  function reportsChange(t){const o=rpPrefs();if(t.matches('[data-rp-period]')&&['year','prev','12','all','custom'].includes(t.value)){o.p=t.value;rpMonth=null;
+      // Mukautettu starts from the period on screen, so the dates are never empty.
+      if(o.p==='custom'&&!o.cu){const t0=today();o.cf=(Number(t0.slice(0,4))-1)+t0.slice(4,7)+'-01';o.ct=t0;}rpSave(o,'[data-rp-period]');}
+    else if(t.closest('[data-rp-custom]')&&(t.name==='cf'||t.name==='ct')){const f=t.form,a=f.elements.cf.value,b=f.elements.ct.value,err=f.querySelector('[role=alert]');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b)||a<'1950-01-01'||b>today()){err.textContent='Tarkista päivämäärä.';return;}if(a>b){err.textContent='Alkupäivä on loppupäivän jälkeen.';return;}
+      o.cf=a;o.ct=b;rpMonth=null;rpSave(o,`[data-rp-custom] [name=${t.name}]`);}else if(t.matches('[data-rp-sort]')&&['cost','name','km'].includes(t.value)){o.s=t.value;rpSave(o,'[data-rp-sort]');}}
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     const tab=t.closest('[data-rp-tab]');if(tab){o.t=tab.dataset.rpTab;rpSave(o,`[data-rp-tab="${o.t}"]`);return true;}
     if(t.closest('[data-rp-pdf]')){fleetPdf();return true;}
     if(t.closest('[data-rp-csv]')){rpCsv();return true;}
     const rm=t.closest('[data-rp-m]');if(rm){rpMonth=Number(rm.dataset.rpM);const y=screen.scrollTop;render();screen.scrollTop=y;return true;}
-    const op=t.closest('[data-rp-open]');if(op){const id=op.dataset.rpOpen;rpOpen.add(id);o.t='cars';prefSet(rpKey,JSON.stringify(o));render();const el=screen.querySelector(`[data-rp-det="${id}"]`);if(el){el.scrollIntoView({block:'start'});el.querySelector('summary').focus({preventScroll:true});}return true;}
+    const op=t.closest('[data-rp-open]');if(op){const id=op.dataset.rpOpen;rpOpen.add(id);o.t='cars';{const {cu,...keep}=o;prefSet(rpKey,JSON.stringify(keep));}render();const el=screen.querySelector(`[data-rp-det="${id}"]`);if(el){el.scrollIntoView({block:'start'});el.querySelector('summary').focus({preventScroll:true});}return true;}
     if(t.closest('[data-fl-tocmp]')){const f=flPrefs();f.t='cmp';flCm=null;flSave(f);go('fuel');return true;}
     if(t.closest('[data-rp-reset]')){rpMonth=null;o.offCars=[];o.offKinds=[];rpSave(o,'.rp-tabs [aria-pressed="true"]');return true;}
     const car=t.closest('[data-rp-car]'),kd=t.closest('[data-rp-kind]');
