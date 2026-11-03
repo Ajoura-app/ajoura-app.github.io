@@ -29,22 +29,53 @@ def valinnat(pg):
     return pg.eval_on_selector_all(F + " [name=grade] option", "o => o.map(x => x.textContent.trim())")
 
 
-@pytest.mark.parametrize("polttoaine,ensin", [("Diesel", "Diesel"), ("Bensiini", "95 E10"), ("Kaasu", "Biokaasu")])
+@pytest.mark.parametrize("polttoaine,ensin", [("Diesel", "Diesel"), ("Bensiini", "95 E10")])
 def test_kaikki_polttoainelajit_valittavissa(browser, base, polttoaine, ensin):
-    """Ennen vain oman käyttövoiman lajit: dieselillä vain Diesel ja HVO100. Nyt kaikki, oma laji ensin."""
+    """Ennen vain oman käyttövoiman lajit: dieselillä vain Diesel ja HVO100. Nyt bensiini ja diesel kaikille, oma ensin."""
     s = avaa(browser, base, "fuel/tst1", autot=[tiedot.auto(fuel=polttoaine, fuels=[T("f1", "2026-07-01", 151000, 50.0, 85.0)])],
              extra=PREF, kello=KELLO)
     try:
         s.page.click(".fl-add"); s.page.wait_for_selector(F)
         v = valinnat(s.page)
-        assert v[0] == ensin, v
-        assert {"95 E10", "98 E5", "E85", "Diesel", "HVO100", "Biokaasu", "Maakaasu"} <= set(v), v
+        assert v[0] == ensin and set(v) == {"95 E10", "98 E5", "E85", "Diesel", "HVO100"}, v
         assert s.page.query_selector(".fl-kinds") is None and s.page.query_selector(".sf-kinds") is None
         s.page.select_option(F + " [name=grade]", "98 E5")
         s.page.fill(F + " [name=km]", "151500"); s.page.fill(F + " [name=qty]", "40"); s.page.fill(F + " [name=cost]", "76")
         s.page.click(F + " [type=submit]"); s.page.wait_for_selector(F, state="detached")
         uusi = next(x for x in s.talli()["cars"][0]["fuels"] if x["km"] == 151500)
         assert uusi["grade"] == "98 E5" and "el" not in uusi
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_kaasu_kiloina(browser, base):
+    """0.69: kaasu (maa- ja biokaasu) kirjataan kiloina, kulutus kg/100 km; kaasuautolla bensiini varapolttoaineena."""
+    auto = tiedot.auto(id="gas1", fuel="Kaasu", fuels=[T("g1", "2026-06-01", 150000, 15.0, 27.0, grade="Biokaasu"),
+                                                       T("g2", "2026-07-01", 150500, 14.0, 25.2, grade="Biokaasu")])
+    s = avaa(browser, base, "fuel/gas1", autot=[auto], extra=PREF, kello=KELLO)
+    pg = s.page
+    try:
+        pg.wait_for_selector(".fl-kinds")
+        assert "kg/100 km" in pg.inner_text(".fl-big") and fi(14.0 / 500 * 100) in pg.inner_text(".fl-big")
+        assert "Kaasu" in pg.inner_text("[data-fl-kind=gas]") and pg.get_attribute("[data-fl-kind=gas]", "aria-pressed") == "true"
+        pg.click(".fl-add"); pg.wait_for_selector(F)
+        assert valinnat(pg) == ["Biokaasu", "Maakaasu"] and "kg" in pg.inner_text(F + " .sf-calc")
+        assert "Litrat" not in pg.inner_text(F + " .sf-calc")
+        pg.select_option(F + " [name=grade]", "Maakaasu")
+        pg.fill(F + " [name=km]", "151000"); pg.fill(F + " [name=qty]", "13"); pg.fill(F + " [name=cost]", "20")
+        pg.click(F + " [type=submit]"); pg.wait_for_selector(F, state="detached")
+        uusi = next(x for x in s.talli()["cars"][0]["fuels"] if x["km"] == 151000)
+        assert uusi["grade"] == "Maakaasu" and uusi["qty"] == 13 and "el" not in uusi
+        # Bensiini varapolttoaineena: oma laji, litrat, ei sekoitu kaasun kiloihin.
+        pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
+        pg.click(".fl-add"); pg.wait_for_selector(F)
+        assert valinnat(pg)[0] == "95 E10" and "Litrat" in pg.inner_text(F + " .sf-calc")
+        pg.fill(F + " [name=km]", "151100"); pg.fill(F + " [name=qty]", "20"); pg.fill(F + " [name=cost]", "36")
+        pg.click(F + " [type=submit]"); pg.wait_for_selector(F, state="detached")
+        assert next(x for x in s.talli()["cars"][0]["fuels"] if x["km"] == 151100)["grade"] == "95 E10"
+        pg.click("[data-fl-kind=gas]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=gas]').getAttribute('aria-pressed')==='true'")
+        assert "kg/100 km" in pg.inner_text(".fl-big") and "l/100" not in pg.inner_text(".fl-big").replace("kg/100", "")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
