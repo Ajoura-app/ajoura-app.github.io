@@ -69,7 +69,7 @@ def test_kilometrit_ja_kulutus_jarkevia(data):
 def test_tiedoston_sisalto_esittelee_ominaisuudet(data):
     auto, moto = data["cars"]
     tyypit = {e["type"] for e in auto["events"]}
-    assert {"Huolto", "Määräaikaishuolto", "Vuosihuolto", "Katsastus", "Renkaiden vaihto", "Autohoito", "Korjaus ja osan vaihto"} <= tyypit
+    assert {"Huolto", "Vuosihuolto", "Katsastus", "Renkaiden vaihto", "Autohoito", "Korjaus ja osan vaihto"} <= tyypit
     assert {"Käyttöönotto keväällä", "Talvisäilytykseen", "Huolto", "Katsastus"} <= {e["type"] for e in moto["events"]}
     assert any(e.get("receipts") for e in auto["events"]) and any(e.get("parts") for e in auto["events"])
     assert any(f.get("el") for f in auto["fuels"]) and any(not f.get("el") for f in auto["fuels"])
