@@ -71,21 +71,23 @@ def kuusi_lajia():
     return t
 
 
-LAJIT_JS = """() => {const L = [...document.querySelectorAll('.rp-kinds li')], top = L.map(l => Math.round(l.getBoundingClientRect().top));
-  return {n: L.length, rivit: [...new Set(top)].map(y => top.filter(x => x === y).length),
-          yli: [...document.querySelectorAll('.rp-kt small, .rp-kt b')].filter(e => e.scrollWidth > e.clientWidth + 1
-                 || e.getBoundingClientRect().right > e.closest('li').getBoundingClientRect().right + 1).map(e => e.textContent)};}"""
+JAKAUMA_JS = """() => {const L = [...document.querySelectorAll('.rp-dist .rp-drow')], nro = t => Number((t || '').replace(/[^0-9]/g, ''));
+  return {lajit: L.map(b => b.dataset.rpKind), euro: L.reduce((m, b) => m + nro(b.querySelector('b').textContent), 0),
+          pros: L.reduce((m, b) => m + nro(b.querySelector('em').textContent), 0), summa: nro(document.querySelector('.rp-total .rp-big')?.textContent),
+          yli: [...document.querySelectorAll('.rp-dt > *, .rp-total .rp-sec > div > *, .rp-total .rp-big')].filter(e => {const r = e.getBoundingClientRect(),
+                 p = e.closest('.rp-card').getBoundingClientRect(); return r.right > p.right + 0.5 || (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).textOverflow !== 'ellipsis');}).map(e => e.textContent)};}"""
 
 
-# 0.51: Kulut kategorioittain: enintään neljä lajia yhdelle riville, viisi tai kuusi kolmen riveihin, kapeimmalla kaksi.
+# 0.78 (korvaa 0.51:n ruudut): Kulujen jakautuminen omana osionaan vaakapalkein. Euromäärät summautuvat kokonaiskuluihin,
+# prosentit tasan 100:aan (suurimman jakojäännöksen pyöristys), eikä mikään luku tai teksti mene kortin reunan yli.
 @pytest.mark.parametrize("kieli", ["fi", "en", "sv"])
-@pytest.mark.parametrize("leveys,nelja,kuusi", [(390, [4], [3, 3]), (430, [4], [3, 3]), (320, [2, 2], [2, 2, 2])])
-def test_kululajit_rivit(browser, base, kieli, leveys, nelja, kuusi):
-    for autot, odotus in [(talli(), nelja), (kuusi_lajia(), kuusi)]:
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+def test_kulujen_jakautuminen(browser, base, kieli, leveys):
+    for autot, lajit in [(talli(), 4), (kuusi_lajia(), 6)]:
         s = avaa(browser, base, "reports", autot=autot, kieli=kieli, leveys=leveys, extra=RP, kello=KELLO)
         try:
-            r = s.page.evaluate(LAJIT_JS)
-            assert r["rivit"] == odotus and not r["yli"], r
+            r = s.page.evaluate(JAKAUMA_JS)
+            assert len(r["lajit"]) == lajit and r["euro"] == r["summa"] and r["pros"] == 100 and not r["yli"], r
             assert not s.virheet, s.virheet
         finally:
             s.sulje()
@@ -95,7 +97,7 @@ def _rp(s):
     return s.page.evaluate("""() => ({
         napit: [...document.querySelectorAll('.rp-cars [data-rp-only]')].map(b => [b.dataset.rpOnly, b.getAttribute('aria-pressed')]),
         kortit: [...document.querySelectorAll('.rp-vcard strong')].map(e => e.textContent),
-        summa: document.querySelector('.rp-kpis b.big')?.textContent.replace(/\\s/g, ''),
+        summa: document.querySelector('.rp-total .rp-big')?.textContent.replace(/\\s/g, ''),
         huom: document.querySelector('.rp-note')?.textContent || '',
         off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []})""")
 
@@ -112,7 +114,7 @@ VALINTA_JS = """() => {const m = document.querySelector('.rp-cmenu');
     napit: document.querySelectorAll('.fl-car, .rp-cars, .rp-chip, [data-rp-more], .rp-detail, [data-rp-carpick]').length,
     alaotsikko: document.querySelectorAll('.rp-lead').length,
     kortit: [...document.querySelectorAll('.rp-vcard strong')].map(e => e.textContent),
-    summa: document.querySelector('.rp-kpis b.big')?.textContent.replace(/\\s/g, ''),
+    summa: document.querySelector('.rp-total .rp-big')?.textContent.replace(/\\s/g, ''),
     huom: document.querySelector('.rp-note')?.textContent || '',
     off: JSON.parse(localStorage.getItem('ajoura-reports') || '{}').offCars || []};}"""
 
@@ -162,14 +164,14 @@ def test_ajoneuvon_valinta_yhteenvedossa(browser, base):
         s.sulje()
 
 
-# 0.62: kulut kategorioittain ja kuukausittain samassa kortissa: pinotut kuukausipylväät ja niiden alla kululajiruudut,
-# joista napautus piilottaa lajin tai tuo sen takaisin. Pylväiden summa = kokonaiskulut.
-KAAVIO_JS = """() => {const c = document.querySelector('.rp-cats');
+# 0.62: kulut kategorioittain ja kuukausittain; 0.78: kuukausikaavio HTML-pylväinä (jokainen kuukausi painike) ja kulujen
+# jakautuminen omana osionaan, jonka riviä napauttamalla laji piilotetaan tai tuodaan takaisin. Pylväiden summa = kokonaiskulut.
+KAAVIO_JS = """() => {const c = document.querySelector('.rp-cats'), d = document.querySelector('.rp-dist');
   const nro = t => Number((t || '').replace(/[^0-9]/g, ''));
-  return {otsikko: c?.querySelector('h3').textContent, kaavio: c?.querySelectorAll('.rp-mchart').length,
-    pylvaat: [...(c?.querySelectorAll('.rp-mchart text.bv') || [])].reduce((m, t) => m + nro(t.textContent), 0),
-    summa: nro(document.querySelector('.rp-kpis b.big')?.textContent), palkki: document.querySelectorAll('.rp-bar.big').length,
-    ruudut: [...(c?.querySelectorAll('.rp-kbtn') || [])].map(b => [b.dataset.rpKind, b.getAttribute('aria-pressed'), b.querySelector('em').textContent]),
+  return {otsikko: c?.querySelector('h3').textContent, kaavio: c?.querySelectorAll('.rp-cols').length,
+    pylvaat: [...(c?.querySelectorAll('.rp-col') || [])].reduce((m, b) => m + Number(b.dataset.rpT), 0), kuukausia: c?.querySelectorAll('.rp-col').length,
+    summa: nro(document.querySelector('.rp-total .rp-big')?.textContent),
+    ruudut: [...(d?.querySelectorAll('.rp-drow') || [])].map(b => [b.dataset.rpKind, b.getAttribute('aria-pressed'), b.querySelector('em').textContent]),
     tyhja: c?.querySelector('.rp-empty')?.textContent || '', kortit: document.querySelectorAll('.rp-vcard').length};}"""
 
 
@@ -178,7 +180,7 @@ def test_kulukaavio(browser, base, leveys):
     s = avaa(browser, base, "reports", autot=talli(), extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, leveys=leveys, kello=KELLO)
     try:
         r = s.page.evaluate(KAAVIO_JS)
-        assert r["otsikko"] == "Kulut kuukausittain" and r["kaavio"] == 1 and r["palkki"] == 0, r
+        assert r["otsikko"] == "Kulut kuukausittain" and r["kaavio"] == 1 and r["kuukausia"] == 10, r
         assert r["pylvaat"] == r["summa"] == 1265, r
         assert [x[0] for x in r["ruudut"]] == ["fuel", "service", "repair", "other"] and all(x[1] == "true" for x in r["ruudut"]), r
         s.page.click('[data-rp-kind="repair"]'); s.page.wait_for_timeout(150)
@@ -186,17 +188,18 @@ def test_kulukaavio(browser, base, leveys):
         assert r["summa"] == r["pylvaat"] == 1265 - 496, r
         assert ["repair", "false", "Piilotettu"] in r["ruudut"] and len(r["ruudut"]) == 4, r
         assert s.page.evaluate("document.activeElement?.dataset.rpKind") == "repair"
-        # Kaikki lajit piilossa: ruudut jäävät näkyviin, jotta lajin voi tuoda takaisin.
+        # Kaikki lajit piilossa: rivit jäävät näkyviin, jotta lajin voi tuoda takaisin.
         for k in ["fuel", "service", "other"]:
             s.page.click(f'[data-rp-kind="{k}"]'); s.page.wait_for_timeout(120)
         r = s.page.evaluate(KAAVIO_JS)
         assert "Valitse vähintään yksi kululaji" in r["tyhja"] and len(r["ruudut"]) == 4 and r["kortit"] == 0, r
         s.page.click('[data-rp-kind="service"]'); s.page.wait_for_timeout(150)
         r = s.page.evaluate(KAAVIO_JS)
-        assert r["summa"] == r["pylvaat"] == 475 and r["kortit"] == 3, r  # kulutonkin ajoneuvo näkyy ("ei kuluja")
-        # Kuukauden napautus näyttää sen kuukauden kulut.
-        s.page.click('.rp-mchart rect.hit[data-rp-m="3"]'); s.page.wait_for_timeout(150)
-        assert "Huhtikuu 2026" in s.page.inner_text(".rp-cats .fl-csel")
+        assert r["summa"] == r["pylvaat"] == 475 and r["kortit"] == 3, r  # kulutonkin ajoneuvo näkyy ("ei kirjattuja kuluja")
+        # Kuukauden napautus näyttää sen kuukauden kulut (erillään koko jakson jakaumasta).
+        s.page.click('.rp-col[data-rp-m="3"]'); s.page.wait_for_timeout(150)
+        assert "Huhtikuu 2026" in s.page.inner_text(".rp-cats .rp-msel")
+        assert s.page.get_attribute('.rp-col[data-rp-m="3"]', "aria-pressed") == "true"
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -297,11 +300,9 @@ def test_ajoneuvokortin_selite(browser, base, kieli, nimi, vs):
                              events=[M("w1", "Pesu ja hoito", "2025-11-01", 100000, cost="1")]))
     s = avaa(browser, base, "reports", autot=autot, kieli=kieli, extra=RP, kello=KELLO)
     try:
+        assert nimi in s.page.inner_text(".rp-dist")
         kortti = s.page.locator(".rp-vcard", has_text="Testi Pakettiauto")
-        leg = kortti.locator(".rp-leg > span").all_inner_texts()
-        assert any(nimi in x and "496" in x for x in leg), leg
-        assert kortti.locator(".rp-leg .sr-only").count() == 0  # nimet näkyvät, eivät vain ruudunlukijalle
-        assert kortti.locator(".rp-delta").count() == 1
+        assert kortti.locator(".rp-delta").count() == 1  # 0.78: lajien summat nimineen Ajoneuvot-välilehdellä (0.79)
         assert vs in s.page.inner_text(".rp-vs-note")
         assert "< 0,01" in s.page.locator(".rp-vcard", has_text="Testi Halpa").inner_text().replace(" ", " ")
         assert not s.virheet, s.virheet
@@ -364,6 +365,65 @@ def test_valikon_fokus(browser, base, mobiili, nakyma, extra, valikko, arvo):
         assert s.page.input_value(valikko) == arvo
         fokus = s.page.evaluate(f"document.activeElement?.matches('{valikko}')")
         assert fokus is (not mobiili), (mobiili, fokus)
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.78: Yhteenvedon uusi rakenne. Kokonaiskulut isona lukuna, ajoneuvot ja tarkka jakso sen alla, toissijaiset luvut
+# (€/kk ja €/km) kahdessa sarakkeessa; keskeneräinen kuukausi merkitty; tyhjä kuukausi ja kuluton ajoneuvo sanotaan
+# sanoin (ei 0 €); ajoneuvojen summat = kokonaiskulut; kululajien värit samat kaaviossa, jakaumassa ja ajoneuvoriveillä.
+YHT_JS = """() => {const t = document.querySelector('.rp-total'), nro = s => Number((s || '').replace(/[^0-9]/g, ''));
+  const vari = sel => [...document.querySelectorAll(sel)].map(e => getComputedStyle(e).backgroundColor);
+  return {iso: t.querySelector('.rp-big').textContent.replace(/\\s/g, ''), ctx: t.querySelector('.rp-ctx').innerText,
+    sec: [...t.querySelectorAll('.rp-sec > div')].map(d => d.innerText.replace(/\\s+/g, ' ')), chg: t.querySelector('.rp-chg')?.innerText || '',
+    osat: [...document.querySelectorAll('.rp-col.part')].map(b => b.dataset.rpM), kk: document.querySelectorAll('.rp-col').length,
+    valittu: document.querySelector('.rp-msel').innerText.replace(/\\s+/g, ' '),
+    rivit: [...document.querySelectorAll('.rp-vlist .rp-vcard')].map(a => [a.querySelector('strong').textContent, a.querySelector('.rp-vtop b').textContent.replace(/\\s/g, ''), a.querySelector('.rp-vmid').innerText]),
+    rivisumma: [...document.querySelectorAll('.rp-vlist .rp-vtop b')].reduce((m, b) => m + nro(b.textContent), 0),
+    varit: {kaavio: [...new Set(vari('.rp-stk .rpk-fuel'))], jakauma: vari('.rp-dbar .rpk-fuel'), rivi: [...new Set(vari('.rp-vlist .rpk-fuel'))], selite: vari('.rp-legend .rpk-fuel')},
+    suodatin: [...document.querySelectorAll('.rp-stk .rpk-fuel, .rp-dbar .rpk-fuel, .rp-vlist .rpk-fuel')].map(e => getComputedStyle(e).filter).filter((v, i, a) => a.indexOf(v) === i),
+    vienti: [!!document.querySelector('.rp-export [data-rp-pdf]'), !!document.querySelector('.rp-export [data-rp-csv]')]};}"""
+
+
+@pytest.mark.parametrize("teema", [None, "dark"])
+def test_yhteenvedon_rakenne(browser, base, teema):
+    autot = talli() + [tiedot.auto("a4", name="Testi Tyhjä", plate="TST-204", km=50000)]
+    s = avaa(browser, base, "reports", autot=autot, teema=teema, extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate(YHT_JS)
+        assert r["iso"] == "1265€" and "1.1.–29.10.2026" in r["ctx"] and "(4)" in r["ctx"], r
+        assert "Keskimäärin / kk" in r["sec"][0] and "9,9 kk:n ajalta" in r["sec"][0], r  # 9 + 29/31 kk
+        assert "Kustannus / km" in r["sec"][1], r
+        assert "Muutosta ei näytetä" in r["chg"], r  # ei kirjauksia vertailujaksolta
+        assert r["kk"] == 10 and r["osat"] == ["9"], r  # lokakuu kesken (29.10.)
+        assert "Lokakuu 2026" in r["valittu"] and "keskeneräinen kuukausi" in r["valittu"], r
+        assert r["rivisumma"] == 1265 and ["Testi Tyhjä", "–"] == r["rivit"][-1][:2], r
+        assert "Ei kirjattuja kuluja valitulla ajanjaksolla." in r["rivit"][-1][2], r
+        v = r["varit"]
+        assert len(v["kaavio"]) == 1 and v["kaavio"] == v["rivi"] == v["jakauma"] == v["selite"], v
+        assert len(r["suodatin"]) == 1, r  # tummassa tilassa kaikki värit palautetaan samalla tavalla
+        assert r["vienti"] == [True, True], r
+        s.page.click('.rp-col[data-rp-m="0"]'); s.page.wait_for_timeout(150)
+        assert "Ei kirjattuja kuluja tänä kuukautena." in s.page.inner_text(".rp-msel")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_vienti_vastaa_nakymaa(browser, base):
+    """CSV:n summat = Yhteenvedon kokonaiskulut samalla rajauksella (ajoneuvo ja jakso)."""
+    s = avaa(browser, base, "reports", autot=talli(), mobiili=False, extra={"ajoura-reports": '{"p":"year","t":"sum","offCars":["a2"]}'}, kello=KELLO)
+    try:
+        iso = int("".join(ch for ch in s.page.inner_text(".rp-total .rp-big") if ch.isdigit()))
+        with s.page.expect_download() as d:
+            s.page.click("[data-rp-csv]")
+        teksti = open(d.value.path(), encoding="utf-8-sig").read().splitlines()
+        otsake = teksti[0].split(";")
+        i = otsake.index("Summa (€)")
+        summa = sum(float(r.split(";")[i].replace(",", ".") or 0) for r in teksti[1:])
+        assert round(summa) == iso == 1265 - 190, (summa, iso)
+        assert d.value.suggested_filename.endswith(".csv")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

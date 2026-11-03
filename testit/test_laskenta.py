@@ -96,7 +96,7 @@ def kuvien_talli():
 def test_raportit_ei_harhaanjohtavaa_vertailua(browser, base):
     s = avaa(browser, base, "reports", autot=kuvien_talli(), extra=RP_V, kello=KELLO)
     try:
-        r = s.page.evaluate("""() => ({kpi: document.querySelector('.rp-kpis')?.innerText.replace(/\\s+/g, ' '),
+        r = s.page.evaluate("""() => ({kpi: document.querySelector('.rp-total')?.innerText.replace(/\\s+/g, ' '),
             muutokset: document.querySelectorAll('.rp-delta').length,
             kortit: [...document.querySelectorAll('.rp-vcard')].map(e => e.innerText.replace(/\\s+/g, ' '))})""")
         # Ei muutosprosenttia: polttoainekuluja ei ole kirjattu vertailujaksolta (ennen 0.76: +299 % ja +230 %).
@@ -126,7 +126,7 @@ def test_muutos_kun_vertailujakso_kirjattu(browser, base):
 
 
 @pytest.mark.parametrize("nakyma,extra,valitsin", [
-    ("reports", {"ajoura-reports": '{"p":"12","t":"sum"}'}, ".rp-mchart rect.hit"),
+    ("reports", {"ajoura-reports": '{"p":"12","t":"sum"}'}, ".rp-col"),
     ("fuel/fd1", {"ajoura-fuel": '{"p":"12","t":"car"}'}, ".fl-hero .fl-chart rect.hit"),
     ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp","m":"cost"}'}, ".fl-chart rect.hit"),
 ])

@@ -489,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.77 (testiversio)';
+  const appVersion='0.78 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1209,10 +1209,10 @@
     const pSum=rows.reduce((m,r)=>m+r.pt,0),cmpOk=!!prev&&rows.every(r=>!r.t||r.cmp),both=rows.filter(r=>r.cmp&&!hourly(r.c)&&r.d>=100&&r.pd>=100),sumOf=f=>both.reduce((m,r)=>m+f(r),0);
     const dMonth=cmpOk?pctOf(sum/months,pSum/monthsIn(prev.from,prev.to)):null,dKm=cmpOk&&both.length&&sumOf(r=>r.pt)?pctOf(sumOf(r=>r.t)/sumOf(r=>r.d),sumOf(r=>r.pt)/sumOf(r=>r.pd)):null;
     const filtered=o.offCars.some(id=>cars.some(c=>c.id===id))||o.offKinds.length;
-    const kmCars=perKm.length,costCars=rows.filter(r=>r.t>0&&!hourly(r.c)).length;
-    return {from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,filtered,cmpOk,pSum,kmCars,costCars};}
+    const kmCars=perKm.length,costCars=rows.filter(r=>r.t>0&&!hourly(r.c)).length,dSum=cmpOk&&pSum>0?pctOf(sum,pSum):null;
+    return {from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,dSum,filtered,cmpOk,pSum,kmCars,costCars};}
   function reports(){if(!cars.length)return `${top()}<h2 class="app-heading">Raportit</h2>${emptyGarage()}`;
-    const o=rpPrefs(),{from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm,filtered,kmCars,costCars}=rpCalc(o);
+    const o=rpPrefs(),{from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dSum,cmpOk,kmCars,costCars}=rpCalc(o);
     const vs='verrattuna samaan jaksoon vuotta aiemmin';
     // 0.56: the title alone at the top (the lead text was dropped); the vehicle and the period are two drop-down lists
     // under the tabs, replacing the big vehicle buttons of 0.52–0.55.
@@ -1239,60 +1239,75 @@
     const allTot={};for(const [k] of costKinds)allTot[k]=0;for(const c of sel){const x=costsOf(c,from,to);for(const [k] of costKinds)allTot[k]+=x[k];}
     let body;
     if(!sel.length)body='<div class="rp-card"><p class="rp-empty">Valitse vähintään yksi ajoneuvo.</p></div>';
-    else if(!costKinds.some(([k])=>allTot[k]>0))body=`<div class="rp-card"><p class="rp-empty">Ei kuluja valitulla jaksolla.</p></div>`;
+    else if(!costKinds.some(([k])=>allTot[k]>0))body=`<div class="rp-card"><p class="rp-empty">Ei kirjattuja kuluja valitulla ajanjaksolla.</p></div>`;
     if(body)return `${top()}${head}${tabs}${carPick}${note}${body}`;
-    const n=sel.length;
-    const kpis=`<div class="rp-card rp-kpis"><div><small>Kokonaiskulut</small><b class="big">${eur(sum)}</b><em><span>${n}</span> <span>${n===1?'ajoneuvo':'ajoneuvoa'}</span></em></div>
-      <div><small><span>Keskimäärin</span> <span class="nw">/ kk</span></small><b>${eur(sum/months)}</b>${dMonth!==null?`<em class="rp-dl">${rpDelta(dMonth)}</em><em class="rp-vs">${vs}</em>`:''}</div>
-      <div><small>Ajetut kilometrit</small><b>${km?`<span>${number(km)}</span> <span>km</span>`:'–'}</b><em>${km?`<span>${kmCost/km<.01?'< 0,01':dec2(kmCost/km)}</span> <span>€/km</span>${kmCars<costCars?` <span class="nw">(<span>${kmCars}/${costCars}</span> <span>ajoneuvoa</span>)</span>`:''}`:'Ei riittävästi tietoja'}</em>${dKm!==null?`<em class="rp-dl">${rpDelta(dKm,true)}</em>`:''}</div></div>`;
-    const pct=v=>{const p=v/sum*100;return p>0&&p<1?'<1 %':`${number(Math.round(p))} %`;};
-    // 0.62: costs by type and by month in one card: the month bars are stacked in the cost-type colours, and the tiles
-    // under them (amount and share) hide or bring back a type with a tap; the chart, the figures above and the vehicle
-    // list follow. Up to four tiles fit on one row (0.51), five or six go three to a row.
-    const mList=rpMonths(o,{from,to,sel,kinds}),yb=!!(mList[0]&&mList[0].year),shownK=costKinds.map(([k])=>k).filter(k=>allTot[k]>0||o.offKinds.includes(k));
-    const tile=k=>{const on=kinds.includes(k);return `<li><button type="button" class="rp-kbtn" data-rp-kind="${k}" aria-pressed="${on}"><span class="rp-ico rpk-${k}" aria-hidden="true">${svg(icons[rpIcon[k]])}</span><span class="rp-kt"><small>${kn(k)}</small><b>${eur(allTot[k])}</b><em>${on?pct(allTot[k]):'Piilotettu'}</em></span></button></li>`;};
-    const chart=sum?rpMonthCard(mList,kinds,kn):'<p class="rp-empty">Valitse vähintään yksi kululaji.</p>';
+    // 0.78 (ChatGPT:n ohje 3.11.2026, Niklas): Yhteenveto in this order: total costs (one big figure with the vehicles,
+    // the exact period and the change), costs by month (stacked bars, a tapped month's own breakdown), the period's split
+    // by cost type, a compact list of the vehicles and the exports. A month's breakdown is never under the period's split.
+    const n=sel.length,rng=(a,b)=>a.slice(0,4)===b.slice(0,4)?`${dm(a)}–${date(b)}`:`${date(a)}–${date(b)}`,pTxt=o.p==='all'?'Koko historia':rng(from,to);
+    const who=all?`<span>Kaikki ajoneuvot</span> <span>(${n})</span>`:n===1?`<span translate="no">${escape(carName(sel[0]))}</span>`:`<span>${n}</span> <span>ajoneuvoa</span>`;
+    const chg=!prev?'':dSum!==null?`<p class="rp-chg">${rpDelta(dSum,true)} <span>verrattuna samaan jaksoon vuotta aiemmin</span> <span class="nw">(${rng(prev.from,prev.to)})</span></p>`
+      :`<p class="rp-chg rp-nocmp">${cmpOk?'Vertailujaksolla ei ole kirjattuja kuluja, joten muutosta ei lasketa.':'Muutosta ei näytetä: kirjauksia ei ole koko vertailujaksolta.'}</p>`;
+    const perKm=km?`${kmCost/km<.01?'< 0,01':dec2(kmCost/km)} €`:'–';
+    const kpis=`<section class="rp-card rp-total" aria-labelledby="rp-ht"><h3 class="rp-lab" id="rp-ht">Kokonaiskulut</h3><p class="rp-big">${eur(sum)}</p>
+      <p class="rp-ctx">${who} · <span class="nw">${pTxt}</span></p>${chg}
+      <div class="rp-sec"><div><small>Keskimäärin / kk</small><b>${eur(sum/months)}</b><em><span>${dec(months)}</span> <span>kk:n ajalta</span></em></div>
+      <div><small>Kustannus / km</small><b>${perKm}</b><em>${km?`<span class="nw">${number(km)} km</span>${kmCars<costCars?` · <span class="nw"><span>${kmCars}/${costCars}</span> <span>ajoneuvoa</span></span>`:''}`:'<span>Ei riittävästi tietoja</span>'}</em></div></div></section>`;
+    // Shares of the period's total (only the shown cost types), rounded so that they add up to 100 (largest remainder);
+    // a share below half a per cent shows as "< 1 %". The euros are never rounded to fit.
+    const shownK=costKinds.map(([k])=>k).filter(k=>allTot[k]>0||o.offKinds.includes(k)),share=rpShares(kinds.filter(k=>allTot[k]>0).map(k=>[k,allTot[k]]));
+    const mList=rpMonths(o,{from,to,sel,kinds}),yb=!!(mList[0]&&mList[0].year);
+    const legend=`<p class="rp-legend">${kinds.filter(k=>allTot[k]>0).map(k=>`<span class="nw"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span></span>`).join('')}</p>`;
     const cats=`<section class="rp-card rp-cats" aria-labelledby="rp-hc"><div class="rp-hrow"><h3 class="rp-h" id="rp-hc">${yb?'Kulut vuosittain':'Kulut kuukausittain'}</h3><small class="fl-unit">€</small></div>
-      <p class="rp-sub rp-per"><span>Jakso</span> <span>${o.p==='all'?'Koko historia':`${date(from)}–${date(to)}`}</span></p>${chart}
-      <ul class="rp-kinds${shownK.length>4?' k3':''}">${shownK.map(tile).join('')}</ul>
-      <p class="fl-note rp-cnote">${sum?`<span>${yb?'Napauta vuotta, niin näet kulut lajeittain.':'Napauta kuukautta, niin näet kulut lajeittain.'}</span> `:''}<span>Napauta kululajia, niin voit piilottaa sen tai tuoda takaisin.</span>${sum&&mList.some(m=>m.partial)?` <span>${yb?'Vaalea pylväs on vajaa vuosi.':'Vaaleat pylväät ovat vajaita kuukausia.'}</span>`:''}</p></section>`;
-    if(!sum)return `${top()}${head}${tabs}${carPick}${note}${cats}`;
-    // 0.53: each cost type's name is written next to its amount (the colours alone were hard to remember), the period the
-    // change badges compare with is said above the cards, and a cost below one cent per km is shown as "< 0,01".
-    const card=r=>{const c=r.c,on=kinds.filter(k=>r.s[k]>0),dl=r.cmp?pctOf(r.t,r.pt):null;
-      const meta=[r.per!==null?`<span class="nw"><span>${number(r.d)}</span> <span>${r.u}</span></span> · <span class="nw"><span>${r.per<.01?'< 0,01':dec2(r.per)}</span> <span>€/${r.u}</span></span>`:'',r.late?`<span class="nw"><span>tiedot alkaen</span> <span>${date(r.late)}</span></span>`:'',!r.t?'<span>ei kuluja</span>':''].filter(Boolean).join(' · ');
-      return `<a class="rp-vcard" href="#report/${c.id}/raportit"><span class="rp-vpic" aria-hidden="true">${rpThumb(c)}</span><span class="rp-vbody"><span class="rp-vtop"><strong translate="no">${escape(carName(c))}</strong><b>${eur(r.t)}</b><span class="chevron" aria-hidden="true">›</span></span><span class="rp-vmid"><small>${meta}</small>${rpDelta(dl,true)}</span>${r.t?`<span class="rp-bar" aria-hidden="true">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span><span class="rp-leg">${on.map(k=>`<span class="nw"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span class="rp-lk">${kn(k)}</span> <b>${eur(r.s[k])}</b></span>`).join('')}</span>`:''}</span></a>`;};
+      ${sum?rpMonthCard(mList,kinds,kn,legend):'<p class="rp-empty">Valitse vähintään yksi kululaji.</p>'}</section>`;
+    const dist=`<section class="rp-card rp-dist" aria-labelledby="rp-hd"><div class="rp-hrow"><h3 class="rp-h" id="rp-hd">Kulujen jakautuminen</h3><small class="fl-unit">${pTxt}</small></div>
+      <ul class="rp-drows">${shownK.map(k=>{const on=kinds.includes(k),w=on&&sum?allTot[k]/sum*100:0;return `<li><button type="button" class="rp-drow" data-rp-kind="${k}" aria-pressed="${on}"><span class="rp-dt"><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span class="rp-dn">${kn(k)}</span><b>${eur(allTot[k])}</b><em>${on?share[k]:'Piilotettu'}</em></span><span class="rp-dbar" aria-hidden="true">${w?`<i class="rp-c rpk-${k}" style="width:${Math.max(1,w).toFixed(1)}%"></i>`:''}</span></button></li>`;}).join('')}</ul>
+      <p class="fl-note rp-cnote">Napauta kululajia, niin voit piilottaa sen tai tuoda takaisin.</p></section>`;
+    if(!sum)return `${top()}${head}${tabs}${carPick}${note}${cats}${dist}`;
+    // Compact vehicle rows (0.78): photo, name, total and a thin bar of the cost types; €/km only when the distance is
+    // reliable (kmIn), the change only when the records cover the comparison period. No costs is said in words, not 0 €.
+    const card=r=>{const c=r.c,on=kinds.filter(k=>r.s[k]>0),dl=r.cmp?pctOf(r.t,r.pt):null,pu=`€/${r.u}`;
+      const meta=!r.t?['<span>Ei kirjattuja kuluja valitulla ajanjaksolla.</span>']:[r.per!==null?`<span class="nw"><span>${r.per<.01?'< 0,01':dec2(r.per)}</span> <span>${pu}</span></span>`:`<span class="nw">${pu}:</span> <span>ei riittävästi tietoja</span>`,r.late?`<span class="nw"><span>tiedot alkaen</span> <span>${date(r.late)}</span></span>`:''].filter(Boolean);
+      return `<li><a class="rp-vcard" href="#report/${c.id}/raportit"><span class="rp-vpic" aria-hidden="true">${rpThumb(c)}</span><span class="rp-vbody"><span class="rp-vtop"><strong translate="no">${escape(carName(c))}</strong><b>${r.t?eur(r.t):'–'}</b><span class="chevron" aria-hidden="true">›</span></span>${r.t?`<span class="rp-bar" aria-hidden="true">${on.map(k=>`<i class="rp-c rpk-${k}" style="flex:${r.s[k].toFixed(2)}"></i>`).join('')}</span>`:''}<span class="rp-vmid"><small>${meta.join(' · ')}</small>${rpDelta(dl,true)}</span></span></a></li>`;};
     const sortNames=[['cost','Kulut'],['name','Nimi'],['km','€/km']];
-    const list=`<section class="rp-vsec" aria-labelledby="rp-hv"><div class="rp-hrow"><h3 class="rp-h2" id="rp-hv">Ajoneuvokohtaiset kulut</h3>${rows.length>1?rpPick('data-rp-sort','Järjestä',`<span>Järjestä:</span> <span>${sortNames.find(x=>x[0]===o.s)[1]}</span>`,sortNames,o.s):''}</div>${rows.some(r=>r.cmp&&pctOf(r.t,r.pt)!==null)?`<p class="rp-sub rp-vs-note"><span>Muutos</span> <span>${vs}</span>.</p>`:''}${rows.map(card).join('')}</section>`;
-    // PDF report of this summary (0.32): same period and choices as on the screen.
-    const pdf=`<button type="button" class="rp-card rp-pdf" data-rp-pdf><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>Raportoi ajanjakso</strong><small><span>${sel.length<cars.length?'Valitut ajoneuvot':'Kaikki ajoneuvot'}</span> · <span>PDF-tiedosto</span></small></span><span class="chevron" aria-hidden="true">›</span></button>`;
-    // CSV export (0.43): every entry and fill-up of the period for Excel, with the same choices as the page.
-    const nRows=rpCsvRows(o,{from,to,sel,kinds}).length,csv=nRows?`<button type="button" class="rp-card rp-pdf rp-csv" data-rp-csv><span class="rp-pdf-ico csv" aria-hidden="true">${svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 15h16M10 4v16"/>')}</span><span class="rp-rtxt"><strong>Vie tiedot</strong><small><span>Excel / CSV</span> · <span class="nw"><span>${number(nRows)}</span> <span>${nRows===1?'rivi':'riviä'}</span></span></small></span><span class="chevron" aria-hidden="true">›</span></button><p class="fl-fine rp-csvnote">Jokainen merkintä ja tankkaus omalla rivillään. Tiedosto aukeaa Excelissä, Numbersissa ja Google Sheetsissä.</p>`:'';
+    const list=`<section class="rp-vsec" aria-labelledby="rp-hv"><div class="rp-hrow"><h3 class="rp-h2" id="rp-hv">Ajoneuvokohtaiset kulut</h3>${rows.length>1?rpPick('data-rp-sort','Järjestä',`<span>Järjestä:</span> <span>${sortNames.find(x=>x[0]===o.s)[1]}</span>`,sortNames,o.s):''}</div>${rows.some(r=>r.cmp&&pctOf(r.t,r.pt)!==null)?`<p class="rp-sub rp-vs-note"><span>Muutos</span> <span>${vs}</span>.</p>`:''}<ul class="rp-vlist">${rows.map(card).join('')}</ul></section>`;
+    // Exports in one card (0.78): the PDF summary (0.32) and the CSV rows (0.43), both with the page's vehicles, period
+    // and cost types. CSV is named CSV: it opens in Excel, but it is not an Excel file.
+    const nRows=rpCsvRows(o,{from,to,sel,kinds}).length;
+    const exp=`<section class="rp-card rp-export" aria-labelledby="rp-he"><h3 class="rp-h" id="rp-he">Raporttien vienti</h3><p class="rp-sub">${who} · <span class="nw">${pTxt}</span></p>
+      <div class="rp-xrow"><button type="button" class="rp-xbtn" data-rp-pdf><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>PDF</strong><small>Kulujen yhteenveto</small></span></button>${nRows?`<button type="button" class="rp-xbtn" data-rp-csv><span class="rp-pdf-ico csv" aria-hidden="true">${svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 15h16M10 4v16"/>')}</span><span class="rp-rtxt"><strong>CSV</strong><small><span>${number(nRows)}</span> <span>${nRows===1?'rivi':'riviä'}</span></small></span></button>`:''}</div>
+      <p class="fl-fine rp-csvnote"><span>PDF: tunnusluvut ja kulut lajeittain ja ajoneuvoittain.</span>${nRows?' <span>CSV: jokainen merkintä ja tankkaus omalla rivillään; aukeaa Excelissä, Numbersissa ja Google Sheetsissä.</span>':''}</p></section>`;
     const msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    return `${top()}${head}${tabs}${carPick}${note}${msg}${kpis}${cats}${list}${pdf}${csv}`;}
+    return `${top()}${head}${tabs}${carPick}${note}${msg}${kpis}${cats}${dist}${list}${exp}`;}
+  // Largest-remainder rounding of shares to whole per cents (they add up to 100); a share under 0.5 % reads "< 1 %".
+  function rpShares(list){const tot=list.reduce((m,[,v])=>m+v,0),out={};if(!tot)return out;const raw=list.map(([k,v])=>[k,v/tot*100]),fl=raw.map(([k,x])=>[k,Math.floor(x),x-Math.floor(x)]);
+    let left=100-fl.reduce((m,x)=>m+x[1],0);for(const x of [...fl].sort((a,b)=>b[2]-a[2])){if(left<=0)break;x[1]++;left--;}
+    for(const [k,p] of fl){const x=raw.find(r=>r[0]===k)[1];out[k]=x>0&&x<.5?'< 1 %':`${number(p)} %`;}return out;}
   // Raportit 0.43: costs by month in "Näytä tarkemmin" (stacked bars in the cost-type colours, the total written on each
   // bar, a tapped month's amounts by type as text) and the period's entries as a CSV file for Excel. Both use the page's
   // period and choices, and the same rules as costsOf, so every sum matches the summary above.
   let rpMonth=null;
-  const rpKc={fuel:'#2a78d6',service:'#1baf7a',repair:'#6250d6',inspect:'#eda100',tyres:'#e87ba4',other:'#8d99aa'};
+  // The cost-type colours for the PDF; the screen uses the same values as CSS classes (.rpk-*, app.css).
+  const rpKc={fuel:'#2a78d6',service:'#1baf7a',repair:'#6250d6',inspect:'#eda100',tyres:'#e87ba4',other:'#808b9a'};
   function rpMonths(o,d){const {from,to,sel,kinds}=d,first=sel.flatMap(c=>[...c.events.map(e=>e.date),...(c.fuels||[]).map(f=>f.date)]).sort()[0]||to,start=o.p==='all'?first:from;
     const keys=[];{let [y,m]=start.split('-').map(Number);const [ey,em]=to.split('-').map(Number);while(y<ey||(y===ey&&m<=em)){keys.push(y+'-'+String(m).padStart(2,'0'));if(++m>12){m=1;y++;}}}
     const byYear=keys.length>24,list=byYear?[...new Set(keys.map(k=>k.slice(0,4)))]:keys;
     return list.map(k=>{const a0=byYear?k+'-01-01':k+'-01',b0=byYear?k+'-12-31':monthEnd(k),a=a0<start?start:a0,b=b0>to?to:b0,s={};let t=0;
       for(const kd of kinds)s[kd]=0;for(const c of sel){const x=costsOf(c,a,b);for(const kd of kinds){s[kd]+=x[kd];t+=x[kd];}}
       return {k,year:byYear,s,t,partial:a!==a0||b!==b0};});}
-  function rpMonthChart(list,kinds,kn,sel){const W=320,H=170,T=18,B=22,ph=H-T-B,n=list.length,sw=W/n,bw=Math.min(20,sw*.64),mx=Math.max(1,...list.map(x=>x.t)),r=v=>Math.round(v*10)/10;
-    let g=(sel>=0?`<rect class="msel" x="${r(sw*sel+1)}" y="${T-14}" width="${r(sw-2)}" height="${ph+14}" rx="5"/>`:'')+`<line class="g" x1="0" x2="${W}" y1="${T+ph}" y2="${T+ph}"/>`;
-    list.forEach((x,i)=>{const cx=sw*(i+.5);let y=T+ph;for(const k of kinds){if(!x.s[k])continue;const h=x.s[k]/mx*ph;y-=h;g+=`<rect x="${r(cx-bw/2)}" y="${r(y)}" width="${r(bw)}" height="${r(Math.max(.8,h))}" style="fill:${rpKc[k]}"${x.partial?' opacity=".5"':''}/>`;}
-      if(x.t>0)g+=`<text class="bv" x="${r(cx)}" y="${r(y-5)}" text-anchor="middle">${number(Math.round(x.t))}</text>`;});
-    const every=n>13?2:1;g+=list.map((x,i)=>i%every&&i!==sel?'':`<text class="ax${i===sel?' on':''}" x="${r(sw*(i+.5))}" y="${H-6}" text-anchor="middle">${x.year?x.k:Number(x.k.slice(5))}</text>`).join('');
-    g+=list.map((x,i)=>`<rect class="hit" data-rp-m="${i}" x="${r(sw*i)}" y="0" width="${r(sw)}" height="${H}"/>`).join('');
-    return `<svg class="fl-chart rp-mchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kulut kuukausittain">${g}</svg>`;}
-  function rpMonthCard(list,kinds,kn){if(!list.length||!list.some(x=>x.t>0))return '';
+  // 0.78: the month chart as HTML bars instead of SVG, so the cost-type colours are the same classes (.rpk-*) as in the
+  // split and the vehicle rows, also in the dark theme (the page's invert filter is undone for them), and every month is
+  // a real button (tap, keyboard, screen reader). Bars are stacked by cost type with a 2 px gap; the y axis has round
+  // steps; a month that is only partly in the period is lighter and named "keskeneräinen" in its breakdown.
+  function rpMonthCard(list,kinds,kn,legend=''){if(!list.length||!list.some(x=>x.t>0))return '';
     let sel=rpMonth!==null&&rpMonth<list.length?rpMonth:-1;if(sel<0)for(let i=list.length-1;i>=0;i--)if(list[i].t>0){sel=i;break;}
-    const x=list[sel],yb=list[0].year,name=x.year?`<span>${x.k}</span>`:`<span>${ucFirst(mName(x.k))}</span> <span>${x.k.slice(0,4)}</span>`;
-    return `<div class="rp-month">${rpMonthChart(list,kinds,kn,sel)}
-      <div class="fl-csel"><b>${name}</b>${x.partial?` <span>${yb?'(vajaa vuosi)':'(vajaa kuukausi)'}</span>`:''} · <b>${eur(x.t)}</b><ul>${kinds.filter(k=>x.s[k]>0).map(k=>`<li><i aria-hidden="true" style="background:${rpKc[k]}"></i><span>${kn(k)}</span> <b>${eur(x.s[k])}</b></li>`).join('')||'<li><span>Ei kuluja</span></li>'}</ul></div></div>`;}
+    const mx=Math.max(1,...list.map(x=>x.t)),st=niceStep(mx/3),top=Math.ceil(mx/st)*st,grid=[];for(let v=0;v<=top+st/1e3;v+=st)grid.push(v);
+    const name=x=>x.year?`<span>${x.k}</span>`:`<span>${ucFirst(mName(x.k))}</span> <span>${x.k.slice(0,4)}</span>`,every=list.length>13?2:1;
+    const cols=list.map((x,i)=>`<button type="button" class="rp-col${x.partial?' part':''}" data-rp-m="${i}" data-rp-t="${Math.round(x.t)}" aria-pressed="${i===sel}"><span class="rp-plot"><span class="rp-stk" style="height:${(x.t/top*100).toFixed(2)}%">${kinds.filter(k=>x.s[k]>0).map(k=>`<i class="rp-c rpk-${k}" style="flex-grow:${x.s[k].toFixed(2)}"></i>`).join('')}</span></span><span class="rp-ml" aria-hidden="true">${i%every&&i!==sel?'':x.year?x.k.slice(2):Number(x.k.slice(5))}</span><span class="sr-only">${name(x)}: ${eur(x.t)}</span></button>`).join('');
+    const x=list[sel],items=kinds.filter(k=>x.s[k]>0);
+    return `<div class="rp-chart"><div class="rp-grid" aria-hidden="true">${grid.map(v=>`<span style="bottom:${(v/top*100).toFixed(2)}%"><i>${number(Math.round(v))}</i></span>`).join('')}</div><div class="rp-cols" role="group" aria-label="${list[0].year?'Vuodet':'Kuukaudet'}">${cols}</div></div>${legend}
+      <div class="rp-msel" aria-live="polite"><p class="rp-mh"><b>${name(x)}</b>${x.partial?` <span class="rp-part">– <span>${x.year?'keskeneräinen vuosi':'keskeneräinen kuukausi'}</span></span>`:''}<b class="rp-mt">${eur(x.t)}</b></p>${items.length?`<ul class="rp-mlist">${items.map(k=>`<li><i class="rp-dot rpk-${k}" aria-hidden="true"></i><span>${kn(k)}</span><b>${eur(x.s[k])}</b></li>`).join('')}</ul>`:`<p class="rp-mnone">${x.year?'Ei kirjattuja kuluja tänä vuonna.':'Ei kirjattuja kuluja tänä kuukautena.'}</p>`}
+      <p class="fl-note">${list[0].year?'Napauta pylvästä, niin näet vuoden erittelyn.':'Napauta pylvästä, niin näet kuukauden erittelyn.'}${list.some(m=>m.partial)?` <span>${list[0].year?'Vaalea pylväs on keskeneräinen vuosi.':'Vaalea pylväs on keskeneräinen kuukausi.'}</span>`:''}</p></div>`;}
   // CSV for Excel: one row per entry or fill-up of the period, for the chosen vehicles and cost types. Finnish and Swedish
   // Excel read semicolons and decimal commas; the English file uses commas and decimal points. The BOM tells Excel the
   // file is UTF-8 (ä, ö). A cell that would start a formula (=, +, -, @) gets a leading apostrophe, so a note typed in
@@ -1337,7 +1352,7 @@
     saveFile(file,matchMedia('(pointer: coarse)').matches);}
   function fleetDoc(P,o,d){const {from,to,prev,kinds,sel,kn,rows,sum,km,kmCost,months,dMonth,dKm}=d,T=tl;
     const doc=P.create({title:'AJOURA – '+T('Kulujen yhteenveto')}),L=12,R=198,CW=R-L,BOT=277;
-    const grey='#4f5f72',hair='#d6dee8',blue='#1769f4',kc={fuel:'#2a78d6',service:'#1baf7a',repair:'#6250d6',inspect:'#eda100',tyres:'#e87ba4',other:'#8d99aa'};
+    const grey='#4f5f72',hair='#d6dee8',blue='#1769f4',kc=rpKc;
     const rid='AJ-TALLI-'+today().replace(/-/g,''),tot={};for(const k of kinds)tot[k]=rows.reduce((m,r)=>m+r.s[k],0);const used=kinds.filter(k=>tot[k]>0);
     // Change with its sign written out, in grey: a change is not marked good or bad (0.76, the same as the screen).
     const signed=v=>v===null?null:{t:(v>0?'+':v<0?'−':'')+number(Math.abs(v))+' %',c:grey};
@@ -1357,9 +1372,9 @@
       for(const l of doc.wrap(`${T('Rajaus')} – ${parts.join('; ')}`,CW,8.5)){doc.text(L,y+0.5,l,{size:8.5,color:grey});y+=4;}}
     // Key figures as four tiles.
     y+=3;const tw=(CW-9)/4,th=19.5,tiles=[
-      [T('Kokonaiskulut'),eur(sum),{t:`${sel.length} ${T(sel.length===1?'ajoneuvo':'ajoneuvoa')}`,c:grey}],
-      [`${T('Keskimäärin')} ${T('/ kk')}`,eur(sum/months),signed(dMonth)],
-      [T('Ajetut kilometrit'),km?`${number(km)} km`:'–',km?null:{t:T('ei mittarilukemia'),c:grey}],
+      [T('Kokonaiskulut'),eur(sum),d.dSum!==null?signed(d.dSum):{t:`${sel.length} ${T(sel.length===1?'ajoneuvo':'ajoneuvoa')}`,c:grey}],
+      [`${T('Keskimäärin')} ${T('/ kk')}`,eur(sum/months),{t:`${dec(months)} ${T('kk:n ajalta')}`,c:grey}],
+      [T('Ajetut kilometrit'),km?`${number(km)} km`:'–',km?(d.kmCars<d.costCars?{t:`${d.kmCars}/${d.costCars} ${T('ajoneuvoa')}`,c:grey}:null):{t:T('Ei riittävästi tietoja'),c:grey}],
       [T('Kulut / km'),km?`${dec2(kmCost/km)} €/km`:'–',signed(dKm)]];
     tiles.forEach(([lab,val,sub],i)=>{const x=L+i*(tw+3);doc.rect(x,y,tw,th,{fill:'#f1f6fd',stroke:'#d9e6f4',r:2.5});
       doc.text(x+3.5,y+5.5,doc.fit(lab,tw-7,7.5,true),{size:7.5,bold:true,color:grey});
@@ -1367,10 +1382,10 @@
       if(sub)doc.text(x+3.5,y+16.6,doc.fit(sub.t,tw-7,8,sub.c!==grey),{size:8,bold:sub.c!==grey,color:sub.c});});
     y+=th+1.5;
     // Costs by type: one bar and a table.
-    h2('Kulut kategorioittain');y+=1.5;let bx=L;for(const k of used){const w=CW*tot[k]/sum;doc.rect(bx,y,w,4.5,{fill:kc[k]});bx+=w;}y+=7.5;
-    const pct=v=>{const p=v/sum*100;return p>0&&p<1?'<1 %':`${number(Math.round(p))} %`;};
+    h2('Kulujen jakautuminen');y+=1.5;let bx=L;for(const k of used){const w=CW*tot[k]/sum;doc.rect(bx,y,w,4.5,{fill:kc[k]});bx+=w;}y+=7.5;
+    const shr=rpShares(used.map(k=>[k,tot[k]]));
     thead([[T('Kululaji'),L+2],['€',R-32,'right'],[T('Osuus'),R-2,'right']]);
-    for(const k of used){doc.rect(L+2,y+1.7,3,3,{fill:kc[k],r:.6});doc.text(L+7.5,y+4.3,T(kn(k)),{size:9.5});doc.text(R-32,y+4.3,eur(tot[k]),{size:9.5,align:'right'});doc.text(R-2,y+4.3,pct(tot[k]),{size:9.5,color:grey,align:'right'});y+=6;rule();}
+    for(const k of used){doc.rect(L+2,y+1.7,3,3,{fill:kc[k],r:.6});doc.text(L+7.5,y+4.3,T(kn(k)),{size:9.5});doc.text(R-32,y+4.3,eur(tot[k]),{size:9.5,align:'right'});doc.text(R-2,y+4.3,shr[k],{size:9.5,color:grey,align:'right'});y+=6;rule();}
     doc.text(L+2,y+4.8,T('Yhteensä'),{size:9.5,bold:true});doc.text(R-32,y+4.8,eur(sum),{size:9.5,bold:true,align:'right'});doc.text(R-2,y+4.8,'100 %',{size:9.5,bold:true,color:grey,align:'right'});y+=7;
     // One row per vehicle, in the order chosen on the screen.
     const vcols=()=>thead([[T('Ajoneuvo'),L+2],[T('Ajettu'),L+112,'right'],['€/km',L+140,'right'],[T('Kulut'),L+168,'right'],[T('Muutos'),R-2,'right']]);

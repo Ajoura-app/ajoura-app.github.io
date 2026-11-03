@@ -600,7 +600,7 @@ html.standalone body,html.fullscreen body{overflow-x:clip}
 .rp-ck svg{width:9px;height:9px}
 .rp-dot{display:block;width:11px;height:11px;flex:none;border-radius:3px}
 .rp-chip[aria-pressed="false"] .rp-dot{background:none!important;box-shadow:inset 0 0 0 2px #a3afbd}
-.rpk-fuel{background:#2a78d6}.rpk-service{background:#1baf7a}.rpk-repair{background:#6250d6}.rpk-inspect{background:#eda100}.rpk-tyres{background:#e87ba4}.rpk-other{background:#8d99aa}
+.rpk-fuel{background:#2a78d6}.rpk-service{background:#1baf7a}.rpk-repair{background:#6250d6}.rpk-inspect{background:#eda100}.rpk-tyres{background:#e87ba4}.rpk-other{background:#808b9a}
 .rp-card{margin-bottom:11px;padding:13px 14px;background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow)}
 .rp-kpis{display:grid;grid-template-columns:1.12fr 1fr 1.08fr;gap:0;padding:14px 2px}
 .rp-kpis>div{min-width:0;padding:0 9px}
@@ -1144,3 +1144,83 @@ html.dark .device-glass .tab-dock>.tab-bar.main-tabs,html.dark .device-glass .ta
 .fl-warn{margin:10px 0 0;padding:9px 11px;border-radius:10px;background:#fff6e0;color:#5c4000;font-size:12px;line-height:1.5}
 .fl-warn b{font-weight:700}
 .fl-sus{color:#7a4f00;font-weight:650}
+/* 0.78: Raportit → Yhteenveto. Kokonaiskulut yhtenä isona lukuna (ajoneuvot, tarkka jakso ja muutos sen alla), toissijaiset
+   luvut kahdessa sarakkeessa; kuukausikaavio HTML-pylväinä (samat värit .rpk-* kuin muualla, myös tummassa tilassa);
+   kulujen jakautuminen vaakapalkkeina; tiiviit ajoneuvorivit; viennit yhdessä kortissa. Tekstit vähintään 11 px. */
+.rp-total{padding:15px 16px}
+.rp-lab{margin:0;font-size:13px;font-weight:650;color:#4f5f72}
+.rp-big{margin:1px 0 0;font-size:34px;font-weight:750;letter-spacing:-.035em;line-height:1.12;color:var(--ink);white-space:nowrap}
+.rp-ctx{margin:3px 0 0;font-size:12px;line-height:1.45;color:#4f5f72}
+.rp-chg{margin:8px 0 0;font-size:12px;line-height:1.5;color:#4f5f72}
+.rp-chg .rp-delta{margin-right:3px;vertical-align:1px}
+.rp-sec{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid var(--hairline)}
+.rp-sec>div{min-width:0}
+.rp-sec small{display:block;font-size:12px;font-weight:600;color:#4f5f72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-sec b{display:block;margin-top:2px;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--ink);white-space:nowrap}
+.rp-sec em{display:block;margin-top:1px;font-size:11.5px;font-style:normal;line-height:1.35;color:#4f5f72}
+.rp-chart{position:relative;margin:10px 0 0;padding-left:34px}
+.rp-grid{position:absolute;left:34px;right:0;top:0;bottom:22px;pointer-events:none}
+.rp-grid span{position:absolute;left:0;right:0;border-top:1px solid #e6ebf1}
+.rp-grid span i{position:absolute;right:calc(100% + 5px);top:-7px;font-size:11px;font-style:normal;line-height:1;color:#4f5f72;white-space:nowrap}
+.rp-cols{position:relative;display:flex;gap:2px;height:168px}
+.rp-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;padding:0;border:0;border-radius:7px;background:none;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rp-col:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.rp-plot{flex:1;display:flex;align-items:flex-end;justify-content:center;border-radius:6px 6px 0 0}
+.rp-col[aria-pressed="true"] .rp-plot{background:#edf2f9}
+.rp-stk{display:flex;flex-direction:column-reverse;gap:2px;width:min(74%,24px)}
+.rp-stk .rp-c{flex:1 1 0;min-height:2px;height:auto;min-width:0}
+.rp-stk .rp-c:last-child{border-radius:4px 4px 0 0}
+.rp-col.part .rp-stk{opacity:.5}
+.rp-ml{height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#4f5f72}
+.rp-col[aria-pressed="true"] .rp-ml{color:var(--ink);font-weight:700}
+.rp-msel{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f3f6fa}
+.rp-mh{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;margin:0;font-size:13px;color:var(--ink)}
+.rp-mh .rp-part{font-size:12px;color:#5a4300;font-weight:600}
+.rp-mh .rp-mt{margin-left:auto;font-size:15px}
+.rp-mlist{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:8px 0 0;padding:0}
+.rp-mlist li{display:flex;align-items:center;gap:6px;min-width:0;font-size:12px;color:#3d4b5c}
+.rp-mlist li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-mlist li b{color:var(--ink);white-space:nowrap}
+.rp-mnone{margin:6px 0 0;font-size:12px;color:#4f5f72}
+.rp-msel .fl-note{margin-top:8px}
+.rp-mlist .rp-dot,.rp-legend .rp-dot,.rp-dt .rp-dot{width:10px;height:10px;border-radius:3px}
+.rp-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 0 0;font-size:12px;color:#3d4b5c}
+.rp-legend .nw{display:inline-flex;align-items:center;gap:6px}
+.rp-drows{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.rp-drow{display:block;width:100%;padding:7px 0;border:0;border-radius:8px;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rp-drow:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.rp-dt{display:flex;align-items:center;gap:8px;font-size:13px}
+.rp-dn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.rp-dt b{font-weight:700;color:var(--ink);white-space:nowrap}
+.rp-dt em{width:46px;flex:none;font-style:normal;text-align:right;font-size:12px;color:#4f5f72;white-space:nowrap}
+.rp-dbar{display:block;height:7px;margin:6px 54px 0 18px;border-radius:4px;background:#edf1f6;overflow:hidden}
+.rp-dbar .rp-c{height:100%;border-radius:4px}
+.rp-drow[aria-pressed="false"] .rp-dt b{color:#4f5f72;font-weight:600;text-decoration:line-through}
+.rp-drow[aria-pressed="false"] .rp-dot{opacity:.35}
+.rp-dist .rp-cnote{margin-top:6px}
+.rp-vlist{list-style:none;margin:0;padding:0}
+.rp-vlist .rp-vcard{gap:10px;margin-bottom:8px;padding:9px 10px;align-items:center}
+.rp-vlist .rp-vpic{width:52px;height:52px;border-radius:10px}
+.rp-vlist .rp-vbody{gap:5px}
+.rp-vlist .rp-vtop strong{font-size:14px}
+.rp-vlist .rp-vtop b{font-size:15px}
+.rp-vlist .rp-bar{height:6px;margin-top:0}
+.rp-vlist .rp-bar .rp-c:first-child{border-radius:3px 0 0 3px}.rp-vlist .rp-bar .rp-c:last-child{border-radius:0 3px 3px 0}.rp-vlist .rp-bar .rp-c:only-child{border-radius:3px}
+.rp-vlist .rp-vmid{min-height:0}
+.rp-vlist .rp-vmid small{font-size:11.5px}
+.rp-export .rp-sub{margin:2px 0 10px}
+.rp-xrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp-xbtn{display:flex;align-items:center;gap:9px;min-width:0;min-height:52px;padding:8px 10px;border:1px solid var(--hairline);border-radius:12px;background:#f7f9fc;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.rp-xbtn:hover{border-color:#7fb2f3}
+.rp-xbtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.rp-xbtn .rp-pdf-ico{width:32px;height:32px;border-radius:9px}
+.rp-xbtn .rp-pdf-ico svg{width:17px;height:17px}
+.rp-export .rp-csvnote{margin:10px 0 0}
+/* Tumma tila: kortit hieman taustaa vaaleampia (ennen mustia tummemmalla taustalla) ja ilman hehkuvaa varjoa; valittu kuukausi
+   ja kuukauden erittely erottuvat kortista. Värit ovat vaalean teeman arvoja, koska tumma tila syntyy käänteisvärisuodattimesta. */
+html.dark .device-glass .rp-card,html.dark .device-glass .rp-vcard,html.dark .device-glass .rp-pick{background:#e9eef4;border-color:#dce3ec;box-shadow:none}
+html.dark .device-glass .rp-col[aria-pressed="true"] .rp-plot,html.dark .device-glass .rp-msel{background:#d9e0ea}
+html.dark .device-glass .rp-xbtn{background:#dfe5ed;border-color:#d0d9e4}
+html.dark .device-glass .rp-dbar{background:#d6dde7}
+html.dark .device-glass .rp-grid span{border-color:#d3dbe5}
+.rp-xbtn .rp-rtxt small{overflow-wrap:anywhere;hyphens:auto}
