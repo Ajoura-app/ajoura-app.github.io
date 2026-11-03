@@ -598,3 +598,21 @@ def test_tankkaus_vertailu_mobiilissa(browser, base, kieli, leveys):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.82: Raportit-PDF:ssä kuluton ajoneuvo on "–" kuten näytöllä (0.78), ei 0 €: puuttuva kirjaus ei ole nollakulu.
+@pytest.mark.skipif(not __import__("shutil").which("pdftotext"), reason="pdftotext puuttuu")
+def test_pdf_kuluton_ajoneuvo(browser, base, tmp_path):
+    import subprocess
+    autot = talli() + [tiedot.auto("a4", name="Testi Tyhjä", plate="TST-204", km=50000)]
+    s = avaa(browser, base, "reports", autot=autot, mobiili=False, extra={"ajoura-reports": '{"p":"year","t":"sum"}'}, kello=KELLO)
+    try:
+        with s.page.expect_download() as d:
+            s.page.click("[data-rp-pdf]")
+        pdf = tmp_path / "kulut.pdf"; d.value.save_as(pdf)
+        teksti = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True).stdout
+        rivit = [r for r in teksti.splitlines() if "Testi Tyhjä" in r]
+        assert len(rivit) == 2 and all("0 €" not in r and not r.rstrip().endswith(" 0") for r in rivit), rivit
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

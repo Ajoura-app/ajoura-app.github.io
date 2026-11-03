@@ -489,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.81 (testiversio)';
+  const appVersion='0.82 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1453,7 +1453,8 @@
       doc.text(L+2,y+8.2,doc.fit([r.c.plate||T(typeOf(r.c)),r.late?`${T('tiedot alkaen')} ${date(r.late)}`:''].filter(Boolean).join(' · '),80,7.5),{size:7.5,color:grey});
       doc.text(L+112,y+4.4,r.d>0?`${number(r.d)} ${r.u}`:'–',{size:9.5,align:'right'});
       doc.text(L+140,y+4.4,r.per!==null?`${dec2(r.per)} €/${r.u}`:'–',{size:9.5,align:'right'});
-      doc.text(L+168,y+4.4,eur(r.t),{size:9.5,bold:true,align:'right'});
+      // 0.82: no recorded costs is '–' as on the screen (0.78), not 0 €: a missing entry is not a cost of zero.
+      doc.text(L+168,y+4.4,r.t?eur(r.t):'–',{size:9.5,bold:true,align:'right'});
       doc.text(R-2,y+4.4,sg?sg.t:'–',{size:9.5,bold:!!sg,color:sg?sg.c:grey,align:'right'});y+=9.5;rule();}
     // Vehicles by cost type, when there is more than one of each to compare.
     if(rows.length>1&&used.length>1){const nw=54,cw=(CW-nw)/(used.length+1),col=i=>L+nw+cw*(i+1)-1.5,hh=Math.max(...used.map(k=>doc.wrap(T(kn(k)),cw-2,7.5,true).length))>1?9.6:6.5;
@@ -1461,7 +1462,7 @@
       h2('Kulut ajoneuvoittain ja lajeittain');y+=1.5;mcols();
       for(const r of rows){room(6,mcols);doc.text(L+2,y+4.1,doc.fit(carName(r.c),nw-4,8.5,true),{size:8.5,bold:true});
         used.forEach((k,i)=>doc.text(col(i),y+4.1,r.s[k]?number(Math.round(r.s[k])):'–',{size:8.5,align:'right',color:r.s[k]?undefined:grey}));
-        doc.text(col(used.length),y+4.1,number(Math.round(r.t)),{size:8.5,bold:true,align:'right'});y+=6;rule();}
+        doc.text(col(used.length),y+4.1,r.t?number(Math.round(r.t)):'–',{size:8.5,bold:true,align:'right'});y+=6;rule();}
       room(7,mcols);doc.text(L+2,y+4.6,T('Yhteensä'),{size:8.5,bold:true});used.forEach((k,i)=>doc.text(col(i),y+4.6,number(Math.round(tot[k])),{size:8.5,bold:true,align:'right'}));
       doc.text(col(used.length),y+4.6,number(Math.round(sum)),{size:8.5,bold:true,align:'right'});y+=7;
       doc.text(R-2,y+1.5,T('Summat euroina.'),{size:7,color:grey,align:'right'});y+=2;}
