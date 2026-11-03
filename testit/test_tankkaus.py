@@ -160,3 +160,69 @@ def test_kooste(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# 0.77: epätodennäköinen kulutusväli (Niklaksen kuvassa ~500 l/100 km). Ketju: fuelStats laskee täydestä täyteen
+# -välit mittarilukeman mukaan; 50 l vain 10 km:n välillä = 500 l/100 km, kun yhden tankkauksen mittarilukema ei täsmää
+# (esim. ikkunan esitäyttämä lukema jäi muuttamatta). Väli yhdistetään seuraavaan (koko matkan litrat / km), tallennettu
+# tieto ei muutu, ja tankkaus merkitään "Tarkista mittarilukema".
+def poikkeama_talli(viimeinen=False):
+    T = tiedot.tankkaus
+    f = [T("p1", "2026-10-05", 150000, 40.0, 70.0), T("p2", "2026-10-20", 150010, 50.0, 88.0),
+         T("p3", "2026-10-27", 152400, 45.0, 83.0)]
+    if viimeinen:  # virheellinen lukema viimeisessä tankkauksessa: seuraavaa väliä ei ole → väli jätetään pois
+        f = [T("p1", "2026-09-05", 148000, 40.0, 70.0), T("p2", "2026-10-05", 150000, 160.0, 280.0),
+             T("p3", "2026-10-27", 150010, 50.0, 88.0)]
+    return [tiedot.auto(name="Testi Pakettiauto", body="panel", km=f[-1]["km"], fuels=f)]
+
+
+POIKKEAMA_JS = """() => ({iso: document.querySelector('.fl-big')?.innerText.replace(/\\s+/g, ' '),
+  huom: document.querySelector('.fl-hero .fl-warn')?.innerText.replace(/\\s+/g, ' ') || '',
+  rivit: [...document.querySelectorAll('[data-fl-edit]')].filter(r => r.querySelector('.fl-sus')).map(r => r.dataset.flEdit),
+  akseli: Math.max(...[...document.querySelectorAll('.fl-hero .fl-chart text.ax[text-anchor=end]')].map(t => parseFloat(t.textContent.replace(',', '.'))).filter(Number.isFinite))})"""
+
+
+def test_epatodennakoinen_vali_yhdistetaan(browser, base):
+    autot = poikkeama_talli()
+    s = avaa(browser, base, "fuel/tst1", autot=autot, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate(POIKKEAMA_JS)
+        assert "4,0" in r["iso"], r  # (50 + 45) l / 2 400 km; ennen 0.77 lokakuun piste 500 l/100 km
+        assert "20.10." in r["huom"] and "500" in r["huom"] and "seuraavan kanssa" in r["huom"], r
+        assert r["rivit"] == ["p2"] and r["akseli"] < 40, r  # kaavion asteikkoa ei määrää 500
+        assert s.talli()["cars"][0]["fuels"][1]["km"] == 150010  # tallennettu tieto ennallaan
+        s.page.click("[data-fl-tab=cmp]"); s.page.wait_for_timeout(150)
+        assert "korjattu laskennassa" in s.page.inner_text(".screen-content")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_epatodennakoinen_viimeinen_vali_pois(browser, base):
+    s = avaa(browser, base, "fuel/tst1", autot=poikkeama_talli(True), extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate(POIKKEAMA_JS)
+        assert "8,0" in r["iso"] and "jätetty pois" in r["huom"] and r["rivit"] == ["p3"], r  # 160 l / 2 000 km
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+@pytest.mark.parametrize("kieli,teksti", [("fi", "Kulutus olisi 500 l/100 km"), ("en", "Consumption would be 500 l/100 km"),
+                                          ("sv", "Förbrukningen skulle vara 500 l/100 km")])
+def test_epatodennakoinen_vali_varmistetaan(browser, base, kieli, teksti):
+    autot = poikkeama_talli()
+    autot[0]["fuels"] = autot[0]["fuels"][:1] + autot[0]["fuels"][2:]  # p1 ja p3: tavallinen väli
+    s = avaa(browser, base, "fuel/tst1", autot=autot, kieli=kieli, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
+    f = "#quickfuel-form"
+    try:
+        s.page.click(".fl-add"); s.page.wait_for_selector(f)
+        s.page.fill(f + " [name=km]", "152410"); s.page.fill(f + " [name=qty]", "50"); s.page.fill(f + " [name=cost]", "90")
+        s.page.click(f + " [type=submit]"); s.page.wait_for_timeout(150)
+        assert teksti in s.page.inner_text(f + " [role=alert]").replace(" ", " ")
+        assert len(s.talli()["cars"][0]["fuels"]) == 2  # ei vielä tallennettu
+        s.page.click(f + " [type=submit]"); s.page.wait_for_selector(f, state="detached")  # Tallenna silti
+        assert len(s.talli()["cars"][0]["fuels"]) == 3
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

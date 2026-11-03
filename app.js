@@ -489,7 +489,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.76 (testiversio)';
+  const appVersion='0.77 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -536,14 +536,28 @@
   const unitOf=c=>c.fuel==='Sähkö'?'kWh':c.fuel==='Kaasu'?'kg':'l';
   const dec=(v,d=1)=>Number(v).toLocaleString('fi-FI',{minimumFractionDigits:d,maximumFractionDigits:d});
   const per=c=>hourly(c)?'h':'100 km';
+  const susMax={l:40,kWh:80,kg:30};
   function fuelStats(c){const fk=hourly(c)?1:100,f=[...(c.fuels||[])].sort((a,b)=>a.km-b.km||a.date.localeCompare(b.date)),full=f.map((x,i)=>x.full?i:-1).filter(i=>i>=0);
     const sumQty=(a,b)=>f.slice(a+1,b+1).reduce((n,x)=>n+x.qty,0);let avg=null,lastCons=null;
     
     const priced=f.filter(x=>x.cost!==null),cost=priced.reduce((n,x)=>n+x.cost,0),qty=priced.reduce((n,x)=>n+x.qty,0);
     // 0.58: an interval that holds a fill-up marked "Älä huomioi kulutuksessa" (skip: e.g. someone else filled up in between
     // and the amount is unknown) is left out of consumption; its litres and costs still count everywhere else.
-    const series=[];let sq=0,sd=0;for(let k=1;k<full.length;k++){const p=full[k-1],b=full[k],d=f[b].km-f[p].km;if(d>0&&!f.slice(p+1,b+1).some(x=>x.skip)){const q=sumQty(p,b);sq+=q;sd+=d;series.push({date:f[b].date,km:f[b].km,v:q/d*fk,q,d,id:f[b].id});}}if(sd>0){avg=sq/sd*fk;lastCons=series[series.length-1].v;}
-    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series};}
+    // 0.77: an interval that cannot be real (over 40 l, 80 kWh or 30 kg per 100 km; e.g. 50 l over 10 km = 500 l/100 km)
+    // comes from an odometer reading that does not match, typically the reading the fill-up sheet fills in left unchanged.
+    // Its end reading is then left out: the interval is joined to the next one (litres and km added together, as if that
+    // fill-up had been partial), which gives the right consumption when only that one reading is wrong. If the joined
+    // interval is still impossible, or there is no next interval, the interval is left out like skip. Stored data is not
+    // changed; the fill-up is marked "Tarkista mittarilukema" (sus) and the screens and the PDF say what was done.
+    const lim=hourly(c)?Infinity:susMax[unitOf(c)]||Infinity,sus=[];let carry=null;
+    const series=[];let sq=0,sd=0;for(let k=1;k<full.length;k++){const p=full[k-1],b=full[k],d=f[b].km-f[p].km;
+      if(!(d>0)||f.slice(p+1,b+1).some(x=>x.skip)){if(carry){sus.push({...carry.s,how:'drop'});carry=null;}continue;}
+      let q=sumQty(p,b),dd=d;const one={id:f[b].id,date:f[b].date,v:q/d*fk};
+      if(carry){const jv=(q+carry.q)/(dd+carry.d)*fk;if(jv<=lim){q+=carry.q;dd+=carry.d;sus.push({...carry.s,how:'join'});}else sus.push({...carry.s,how:'drop'});carry=null;}
+      if(q/dd*fk>lim){carry={q,d:dd,s:one};continue;}
+      sq+=q;sd+=dd;series.push({date:f[b].date,km:f[b].km,v:q/dd*fk,q,d:dd,id:f[b].id});}
+    if(carry)sus.push({...carry.s,how:'drop'});if(sd>0){avg=sq/sd*fk;lastCons=series[series.length-1].v;}
+    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series,sus};}
   // Small inline SVG line charts (no library). pts: [{x,y,cls?,tip}] in data units; avg draws a dashed level line.
   function lineChart(pts,{yFmt,xLabels,avg,avgLabel,line=true,cls=''}){if(pts.length<2)return '';const W=320,H=150,L=38,R=10,T=12,B=22;
     const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y).concat(avg!=null?[avg]:[]);let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);if(x1===x0)x1=x0+1;const pad=(y1-y0)*.15||Math.abs(y1)*.1||1;y0=Math.max(0,y0-pad);y1+=pad;
@@ -615,7 +629,11 @@
     if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)||dt>today()){err.textContent='Tarkista päivämäärä.';return;}if(String(d.get('km')).trim()===''){err.textContent='Syötä nykyinen mittarilukema.';return;}if(!Number.isSafeInteger(km)||km<0||km>2000000){err.textContent='Tarkista mittarilukema.';return;}if(!(Math.round(qty*100)/100>0&&qty<=500)){err.textContent=kd==='el'?'Kirjoita ladattu määrä (kWh).':kd==='gas'?'Kirjoita tankattu määrä (kg).':'Kirjoita tankatut litrat.';return;}if(cost!==null&&!(cost>=0&&cost<=5000&&amt<=100000)){err.textContent='Tarkista hinta.';return;}
     const clash=(c.fuels||[]).find(f=>f!==edit&&(f.km===km||(f.date<dt&&f.km>km)||(f.date>dt&&f.km<km))),sig=dt+'|'+km;if(clash&&form.dataset.confirmed!==sig){form.dataset.confirmed=sig;err.textContent=`Lukema ${number(km)} ${ku(c)} ei sovi yhteen kirjauksen ${date(clash.date)} (${number(clash.km)} ${ku(c)}) kanssa. Tarkista lukema tai tallenna silti.`;const b=form.querySelector('[type=submit]');if(b)b.textContent='Tallenna silti';return;}
     if(!edit&&(c.fuels||[]).length>=2000){err.textContent='Tankkauksia voi olla enintään 2 000. Poista ensin vanhoja.';return;}
-    const fill={id:edit?edit.id:uid('fuel'),date:dt,km,qty:Math.round(qty*100)/100,cost:cost===null?null:Math.round(cost*100)/100,full:d.get('full')==='on',...(country!=='FI'?{country}:{}),...(cur!=='EUR'&&amt!==null?{cur,amt:Math.round(amt*100)/100,rate}:{}),...(d.get('est')==='1'&&cost!==null?{est:true}:{}),...(d.get('grade')?{grade:String(d.get('grade')).slice(0,24)}:{}),...(d.get('skip')==='on'?{skip:true}:{}),...(kd==='el'&&c.fuel!=='Sähkö'?{el:true}:{})};if(!validFill(fill)){err.textContent='Tarkista määrä ja hinta.';return;}if(edit){for(const k of ['country','cur','amt','rate','est','grade','skip','el'])if(!(k in fill))delete edit[k];Object.assign(edit,fill);}else (c.fuels||(c.fuels=[])).push(fill);if(km>c.km)c.km=km;
+    const fill={id:edit?edit.id:uid('fuel'),date:dt,km,qty:Math.round(qty*100)/100,cost:cost===null?null:Math.round(cost*100)/100,full:d.get('full')==='on',...(country!=='FI'?{country}:{}),...(cur!=='EUR'&&amt!==null?{cur,amt:Math.round(amt*100)/100,rate}:{}),...(d.get('est')==='1'&&cost!==null?{est:true}:{}),...(d.get('grade')?{grade:String(d.get('grade')).slice(0,24)}:{}),...(d.get('skip')==='on'?{skip:true}:{}),...(kd==='el'&&c.fuel!=='Sähkö'?{el:true}:{})};if(!validFill(fill)){err.textContent='Tarkista määrä ja hinta.';return;}
+    // 0.77: a fill-up that would make an impossible interval (fuelStats susMax, e.g. the odometer reading left unchanged)
+    // asks once, like a clashing reading; "Tallenna silti" saves it, and the screens then mark it.
+    {const cv=fcar(c,fillKind(c,fill)),had=new Set(fuelStats(cv).sus.map(x=>x.id)),bad=fuelStats({...cv,fuels:[...(cv.fuels||[]).filter(x=>x!==edit),fill]}).sus.find(x=>!had.has(x.id)),sg='c|'+sig+'|'+fill.qty;
+      if(bad&&form.dataset.confirmed!==sg){form.dataset.confirmed=sg;err.textContent=`Kulutus olisi ${number(Math.round(bad.v))} ${unitOf(cv)}/100 km edellisestä täydestä ${unitOf(cv)==='kWh'?'latauksesta':'tankkauksesta'}. Tarkista mittarilukema tai tallenna silti.`;const sb=form.querySelector('[type=submit]');if(sb)sb.textContent='Tallenna silti';return;}}if(edit){for(const k of ['country','cur','amt','rate','est','grade','skip','el'])if(!(k in fill))delete edit[k];Object.assign(edit,fill);}else (c.fuels||(c.fuels=[])).push(fill);if(km>c.km)c.km=km;
     persist();notice=kd==='el'?(edit?'✓ Lataus päivitetty.':'✓ Lataus tallennettu.'):(edit?'✓ Tankkaus päivitetty.':'✓ Tankkaus tallennettu.');if(form.id==='quickfuel-form')closeSheet();const y=screen.scrollTop;render();screen.scrollTop=y;refocusSheet();}
   function removeFill(id){const c=cars.find(c=>c.id===route().id);if(!c||!c.fuels)return;if(!confirm('Poistetaanko tämä kirjaus?'))return;c.fuels=c.fuels.filter(x=>x.id!==id);persist();const y=screen.scrollTop;render();screen.scrollTop=y;refocusSheet();}
   // Tankkaus tab (0.40, Niklas 28.10.2026; havainnekuva hyväksytty). One vehicle at a time: consumption by month against the
@@ -683,6 +701,9 @@
     if(avgM!=null&&!b[0].year)g+=`<line class="avgl" x1="0" x2="${W}" y1="${r(Y(avgM))}" y2="${r(Y(avgM))}"/>`;
     const every=n>13?2:1;g+=b.map((x,i)=>i%every&&i!==n-1?'':`<text class="ax" x="${r(sw*(i+.5))}" y="${H-6}" text-anchor="middle">${x.year?x.k:Number(x.k.slice(5))}</text>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Polttoainekulut kuukausittain">${g}</svg>`;}
+  // 0.77: what was done with an impossible interval (fuelStats sus): the date and value, and that the reading is checked.
+  function susNote(c,s,ev){if(!s.sus.length)return '';const pu=`${unitOf(c)}/${per(c)}`,join=s.sus.some(x=>x.how==='join'),drop=s.sus.some(x=>x.how==='drop');
+    return `<p class="fl-warn" role="note"><b>${s.sus.length===1?'Epätodennäköinen kulutusväli':'Epätodennäköisiä kulutusvälejä'}</b> <span>${s.sus.map(x=>`<span class="nw">${dm(x.date)} (${dec(x.v,0)} ${pu})</span>`).join(', ')}.</span> <span>${join&&!drop?'Mittarilukema on todennäköisesti väärin, joten väli on laskettu yhdessä seuraavan kanssa.':drop&&!join?'Mittarilukema on todennäköisesti väärin, joten väli on jätetty pois kulutuksesta.':'Mittarilukema on todennäköisesti väärin, joten väli on yhdistetty seuraavaan tai jätetty pois kulutuksesta.'}</span> <span>${ev?'Tarkista lataus alla olevasta listasta.':'Tarkista tankkaus alla olevasta listasta.'}</span></p>`;}
   function fuel(c,from){const periods=[['year','Tämä vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
     const head=`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
     if(!c)return `${top()}${head}${emptyGarage()}`;
@@ -719,7 +740,7 @@
     const hero=`<section class="rp-card fl-hero" aria-labelledby="fl-h1"><div class="fl-hrow"><h3 class="fl-lab" id="fl-h1"><span>Keskikulutus</span> · <span>${pName}</span></h3><small><span translate="no">${escape(carName(c))}</span>${real.fuel?` · <span>${escape(real.fuel)}</span>`:''}</small></div>
       <p class="fl-big"><b>${now.avg!==null?dec(now.avg):'–'}</b> <span>${pu}</span></p>${badge||prev?`<p class="fl-dl">${badge}${was&&was.avg!==null?`<span class="fl-vs"><span>${vs}</span>: <span>${dec(was.avg)}</span></span>`:prev?`<span class="fl-vs">Vertailujaksolta ei ole kulutustietoa.</span>`:''}</p>`:''}${mini}
       <div class="rp-hrow fl-ch"><h3 class="rp-h">${yb?'Kulutus vuosittain':'Kulutus kuukausittain'}</h3><small class="fl-unit">${pu}</small></div>${chart||`<p class="fl-note">${ev?'Kulutus näkyy, kun täysiä latauksia on vähintään kaksi.':'Kulutus näkyy, kun täysiä tankkauksia on vähintään kaksi.'}</p>`}${chart?legend:''}
-      <p class="fl-note">${[ev?'Kulutus lasketaan täysien latausten väliltä.':'Kulutus lasketaan täysien tankkausten väliltä.',prev?'Talvella kulutus on yleensä suurempi, joten muutos verrataan samoihin kuukausiin vuotta aiemmin.':'',chart?(yb?'Napauta vuotta, niin näet tarkat luvut.':'Napauta kuukautta, niin näet tarkat luvut.'):''].filter(Boolean).map(x=>`<span>${x}</span>`).join(' ')}</p>${chart?mtable:''}</section>`;
+      <p class="fl-note">${[ev?'Kulutus lasketaan täysien latausten väliltä.':'Kulutus lasketaan täysien tankkausten väliltä.',prev?'Talvella kulutus on yleensä suurempi, joten muutos verrataan samoihin kuukausiin vuotta aiemmin.':'',chart?(yb?'Napauta vuotta, niin näet tarkat luvut.':'Napauta kuukautta, niin näet tarkat luvut.'):''].filter(Boolean).map(x=>`<span>${x}</span>`).join(' ')}</p>${susNote(c,s,ev)}${chart?mtable:''}</section>`;
     // Money: fuel costs, per month, the cost of driving and the average price, each with its change.
     const dl=v=>v===null?'':`<em class="rp-dl">${rpDelta(v)}</em>`,pc=(a,b2)=>was&&a!==null&&b2!==null?pctOf(a,b2):null;
     const n=now.fills.length,diff=d.cov&&was&&was.cost>0&&now.cost>0?now.cost-was.cost:null,dPrice=pc(now.price,was&&was.price);
@@ -733,9 +754,9 @@
       <p class="fl-sub">${o.p==='all'?'<span>Koko historia</span>':`<span>${date(d.from)}–${date(d.to)}</span>`}, <span>yhteensä</span> <span>${eur(now.cost)}</span>. ${yb?'':`<span>Katkoviiva on keskiarvo</span> <span>${eur(avgM)}</span> <span>/ kk</span>. `}${b.some(x=>x.partial)?`<span>${yb?'Vaalea pylväs on vajaa vuosi.':'Vaaleat pylväät ovat vajaita kuukausia.'}</span>`:''}</p>
       ${years.length?`<h3 class="rp-h fl-yh">Vuosittain</h3><table class="fl-table"><thead><tr><th scope="col">Vuosi</th><th scope="col">Kulut</th><th scope="col">€/kk</th><th scope="col">${pu}</th><th scope="col">${ku(c)}</th></tr></thead><tbody>${[...years].reverse().map(y=>`<tr><th scope="row">${y.y}${y.partial?'*':''}</th><td><b>${eur(y.cost)}</b></td><td>${eur(y.cost/y.months)}</td><td>${y.avg!==null?dec(y.avg):'–'}</td><td class="m">${y.km?number(y.km):'–'}</td></tr>`).join('')}</tbody></table>${years.some(y=>y.partial)?'<p class="fl-sub">* Vajaa vuosi: €/kk lasketaan vain kirjattujen kuukausien ajalta, joten vertaa vuosia sillä.</p>':''}`:''}</section>`;
     // Fill-ups of the period by month, newest first; the two latest months open. A tap opens the fill-up for editing.
-    const cons=new Map(s.series.map(x=>[x.id,x.v])),groups=[];for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){const k=ymOf(f.date);let g=groups[groups.length-1];if(!g||g.k!==k){g={k,list:[]};groups.push(g);}g.list.push(f);}
+    const cons=new Map(s.series.map(x=>[x.id,x.v])),susIds=new Set(s.sus.map(x=>x.id)),groups=[];for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){const k=ymOf(f.date);let g=groups[groups.length-1];if(!g||g.k!==k){g={k,list:[]};groups.push(g);}g.list.push(f);}
     const row=f=>{const cv=cons.get(f.id),cn=f.country&&f.country!=='FI'?(countries.find(k=>k[0]===f.country)||['','',''])[1]:'';
-      const sub=[`<span class="nw"><span>${number(f.km)}</span> <span>${ku(c)}</span></span>`,!f.full?'<span>osatankkaus</span>':f.grade?`<span>${escape(f.grade)}</span>`:'',cn?`<span>${escape(cn)}</span>`:'',f.est?'<span>hinta-arvio</span>':'',f.skip?'<span class="fl-skip">ei kulutukseen</span>':''].filter(Boolean).join(' · ');
+      const sub=[`<span class="nw"><span>${number(f.km)}</span> <span>${ku(c)}</span></span>`,!f.full?'<span>osatankkaus</span>':f.grade?`<span>${escape(f.grade)}</span>`:'',cn?`<span>${escape(cn)}</span>`:'',f.est?'<span>hinta-arvio</span>':'',f.skip?'<span class="fl-skip">ei kulutukseen</span>':'',susIds.has(f.id)?'<span class="fl-sus">Tarkista mittarilukema</span>':''].filter(Boolean).join(' · ');
       return `<button type="button" class="fl-row" data-fl-edit="${f.id}"><span class="fl-rl"><b>${dm(f.date)}</b><small>${sub}</small></span><span class="fl-rm"><b>${f.cost!==null?dec(f.cost,2)+' €':'–'}</b><small><span class="nw">${dec(f.qty,2)} ${u}</span>${f.cost!==null&&f.qty>0?` · <span class="nw">${dec(f.cost/f.qty,3)} €/${u}</span>`:''}</small></span><span class="fl-rc${cv==null?' none':''}">${cv!=null?dec(cv):'–'}</span><span class="sr-only">Muokkaa</span></button>`;};
     const gHtml=(g,i)=>{const k=g.list.length,q=g.list.reduce((m,f)=>m+f.qty,0),e=g.list.filter(f=>f.cost!==null).reduce((m,f)=>m+f.cost,0);
       return `<details class="fl-g"${i<2?' open':''}><summary><span class="fl-gt"><span>${ucFirst(mName(g.k))}</span> <span>${g.k.slice(0,4)}</span></span><span class="fl-gs"><span class="nw"><span>${k}</span> <span>${ev?(k===1?'lataus':'latausta'):(k===1?'tankkaus':'tankkausta')}</span></span> · <span class="nw">${dec(q,1)} ${u}</span> · <span class="nw">${dec(e,2)} €</span></span>${chev}</summary>${g.list.map(row).join('')}</details>`;};
@@ -834,9 +855,10 @@
     const groups=[];for(const x of rows.filter(x=>!(x.mix&&m==='cons'))){let g=groups.find(z=>z.unit===x.unit);if(!g){g={unit:x.unit,list:[]};groups.push(g);}g.list.push(x);}
     groups.sort((a,b)=>b.list.length-a.list.length);const main=groups[0]||{unit:'',list:[]};
     const bars=groups.map(g=>{const mx=Math.max(1e-9,...g.list.map(x=>x.val||0));return `${m!=='cost'?`<p class="fl-gunit">${g.unit}</p>`:''}${g.list.map(x=>`<div class="fl-bar"><div class="fl-bt"><span class="fl-bn" translate="no">${escape(carName(x.c))}</span><span class="fl-bv"><span class="nw">${fmtV(x.val)}</span> ${chg(x)}</span></div><div class="fl-btrack" aria-hidden="true"><i style="width:${x.val?Math.max(2,x.val/mx*100).toFixed(1):0}%;background:${flCol[x.st]}"></i></div></div>`).join('')}`;}).join('');
+    const susCars=sel.filter(c0=>chargeKinds(c0).some(k=>fuelStats(fcar(c0,k)).sus.length)),susTxt=susCars.length&&m!=='cost'?`<p class="fl-warn" role="note">${susCars.map(c0=>`<span translate="no">${escape(carName(c0))}</span>`).join(', ')}: <span>epätodennäköinen kulutusväli on korjattu laskennassa.</span> <span>Tarkista mittarilukema Ajoneuvo-näkymästä.</span></p>`:'';
     const mixNote=rows.some(x=>x.mix)?`<p class="fl-note">Useaa lajia käyttävän ajoneuvon kulutusta ei voi laskea yhteen. Sen Ajon hinta ja Kulut sisältävät kaikki lajit.</p>`:'';
     const multi=m==='cons'&&groups.length>1?`<p class="fl-note">Kilowattitunteja, litroja ja käyttötunteja ei voi verrata samalla asteikolla. Vertaa eri käyttövoimia kohdassa Ajon hinta.</p>`:m==='price'&&groups.length>1?`<p class="fl-note">Tuntimittarilliset ajoneuvot näkyvät omana ryhmänään (€/h).</p>`:'';
-    const card1=`<section class="rp-card" aria-labelledby="fl-c1"><div class="rp-hrow"><h3 class="rp-h" id="fl-c1"><span>${m==='cons'?'Keskikulutus':m==='price'?'Ajon hinta':'Polttoainekulut'}</span> · <span>${pName}</span></h3><small class="fl-unit">${o.p==='all'?'':'muutos vertailujaksoon'}</small></div>${bars}${multi}${mixNote}</section>`;
+    const card1=`<section class="rp-card" aria-labelledby="fl-c1"><div class="rp-hrow"><h3 class="rp-h" id="fl-c1"><span>${m==='cons'?'Keskikulutus':m==='price'?'Ajon hinta':'Polttoainekulut'}</span> · <span>${pName}</span></h3><small class="fl-unit">${o.p==='all'?'':'muutos vertailujaksoon'}</small></div>${bars}${multi}${mixNote}${susTxt}</section>`;
     // Line chart for the largest unit group.
     const keys=[...new Set(main.list.flatMap(x=>Object.keys(x.pts)))].sort(),fmtA=(v,st)=>m==='cost'?number(Math.round(v)):dec(v,st===undefined?(m==='price'?2:1):st<.1?2:st<1?1:0);
     let csel=o.cm!=null&&o.cm<keys.length?o.cm:-1;if(csel<0)for(let i=keys.length-1;i>=0;i--)if(main.list.some(x=>x.pts[keys[i]]!=null)){csel=i;break;}
@@ -925,13 +947,14 @@
     const cons=new Map(d.s.series.map(x=>[x.id,x.v])),fc=()=>thead([[T('Pvm'),L+2],[T(hr?'Tuntimittari':'Mittari'),L+46,'right'],[ev?'kWh':T('Litrat'),L+66,'right'],['€/'+u,L+86,'right'],['€',L+106,'right'],[pu,L+128,'right'],[T('Lisätieto'),L+133]]);
     h2(ev?'Kaikki lataukset':'Kaikki tankkaukset',24);y+=1.5;fc();
     for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){room(6,fc);const cv=cons.get(f.id),cn=f.country&&f.country!=='FI'?(countries.find(k=>k[0]===f.country)||['','',''])[1]:'';
-      const extra=[!f.full?T('osatankkaus'):'',f.grade&&f.grade!==usual?f.grade:'',cn?T(cn)+(f.cur&&f.amt!=null?` ${dec(f.amt,2)} ${f.cur}`:''):'',f.est?T('hinta-arvio'):'',f.skip?T('ei kulutukseen'):''].filter(Boolean).join(', ');
+      const extra=[!f.full?T('osatankkaus'):'',f.grade&&f.grade!==usual?f.grade:'',cn?T(cn)+(f.cur&&f.amt!=null?` ${dec(f.amt,2)} ${f.cur}`:''):'',f.est?T('hinta-arvio'):'',f.skip?T('ei kulutukseen'):'',d.s.sus.some(x=>x.id===f.id)?T('tarkista mittarilukema'):''].filter(Boolean).join(', ');
       doc.text(L+2,y+4.2,date(f.date),{size:8.5});doc.text(L+46,y+4.2,number(f.km),{size:8.5,align:'right'});doc.text(L+66,y+4.2,dec(f.qty,2),{size:8.5,align:'right'});
       doc.text(L+86,y+4.2,f.cost!==null&&f.qty>0?dec(f.cost/f.qty,3):'–',{size:8.5,align:'right'});doc.text(L+106,y+4.2,f.cost!==null?dec2(f.cost):'–',{size:8.5,bold:true,align:'right'});
       doc.text(L+128,y+4.2,cv!=null?dec(cv):'–',{size:8.5,align:'right'});if(extra)doc.text(L+133,y+4.2,doc.fit(extra,R-L-135,7.5),{size:7.5,color:grey});y+=6;rule();}
     const notes=[T(ev?'Kulutus lasketaan täysien latausten väliltä, ja osalataus lisätään seuraavaan täyteen lataukseen.':'Kulutus lasketaan täysien tankkausten väliltä, ja osatankkaus lisätään seuraavaan täyteen tankkaukseen.'),
       T(c.sample?'Luvut perustuvat omistajan omiin kirjauksiin (esimerkkiauto, kuvitteelliset tiedot).':'Luvut perustuvat omistajan omiin kirjauksiin.')];
     if(prev)notes.push(T('Muutos verrataan vertailujaksoon. Talvella kulutus on yleensä suurempi, joten kuukausia verrataan samoihin kuukausiin vuotta aiemmin.'));
+    if(d.s.sus.length)notes.push(T('Epätodennäköinen kulutusväli (mittarilukema todennäköisesti väärin) on yhdistetty seuraavaan väliin tai jätetty pois kulutuksesta. Tarkista merkityt kirjaukset.'));
     const nl=notes.flatMap(x=>doc.wrap(x,CW,8));room(nl.length*3.8+5);y+=5;for(const l of nl){doc.text(L,y,l,{size:8,color:grey});y+=3.8;}
     doc.each((i,k)=>{const fy=285;doc.line(L,fy-4.5,R,fy-4.5,{color:'#cbd9e8',lw:.25});
       doc.text(L,fy,company.name,{size:7.5,bold:true});doc.text(L,fy+3.3,company.id?`${T('Y-tunnus')} ${company.id}`:T('Kehitysvaiheen sovellus'),{size:7,color:grey});

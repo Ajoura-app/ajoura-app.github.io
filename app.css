@@ -1140,3 +1140,7 @@ html.dark .device-glass .tab-dock>.tab-bar.main-tabs,html.dark .device-glass .ta
 /* 0.76: muutosta ei merkitä hyväksi tai huonoksi (ei vihreää eikä punaista): vähemmän ajoa tai pienemmät kulut eivät
    sellaisenaan ole onnistumista. Suunta näkyy nuolesta ja etumerkistä. */
 .rp-delta.down,.rp-delta.up,.fl-cc.down,.fl-cc.up{color:#3d4b5c}.rp-delta.pill.down,.rp-delta.pill.up{background:#edf1f6}
+/* 0.77: epätodennäköinen kulutusväli (mittarilukema todennäköisesti väärin): huomautus ja merkintä tankkausrivillä */
+.fl-warn{margin:10px 0 0;padding:9px 11px;border-radius:10px;background:#fff6e0;color:#5c4000;font-size:12px;line-height:1.5}
+.fl-warn b{font-weight:700}
+.fl-sus{color:#7a4f00;font-weight:650}
