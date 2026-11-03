@@ -118,7 +118,7 @@ def test_ala_huomioi_sailyy_ja_raportit(browser, base):
         assert next(x for x in s.talli()["cars"][0]["fuels"] if x["id"] == "f3").get("skip") is True
         assert "8,0" in s.page.inner_text(".fl-big")
         s.page.goto(s.page.url.split("#")[0] + "#reports"); s.page.wait_for_timeout(400)
-        assert "324" in s.page.inner_text(".rp-kpis")  # 90 + 72 + 90 + 72 € (kaikki 12 kk:n sisällä)
+        assert "324" in s.page.inner_text(".rp-total")  # 90 + 72 + 90 + 72 € (kaikki 12 kk:n sisällä); 0.78: .rp-total
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
