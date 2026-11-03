@@ -223,3 +223,24 @@ def test_lataus_edellisessa_versiossa(browser, vanha_base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def test_vertailu_hybridi_kokonaishinta(browser, base):
+    """0.71: Vertailussa hybridin Ajon hinta ja Kulut sisältävät polttoaineen ja sähkön; kulutusta ei lasketa yhteen."""
+    h = hybridi()
+    diesel = tiedot.auto(fuels=[T("d1", "2026-06-01", 150000, 50.0, 90.0), T("d2", "2026-08-01", 152000, 80.0, 144.0)])
+    s = avaa(browser, base, "fuel/hyb1", autot=[h, diesel], kello=KELLO,
+             extra={"ajoura-fuel": '{"p":"12","t":"cmp","m":"price"}'})
+    pg = s.page
+    try:
+        pg.wait_for_selector("[data-fl-tab=cmp]"); pg.click("[data-fl-tab=cmp]")
+        pg.wait_for_selector(".fl-ctable")
+        rivi = next(r for r in pg.eval_on_selector_all(".fl-ctable tbody tr", "t => t.map(x => x.innerText.replace(/\\s+/g, ' '))") if "Prius" in r)
+        kulut = round(sum(f["cost"] for f in h["fuels"]))  # 160 € = 149 € polttoaine + 11 € sähkö
+        assert f"{kulut}" in rivi and "8,01" in rivi, rivi  # 160,2 € / 2 000 km
+        assert "3,8 l" in rivi and "1,9 kWh" in rivi, rivi
+        pg.click("[data-fl-metric=cons]"); pg.wait_for_selector(".fl-note")
+        assert "kulutusta ei voi laskea yhteen" in pg.inner_text(".fl-note").replace("\n", " ") or "kulutusta ei voi laskea yhteen" in pg.inner_text("#app-screen")
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
