@@ -505,7 +505,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.97 (testiversio)';
+  const appVersion='0.98 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -730,25 +730,25 @@
   // (fuelStats); the price is the cost of the priced fill-ups / their litres, i.e. weighted by the amount bought.
   const flCk='<svg viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.2 4.2 7.3 8 3"/></svg>';
   const flEuro='<path d="M17.5 7A6 6 0 1 0 17.5 17"/><path d="M5 10.5h8M5 13.5h8"/>';
+  const flTag='<path d="M3.5 12.5V4.5a1 1 0 0 1 1-1h8l8 8-9 9z"/><circle cx="8" cy="8" r="1.4"/>',flDrop='<path d="M12 3.5s6 6.4 6 10.8a6 6 0 0 1-12 0C6 9.9 12 3.5 12 3.5z"/>';
   const flCmpIcon='<path d="M7 4v13M7 17l-3-3M7 17l3-3"/><path d="M17 20V7M17 7l-3 3M17 7l3 3"/>';
-  // 0.97 (Niklas): the top is one row of four boxes: the vehicle (a drop-down list showing the chosen vehicle's picture
-  // and plate; in compare mode a list where several vehicles are ticked, flCmOpen keeps it open while ticking), the
-  // compare button, the Uusi tankkaus button and the period.
-  function flBar(o,c,pPick,cmp,add){const fueled=cars.filter(x=>(x.fuels||[]).length);let veh;
-    if(cmp){const open=flCmOpen;flCmOpen=false;const sel=fueled.filter(x=>!o.off.includes(x.id));
-      const shown=!sel.length?'Valitse':sel.length===fueled.length?'Kaikki':sel.length===1?`<span translate="no">${escape(sel[0].plate||carName(sel[0]))}</span>`:`<span>${sel.length}</span> <span>valittu</span>`;
-      const items=cars.map(x=>{const has=(x.fuels||[]).length,on=!!has&&!o.off.includes(x.id),i=cars.indexOf(x)%flCol.length;
-        return `<button type="button" class="fl-mi" data-fl-cmpcar="${x.id}" aria-pressed="${on}"${has?'':' disabled'}><span class="fl-mck" aria-hidden="true">${on?flCk:''}</span><span class="fl-mn" translate="no">${escape(carName(x))}</span>${has?`<i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[i]}${flDash[i]?';border-top-style:'+(flDash[i].startsWith('1.5')?'dotted':'dashed'):''}"></i>`:'<small>ei tankkauksia</small>'}</button>`;}).join('');
-      veh=`<details class="rp-pick fl-cmenu fv-veh"${open?' open':''}><summary><span class="sr-only">Vertailtavat ajoneuvot</span><span class="rp-pick-t">${shown}</span>${chev}</summary><div class="fl-cmenu-list" role="group" aria-label="Vertailtavat ajoneuvot">${items}${sel.length<fueled.length?'<button type="button" class="rp-link fl-cmall" data-fl-cmpall>Valitse kaikki</button>':''}</div></details>`;}
-    else veh=`<label class="rp-pick fv-veh"><span class="fv-vpic" aria-hidden="true">${c.photo?`<img src="${c.photo}" alt="">`:art(c,'')}</span><span class="rp-pick-t" translate="no">${escape(c.plate||carName(c))}</span>${chev}<select data-fl-carpick aria-label="Ajoneuvo">${cars.map(x=>`<option value="${x.id}"${x.id===c.id?' selected':''}>${escape(carName(x))+(x.plate?' · '+escape(x.plate):'')}</option>`).join('')}</select></label>`;
-    const cmpB=`<button type="button" class="fv-cmp" data-fl-tab="${cmp?'car':'cmp'}" aria-pressed="${cmp}"${cars.length<2?' disabled':''} title="${cmp?'Sulje vertailu':'Vertaile ajoneuvoja'}">${svg(flCmpIcon)}<span class="sr-only">${cmp?'Sulje vertailu':'Vertaile ajoneuvoja'}</span></button>`;
-    return `<div class="fv-bar">${veh}${cmpB}${add}${pPick}</div>`;}
+  // 0.98 (Niklas): the top is one row of three boxes: the vehicles (a list: a tap on a vehicle's name shows that vehicle,
+  // its tick adds it next to the others, and two or more ticked vehicles show the comparison; flCmOpen keeps the list
+  // open while ticking), the period in the middle and the Uusi tankkaus button at the right edge.
+  const flPic=x=>`<span class="fv-vpic" aria-hidden="true">${x.photo?`<img src="${x.photo}" alt="">`:`<span class="fv-vart">${art(x,'')}</span>`}</span>`;
+  function flBar(o,c,pPick,cmp,add){const fueled=cars.filter(x=>(x.fuels||[]).length),open=flCmOpen;flCmOpen=false;
+    const sel=cmp?fueled.filter(x=>!o.off.includes(x.id)):[c];
+    const shown=cmp?`<span class="rp-pick-t">${sel.length===fueled.length?'<span>Kaikki</span>':`<span>${sel.length}</span> <span>valittu</span>`}</span>`:`${flPic(c)}<span class="rp-pick-t" translate="no">${escape(c.plate||carName(c))}</span>`;
+    const items=cars.map(x=>{const has=(x.fuels||[]).length,on=cmp?!!has&&!o.off.includes(x.id):x.id===c.id,i=cars.indexOf(x)%flCol.length;
+      return `<div class="fv-mi${on?' on':''}"><button type="button" class="fv-mck" data-fl-cmpcar="${x.id}" aria-pressed="${on}"${has?'':' disabled'}><span class="fl-mck" aria-hidden="true">${on?flCk:''}</span><span class="sr-only">Vertailuun</span> <span class="sr-only" translate="no">${escape(carName(x))}</span></button><button type="button" class="fv-mname" data-fl-car="${x.id}"${!cmp&&x.id===c.id?' aria-current="true"':''}>${flPic(x)}<span class="fv-mtxt"><span class="fl-mn" translate="no">${escape(carName(x))}</span>${x.plate||!has?`<small>${x.plate?`<span translate="no">${escape(x.plate)}</span>`:''}${x.plate&&!has?' · ':''}${has?'':'<span>ei tankkauksia</span>'}</small>`:''}</span>${cmp&&on?`<i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[i]}${flDash[i]?';border-top-style:'+(flDash[i].startsWith('1.5')?'dotted':'dashed'):''}"></i>`:''}</button></div>`;}).join('');
+    const veh=`<details class="rp-pick fl-cmenu fv-veh"${open?' open':''}><summary><span class="sr-only">Ajoneuvot</span>${shown}${chev}</summary><div class="fl-cmenu-list fv-mlist" role="group" aria-label="Ajoneuvot">${items}${fueled.length>1?'<p class="fv-mhint">Napauta ajoneuvoa, niin näet sen tiedot. Ruksi useampi, niin voit vertailla niitä.</p>':''}</div></details>`;
+    return `<div class="fv-bar">${veh}${pPick}${add}</div>`;}
   function fuel(c,from){const periods=[['year','Tämä vuosi'],['prev','Edellinen vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
     const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
     if(!c)return `${top()}${head()}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
     // the tab itself (#fuel) keeps the view the user left.
-    if(o.t==='cmp'&&!flFromTab&&lastKey!==location.hash)o.t='car';
+    if(o.t==='cmp'&&(!flFromTab&&lastKey!==location.hash||cars.filter(x=>(x.fuels||[]).length&&!o.off.includes(x.id)).length<2))o.t='car';
     if(o.car!==c.id||o.t!==flPrefs().t){o.car=c.id;const {cm,...keep}=o;prefSet(flKey,JSON.stringify(keep));}
     const pPick=rpPick('data-fl-period','Jakso',periods.find(x=>x[0]===o.p)[1],periods,o.p),msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
     const addB=(id,k,name)=>`<button type="button" class="fl-add fv-add" data-quickfuel="${id}" data-kind="${k}" title="${name}">${actIcon(fuelTabIcon)}<span class="sr-only">${name}</span></button>`;
@@ -765,8 +765,9 @@
     // Key figures: average consumption and the average unit price, as two cards side by side. A figure that cannot be
     // counted reliably (no two full fill-ups, or every interval left out) says so instead of showing a number.
     const ico=svg(ev?bolt:icons.fuel);
-    const cards=`<div class="fv-cards"><section class="fv-card" aria-labelledby="fv-k1"><span class="fv-ico" aria-hidden="true">${ico}</span><h3 class="fv-lab2" id="fv-k1">Keskikulutus</h3><p class="fl-big fv-val">${now.avg!==null?`<b>${dec(now.avg)}</b> <span class="nw">${pu}</span>`:'<b class="fv-na">Ei riittävästi tietoa</b>'}</p></section><section class="fv-card" aria-labelledby="fv-k2"><span class="fv-ico" aria-hidden="true">${svg(flEuro)}</span><h3 class="fv-lab2" id="fv-k2">Keskihinta</h3><p class="fv-val fv-price">${now.price!==null?`<b>${dec(now.price,ev?2:3)}</b> <span class="nw">€/${u}</span>`:'<b class="fv-na">Ei hintatietoa</b>'}</p></section></div>`;
-    const sum=`<p class="fl-sum fv-sum"><span class="fv-sclip"><span class="fv-si"><span class="nw"><span>Kulut yhteensä</span> <b>${eur(now.cost)}</b></span><span class="nw"><b>${n}</b> <span>${ev?(n===1?'lataus':'latausta'):(n===1?'tankkaus':'tankkausta')}</span></span><span class="nw">${dec(now.qty,0)} ${u}</span></span></span></p>`;
+    const card=(k,icon,lab,val)=>`<section class="fv-card" aria-labelledby="fv-k${k}"><span class="fv-ico" aria-hidden="true">${svg(icon)}</span><h3 class="fv-lab2" id="fv-k${k}">${lab}</h3><p class="fv-val${k===1?' fl-big':''}">${val}</p></section>`;
+    // 0.98 (Niklas): four key figures as equal cards (2 × 2): consumption, average price, costs, fill-ups and litres.
+    const cards=`<div class="fv-cards fl-sum">${card(1,ev?bolt:icons.fuel,'Keskikulutus',now.avg!==null?`<b>${dec(now.avg)}</b> <span class="nw">${pu}</span>`:'<b class="fv-na">Ei riittävästi tietoa</b>')}${card(2,flTag,'Keskihinta',now.price!==null?`<b>${dec(now.price,ev?2:3)}</b> <span class="nw">€/${u}</span>`:'<b class="fv-na">Ei hintatietoa</b>')}${card(3,flEuro,'Kulut yhteensä',`<b>${number(Math.round(now.cost))}</b> <span>€</span>`)}${card(4,ev?bolt:flDrop,ev?'Lataukset':'Tankkaukset',`<b>${n}</b> <span class="nw">/ ${dec(now.qty,0)} ${u}</span>`)}</div>`;
     // Kulutuksen kehitys: the measured months of the period (years for a long history). Fewer than two measured months
     // gives a short note instead of a chart.
     const b=flBuckets(d);if(flPickFor!==c.id+'|'+o.p+'|'+kd){flPick=null;flPickFor=c.id+'|'+o.p+'|'+kd;}
@@ -783,7 +784,7 @@
       return `<details class="fl-g fv-g"${i<2?' open':''}><summary><span class="fl-gt"><span>${ucFirst(mName(g.k))}</span> <span>${g.k.slice(0,4)}</span></span><b class="fv-gsum nw">${dec(e,2)} €</b>${chev}</summary>${g.list.map(row).join('')}</details>`;};
     const list=`<section class="rp-card fl-list fv-list" aria-labelledby="fl-h3"><div class="rp-hrow"><h3 class="rp-h" id="fl-h3">${ev?'Lataukset kuukausittain':'Tankkaukset kuukausittain'}</h3></div>${(flAll?groups:groups.slice(0,6)).map(gHtml).join('')}${!flAll&&groups.length>6?`<button type="button" class="fl-moreb" data-fl-all><span>Näytä vanhemmat kuukaudet</span> <span>(${groups.length-6})</span></button>`:''}<p class="fl-sub">${ev?'Napauta latausta, niin voit muokata tai poistaa sen.':'Napauta tankkausta, niin voit muokata tai poistaa sen.'}</p></section>`;
     const pdf=`<button type="button" class="rp-card rp-pdf" data-fl-pdf="${c.id}"><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>${ev?'Tallenna latauskirja':'Tallenna tankkauskirja'}</strong><small><span translate="no">${escape(carName(c))}</span> · <span class="nw">${pName}</span> · <span class="nw">PDF-tiedosto</span></small></span><span class="chevron" aria-hidden="true">›</span></button><p class="fl-fine">Puhelimessa avautuu jakovalikko: tallenna tiedostoihin, tulosta tai lähetä. Tietokoneella PDF latautuu.</p>`;
-    return `${top()}${head()}${bar}${kindTabs}${msg}${cards}${sum}${susNote(c,s,ev)}${trend}${list}${pdf}${sample}`;}
+    return `${top()}${head()}${bar}${kindTabs}${msg}${cards}${susNote(c,s,ev)}${trend}${list}${pdf}${sample}`;}
   // 0.70: a vehicle that uses fuel and electricity (or gas and fuel) shows both on one page, so the real cost of driving
   // is seen: each kind's consumption in its own unit (litres, kWh and kg cannot be added), the costs added together
   // and divided by the kilometres driven. The charts and fill-up lists of one kind are behind its own button.
@@ -798,13 +799,18 @@
       <div class="fl-allbody"><table class="fl-table"><thead><tr><th scope="col">Laji</th><th scope="col">Kulutus</th><th scope="col">Määrä</th><th scope="col">€</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="fl-note">Ajon hinta on kaikkien lajien kulut yhteensä jaettuna ajetuilla kilometreillä. Kaaviot ja kirjaukset näet napauttamalla lajia yllä.</p></div></section>`;}
   function fuelClick(t){const o=flPrefs(),y=screen.scrollTop;
+    // 0.98: a tap outside the open vehicle list closes it (the list stays open while ticking).
+    {const om=screen.querySelector('.fv-veh[open]');if(om&&!om.contains(t))om.open=false;}
     const kb=t.closest('[data-fl-kind]');if(kb){o.k=kb.dataset.flKind;flAll=false;flSave(o,`[data-fl-kind="${o.k}"]`);return true;}
     const tab=t.closest('[data-fl-tab]');if(tab){o.t=tab.dataset.flTab;flCm=null;flSave(o,'.fv-cmp');return true;}
-    const cc=t.closest('[data-fl-cmpcar]');if(cc&&!cc.disabled){const id=cc.dataset.flCmpcar;flCmOpen=true;o.off=o.off.includes(id)?o.off.filter(x=>x!==id):[...o.off,id];flSave(o,`[data-fl-cmpcar="${id}"]`);return true;}
+    const cc=t.closest('[data-fl-cmpcar]');if(cc&&!cc.disabled){const id=cc.dataset.flCmpcar,fu=cars.filter(c=>(c.fuels||[]).length).map(c=>c.id);
+      // 0.98: the tick adds or removes a vehicle; one ticked vehicle is the single view, two or more the comparison.
+      let sel=o.t==='cmp'?fu.filter(x=>!o.off.includes(x)):fu.filter(x=>x===o.car);sel=sel.includes(id)?sel.filter(x=>x!==id):[...sel,id];if(!sel.length)return true;
+      flCmOpen=true;flCm=null;flAll=false;if(sel.length===1){o.t='car';o.car=sel[0];history.replaceState(null,'','#fuel/'+sel[0]);}else{o.t='cmp';o.off=fu.filter(x=>!sel.includes(x));}flSave(o,`[data-fl-cmpcar="${id}"]`);return true;}
     if(t.closest('[data-fl-cmpall]')){o.off=[];flCmOpen=true;flSave(o,'[data-fl-cmpcar]');return true;}
     const mt=t.closest('[data-fl-metric]');if(mt){o.m=mt.dataset.flMetric;flSave(o,`[data-fl-metric="${o.m}"]`);return true;}
     const cm=t.closest('[data-fl-cm]');if(cm){flCm=Number(cm.dataset.flCm);render();screen.scrollTop=y;return true;}
-    const car=t.closest('[data-fl-car]');if(car){const id=car.dataset.flCar;if(!cars.some(c=>c.id===id))return true;o.car=id;prefSet(flKey,JSON.stringify(o));flAll=false;history.replaceState(null,'','#fuel/'+id);render();screen.scrollTop=y;screen.querySelector(`[data-fl-car="${id}"]`)?.focus({preventScroll:true});return true;}
+    const car=t.closest('[data-fl-car]');if(car){const id=car.dataset.flCar;if(!cars.some(c=>c.id===id))return true;o.car=id;o.t='car';flAll=false;flCm=null;history.replaceState(null,'','#fuel/'+id);flSave(o,'.fv-veh>summary');return true;}
     const m=t.closest('[data-fl-m]');if(m){flPick=Number(m.dataset.flM);render();screen.scrollTop=y;return true;}
     if(t.closest('[data-fl-all]')){flAll=true;render();screen.scrollTop=y;return true;}
     const pd=t.closest('[data-fl-pdf]');if(pd){fuelPdf(pd.dataset.flPdf);return true;}

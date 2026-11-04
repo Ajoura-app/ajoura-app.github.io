@@ -100,10 +100,10 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
         pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
         assert pg.get_attribute("[data-fl-kind=fuel]", "aria-pressed") == "true"
         assert fi(keskikulutus(fuel_fills)) in pg.inner_text(".fl-big") and "l/100 km" in pg.inner_text(".fl-big")
-        assert "3 tankkausta" in pg.inner_text(".fl-sum") and "149 €" in pg.inner_text(".fl-sum")  # 54 + 45 + 50,4
+        assert "Kulut yhteensä" in pg.inner_text(".fl-sum") and "149 €" in pg.inner_text(".fl-sum")  # 54 + 45 + 50,4
         pg.click("[data-fl-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=el]').getAttribute('aria-pressed')==='true'")
         assert fi(keskikulutus(el_fills)) in pg.inner_text(".fl-big") and "kWh/100 km" in pg.inner_text(".fl-big")
-        assert "3 latausta" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
+        assert "Lataukset" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
         assert "Uusi lataus" in pg.inner_text(".fl-add")
         # Uusi lataus: tallentuu el: true, kWh, ei litroja.
         pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
@@ -234,7 +234,7 @@ def test_vertailu_hybridi_kokonaishinta(browser, base):
              extra={"ajoura-fuel": '{"p":"12","t":"cmp","m":"price"}'})
     pg = s.page
     try:
-        pg.wait_for_selector("[data-fl-tab=cmp]"); pg.click("[data-fl-tab=cmp]")
+        pg.wait_for_selector(".fv-veh"); pg.click(".fv-veh>summary"); pg.click("[data-fl-cmpcar=tst1]"); pg.click(".fv-veh>summary")  # 0.98: vertailu ruksilla, valikko kiinni
         pg.wait_for_selector(".fl-srows")  # 0.81: yhteenveto riveinä (ennen taulukko .fl-ctable)
         rivi = next(r for r in pg.eval_on_selector_all(".fl-srows li", "t => t.map(x => x.innerText.replace(/\\s+/g, ' '))") if "Prius" in r)
         kulut = round(sum(f["cost"] for f in h["fuels"]))  # 160 € = 149 € polttoaine + 11 € sähkö

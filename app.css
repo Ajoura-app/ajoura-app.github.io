@@ -1440,13 +1440,38 @@ html.dark .device-glass .fv-car[aria-pressed="true"]{background:#dfe9fb;border-c
 .fv-bar{display:grid;grid-template-columns:minmax(0,1.5fr) 44px 44px minmax(78px,1fr);gap:6px;align-items:center;margin:0 0 12px}
 .fv-bar>*{height:44px;box-sizing:border-box}
 .fv-bar>.rp-pick{display:flex;width:100%;min-width:0;min-height:44px;justify-content:space-between;gap:5px;padding:0 8px 0 10px;box-shadow:none}
-.fv-bar>.fv-veh{padding-left:5px}
 .fv-bar>.fl-cmenu{display:block;padding:0}
 .fv-bar>.fl-cmenu>summary{height:100%;min-height:0;padding:0 8px 0 10px}
 .fv-bar .rp-pick-t{flex:1;min-width:0}
-.fv-vpic{flex:none;width:38px;height:28px;display:grid;place-items:center;overflow:hidden;border-radius:7px}
-.fv-vpic img{width:100%;height:100%;object-fit:cover}
-.fv-vpic svg{width:100%;height:auto}
 .fv-bar .fv-cmp,.fv-bar .fv-add{width:44px;height:44px;min-height:0;margin:0}
 .fv-cmp:disabled{opacity:.45;cursor:default}
-@container(max-width:349.98px){.fv-bar{gap:5px;grid-template-columns:minmax(0,1.5fr) 44px 44px minmax(70px,1fr)}.fv-bar .rp-chev{width:10px}.fv-bar>.rp-pick{padding:0 6px 0 8px;font-size:12px}.fv-bar>.fv-veh{padding-left:4px}.fv-vpic{width:32px;height:24px}}
+@container(max-width:349.98px){.fv-bar{gap:5px;grid-template-columns:minmax(0,1.5fr) 44px 44px minmax(70px,1fr)}.fv-bar .rp-chev{width:10px}.fv-bar>.rp-pick{padding:0 6px 0 8px;font-size:12px}}
+/* 0.98 (Niklas): ylärivi kolmeksi laatikoksi (ajoneuvot, jakso keskellä, Uusi tankkaus oikeassa reunassa), vertailu
+   ajoneuvovalikon ruksien kautta ja neljä tunnuslukukorttia 2 × 2. Ajoneuvon kuva: kiinteän kokoinen laatikko, jonka
+   täyttää absoluuttisesti sijoitettu kuva (object-fit), joten iPhonen Safari ei venytä tai leikkaa sitä väärin. */
+.fv-bar{grid-template-columns:minmax(0,1.5fr) minmax(84px,1fr) 44px}
+.fv-vpic{position:relative;display:block;flex:none;width:40px;height:30px;overflow:hidden;border-radius:7px;background:#e8eef5}
+.fv-vpic img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center}
+.fv-vart{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.fv-vart>svg,.fv-vart>img{display:block;width:100%;height:100%;object-fit:contain}
+.fv-veh>summary{gap:7px}
+.fv-veh>summary>.fv-vpic{margin-left:-5px}
+.fv-mlist{width:min(300px,calc(100cqw - 36px));min-width:0;max-height:min(62vh,430px);overflow-y:auto;overscroll-behavior:contain}
+.fv-mi{display:flex;align-items:stretch;border-radius:10px}
+.fv-mi.on{background:#eef4ff}
+.fv-mck{flex:none;display:grid;place-items:center;width:44px;min-height:48px;padding:0;border:0;background:none;cursor:pointer}
+.fv-mck:disabled{cursor:default;opacity:.45}
+.fv-mi.on .fl-mck{background:#0b5ed7;border-color:#0b5ed7}
+.fv-mname{flex:1;min-width:0;display:flex;align-items:center;gap:9px;min-height:48px;padding:5px 9px 5px 2px;border:0;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.fv-mname[aria-current="true"] .fl-mn{color:var(--blue)}
+.fv-mtxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.fv-mtxt .fl-mn{font-size:13px;font-weight:650}
+.fv-mtxt small{font-size:11px;color:#4f5f72}
+.fv-mname .fl-sw{flex:none;width:18px;margin:0}
+.fv-mck:focus-visible,.fv-mname:focus-visible{outline:2px solid var(--blue);outline-offset:-2px;border-radius:8px}
+.fv-mhint{margin:4px 9px 4px;padding-top:7px;border-top:1px solid var(--hairline);font-size:11px;line-height:1.45;color:#4f5f72}
+.fv-cards{margin:0 0 12px}
+html.dark .device-glass .fv-mi.on .fl-mck{filter:invert(1) hue-rotate(180deg)}
+@container(max-width:349.98px){.fv-bar{grid-template-columns:minmax(0,1.5fr) minmax(76px,1fr) 44px}.fv-vpic{width:36px;height:27px}}
+.fv-mhint{white-space:normal}
+.fv-val{display:block;line-height:1.15}.fv-val b,.fv-val span{display:inline}

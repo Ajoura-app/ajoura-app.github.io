@@ -138,7 +138,7 @@ def test_ala_huomioi_edellisessa_versiossa(browser, vanha_base):
         s.sulje()
 
 
-# 0.96: yläosa havainnekuvan mukaan (0.97: yläosa neljänä laatikkona: ajoneuvo, vertailu, Uusi tankkaus, jakso), keskikulutus ja keskihinta
+# 0.96: yläosa havainnekuvan mukaan (0.98: ylärivi ajoneuvo, jakso, Uusi tankkaus; neljä tunnuslukukorttia), keskikulutus ja keskihinta
 # kahtena korttina, niiden alla matala yhteenvetorivi (kulut, tankkausten määrä, litrat). Keskihinta on painotettu
 # ostetuilla litroilla: (90 + 72 + 81) € / (50 + 40 + 45) l = 1,800 €/l. Vanhat isot palkit ja valikot poissa.
 def test_kooste(browser, base):
@@ -147,17 +147,19 @@ def test_kooste(browser, base):
                                 T("f3", "2026-08-01", 151000, 45.0, 81.0)])]
     s = avaa(browser, base, "fuel/tst1", autot=autot, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
     try:
-        r = s.page.evaluate("""() => {const q = s => document.querySelector(s), k = q('.fv-sum'), add = q('.fl-add').getBoundingClientRect();
+        r = s.page.evaluate("""() => {const q = s => document.querySelector(s), add = q('.fl-add').getBoundingClientRect();
           return {kortit: [...document.querySelectorAll('.fv-card')].map(d => d.innerText.replace(/\\s+/g, ' ')),
-            rivi: k.innerText.replace(/\\s+/g, ' '), korttienJalkeen: !!(q('.fv-cards').compareDocumentPosition(k) & Node.DOCUMENT_POSITION_FOLLOWING),
-            vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), .rp-filters, .fl-hero, .rp-kpis, .fl-costs').length,
+            vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), .rp-filters, .fl-hero, .rp-kpis, .fl-costs, .fv-sum, .fv-cmp').length,
             addKoko: [Math.round(add.width), Math.round(add.height)], addTeksti: q('.fl-add').innerText.trim(),
-            addOtsikossa: [...q('.fv-bar').children].map(e => e.matches('.fv-veh') ? 'ajoneuvo' : e.matches('.fv-cmp') ? 'vertailu' : e.matches('.fl-add') ? 'lisaa' : e.querySelector('[data-fl-period]') ? 'jakso' : '?').join(',') === 'ajoneuvo,vertailu,lisaa,jakso', pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
-        assert len(r["kortit"]) == 2 and r["vanhat"] == 0 and r["korttienJalkeen"], r
-        assert "Keskikulutus" in r["kortit"][0] and fi(keskikulutus(autot[0]["fuels"])) in r["kortit"][0] and "l/100 km" in r["kortit"][0], r
-        assert "Keskihinta" in r["kortit"][1] and "1,800 €/l" in r["kortit"][1], r
-        assert "Kulut yhteensä 243 €" in r["rivi"] and "3 tankkausta" in r["rivi"] and "135 l" in r["rivi"], r
-        assert r["addOtsikossa"] and r["addKoko"][0] >= 44 and r["addKoko"][1] >= 44 and r["addTeksti"] == "Uusi tankkaus", r
+            rivi: [...q('.fv-bar').children].map(e => e.matches('.fv-veh') ? 'ajoneuvo' : e.matches('.fl-add') ? 'lisaa' : e.querySelector('[data-fl-period]') ? 'jakso' : '?').join(','),
+            pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
+        k = r["kortit"]
+        assert len(k) == 4 and r["vanhat"] == 0 and r["rivi"] == "ajoneuvo,jakso,lisaa", r  # 0.98: jakso keskellä, lisäys oikealla
+        assert "Keskikulutus" in k[0] and fi(keskikulutus(autot[0]["fuels"])) in k[0] and "l/100 km" in k[0], r
+        assert "Keskihinta" in k[1] and "1,800 €/l" in k[1], r
+        assert "Kulut yhteensä" in k[2] and "243 €" in k[2], r
+        assert "Tankkaukset" in k[3] and "3 / 135 l" in k[3], r
+        assert r["addKoko"][0] >= 44 and r["addKoko"][1] >= 44 and r["addTeksti"] == "Uusi tankkaus", r
         assert "Tallenna tankkauskirja" in r["pdf"] and "Skoda Octavia" in r["pdf"] and "12 kk" in r["pdf"], r
         assert not s.virheet, s.virheet
     finally:
@@ -217,10 +219,10 @@ def test_epatodennakoinen_vali_yhdistetaan(browser, base):
         assert "20.10." in r["huom"] and "500" in r["huom"] and "seuraavan kanssa" in r["huom"], r
         assert r["rivit"] == ["p2"] and r["akseli"] < 40, r  # kaavion asteikkoa ei määrää 500
         assert s.talli()["cars"][0]["fuels"][1]["km"] == 150010  # tallennettu tieto ennallaan
-        # Vertailu (0.96: vertailukuvake näkyy, kun ajoneuvoja on vähintään kaksi).
+        # Vertailu (0.98: toinen ajoneuvo ruksitaan ajoneuvovalikosta).
         s.page.evaluate("""() => {const t = JSON.parse(localStorage.getItem('ajoura-app-v2')); t.cars.push({...t.cars[0], id: 'tst2', name: 'Testi Toinen', plate: 'TST-102'}); localStorage.setItem('ajoura-app-v2', JSON.stringify(t));}""")
-        s.page.reload(); s.page.wait_for_selector(".fv-cmp")
-        s.page.click(".fv-cmp"); s.page.wait_for_timeout(150)
+        s.page.reload(); s.page.wait_for_selector(".fv-veh")
+        s.page.click(".fv-veh>summary"); s.page.click("[data-fl-cmpcar=tst2]"); s.page.wait_for_timeout(150)
         assert "korjattu laskennassa" in s.page.inner_text(".screen-content")
         assert not s.virheet, s.virheet
     finally:

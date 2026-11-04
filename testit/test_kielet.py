@@ -28,7 +28,7 @@ NAKYMAT = {
     "home": [], "menu": [], "me": [], "help": [], "settings": [], "tips": [], "feedback": [], "newcar": [],
     "reports": ["[data-rp-kind=fuel]", ".rp-cmenu>summary"], "reports-cars": ["[data-rp-tab=cars]"], "vehicle/tst1": [],
     "vehicle/tst3": [], "event/tst1/e1": [], "add/tst1": [], "edit/tst1/e1": [], "report/tst1": [],
-    "notes/tst1": [], "fuel/tst1": [], "fuel/tst2": [], "fuel-vertailu": ["[data-fl-tab=cmp]"],
+    "notes/tst1": [], "fuel/tst1": [], "fuel/tst2": [], "fuel-vertailu": [".fv-veh>summary", "[data-fl-cmpcar=tst2]"],
     "owner/tst1": [], "caredit/tst1": [], "tankkausikkuna": [".fl-add"], "asennusohje": [".install-button"],
 }
 OSOITE = {"reports-cars": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
