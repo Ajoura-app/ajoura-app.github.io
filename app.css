@@ -1373,3 +1373,65 @@ html.dark .device-glass .rp-custom input{background:#e9eef4;border-color:#dce3ec
 .garage-rows .garage-row.dragging{position:relative;z-index:5;transition:none;box-shadow:0 18px 34px -14px #12284a66,0 2px 6px #12284a1f;cursor:grabbing}
 html.dark .device-glass .garage-rows .garage-row.dragging{box-shadow:none;outline:2px solid var(--blue)}
 @media(prefers-reduced-motion:reduce){.garage-rows.sorting .garage-row{transition:none}}
+/* 0.96 (Niklas, havainnekuva): Tankkaus ja lataus -välilehden uusi ilme. Otsikon vieressä pieni Uusi tankkaus
+   -kuvakepainike (etusivun pikatoimintojen tyyli), ajoneuvot kuvakerivinä (vierittyy vaakasuunnassa), vertailukuvake ja
+   jakso samalla rivillä, keskikulutus ja keskihinta kahtena korttina, matala yhteenvetorivi, kompakti kaavio ja
+   tankkaukset kuukausittain. Tumma tila tulee käänteisvärisuodattimesta kuten muualla (html.dark .device-glass), joten
+   värit ovat vaalean teeman värejä; täysi sininen täyte käännetään takaisin kuten .rp-tabs-painikkeissa. */
+.fv-head{align-items:center;margin-bottom:10px}
+.fv-head .app-heading{margin:0}
+.fv-add{--btnbg:#dfeafd;flex:none;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #b7cff3;border-radius:13px;background:var(--btnbg);color:var(--blue);cursor:pointer}
+.fv-add .act-ico,.fv-add .act-ico>svg{width:22px;height:22px}
+.fv-add:focus-visible,.fv-cmp:focus-visible,.fv-car:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.fv-add:active,.fv-cmp:active,.fv-car:active{transform:scale(.96)}
+.fv-bar{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.fv-cars{flex:1;min-width:0;display:flex;gap:6px;margin:-3px 0;padding:3px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.fv-cars::-webkit-scrollbar{display:none}
+.fv-car{position:relative;flex:0 0 62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:58px;min-width:0;padding:4px 3px;border:1px solid var(--hairline);border-radius:12px;background:#fff;font:inherit;color:var(--ink);cursor:pointer;scroll-snap-align:start}
+.fv-car[aria-pressed="true"]{border-color:var(--blue);background:#e8f0fe;box-shadow:inset 0 0 0 1px var(--blue)}
+.fv-car:disabled{opacity:.5;cursor:default}
+.fv-pic{width:50px;height:30px;display:grid;place-items:center;overflow:hidden;border-radius:7px}
+.fv-pic img{width:100%;height:100%;object-fit:cover}
+.fv-pic svg{width:100%;height:auto}
+.fv-lab{max-width:100%;overflow:hidden;font-size:11px;font-weight:650;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.fv-sw{position:absolute;left:10px;right:10px;bottom:2px;height:3px;border-radius:2px}
+.fv-ck{position:absolute;top:3px;right:3px;width:15px;height:15px;display:grid;place-items:center;border-radius:50%;background:var(--blue);color:#fff}
+.fv-tools{flex:none;display:flex;align-items:center;gap:6px}
+.fv-cmp{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--hairline);border-radius:12px;background:#fff;color:var(--blue);cursor:pointer}
+.fv-cmp svg{width:20px;height:20px}
+.fv-cmp[aria-pressed="true"]{border-color:var(--blue);background:var(--blue);color:#fff}
+.fv-tools .rp-pick{min-height:44px;padding:0 8px 0 10px;box-shadow:none}
+.fv-hint{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;margin:-4px 0 12px;font-size:12px;line-height:1.4;color:#4f5f72}
+.fv-hint .fl-cmall{display:inline-flex;align-items:center;margin:0;min-height:32px}
+.fv-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 8px}
+.fv-card{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:8px;row-gap:6px;align-items:center;min-width:0;padding:12px;background:#fff;border:1px solid var(--hairline);border-radius:16px;box-shadow:var(--card-shadow)}
+.fv-ico{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#e8f0fe;color:var(--blue)}
+.fv-ico svg{width:16px;height:16px}
+.fv-lab2{min-width:0;margin:0;font-size:12.5px;font-weight:600;line-height:1.25;color:#4f5f72;overflow-wrap:anywhere;hyphens:auto;-webkit-hyphens:auto}
+.fv-val{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 5px;margin:0}
+.fv-val b{font-size:26px;font-weight:800;line-height:1.1;letter-spacing:-.03em;color:var(--ink)}
+.fv-val span{font-size:12.5px;font-weight:600;color:#4f5f72}
+.fv-val b.fv-na{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:0}
+.fv-sum{margin:0 0 12px;padding:8px 12px;border-radius:12px;background:#eef3fa;font-size:12.5px;line-height:1.4;color:#3f4f63}
+/* Erotinviiva on kohteen vasen reuna; rivin alkuun osuva viiva jää piiloon (overflow), joten rivitys ei näytä irrallista viivaa. */
+.fv-sclip{display:block;overflow:hidden}
+.fv-si{display:flex;flex-wrap:wrap;align-items:center;row-gap:3px;margin-left:-10px}
+.fv-si>span{margin-left:9px;padding-left:9px;border-left:1px solid #b9c6d4;line-height:1.1}
+.fv-sum b{font-weight:700;color:var(--ink)}
+.fv-sum+.fl-warn{margin:-4px 0 12px}
+.fv-trend .rp-hrow{margin-bottom:2px}
+.fv-trend .fl-note{margin-top:4px}
+.fv-list .rp-hrow{margin-bottom:8px}
+.fv-g{margin:0 0 4px}
+.fv-g summary{min-height:40px;padding:6px 10px;border-radius:10px;background:#f1f4f8}
+.fv-g .fl-gt{font-size:13px}
+.fv-gsum{margin-left:auto;font-size:13.5px;font-weight:750;color:var(--ink)}
+.fv-row{grid-template-columns:30px minmax(0,1fr) auto;gap:10px;min-height:54px;padding:9px 4px}
+.fv-rico{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#e8f0fe;color:var(--blue)}
+.fv-rico svg{width:16px;height:16px}
+.fv-row .fl-rl b,.fv-row .fl-rm b{font-size:13.5px}
+.fv-row .fl-rl small{line-height:1.45}
+html.dark .device-glass .fv-cmp[aria-pressed="true"],html.dark .device-glass .fv-ck{filter:invert(1) hue-rotate(180deg)}
+html.dark .device-glass .fv-card,html.dark .device-glass .fv-car,html.dark .device-glass .fv-cmp:not([aria-pressed="true"]){background:#e9eef4;border-color:#dce3ec;box-shadow:none}
+html.dark .device-glass .fv-car[aria-pressed="true"]{background:#dfe9fb;border-color:var(--blue)}
+@container(max-width:349.98px){.fv-card{padding:11px 10px}.fv-val b{font-size:23px}.fv-val span{font-size:12px}.fv-car{flex-basis:58px}.fv-pic{width:46px}.fv-row{gap:8px}}

@@ -127,12 +127,14 @@ def test_muutos_kun_vertailujakso_kirjattu(browser, base):
 
 @pytest.mark.parametrize("nakyma,extra,valitsin", [
     ("reports", {"ajoura-reports": '{"p":"12","t":"sum"}'}, ".rp-col"),
-    ("fuel/fd1", {"ajoura-fuel": '{"p":"12","t":"car"}'}, ".fl-hero .fl-chart rect.hit"),
+    ("fuel/fd1", {"ajoura-fuel": '{"p":"12","t":"car"}'}, ".fv-trend .fl-chart rect.hit"),
     ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp","m":"cost"}'}, ".fl-chart rect.hit"),
 ])
 def test_12_kk_on_12_kuukautta(browser, base, nakyma, extra, valitsin):
     autot = kuvien_talli()
     autot[1]["fuels"].insert(0, T("df0", "2025-11-05", 140000, 40, 70))
+    # 0.96: kulutuksen kehitys piirretään vasta, kun mitattuja kuukausia on vähintään kaksi (tässä kesä- ja lokakuu).
+    autot[1]["fuels"].insert(1, T("df05", "2026-06-01", 145000, 200, 350))
     s = avaa(browser, base, nakyma, autot=autot, extra=extra, kello=KELLO)
     try:
         assert s.page.locator(valitsin).count() == 12  # marras 2025 – loka 2026 (ennen 0.76: 13 pylvästä)

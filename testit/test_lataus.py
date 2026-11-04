@@ -100,10 +100,10 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
         pg.click("[data-fl-kind=fuel]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=fuel]').getAttribute('aria-pressed')==='true'")
         assert pg.get_attribute("[data-fl-kind=fuel]", "aria-pressed") == "true"
         assert fi(keskikulutus(fuel_fills)) in pg.inner_text(".fl-big") and "l/100 km" in pg.inner_text(".fl-big")
-        assert "Polttoainekulut" in pg.inner_text(".fl-sum") and "149 €" in pg.inner_text(".fl-sum")  # 54 + 45 + 50,4
+        assert "3 tankkausta" in pg.inner_text(".fl-sum") and "149 €" in pg.inner_text(".fl-sum")  # 54 + 45 + 50,4
         pg.click("[data-fl-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=el]').getAttribute('aria-pressed')==='true'")
         assert fi(keskikulutus(el_fills)) in pg.inner_text(".fl-big") and "kWh/100 km" in pg.inner_text(".fl-big")
-        assert "Latauskulut" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
+        assert "3 latausta" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
         assert "Uusi lataus" in pg.inner_text(".fl-add")
         # Uusi lataus: tallentuu el: true, kWh, ei litroja.
         pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)

@@ -138,25 +138,51 @@ def test_ala_huomioi_edellisessa_versiossa(browser, vanha_base):
         s.sulje()
 
 
-# 0.59: Raportit-tyylinen kooste heti valikoiden ja Uusi tankkaus -painikkeen alla (vanha neljän luvun kortti pois).
+# 0.96: yläosa havainnekuvan mukaan: pieni Uusi tankkaus -kuvakepainike otsikon vieressä, keskikulutus ja keskihinta
+# kahtena korttina, niiden alla matala yhteenvetorivi (kulut, tankkausten määrä, litrat). Keskihinta on painotettu
+# ostetuilla litroilla: (90 + 72 + 81) € / (50 + 40 + 45) l = 1,800 €/l. Vanhat isot palkit ja valikot poissa.
 def test_kooste(browser, base):
     T = tiedot.tankkaus
     autot = [tiedot.auto(km=151000, fuels=[T("f1", "2026-06-01", 150000, 50.0, 90.0), T("f2", "2026-07-01", 150500, 40.0, 72.0),
                                 T("f3", "2026-08-01", 151000, 45.0, 81.0)])]
     s = avaa(browser, base, "fuel/tst1", autot=autot, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
     try:
-        r = s.page.evaluate("""() => {const k = document.querySelector('.fl-sum');
-          return {n: document.querySelectorAll('.fl-sum').length, vanha: document.querySelectorAll('.fl-kpis').length,
-            ennenHeroa: !!k && !!(k.compareDocumentPosition(document.querySelector('.fl-hero')) & Node.DOCUMENT_POSITION_FOLLOWING),
-            addEnnen: !!(document.querySelector('.fl-add').compareDocumentPosition(k) & Node.DOCUMENT_POSITION_FOLLOWING),
-            sarakkeet: [...k.querySelectorAll('.rp-kpis > div')].map(d => d.innerText.replace(/\\s+/g, ' ')),
-            alarivi: k.querySelector('.fl-foot').innerText.replace(/\\s+/g, ' ')};}""")
-        assert r["n"] == 1 and r["vanha"] == 0 and r["ennenHeroa"] and r["addEnnen"], r
-        assert len(r["sarakkeet"]) == 3, r
-        assert "Polttoainekulut" in r["sarakkeet"][0] and "243 €" in r["sarakkeet"][0] and "3 tankkausta" in r["sarakkeet"][0], r
-        assert "/ kk" in r["sarakkeet"][1], r
-        assert "Ajetut kilometrit" in r["sarakkeet"][2] and "1 000 km" in r["sarakkeet"][2] and "15,30 €/100 km" in r["sarakkeet"][2]  # (72 + 81) € / 1 000 km; ensimmäinen tankkaus on ajettu ennen jaksoa, r
-        assert "135 l" in r["alarivi"] and "Keskihinta 1,800 €/l" in r["alarivi"], r
+        r = s.page.evaluate("""() => {const q = s => document.querySelector(s), k = q('.fv-sum'), add = q('.fl-add').getBoundingClientRect();
+          return {kortit: [...document.querySelectorAll('.fv-card')].map(d => d.innerText.replace(/\\s+/g, ' ')),
+            rivi: k.innerText.replace(/\\s+/g, ' '), korttienJalkeen: !!(q('.fv-cards').compareDocumentPosition(k) & Node.DOCUMENT_POSITION_FOLLOWING),
+            vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), [data-fl-carpick], .fl-hero, .rp-kpis, .fl-costs').length,
+            addKoko: [Math.round(add.width), Math.round(add.height)], addTeksti: q('.fl-add').innerText.trim(),
+            addOtsikossa: !!q('.fv-head .fl-add'), pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
+        assert len(r["kortit"]) == 2 and r["vanhat"] == 0 and r["korttienJalkeen"], r
+        assert "Keskikulutus" in r["kortit"][0] and fi(keskikulutus(autot[0]["fuels"])) in r["kortit"][0] and "l/100 km" in r["kortit"][0], r
+        assert "Keskihinta" in r["kortit"][1] and "1,800 €/l" in r["kortit"][1], r
+        assert "Kulut yhteensä 243 €" in r["rivi"] and "3 tankkausta" in r["rivi"] and "135 l" in r["rivi"], r
+        assert r["addOtsikossa"] and r["addKoko"][0] >= 44 and r["addKoko"][1] >= 44 and r["addTeksti"] == "Uusi tankkaus", r
+        assert "Tallenna tankkauskirja" in r["pdf"] and "Skoda Octavia" in r["pdf"] and "12 kk" in r["pdf"], r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.96: tankkaukset kuukausittain: kuukauden nimi ja kokonaiskulut otsikossa, tapahtumat uusimmasta vanhimpaan, kaksi
+# uusinta kuukautta auki; kaavio vain mitatuista kuukausista ja seliteteksti, kun mitattuja kuukausia on alle kaksi.
+def test_kuukaudet_ja_kaavio(browser, base):
+    T = tiedot.tankkaus
+    autot = [tiedot.auto(km=151200, fuels=[T("f1", "2026-08-01", 150000, 50.0, 90.0), T("f2", "2026-09-03", 150600, 40.0, 72.0),
+                                           T("f3", "2026-10-02", 150900, 20.0, 37.0), T("f4", "2026-10-20", 151200, 22.0, 39.5)])]
+    s = avaa(browser, base, "fuel/tst1", autot=autot, extra={"ajoura-fuel": '{"p":"12","t":"car"}'}, kello=KELLO)
+    try:
+        r = s.page.evaluate("""() => [...document.querySelectorAll('details.fv-g')].map(d => ({auki: d.open,
+            otsikko: d.querySelector('summary').innerText.replace(/\\s+/g, ' ').trim(),
+            rivit: [...d.querySelectorAll('[data-fl-edit]')].map(b => b.dataset.flEdit)}))""")
+        assert [g["otsikko"] for g in r] == ["Lokakuu 2026 76,50 €", "Syyskuu 2026 72,00 €", "Elokuu 2026 90,00 €"], r
+        assert [g["auki"] for g in r] == [True, True, False] and r[0]["rivit"] == ["f4", "f3"], r
+        assert "Diesel" in s.page.inner_text("[data-fl-edit=f4]") and "151 200 km" in s.page.inner_text("[data-fl-edit=f4]").replace("\u00a0", " ")
+        assert s.page.locator(".fv-trend .fl-chart .cur").count() == 1 and s.page.locator(".fv-trend .fl-chart .prev").count() == 0
+        # Vain yksi mitattu kuukausi → ei kaaviota vaan selite.
+        s.page.evaluate("localStorage.setItem('ajoura-app-v2', JSON.stringify({...JSON.parse(localStorage.getItem('ajoura-app-v2')), cars: [{...JSON.parse(localStorage.getItem('ajoura-app-v2')).cars[0], fuels: JSON.parse(localStorage.getItem('ajoura-app-v2')).cars[0].fuels.slice(0, 2)}]}))")
+        s.page.reload(); s.page.wait_for_selector(".fv-trend")
+        assert s.page.locator(".fv-trend .fl-chart").count() == 0 and "vähintään kahdelta kuukaudelta" in s.page.inner_text(".fv-trend")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -177,9 +203,9 @@ def poikkeama_talli(viimeinen=False):
 
 
 POIKKEAMA_JS = """() => ({iso: document.querySelector('.fl-big')?.innerText.replace(/\\s+/g, ' '),
-  huom: document.querySelector('.fl-hero .fl-warn')?.innerText.replace(/\\s+/g, ' ') || '',
+  huom: [...document.querySelectorAll('.fl-warn')].map(e => e.innerText).join(' ').replace(/\\s+/g, ' ')|| '',
   rivit: [...document.querySelectorAll('[data-fl-edit]')].filter(r => r.querySelector('.fl-sus')).map(r => r.dataset.flEdit),
-  akseli: Math.max(...[...document.querySelectorAll('.fl-hero .fl-chart text.ax[text-anchor=end]')].map(t => parseFloat(t.textContent.replace(',', '.'))).filter(Number.isFinite))})"""
+  akseli: Math.max(...[...document.querySelectorAll('.fv-trend .fl-chart text.ax[text-anchor=end]')].map(t => parseFloat(t.textContent.replace(',', '.'))).filter(Number.isFinite))})"""
 
 
 def test_epatodennakoinen_vali_yhdistetaan(browser, base):
@@ -191,7 +217,10 @@ def test_epatodennakoinen_vali_yhdistetaan(browser, base):
         assert "20.10." in r["huom"] and "500" in r["huom"] and "seuraavan kanssa" in r["huom"], r
         assert r["rivit"] == ["p2"] and r["akseli"] < 40, r  # kaavion asteikkoa ei määrää 500
         assert s.talli()["cars"][0]["fuels"][1]["km"] == 150010  # tallennettu tieto ennallaan
-        s.page.click("[data-fl-tab=cmp]"); s.page.wait_for_timeout(150)
+        # Vertailu (0.96: vertailukuvake näkyy, kun ajoneuvoja on vähintään kaksi).
+        s.page.evaluate("""() => {const t = JSON.parse(localStorage.getItem('ajoura-app-v2')); t.cars.push({...t.cars[0], id: 'tst2', name: 'Testi Toinen', plate: 'TST-102'}); localStorage.setItem('ajoura-app-v2', JSON.stringify(t));}""")
+        s.page.reload(); s.page.wait_for_selector(".fv-cmp")
+        s.page.click(".fv-cmp"); s.page.wait_for_timeout(150)
         assert "korjattu laskennassa" in s.page.inner_text(".screen-content")
         assert not s.virheet, s.virheet
     finally:
