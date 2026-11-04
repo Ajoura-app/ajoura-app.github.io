@@ -296,17 +296,19 @@
     return {...d,days,kmLeft,left,by,tone:late?'late':soon?'soon':d.what==='Katsastus'?'info':'ok'};}
   const dueWord=(list,late)=>{const insp=list.every(r=>r.d.what==='Katsastus'),one=list.length===1;return (insp?(one?'katsastus':'katsastusta'):(one?'huolto':'huoltoa'))+(late?' myöhässä':' lähestyy');};
   const carCost=(c,year)=>costOf(c.events.filter(e=>e.date.startsWith(year)))+(c.fuels||[]).filter(f=>f.date.startsWith(year)&&f.cost!==null).reduce((m,f)=>m+f.cost,0);
-  const statusHead={late:{Huolto:'HUOLTO MYÖHÄSSÄ',Katsastus:'KATSASTUS MYÖHÄSSÄ'},soon:{Huolto:'SEURAAVA HUOLTO',Katsastus:'SEURAAVA KATSASTUS'},ok:{Huolto:'HUOLTO KUNNOSSA',Katsastus:'KATSASTUS KUNNOSSA'},info:{Huolto:'HUOLTO KUNNOSSA',Katsastus:'SEURAAVA KATSASTUS'}};
+  const statusHead={late:{Huolto:'Huolto myöhässä',Katsastus:'Katsastus myöhässä'},soon:{Huolto:'Seuraava huolto',Katsastus:'Seuraava katsastus'},ok:{Huolto:'Huolto kunnossa',Katsastus:'Katsastus kunnossa'},info:{Huolto:'Huolto kunnossa',Katsastus:'Seuraava katsastus'}};
   // Each piece of text sits in its own element so the language layer can translate the words and leave numbers alone.
   function rowStatus(c,d){
-    if(!d)return `<span class="row-status none"><span class="row-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="row-txt"><b>EI AKTIIVISIA MUISTUTUKSIA</b><strong>Kirjaa viimeisin huolto</strong><small>Niin AJOURA laskee seuraavan.</small></span></span>`;
+    // 0.88: no reminder is told apart by the data: no entries at all (history missing) or entries without a service or
+    // inspection (nothing to count a reminder from). The reminder logic itself is unchanged.
+    if(!d)return `<span class="row-status none"><span class="row-ico" aria-hidden="true">${svg(icons.cal)}</span><span class="row-txt"><b>${c.events.length?'Ei huoltomuistutuksia':'Huoltohistoria puuttuu'}</b><strong>Kirjaa viimeisin huolto</strong><small>Niin AJOURA laskee seuraavan.</small></span></span>`;
     const urgent=d.tone==='late'||d.tone==='soon',pct=Math.round(d.left*100);
     const when=urgent?`<strong><span>${date(d.due)}</span>${d.km!==null?` <span>tai</span> <span>${number(d.km)} km</span>`:''}</strong>`:`<strong><span>${d.what==='Katsastus'?'Seuraava katsastus':'Seuraava huolto'}</span> <span>${date(d.due)}</span></strong>`;
     // Time and kilometres are shown as separate facts. When the service is overdue, the limit that has passed comes first
     // and the other one under it, so "late by date but 800 km still to go" reads plainly instead of a bare "0 % left" (0.25).
     const kmOver=d.kmLeft!==null&&d.kmLeft<=0,timeOver=d.days<0;
     const timeTxt=timeOver?`<span>Myöhässä</span> <span>${number(-d.days)}</span> <span>pv</span>`:d.days<62?`<span>Aikaa jäljellä</span> <span>${number(d.days)}</span> <span>pv</span>`:`<span>Aikaa jäljellä n.</span> <span>${number(Math.round(d.days/30.4))}</span> <span>kk</span>`;
-    const kmTxt=d.kmLeft===null?'':kmOver?(d.kmLeft<0?`<span>Kilometriraja ylitetty</span> <span>${number(-d.kmLeft)} km</span>`:'<span>Kilometriraja on ylittynyt.</span>'):`<span>Ajettavaa jäljellä n.</span> <span>${number(d.kmLeft)} km</span>`;
+    const kmTxt=d.kmLeft===null?'':kmOver?(d.kmLeft<0?`<span>Kilometriraja ylitetty</span> <span>${number(-d.kmLeft)} km</span>`:'<span>Kilometriraja on ylittynyt.</span>'):`<span>${timeOver?'Kilometrirajaan n.':'Ajettavaa jäljellä n.'}</span> <span>${number(d.kmLeft)} km</span>`;
     if(d.tone==='late'){const line=(t,over)=>t?`<small class="${over?'lim-over':'lim'}">${t}</small>`:'',lines=timeOver?line(timeTxt,true)+line(kmTxt,kmOver):line(kmTxt,true)+line(timeTxt,false);
       return `<span class="row-status late"><span class="row-ico" aria-hidden="true">${svg(icons.wrench)}</span><span class="row-txt"><b>${statusHead.late[d.what]}</b>${when}${lines}</span></span>`;}
     const rest=d.by==='km'?`<small><span>Ajettavaa jäljellä n.</span> <span>${number(d.kmLeft)} km</span></small>`:`<small>${timeTxt}</small>`;
@@ -314,9 +316,14 @@
   // Bar colour slides from green (all left) through yellow (half) to red (nothing left). shade<1 darkens it for readable text.
   function barColor(left,shade=1){const stops=[[226,85,85],[242,182,31],[47,179,111]],x=Math.max(0,Math.min(1,left))*2,i=Math.min(1,Math.floor(x)),f=x-i;
     return 'rgb('+stops[i].map((v,k)=>Math.round((v+(stops[i+1][k]-v)*f)*shade)).join(',')+')';}
-  function garageRow(c,d,year){const ev=unitOf(c)==='kWh',cost=Math.round(carCost(c,year));
+  // 0.88 (Niklas): the card's two actions are compact icon buttons on the right edge, one above the other. The plus is a
+  // small badge pinned to the icon's lower right corner (absolute position inside .act-ico), so icon and plus read as one
+  // symbol. The fill-up button uses the same pump-and-bolt icon as the Tankkaus tab; its name says what it opens.
+  const actIcon=paths=>`<span class="act-ico" aria-hidden="true">${svg(paths)}<span class="act-plus"><svg viewBox="0 0 12 12" focusable="false"><path d="M6 3.4v5.2M3.4 6h5.2"/></svg></span></span>`;
+  function garageRow(c,d,year){const ev=unitOf(c)==='kWh',cost=Math.round(carCost(c,year)),kinds=chargeKinds(c);
     const pic=c.photo?`<span class="car-photo"><img src="${c.photo}" alt=""></span>`:`<span class="car-stage">${art(c,'')}</span>`;
-    return `<div class="garage-row"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong><span class="chevron" aria-hidden="true">›</span></span><small class="row-meta">${plateTxt(c)} · ${number(c.km)} ${ku(c)}</small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a><div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}">${svg(icons.fuel)}<span>${chargeKinds(c).length>1&&chargeKinds(c).includes('el')?'+ Tankkaus / lataus':ev?'+ Lataus':'+ Tankkaus'}</span></button><a class="row-btn note" href="#add/${c.id}">${svg(icons.note)}<span>+ Merkintä</span></a></div></div>`;}
+    const fillName=kinds.length>1&&kinds.includes('el')?'Lisää tankkaus tai lataus':ev?'Lisää lataus':'Lisää tankkaus';
+    return `<div class="garage-row"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong></span><small class="row-meta">${plateTxt(c)} · <span class="nw">${number(c.km)} ${ku(c)}</span></small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}" aria-label="${fillName}" title="${fillName}">${actIcon(fuelTabIcon)}</button><a class="row-btn note" href="#add/${c.id}" aria-label="Lisää merkintä" title="Lisää merkintä">${actIcon(icons.note)}</a></div><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a></div>`;}
   // Decorative scene for the "today" card: mountains, pines and a road. Snowy from October to March, green otherwise.
   const scene=()=>{const m=Number(today().slice(5,7)),w=m>=10||m<=3;return `<svg class="today-scene${w?' winter':''}" viewBox="0 0 220 110" aria-hidden="true" focusable="false"><circle class="sun" cx="176" cy="26" r="13"/><path class="far" d="M40 92 92 34l22 22 26-36 40 44 40 28z"/><path class="snow" d="m92 34 10 12-6-2-6 7-6-5zm48-14 12 14-7-3-5 6-6-6z"/><path class="near" d="M0 110 54 66l26 20 34-30 50 40 56-14v28z"/><g class="pines"><path d="m150 92 7-20 7 20zM166 96l6-17 6 17zM180 90l8-24 8 24zM198 98l6-18 6 18zM120 98l5-14 5 14z"/></g><path class="road" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/><path class="road-line" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/></svg>`;};
   function todayCard(rows){const due=rows.filter(r=>r.d&&(r.d.tone==='late'||r.d.tone==='soon')),late=due.filter(r=>r.d.tone==='late'),lateFirst=late.length?late:due,tyre=tyreInfo(),noData=rows.every(r=>!r.d),n=lateFirst.length;
@@ -338,7 +345,7 @@
     // garage holds own vehicles a card asks to install and to take a backup. It replaces the backup reminder there and
     // cannot be hidden on purpose: the people who lose data are the ones who visit rarely.
     const when=backupWhen(),browserCard=!installed&&cars.some(c=>!c.sample)?`<div class="reminder-card browser-data"><span class="event-symbol" aria-hidden="true">${svg(icons.save)}</span><div><span class="mini-label">TIEDOT TÄSSÄ SELAIMESSA</span><strong>Asenna AJOURA, niin tiedot pysyvät tallessa</strong><small>${ios?'Safari voi poistaa tiedot, jos AJOURAa ei avata viikkoon. Asennettu sovellus aloittaa tyhjänä, joten tallenna ensin varmuuskopio ja palauta se sovelluksessa.':'Selain voi poistaa tiedot, jos AJOURAa ei avata pitkään aikaan. Asennettuna ne ovat paremmin tallessa. Ota myös varmuuskopio.'}</small>${when?`<small class="bk-last">${when}</small>`:''}<div class="bd-actions"><button class="link-button" type="button" data-install-open>Näin asennat →</button><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div></div>`:'';
-    return `${top()}<h2 class="app-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading" id="garage"><h3>Oma talli</h3><a class="garage-add" href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}<a class="add-vehicle-row" href="#newcar"><span class="avr-plus" aria-hidden="true">＋</span><span>Lisää ajoneuvo</span></a>`;
+    return `${top()}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading" id="garage"><h3>Oma talli</h3><a class="garage-add" href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   // 0.67: every fuel can be picked on every vehicle (a diesel car is sometimes filled with HVO100, a petrol car with E85, a
@@ -496,7 +503,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.87 (testiversio)';
+  const appVersion='0.88 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

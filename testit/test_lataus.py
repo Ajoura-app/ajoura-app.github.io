@@ -131,11 +131,12 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
 
 
 def test_kirjausikkunan_valitsin_ja_muokkaus(browser, base):
-    """Etusivun + Tankkaus / lataus -painike: ikkunassa valitaan laji; latauksen muokkaus avaa latauksen."""
+    """Etusivun tankkaus- ja latauspainike (0.88: kuvake, nimi "Lisää tankkaus tai lataus"): ikkunassa valitaan laji;
+    latauksen muokkaus avaa latauksen."""
     s = avaa(browser, base, "home", autot=[hybridi()], kello=KELLO)
     pg = s.page
     try:
-        assert "Tankkaus / lataus" in pg.inner_text(".row-btn.fuel")
+        assert pg.get_attribute(".row-btn.fuel", "aria-label") == "Lisää tankkaus tai lataus"
         pg.click("[data-quickfuel=hyb1]"); pg.wait_for_selector(F)
         assert pg.get_attribute("[data-sheet-kind=fuel]", "aria-pressed") == "true"
         pg.click("[data-sheet-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-sheet-kind=el]').getAttribute('aria-pressed')==='true'")

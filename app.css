@@ -1314,3 +1314,48 @@ html.dark .device-glass .rp-custom input{background:#e9eef4;border-color:#dce3ec
 .fl-srm b{font-weight:650;color:var(--ink)}
 .fl-stot{display:flex;justify-content:space-between;gap:10px;margin:4px 0 8px;padding-top:8px;border-top:1px solid var(--hairline);font-size:13px;font-weight:650;color:var(--ink)}
 .fl-csel .rp-part{font-size:12px;font-weight:600;color:#5a4300}
+/* 0.88: etusivun viimeistely (Niklas). Ajoneuvokortti: kuva vasemmalla, perustiedot sen oikealla puolella samassa vasemmassa
+   linjassa, kaksi kompaktia kuvakepainiketta oikeassa reunassa päällekkäin ja huollon tila omalla rivillään. Plusmerkki on
+   pieni merkki kuvakkeen oikeassa alakulmassa (.act-plus, absoluuttinen sijainti .act-ico:n sisällä), joten kuvake ja plus
+   näkyvät yhtenä symbolina. Koot ovat CSS-pikseleitä: 350–439 px leveällä näkymä on 1,12-kertainen (esim. 17 px → 19 px).
+   Tumma tila tulee edelleen käänteisvärisuodattimesta; sininen tankkauspainike käännetään takaisin kuten ennen. */
+.home-heading{font-size:25px;font-weight:650;letter-spacing:-.02em}
+#garage h3{font-size:19.5px;font-weight:650;letter-spacing:-.015em}
+.garage-rows{gap:10px}
+.garage-row{grid-template-columns:minmax(0,32%) minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;row-gap:0;padding:9px;align-items:center}
+.garage-row .row-pic{grid-row:1;grid-column:1;align-self:center;margin:0}
+.garage-row .row-info{grid-row:1;grid-column:2;justify-content:center;gap:2px;min-width:0;text-decoration:none}
+.garage-row .row-name{display:block}
+.garage-row .row-name strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;white-space:normal;font-size:17px;font-weight:650;line-height:1.2;letter-spacing:-.02em;color:var(--ink)}
+.garage-row .row-meta .nw{white-space:nowrap}
+.garage-row .row-meta{margin:2px 0 0;font-size:12.5px;font-weight:450;line-height:1.3;color:#556679}
+.garage-row .row-cost{margin:0;font-size:12px;font-weight:450;line-height:1.3;color:#556679}
+.garage-row .row-cost b{font-weight:600;color:var(--ink);white-space:nowrap}
+.garage-row .row-actions{grid-row:1;grid-column:3;display:flex;flex-direction:column;gap:5px;margin:0;align-self:center}
+.garage-row .row-btn{--btnbg:#f2f7ff;width:43px;height:43px;min-height:0;padding:0;display:grid;place-items:center;border-radius:14px;border:1px solid #c3d6f0;background:var(--btnbg);color:var(--blue);text-decoration:none}
+.garage-row .row-btn.fuel{--btnbg:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 12px -8px #1464e8}
+.garage-row .row-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.act-ico{position:relative;display:block;width:21px;height:21px}
+.act-ico>svg{display:block;width:21px;height:21px;stroke-width:2}
+.act-plus{position:absolute;right:-7px;bottom:-6px;width:11px;height:11px;display:block;border-radius:50%;background:currentColor;box-shadow:0 0 0 1.5px var(--btnbg)}
+.act-plus svg{display:block;width:11px;height:11px;fill:none;stroke:var(--btnbg);stroke-width:1.9;stroke-linecap:round}
+.garage-row .row-wide{grid-row:2;grid-column:1/-1;text-decoration:none}
+.garage-row .row-wide .row-status{margin-top:7px;padding:6px 9px;column-gap:9px;row-gap:3px}
+.garage-row .row-status .row-txt{grid-column:2/-1}
+.garage-row .row-ico{width:26px;height:26px}.garage-row .row-ico svg{width:15px;height:15px}
+.garage-row .row-txt{line-height:1.2}
+.garage-row .row-txt b{font-size:11px;font-weight:650;letter-spacing:0;line-height:1.3}
+.garage-row .row-wide .row-txt strong{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.garage-row .row-wide .row-txt small{font-size:11.5px}
+.garage-row .row-pct{font-size:11px;font-weight:600}
+@container(max-width:349px){.garage-row{grid-template-columns:minmax(0,30%) minmax(0,1fr) auto;column-gap:9px}.garage-row .row-btn{width:48px;height:48px}.garage-row .row-actions{gap:7px}.act-ico,.act-ico>svg{width:22px;height:22px}}
+/* Yhteenvetokortti: kuvitus hillitymmäksi, pienemmät ikonitaustat, tekstit vähintään 11 px. */
+.today-scene{opacity:.55}
+.today-top .mini-label{font-size:10px;letter-spacing:.04em;font-weight:650}
+.today-card{padding-top:11px;padding-bottom:10px}.today-top{padding-right:15%}
+.today-top p{font-size:10.5px;line-height:1.35}
+.today-top .mini-label{margin:1px 0 2px}
+.today-chips{margin-top:8px;align-items:stretch}
+.today-chip{gap:4px;padding:6px 7px 7px}
+.today-chip .chip-ico{width:20px;height:20px}.today-chip .chip-ico svg{width:12.5px;height:12.5px}
+.chip-txt small{font-size:10px;line-height:1.25}

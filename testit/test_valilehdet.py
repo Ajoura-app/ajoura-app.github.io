@@ -27,11 +27,12 @@ def test_valilehdissa_vain_kuvakkeet(browser, base, kieli):
 @pytest.mark.parametrize("leveys", [320, 360, 390, 430])
 def test_alavalikko_kelluva_kapseli(browser, base, leveys):
     """0.72: alavalikko on kelluva kapseli (pyöristetty, keskellä, valittu korostettu). 0.73: sen leveys on sama kuin
-    ajoneuvoikkunan sisällön (Koti-näkymän tilarivi ja napit) ja kuvakkeet ovat tasavälein."""
+    ajoneuvoikkunan sisällön (Koti-näkymän tilarivi ja napit) ja kuvakkeet ovat tasavälein. 0.88: napit ovat kortin
+    oikeassa reunassa, joten leveyttä verrataan täysleveään tilariviin."""
     s = avaa(browser, base, "home", autot=[tiedot.auto()], leveys=leveys, kello=KELLO)
     try:
         r = s.page.evaluate("""() => {const n = document.querySelector('.main-tabs'), b = n.getBoundingClientRect(),
-          g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.row-actions').getBoundingClientRect(),
+          g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.garage-row .row-wide').getBoundingClientRect(),
           cs = getComputedStyle(n), alav = g.bottom - b.bottom, a = getComputedStyle(n.querySelector('a[aria-current]')),
           xs = [...n.querySelectorAll('a svg')].map(v => {const q = v.getBoundingClientRect(); return q.left + q.width / 2});
           return {vasen: b.left - k.left, oikea: b.right - k.right, keski: (b.left + b.right) / 2 - (g.left + g.right) / 2,
