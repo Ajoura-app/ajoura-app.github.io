@@ -63,6 +63,9 @@ def test_kuitit_lentavat_logoon(browser, base, leveys):
         kuitit = page.evaluate(KUITIT)
         assert 5 <= len(kuitit) <= 8, f"kuitteja {len(kuitit)}"
         assert all(k["kuva"] and k["nayttö"] == "block" for k in kuitit), "kuitin SVG-kuva puuttuu tai piilossa"
+        # 0.84: kuitit hiukan pienemmiksi (24 → 21 px leveys), mittasuhde 26:38 säilyy
+        koko = page.eval_on_selector(".intro-overlay .rc-p", "e => [parseFloat(getComputedStyle(e).width), parseFloat(getComputedStyle(e).height)]")
+        assert koko[0] <= 21 and abs(koko[1] / koko[0] - 38 / 26) < 0.02, f"kuitin koko {koko}"
         kelaa(page, 0)
         assert all(float(k["nakyva"]) < 0.05 for k in page.evaluate(KUITIT)), "kuitit näkyvät ennen auton liikettä"
         nahty = set()
