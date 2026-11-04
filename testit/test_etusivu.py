@@ -105,3 +105,17 @@ def test_kaannokset(browser, base, kieli, nimi, tila):
         assert tila in s.page.locator(".garage-row:has([data-quickfuel=hyb1]) .row-status").inner_text()
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize("teema", ["light", "dark"])
+def test_painikkeiden_yhtenainen_vari(browser, base, teema):
+    """0.90 (Niklas): tankkauspainike samaan vaaleaan ilmeeseen kuin huolto ja muistiinpano (ennen täysi sininen,
+    joka näytti liian tummalta). Tummassa tilassa ei omaa käänteissuodatinta, joten kaikki kolme näyttävät samalta."""
+    s = avaa(browser, base, "home", autot=talli(), teema=teema, kello=KELLO)
+    try:
+        tyylit = s.page.eval_on_selector_all(".garage-row:first-child .row-btn", """e => e.map(b => {const c = getComputedStyle(b);
+          return [c.backgroundColor, c.borderTopColor, c.color, c.filter, c.boxShadow]})""")
+        assert len(tyylit) == 3 and tyylit[0] == tyylit[1] == tyylit[2], tyylit
+        assert tyylit[0][0] != "rgb(20, 100, 232)", "tankkauspainike on yhä täysi sininen"
+    finally:
+        s.sulje()
