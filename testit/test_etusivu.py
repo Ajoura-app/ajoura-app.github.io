@@ -118,8 +118,9 @@ def test_painikkeiden_yhtenainen_vari(browser, base, teema):
     try:
         tyylit = s.page.eval_on_selector_all(".garage-row:first-child .row-btn", """e => e.map(b => {const c = getComputedStyle(b);
           return [c.backgroundColor, c.borderTopColor, c.color, c.filter, c.boxShadow]})""")
-        assert len(tyylit) == 3 and tyylit[0] == tyylit[1] == tyylit[2], tyylit
-        assert tyylit[0][0] != "rgb(20, 100, 232)", "tankkauspainike on yhä täysi sininen"
+        # 0.94 (Niklas): tankkauspainikkeella oma vaaleansininen tausta; huolto ja muistiinpano keskenään samat.
+        assert len(tyylit) == 3 and tyylit[1] == tyylit[2] and tyylit[0][2:] == tyylit[1][2:], tyylit
+        assert tyylit[0][0] == "rgb(223, 234, 253)" and tyylit[0][0] != tyylit[1][0], tyylit
     finally:
         s.sulje()
 
