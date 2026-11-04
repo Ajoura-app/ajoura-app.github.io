@@ -138,7 +138,7 @@ def test_ala_huomioi_edellisessa_versiossa(browser, vanha_base):
         s.sulje()
 
 
-# 0.96: yläosa havainnekuvan mukaan: pieni Uusi tankkaus -kuvakepainike otsikon vieressä, keskikulutus ja keskihinta
+# 0.96: yläosa havainnekuvan mukaan (0.97: yläosa neljänä laatikkona: ajoneuvo, vertailu, Uusi tankkaus, jakso), keskikulutus ja keskihinta
 # kahtena korttina, niiden alla matala yhteenvetorivi (kulut, tankkausten määrä, litrat). Keskihinta on painotettu
 # ostetuilla litroilla: (90 + 72 + 81) € / (50 + 40 + 45) l = 1,800 €/l. Vanhat isot palkit ja valikot poissa.
 def test_kooste(browser, base):
@@ -150,9 +150,9 @@ def test_kooste(browser, base):
         r = s.page.evaluate("""() => {const q = s => document.querySelector(s), k = q('.fv-sum'), add = q('.fl-add').getBoundingClientRect();
           return {kortit: [...document.querySelectorAll('.fv-card')].map(d => d.innerText.replace(/\\s+/g, ' ')),
             rivi: k.innerText.replace(/\\s+/g, ' '), korttienJalkeen: !!(q('.fv-cards').compareDocumentPosition(k) & Node.DOCUMENT_POSITION_FOLLOWING),
-            vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), [data-fl-carpick], .fl-hero, .rp-kpis, .fl-costs').length,
+            vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), .rp-filters, .fl-hero, .rp-kpis, .fl-costs').length,
             addKoko: [Math.round(add.width), Math.round(add.height)], addTeksti: q('.fl-add').innerText.trim(),
-            addOtsikossa: !!q('.fv-head .fl-add'), pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
+            addOtsikossa: [...q('.fv-bar').children].map(e => e.matches('.fv-veh') ? 'ajoneuvo' : e.matches('.fv-cmp') ? 'vertailu' : e.matches('.fl-add') ? 'lisaa' : e.querySelector('[data-fl-period]') ? 'jakso' : '?').join(',') === 'ajoneuvo,vertailu,lisaa,jakso', pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
         assert len(r["kortit"]) == 2 and r["vanhat"] == 0 and r["korttienJalkeen"], r
         assert "Keskikulutus" in r["kortit"][0] and fi(keskikulutus(autot[0]["fuels"])) in r["kortit"][0] and "l/100 km" in r["kortit"][0], r
         assert "Keskihinta" in r["kortit"][1] and "1,800 €/l" in r["kortit"][1], r

@@ -1435,3 +1435,18 @@ html.dark .device-glass .fv-cmp[aria-pressed="true"],html.dark .device-glass .fv
 html.dark .device-glass .fv-card,html.dark .device-glass .fv-car,html.dark .device-glass .fv-cmp:not([aria-pressed="true"]){background:#e9eef4;border-color:#dce3ec;box-shadow:none}
 html.dark .device-glass .fv-car[aria-pressed="true"]{background:#dfe9fb;border-color:var(--blue)}
 @container(max-width:349.98px){.fv-card{padding:11px 10px}.fv-val b{font-size:23px}.fv-val span{font-size:12px}.fv-car{flex-basis:58px}.fv-pic{width:46px}.fv-row{gap:8px}}
+/* 0.97 (Niklas): yläosa yhdeksi neljän laatikon riviksi: ajoneuvo (valikko, valitun ajoneuvon kuva ja rekisteri),
+   vertailu, Uusi tankkaus ja jakso. Kaikki 44 px korkeita; ajoneuvolaatikko joustaa, jakso kapenee tarvittaessa. */
+.fv-bar{display:grid;grid-template-columns:minmax(0,1.5fr) 44px 44px minmax(78px,1fr);gap:6px;align-items:center;margin:0 0 12px}
+.fv-bar>*{height:44px;box-sizing:border-box}
+.fv-bar>.rp-pick{display:flex;width:100%;min-width:0;min-height:44px;justify-content:space-between;gap:5px;padding:0 8px 0 10px;box-shadow:none}
+.fv-bar>.fv-veh{padding-left:5px}
+.fv-bar>.fl-cmenu{display:block;padding:0}
+.fv-bar>.fl-cmenu>summary{height:100%;min-height:0;padding:0 8px 0 10px}
+.fv-bar .rp-pick-t{flex:1;min-width:0}
+.fv-vpic{flex:none;width:38px;height:28px;display:grid;place-items:center;overflow:hidden;border-radius:7px}
+.fv-vpic img{width:100%;height:100%;object-fit:cover}
+.fv-vpic svg{width:100%;height:auto}
+.fv-bar .fv-cmp,.fv-bar .fv-add{width:44px;height:44px;min-height:0;margin:0}
+.fv-cmp:disabled{opacity:.45;cursor:default}
+@container(max-width:349.98px){.fv-bar{gap:5px;grid-template-columns:minmax(0,1.5fr) 44px 44px minmax(70px,1fr)}.fv-bar .rp-chev{width:10px}.fv-bar>.rp-pick{padding:0 6px 0 8px;font-size:12px}.fv-bar>.fv-veh{padding-left:4px}.fv-vpic{width:32px;height:24px}}
