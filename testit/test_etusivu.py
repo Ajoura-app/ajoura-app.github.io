@@ -1,6 +1,8 @@
 """0.88: etusivun viimeistely. Ajoneuvokortin toiminnot ovat kuvakepainikkeita ilman näkyvää tekstiä (plusmerkki kiinni
 kuvakkeen oikeassa alakulmassa), kortti on aiempaa matalampi, huollon tila erottaa puuttuvan historian ja puuttuvan
-muistutuksen, ja Lisää ajoneuvo -toiminto on etusivulla vain kerran (Oma talli -otsikon vieressä)."""
+muistutuksen, ja Lisää ajoneuvo -toiminto on etusivulla vain kerran (Oma talli -otsikon vieressä).
+0.89: painikkeet takaisin huollon tilan alle, kolme vierekkäin: tankkaus/lataus, huoltomerkintä (jakoavain) ja
+muistiinpano."""
 import pytest
 
 import tiedot
@@ -36,21 +38,23 @@ def test_kuvakepainikkeet(browser, base, leveys):
             rivi = pg.locator(".garage-row", has=pg.locator(f"[data-quickfuel={cid}]"))
             assert rivi.locator(".row-actions").inner_text().strip() == "", f"{cid}: painikkeissa näkyvää tekstiä"
             assert rivi.locator(".row-btn.fuel").get_attribute("aria-label") == nimi
-            assert rivi.locator(".row-btn.note").get_attribute("aria-label") == "Lisää merkintä"
+            assert rivi.locator(".row-btn.note").get_attribute("aria-label") == "Lisää huoltomerkintä"
+            assert rivi.locator(".row-btn.memo").get_attribute("aria-label") == "Lisää muistiinpano"
+            napit = [b.bounding_box() for b in rivi.locator(".row-btn").all()]
+            tila = rivi.locator(".row-wide").bounding_box()
+            assert len(napit) == 3 and all(abs(n["y"] - napit[0]["y"]) < 1 for n in napit), f"{cid}: ei vierekkäin"
+            assert napit[0]["y"] >= tila["y"] + tila["height"], f"{cid}: painikkeet eivät ole tilarivin alla"
+            assert napit[0]["x"] < napit[1]["x"] < napit[2]["x"]
             for b in rivi.locator(".row-btn").all():
                 r = b.bounding_box()
-                assert 44 <= r["width"] <= 56 and 44 <= r["height"] <= 56, f"{cid}: kosketusalue {r}"
+                assert r["width"] >= 44 and 44 <= r["height"] <= 56, f"{cid}: kosketusalue {r}"
                 ico, plus = b.locator(".act-ico").bounding_box(), b.locator(".act-plus").bounding_box()
                 # Plus on kuvakkeen oikeassa alakulmassa: osittain päällekkäin, mutta ulottuu reunan yli.
                 assert plus["width"] <= 14 and ico["width"] >= 20
                 assert plus["x"] < ico["x"] + ico["width"] < plus["x"] + plus["width"], (cid, ico, plus)
                 assert plus["y"] < ico["y"] + ico["height"] < plus["y"] + plus["height"], (cid, ico, plus)
-                # Painike on kokonaan kortin sisällä eikä mene tekstin päälle.
-                kortti, info = rivi.bounding_box(), rivi.locator(".row-info").bounding_box()
-                assert r["x"] + r["width"] <= kortti["x"] + kortti["width"] and r["x"] >= info["x"] + info["width"]
-        if leveys == 390:  # 0.87: noin 250 px; tavoite noin 15–20 % matalampi
-            korkeudet = pg.eval_on_selector_all(".garage-row", "e => e.map(x => x.getBoundingClientRect().height)")
-            assert max(korkeudet) <= 225, korkeudet
+                kortti = rivi.bounding_box()
+                assert kortti["x"] <= r["x"] and r["x"] + r["width"] <= kortti["x"] + kortti["width"], f"{cid}: yli kortin"
         assert pg.locator(".add-vehicle-row").count() == 0
         assert pg.locator("a.garage-add[href='#newcar']").count() == 1
         assert not s.virheet, s.virheet
@@ -66,6 +70,9 @@ def test_painikkeet_ja_kortti_avaavat_oikean_nakyman(browser, base):
             pg.click(f"[data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
             pg.keyboard.press("Escape"); pg.wait_for_selector("#quickfuel-form", state="detached")
             pg.click(f".row-btn.note[href='#add/{cid}']"); odota_nakyma(s, f"add/{cid}")
+            pg.go_back(); odota_nakyma(s, "home")
+            pg.click(f".row-btn.memo[href='#notes/{cid}']"); odota_nakyma(s, f"notes/{cid}")
+            assert pg.locator("#memo-form").count() == 1
             pg.go_back(); odota_nakyma(s, "home")
             pg.click(f".row-info[href='#vehicle/{cid}']"); odota_nakyma(s, f"vehicle/{cid}")
             pg.go_back(); odota_nakyma(s, "home")
