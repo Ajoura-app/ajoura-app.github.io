@@ -65,11 +65,11 @@ def test_kuitit_lentavat_logoon(browser, base, leveys):
     ctx, page, virheet = avaa_intro(browser, base, leveys=leveys)
     try:
         kuitit = page.evaluate(KUITIT)
-        assert 5 <= len(kuitit) <= 8, f"kuitteja {len(kuitit)}"
+        assert len(kuitit) == 5, f"kuitteja {len(kuitit)} (0.87: viisi)"
         assert all(k["kuva"] and k["nayttö"] == "block" for k in kuitit), "kuitin SVG-kuva puuttuu tai piilossa"
-        # 0.84: kuitit hiukan pienemmiksi (24 → 21 px leveys), mittasuhde 26:38 säilyy
+        # 0.84: 24 → 21 px, 0.87: 21 → 16 px leveys; mittasuhde 26:38 säilyy
         koko = page.eval_on_selector(".intro-overlay .rc-p", "e => [parseFloat(getComputedStyle(e).width), parseFloat(getComputedStyle(e).height)]")
-        assert koko[0] <= 21 and abs(koko[1] / koko[0] - 38 / 26) < 0.02, f"kuitin koko {koko}"
+        assert koko[0] <= 16 and abs(koko[1] / koko[0] - 38 / 26) < 0.02, f"kuitin koko {koko}"
         kelaa(page, 0)
         assert all(float(k["nakyva"]) < 0.05 for k in page.evaluate(KUITIT)), "kuitit näkyvät ennen auton liikettä"
         nahty = set()
@@ -173,5 +173,28 @@ def test_odottaa_kunnes_nakyvissa(browser, base):
         tila = page.eval_on_selector(".intro-overlay .intro-car", "e => e.getAnimations().map(a => [a.playState, a.currentTime])")
         assert tila and all(t[0] == "paused" and t[1] == 0 for t in tila), f"animaatio kului odottaessa: {tila}"
         page.wait_for_selector(".intro-overlay .intro:not(.intro-wait)", timeout=5000)
+    finally:
+        ctx.close()
+
+
+def test_kuitit_pakokaasuna(browser, base):
+    """0.87: kuitti syntyy pakoputken korkeudelta auton takaa pienenä, ja sen mukana tulee savupöllähdys."""
+    ctx, page, _ = avaa_intro(browser, base)
+    try:
+        tiedot = page.evaluate("""() => [...document.querySelectorAll('.intro-overlay .rc')].map(rc => {
+          const s = getComputedStyle(rc);
+          return {t: parseFloat(s.getPropertyValue('--t')) * 1000, savu: getComputedStyle(rc, '::before').animationName,
+                  savu2: getComputedStyle(rc, '::after').animationName}; })""")
+        assert all(k["savu"] == "rc-puff" and k["savu2"] == "rc-puff" for k in tiedot), f"savu puuttuu: {tiedot}"
+        for i, k in enumerate(tiedot):
+            kelaa(page, k["t"] + 30)
+            m = page.evaluate("""i => { const rc = document.querySelectorAll('.intro-overlay .rc')[i],
+              p = rc.querySelector('.rc-p').getBoundingClientRect(),
+              c = document.querySelector('.intro-overlay .intro-car').getBoundingClientRect(),
+              l = document.querySelector('.intro-overlay .intro-line').getBoundingClientRect();
+              return {x: p.left + p.width / 2, y: p.top + p.height / 2, leveys: p.width, auto: c.left, viiva: l.top}; }""", i)
+            assert m["auto"] - 14 <= m["x"] <= m["auto"] + 2, f"kuitti {i + 1} ei synny auton takaa: {m}"
+            assert m["viiva"] - 18 <= m["y"] <= m["viiva"], f"kuitti {i + 1} ei synny pakoputken korkeudelta: {m}"
+            assert m["leveys"] < 9, f"kuitti {i + 1} ei ole syntyessään pieni: {m}"
     finally:
         ctx.close()
