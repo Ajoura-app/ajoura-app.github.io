@@ -505,7 +505,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.94 (testiversio)';
+  const appVersion='0.95 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -566,14 +566,20 @@
     // interval is still impossible, or there is no next interval, the interval is left out like skip. Stored data is not
     // changed; the fill-up is marked "Tarkista mittarilukema" (sus) and the screens and the PDF say what was done.
     const lim=hourly(c)?Infinity:susMax[unitOf(c)]||Infinity,sus=[];let carry=null;
+    // 0.95: readings that contradict the dates (a larger reading on an earlier day than a smaller one, e.g. 156 850 km on
+    // 28.10. and 156 848 km on 1.11.) cannot both be right, and it is not known which one is wrong. Every interval that
+    // touches such a fill-up is left out of consumption (not joined: a join would hide the error in a plausible number).
+    // Stored data is not changed; the fill-ups are listed in ord and marked "Tarkista mittarilukema" like sus.
+    const bad=new Set();{let mx='';f.forEach((x,i)=>{if(mx&&x.date<mx)bad.add(i);if(x.date>mx)mx=x.date;});let mn='9999';for(let i=f.length-1;i>=0;i--){if(f[i].date>mn)bad.add(i);if(f[i].date<mn)mn=f[i].date;}}
+    const ord=[...bad].sort((a,b)=>a-b).map(i=>({id:f[i].id,date:f[i].date,km:f[i].km}));
     const series=[];let sq=0,sd=0;for(let k=1;k<full.length;k++){const p=full[k-1],b=full[k],d=f[b].km-f[p].km;
-      if(!(d>0)||f.slice(p+1,b+1).some(x=>x.skip)){if(carry){sus.push({...carry.s,how:'drop'});carry=null;}continue;}
+      if(!(d>0)||f.slice(p+1,b+1).some(x=>x.skip)||(bad.size&&[...bad].some(i=>i>=p&&i<=b))){if(carry){sus.push({...carry.s,how:'drop'});carry=null;}continue;}
       let q=sumQty(p,b),dd=d;const one={id:f[b].id,date:f[b].date,v:q/d*fk};
       if(carry){const jv=(q+carry.q)/(dd+carry.d)*fk;if(jv<=lim){q+=carry.q;dd+=carry.d;sus.push({...carry.s,how:'join'});}else sus.push({...carry.s,how:'drop'});carry=null;}
       if(q/dd*fk>lim){carry={q,d:dd,s:one};continue;}
       sq+=q;sd+=dd;series.push({date:f[b].date,km:f[b].km,v:q/dd*fk,q,d:dd,id:f[b].id});}
     if(carry)sus.push({...carry.s,how:'drop'});if(sd>0){avg=sq/sd*fk;lastCons=series[series.length-1].v;}
-    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series,sus};}
+    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series,sus,ord};}
   // Small inline SVG line charts (no library). pts: [{x,y,cls?,tip}] in data units; avg draws a dashed level line.
   function lineChart(pts,{yFmt,xLabels,avg,avgLabel,line=true,cls=''}){if(pts.length<2)return '';const W=320,H=150,L=38,R=10,T=12,B=22;
     const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y).concat(avg!=null?[avg]:[]);let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);if(x1===x0)x1=x0+1;const pad=(y1-y0)*.15||Math.abs(y1)*.1||1;y0=Math.max(0,y0-pad);y1+=pad;
@@ -718,7 +724,11 @@
     const every=n>13?2:1;g+=b.map((x,i)=>i%every&&i!==n-1?'':`<text class="ax" x="${r(sw*(i+.5))}" y="${H-6}" text-anchor="middle">${x.year?x.k:Number(x.k.slice(5))}</text>`).join('');
     return `<svg class="fl-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Polttoainekulut kuukausittain">${g}</svg>`;}
   // 0.77: what was done with an impossible interval (fuelStats sus): the date and value, and that the reading is checked.
-  function susNote(c,s,ev){if(!s.sus.length)return '';const pu=`${unitOf(c)}/${per(c)}`,join=s.sus.some(x=>x.how==='join'),drop=s.sus.some(x=>x.how==='drop');
+  // 0.95: readings against the dates (fuelStats ord) get their own note: which readings, and that they are not used.
+  function ordNote(c,s,ev){if(!s.ord||!s.ord.length)return '';
+    return `<p class="fl-warn fl-ord" role="note"><b>Mittarilukemat ristiriidassa päivämäärien kanssa</b> <span>${s.ord.map(x=>`<span class="nw">${dm(x.date)} ${number(x.km)} ${ku(c)}</span>`).join(', ')}.</span> <span>Suurempi lukema on kirjattu aiemmalle päivälle kuin pienempi, joten näitä välejä ei käytetä kulutuksessa.</span> <span>${ev?'Tarkista lataus alla olevasta listasta.':'Tarkista tankkaus alla olevasta listasta.'}</span></p>`;}
+  function susNote(c,s,ev){const on=ordNote(c,s,ev);if(!s.sus.length)return on;return on+susNote0(c,s,ev);}
+  function susNote0(c,s,ev){const pu=`${unitOf(c)}/${per(c)}`,join=s.sus.some(x=>x.how==='join'),drop=s.sus.some(x=>x.how==='drop');
     return `<p class="fl-warn" role="note"><b>${s.sus.length===1?'Epätodennäköinen kulutusväli':'Epätodennäköisiä kulutusvälejä'}</b> <span>${s.sus.map(x=>`<span class="nw">${dm(x.date)} (${dec(x.v,0)} ${pu})</span>`).join(', ')}.</span> <span>${join&&!drop?'Mittarilukema on todennäköisesti väärin, joten väli on laskettu yhdessä seuraavan kanssa.':drop&&!join?'Mittarilukema on todennäköisesti väärin, joten väli on jätetty pois kulutuksesta.':'Mittarilukema on todennäköisesti väärin, joten väli on yhdistetty seuraavaan tai jätetty pois kulutuksesta.'}</span> <span>${ev?'Tarkista lataus alla olevasta listasta.':'Tarkista tankkaus alla olevasta listasta.'}</span></p>`;}
   function fuel(c,from){const periods=[['year','Tämä vuosi'],['prev','Edellinen vuosi'],['12','12 kk'],['all','Kaikki']],o=flPrefs();
     const head=`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
@@ -770,7 +780,7 @@
       <p class="fl-sub">${o.p==='all'?'<span>Koko historia</span>':`<span>${date(d.from)}–${date(d.to)}</span>`}, <span>yhteensä</span> <span>${eur(now.cost)}</span>. ${yb?'':`<span>Katkoviiva on keskiarvo</span> <span>${eur(avgM)}</span> <span>/ kk</span>. `}${b.some(x=>x.partial)?`<span>${yb?'Vaalea pylväs on vajaa vuosi.':'Vaaleat pylväät ovat vajaita kuukausia.'}</span>`:''}</p>
       ${years.length?`<h3 class="rp-h fl-yh">Vuosittain</h3><table class="fl-table"><thead><tr><th scope="col">Vuosi</th><th scope="col">Kulut</th><th scope="col">€/kk</th><th scope="col">${pu}</th><th scope="col">${ku(c)}</th></tr></thead><tbody>${[...years].reverse().map(y=>`<tr><th scope="row">${y.y}${y.partial?'*':''}</th><td><b>${eur(y.cost)}</b></td><td>${eur(y.cost/y.months)}</td><td>${y.avg!==null?dec(y.avg):'–'}</td><td class="m">${y.km?number(y.km):'–'}</td></tr>`).join('')}</tbody></table>${years.some(y=>y.partial)?'<p class="fl-sub">* Vajaa vuosi: €/kk lasketaan vain kirjattujen kuukausien ajalta, joten vertaa vuosia sillä.</p>':''}`:''}</section>`;
     // Fill-ups of the period by month, newest first; the two latest months open. A tap opens the fill-up for editing.
-    const cons=new Map(s.series.map(x=>[x.id,x.v])),susIds=new Set(s.sus.map(x=>x.id)),groups=[];for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){const k=ymOf(f.date);let g=groups[groups.length-1];if(!g||g.k!==k){g={k,list:[]};groups.push(g);}g.list.push(f);}
+    const cons=new Map(s.series.map(x=>[x.id,x.v])),susIds=new Set([...s.sus,...s.ord].map(x=>x.id)),groups=[];for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){const k=ymOf(f.date);let g=groups[groups.length-1];if(!g||g.k!==k){g={k,list:[]};groups.push(g);}g.list.push(f);}
     const row=f=>{const cv=cons.get(f.id),cn=f.country&&f.country!=='FI'?(countries.find(k=>k[0]===f.country)||['','',''])[1]:'';
       const sub=[`<span class="nw"><span>${number(f.km)}</span> <span>${ku(c)}</span></span>`,!f.full?'<span>osatankkaus</span>':f.grade?`<span>${escape(f.grade)}</span>`:'',cn?`<span>${escape(cn)}</span>`:'',f.est?'<span>hinta-arvio</span>':'',f.skip?'<span class="fl-skip">ei kulutukseen</span>':'',susIds.has(f.id)?'<span class="fl-sus">Tarkista mittarilukema</span>':''].filter(Boolean).join(' · ');
       return `<button type="button" class="fl-row" data-fl-edit="${f.id}"><span class="fl-rl"><b>${dm(f.date)}</b><small>${sub}</small></span><span class="fl-rm"><b>${f.cost!==null?dec(f.cost,2)+' €':'–'}</b><small><span class="nw">${dec(f.qty,2)} ${u}</span>${f.cost!==null&&f.qty>0?` · <span class="nw">${dec(f.cost/f.qty,3)} €/${u}</span>`:''}</small></span><span class="fl-rc${cv==null?' none':''}">${cv!=null?dec(cv):'–'}</span><span class="sr-only">Muokkaa</span></button>`;};
@@ -872,7 +882,7 @@
     // scale. A missing value is said in words with the reason ("Ei tietoa"), never drawn as an empty (zero) bar.
     const why=x=>(x.mix?!(x.d.now.cost>0):!(x.d.now.fills&&x.d.now.fills.length))?'ei kirjauksia jaksolla':m==='cons'?'vähintään kaksi täyttä kirjausta tarvitaan':m==='price'?'ei laskettavaa kulutusta jaksolla':'';
     const bars=groups.map(g=>{const mx=Math.max(1e-9,...g.list.map(x=>x.val||0));return `${m!=='cost'?`<p class="fl-gunit">${g.unit}</p>`:''}${g.list.map(x=>`<div class="fl-bar"><div class="fl-bt"><span class="fl-bn"><i class="rp-vsw" aria-hidden="true" style="background:${flCol[x.st]}"></i><span translate="no">${escape(carName(x.c))}</span></span><span class="fl-bv">${x.val!==null?`<span class="nw">${fmtV(x.val)}</span> ${chg(x)}`:'<span class="fl-none">Ei tietoa</span>'}</span></div>${x.val!==null?`<div class="fl-btrack" aria-hidden="true"><i style="width:${Math.max(2,x.val/mx*100).toFixed(1)}%;background:${flCol[x.st]}"></i></div>`:`<small class="fl-why">${why(x)}</small>`}</div>`).join('')}`;}).join('');
-    const susCars=sel.filter(c0=>chargeKinds(c0).some(k=>fuelStats(fcar(c0,k)).sus.length)),susTxt=susCars.length&&m!=='cost'?`<p class="fl-warn" role="note">${susCars.map(c0=>`<span translate="no">${escape(carName(c0))}</span>`).join(', ')}: <span>epätodennäköinen kulutusväli on korjattu laskennassa.</span> <span>Tarkista mittarilukema Ajoneuvo-näkymästä.</span></p>`:'';
+    const susCars=sel.filter(c0=>chargeKinds(c0).some(k=>{const st=fuelStats(fcar(c0,k));return st.sus.length||st.ord.length;})),susTxt=susCars.length&&m!=='cost'?`<p class="fl-warn" role="note">${susCars.map(c0=>`<span translate="no">${escape(carName(c0))}</span>`).join(', ')}: <span>epätodennäköinen kulutusväli on korjattu laskennassa.</span> <span>Tarkista mittarilukema Ajoneuvo-näkymästä.</span></p>`:'';
     const mixNote=rows.some(x=>x.mix)?`<p class="fl-note">Useaa lajia käyttävän ajoneuvon kulutusta ei voi laskea yhteen. Sen Ajon hinta ja Kulut sisältävät kaikki lajit.</p>`:'';
     const multi=m==='cons'&&groups.length>1?`<p class="fl-note">Kilowattitunteja, litroja ja käyttötunteja ei voi verrata samalla asteikolla. Vertaa eri käyttövoimia kohdassa Ajon hinta.</p>`:m==='price'&&groups.length>1?`<p class="fl-note">Tuntimittarilliset ajoneuvot näkyvät omana ryhmänään (€/h).</p>`:'';
     const card1=`<section class="rp-card" aria-labelledby="fl-c1"><div class="rp-hrow"><h3 class="rp-h" id="fl-c1"><span>${m==='cons'?'Keskikulutus':m==='price'?'Ajon hinta':'Polttoainekulut'}</span> · <span>${pName}</span></h3></div><p class="rp-sub fl-crng">${o.p==='all'?'<span>Koko historia</span>':(r0=>`<span class="nw">${rng(r0.from,r0.to)}</span> · <span>muutos: sama jakso vuotta aiemmin</span>`)(rpRange(o.p))}</p>${bars}${multi}${mixNote}${susTxt}</section>`;
@@ -969,14 +979,14 @@
     const cons=new Map(d.s.series.map(x=>[x.id,x.v])),fc=()=>thead([[T('Pvm'),L+2],[T(hr?'Tuntimittari':'Mittari'),L+46,'right'],[ev?'kWh':T('Litrat'),L+66,'right'],['€/'+u,L+86,'right'],['€',L+106,'right'],[pu,L+128,'right'],[T('Lisätieto'),L+133]]);
     h2(ev?'Kaikki lataukset':'Kaikki tankkaukset',24);y+=1.5;fc();
     for(const f of [...now.fills].sort((a,b2)=>b2.date.localeCompare(a.date)||b2.km-a.km)){room(6,fc);const cv=cons.get(f.id),cn=f.country&&f.country!=='FI'?(countries.find(k=>k[0]===f.country)||['','',''])[1]:'';
-      const extra=[!f.full?T('osatankkaus'):'',f.grade&&f.grade!==usual?f.grade:'',cn?T(cn)+(f.cur&&f.amt!=null?` ${dec(f.amt,2)} ${f.cur}`:''):'',f.est?T('hinta-arvio'):'',f.skip?T('ei kulutukseen'):'',d.s.sus.some(x=>x.id===f.id)?T('tarkista mittarilukema'):''].filter(Boolean).join(', ');
+      const extra=[!f.full?T('osatankkaus'):'',f.grade&&f.grade!==usual?f.grade:'',cn?T(cn)+(f.cur&&f.amt!=null?` ${dec(f.amt,2)} ${f.cur}`:''):'',f.est?T('hinta-arvio'):'',f.skip?T('ei kulutukseen'):'',d.s.sus.some(x=>x.id===f.id)||d.s.ord.some(x=>x.id===f.id)?T('tarkista mittarilukema'):''].filter(Boolean).join(', ');
       doc.text(L+2,y+4.2,date(f.date),{size:8.5});doc.text(L+46,y+4.2,number(f.km),{size:8.5,align:'right'});doc.text(L+66,y+4.2,dec(f.qty,2),{size:8.5,align:'right'});
       doc.text(L+86,y+4.2,f.cost!==null&&f.qty>0?dec(f.cost/f.qty,3):'–',{size:8.5,align:'right'});doc.text(L+106,y+4.2,f.cost!==null?dec2(f.cost):'–',{size:8.5,bold:true,align:'right'});
       doc.text(L+128,y+4.2,cv!=null?dec(cv):'–',{size:8.5,align:'right'});if(extra)doc.text(L+133,y+4.2,doc.fit(extra,R-L-135,7.5),{size:7.5,color:grey});y+=6;rule();}
     const notes=[T(ev?'Kulutus lasketaan täysien latausten väliltä, ja osalataus lisätään seuraavaan täyteen lataukseen.':'Kulutus lasketaan täysien tankkausten väliltä, ja osatankkaus lisätään seuraavaan täyteen tankkaukseen.'),
       T(c.sample?'Luvut perustuvat omistajan omiin kirjauksiin (esimerkkiauto, kuvitteelliset tiedot).':'Luvut perustuvat omistajan omiin kirjauksiin.')];
     if(prev)notes.push(T('Muutos verrataan vertailujaksoon. Talvella kulutus on yleensä suurempi, joten kuukausia verrataan samoihin kuukausiin vuotta aiemmin.'));
-    if(d.s.sus.length)notes.push(T('Epätodennäköinen kulutusväli (mittarilukema todennäköisesti väärin) on yhdistetty seuraavaan väliin tai jätetty pois kulutuksesta. Tarkista merkityt kirjaukset.'));
+    if(d.s.ord.length)notes.push(T('Osa mittarilukemista on ristiriidassa päivämäärien kanssa, joten niiden välejä ei käytetä kulutuksessa. Tarkista merkityt kirjaukset.'));if(d.s.sus.length)notes.push(T('Epätodennäköinen kulutusväli (mittarilukema todennäköisesti väärin) on yhdistetty seuraavaan väliin tai jätetty pois kulutuksesta. Tarkista merkityt kirjaukset.'));
     const nl=notes.flatMap(x=>doc.wrap(x,CW,8));room(nl.length*3.8+5);y+=5;for(const l of nl){doc.text(L,y,l,{size:8,color:grey});y+=3.8;}
     doc.each((i,k)=>{const fy=285;doc.line(L,fy-4.5,R,fy-4.5,{color:'#cbd9e8',lw:.25});
       doc.text(L,fy,company.name,{size:7.5,bold:true});doc.text(L,fy+3.3,company.id?`${T('Y-tunnus')} ${company.id}`:T('Kehitysvaiheen sovellus'),{size:7,color:grey});
