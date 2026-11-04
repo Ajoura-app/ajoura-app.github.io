@@ -182,3 +182,13 @@ def test_jarjestys_kosketuksella(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def test_kuvakkeiden_viiva(browser, base):
+    """0.93 (Niklas): painikkeiden kuvakkeet ohuemmalla viivalla (ennen 2, nyt 1,5 kuvakkeen ruudukossa)."""
+    s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
+    try:
+        viivat = s.page.eval_on_selector_all(".row-btn .act-ico > svg", "e => e.map(v => getComputedStyle(v).strokeWidth)")
+        assert len(viivat) == 15 and set(viivat) == {"1.5px"}, viivat
+    finally:
+        s.sulje()
