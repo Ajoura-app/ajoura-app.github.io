@@ -206,6 +206,7 @@
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
     ['Miten lisään auton?','Etusivu → ＋ Lisää ajoneuvo. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
+    ['Miten muutan ajoneuvojen järjestystä?','Pidä etusivulla ajoneuvon korttia painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti ja säilyy myös varmuuskopiossa.'],
     ['Voinko lisätä moottoripyörän, veneen tai mopon?','Voit. Etusivu → ＋ Lisää ajoneuvo ja valitse ensin ajoneuvolaji: auto, moottoripyörä, mopo, mopoauto, mönkijä, moottorikelkka, vene, traktori tai muu moottorilaite. Veneillä, traktoreilla ja muilla laitteilla seurataan käyttötunteja kilometrien sijaan.'],
     ['Miten kirjaan huollon tai korjauksen?','Avaa auto ja paina ＋ Lisää merkintä. Pakollisia ovat vain tyyppi ja päivämäärä. Kilometrit, kulut, tehdyt toimenpiteet, kuvat ja kuitit voit lisätä heti tai myöhemmin.'],
     ['Miten lisään kuitin tai kuvan?','Merkinnässä on erikseen Lisää kuvia ja Lisää kuitit. Voit ottaa kuvan kameralla tai valita sen kuvista. Kuvat pienennetään automaattisesti, jotta ne mahtuvat puhelimeen.'],
@@ -324,7 +325,7 @@
   function garageRow(c,d,year){const ev=unitOf(c)==='kWh',cost=Math.round(carCost(c,year)),kinds=chargeKinds(c);
     const pic=c.photo?`<span class="car-photo"><img src="${c.photo}" alt=""></span>`:`<span class="car-stage">${art(c,'')}</span>`;
     const fillName=kinds.length>1&&kinds.includes('el')?'Lisää tankkaus tai lataus':ev?'Lisää lataus':'Lisää tankkaus';
-    return `<div class="garage-row"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong></span><small class="row-meta">${plateTxt(c)} · <span class="nw">${number(c.km)} ${ku(c)}</span></small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a><div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}" aria-label="${fillName}" title="${fillName}">${actIcon(fuelTabIcon)}</button><a class="row-btn note" href="#add/${c.id}" aria-label="Lisää huoltomerkintä" title="Lisää huoltomerkintä">${actIcon(icons.wrench)}</a><a class="row-btn memo" href="#notes/${c.id}" aria-label="Lisää muistiinpano" title="Lisää muistiinpano">${actIcon(icons.note)}</a></div></div>`;}
+    return `<div class="garage-row" data-car="${c.id}"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong></span><small class="row-meta">${plateTxt(c)} · <span class="nw">${number(c.km)} ${ku(c)}</span></small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a><div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}" aria-label="${fillName}" title="${fillName}">${actIcon(fuelTabIcon)}</button><a class="row-btn note" href="#add/${c.id}" aria-label="Lisää huoltomerkintä" title="Lisää huoltomerkintä">${actIcon(icons.wrench)}</a><a class="row-btn memo" href="#notes/${c.id}" aria-label="Lisää muistiinpano" title="Lisää muistiinpano">${actIcon(icons.note)}</a></div></div>`;}
   // Decorative scene for the "today" card: mountains, pines and a road. Snowy from October to March, green otherwise.
   const scene=()=>{const m=Number(today().slice(5,7)),w=m>=10||m<=3;return `<svg class="today-scene${w?' winter':''}" viewBox="0 0 220 110" aria-hidden="true" focusable="false"><circle class="sun" cx="176" cy="26" r="13"/><path class="far" d="M40 92 92 34l22 22 26-36 40 44 40 28z"/><path class="snow" d="m92 34 10 12-6-2-6 7-6-5zm48-14 12 14-7-3-5 6-6-6z"/><path class="near" d="M0 110 54 66l26 20 34-30 50 40 56-14v28z"/><g class="pines"><path d="m150 92 7-20 7 20zM166 96l6-17 6 17zM180 90l8-24 8 24zM198 98l6-18 6 18zM120 98l5-14 5 14z"/></g><path class="road" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/><path class="road-line" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/></svg>`;};
   function todayCard(rows){const due=rows.filter(r=>r.d&&(r.d.tone==='late'||r.d.tone==='soon')),late=due.filter(r=>r.d.tone==='late'),lateFirst=late.length?late:due,tyre=tyreInfo(),noData=rows.every(r=>!r.d),n=lateFirst.length;
@@ -504,7 +505,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.91 (testiversio)';
+  const appVersion='0.92 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1730,6 +1731,40 @@
   screen.addEventListener('change',event=>{const att=event.target.closest('[data-att]');if(att){addAtt(att);return;}const cp=event.target.closest('[data-car-photos]');if(cp){addCarPhotos(cp);return;}if(event.target.matches('[data-restore]')){restore(event.target);return;}const mk=event.target.closest('[data-make]');if(mk&&draft){const form=mk.form;if(mk.dataset.make==='brand'){draft.model='';draft.version='';draft.modelText='';}if(mk.dataset.make==='model')draft.version='';syncDetails(form);if(mk.dataset.make==='version')return;const y=screen.scrollTop;render();screen.scrollTop=y;const next=document.querySelector(mk.dataset.make==='brand'?(draft.brand==='__other'?'[name=brandText]':'[name=model]'):(draft.model==='__other'?'[name=modelText]':'[name=version]:not([disabled])'));if(next)next.focus({preventScroll:true});return;}const input=event.target.closest('[data-photo]');if(input)setPhoto(input);});
   screen.addEventListener('change',event=>{if(event.target.matches('#event-form [name=type]')){syncItems(event.target.form);syncBy(event.target.form);}if(event.target.matches('#event-form [name=by]'))syncBy(event.target.form);if(event.target.matches('#event-form [name=by_n]'))fillShop(event.target.form);});
   screen.addEventListener('input',event=>{if(event.target.matches('#event-form [name=by_n]'))fillShop(event.target.form);});
+  // 0.92 (Niklas): the garage order can be changed on the home screen. A long press (0.45 s) on a card lifts it, dragging
+  // moves it and the other cards make room, and letting go saves the new order. The order is simply the order of the cars
+  // list, so the saved data and the backup keep their format. Moving the finger before the press is long enough is a
+  // normal scroll; the buttons on the card keep their own taps. Near the top or bottom edge the screen scrolls along.
+  {let timer=0,drag=null,ptr=null,blockClick=0;const HOLD=450,MOVE=8;
+    const end=save=>{clearTimeout(timer);timer=0;if(!drag)return;const d=drag;drag=null;cancelAnimationFrame(d.raf);
+      d.list.classList.remove('sorting');d.rows.forEach(r=>{r.style.transform='';r.classList.remove('dragging');});
+      try{d.row.releasePointerCapture(d.pid);}catch(e){}blockClick=performance.now();
+      if(save&&d.to!==d.from){const id=d.row.dataset.car,i=cars.findIndex(c=>c.id===id);if(i>=0){const [c]=cars.splice(i,1),others=d.rows.filter(r=>r!==d.row).map(r=>r.dataset.car),after=others[d.to-1];cars.splice(after?cars.findIndex(x=>x.id===after)+1:0,0,c);persist();const y=screen.scrollTop;render();screen.scrollTop=y;}}};
+    const place=()=>{const d=drag;if(!d)return;const top=d.list.getBoundingClientRect().top,dy=(ptr.y-top)-d.grab;
+      d.row.style.transform=`translateY(${(dy-d.tops[d.from])/d.z}px) scale(1.02)`;const mid=dy+d.hs[d.from]/2;let to=0;
+      d.rows.forEach((r,i)=>{if(i!==d.from&&d.tops[i]+d.hs[i]/2<mid)to++;});d.to=to;
+      d.rows.forEach((r,i)=>{if(i===d.from)return;const shift=d.from<to&&i>d.from&&i<=to?-1:to<d.from&&i>=to&&i<d.from?1:0;r.style.transform=shift?`translateY(${shift*d.step/d.z}px)`:'';});};
+    const tick=()=>{const d=drag;if(!d)return;const r=screen.getBoundingClientRect(),dock=screen.querySelector('.tab-dock'),bottom=dock?dock.getBoundingClientRect().top:r.bottom;
+      const v=ptr.y<r.top+70?-Math.ceil((r.top+70-ptr.y)/6):ptr.y>bottom-50?Math.ceil((ptr.y-bottom+50)/6):0;if(v){screen.scrollTop+=v;place();}d.raf=requestAnimationFrame(tick);};
+    const start=(row,e)=>{const list=row.parentElement,rows=[...list.children].filter(r=>r.classList.contains('garage-row'));if(rows.length<2)return;
+      const top=list.getBoundingClientRect().top,rects=rows.map(r=>r.getBoundingClientRect()),tops=rects.map(q=>q.top-top),hs=rects.map(q=>q.height);
+      // Visual pixels per CSS pixel of a transform (the screen is zoomed 1.12× or 1.3× on wider phones).
+      row.style.transform='translateY(100px)';const z=(row.getBoundingClientRect().top-rects[rows.indexOf(row)].top)/100||1;row.style.transform='';
+      const from=rows.indexOf(row),step=hs[from]+(tops[1]-tops[0]-hs[0]);
+      drag={row,list,rows,tops,hs,z,from,to:from,step,pid:e.pointerId,grab:e.clientY-top-tops[from],raf:0};
+      try{row.setPointerCapture(e.pointerId);}catch(err){}list.classList.add('sorting');row.classList.add('dragging');place();drag.raf=requestAnimationFrame(tick);};
+    screen.addEventListener('pointerdown',e=>{if(drag||e.button>0||!e.isPrimary)return;const row=e.target.closest('.garage-rows>.garage-row');if(!row||e.target.closest('.row-actions'))return;
+      ptr={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};const ev={pointerId:e.pointerId,clientY:e.clientY};clearTimeout(timer);timer=setTimeout(()=>{timer=0;ev.clientY=ptr.y;start(row,ev);},HOLD);});
+    screen.addEventListener('pointermove',e=>{if(!ptr)return;ptr.x=e.clientX;ptr.y=e.clientY;if(timer&&Math.hypot(ptr.x-ptr.x0,ptr.y-ptr.y0)>MOVE){clearTimeout(timer);timer=0;}if(drag){e.preventDefault();place();}});
+    screen.addEventListener('pointerup',()=>{end(true);ptr=null;});
+    screen.addEventListener('pointercancel',()=>{end(false);ptr=null;});
+    // While a card is lifted the page must not scroll under the finger (iPhone needs a non-passive touchmove for that).
+    screen.addEventListener('touchmove',e=>{if(drag)e.preventDefault();},{passive:false});
+    // The release after a drag is not a tap on the card, and a long press does not open the link menu or start a link drag.
+    screen.addEventListener('click',e=>{if(blockClick&&performance.now()-blockClick<400&&e.target.closest('.garage-rows')){e.preventDefault();e.stopPropagation();}},true);
+    screen.addEventListener('contextmenu',e=>{if(e.target.closest('.garage-rows>.garage-row'))e.preventDefault();});
+    screen.addEventListener('dragstart',e=>{if(e.target.closest&&e.target.closest('.garage-rows'))e.preventDefault();});
+    window.addEventListener('hashchange',()=>end(false));}
   screen.addEventListener('click',event=>{const k=event.target.closest('.kind-card[data-kind]');if(!k)return;const id=k.dataset.kind;if(id==='car')carPicked=true;else draft={kind:id,step:'details',brand:'',brandText:'',model:'',name:'',plate:'',nick:'',year:'',km:'',fuel:'',engine:'',body:Kinds.types(id)[0],color:'#b9c1ca'};render();screen.scrollTop=0;});
   screen.addEventListener('change',event=>{if(event.target.matches('#kind-form [name=brand]'))kindBrand(event.target);const kf=event.target.closest('#kind-form');if(kf)syncKind(kf);const kl=event.target.closest('#klook-form');if(kl&&draft&&draft.kind)syncKindLook(kl);});
   screen.addEventListener('input',event=>{const kf=event.target.closest('#kind-form');if(kf)syncKind(kf);});

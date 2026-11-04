@@ -1362,3 +1362,11 @@ html.dark .device-glass .rp-custom input{background:#e9eef4;border-color:#dce3ec
 .today-chip{gap:4px;padding:6px 7px 7px}
 .today-chip .chip-ico{width:20px;height:20px}.today-chip .chip-ico svg{width:12.5px;height:12.5px}
 .chip-txt small{font-size:10px;line-height:1.25}
+/* 0.92 (Niklas): järjestyksen vaihto pitkällä painalluksella. Kortti ei avaa tekstin valintaa eikä linkkivalikkoa,
+   nostettu kortti on muiden päällä varjon kanssa ja muut liukuvat tieltä. */
+.garage-rows .garage-row{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.garage-rows .garage-row img{-webkit-user-drag:none}
+.garage-rows.sorting .garage-row{transition:transform .18s ease}
+.garage-rows .garage-row.dragging{position:relative;z-index:5;transition:none;box-shadow:0 18px 34px -14px #12284a66,0 2px 6px #12284a1f;cursor:grabbing}
+html.dark .device-glass .garage-rows .garage-row.dragging{box-shadow:none;outline:2px solid var(--blue)}
+@media(prefers-reduced-motion:reduce){.garage-rows.sorting .garage-row{transition:none}}

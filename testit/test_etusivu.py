@@ -122,3 +122,63 @@ def test_painikkeiden_yhtenainen_vari(browser, base, teema):
         assert tyylit[0][0] != "rgb(20, 100, 232)", "tankkauspainike on yhä täysi sininen"
     finally:
         s.sulje()
+
+
+# 0.92 (Niklas): Oman tallin järjestys vaihtuu pitkällä painalluksella ja vetämällä. Järjestys on ajoneuvolistan
+# järjestys, joten tallennettujen tietojen muoto ei muutu.
+def jarjestys(s):
+    return [c["id"] for c in s.talli()["cars"]]
+
+
+def keski(pg, cid, osa=".row-info"):
+    b = pg.locator(f".garage-row[data-car={cid}] {osa}").bounding_box()
+    return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+
+
+def test_jarjestys_hiirella(browser, base):
+    s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, mobiili=False, kello=KELLO)
+    pg = s.page
+    try:
+        assert jarjestys(s) == ["tst1", "tst2", "tst3"]
+        x, y = keski(pg, "tst3"); _, y1 = keski(pg, "tst1", "")
+        pg.mouse.move(x, y); pg.mouse.down(); pg.wait_for_timeout(650)
+        assert pg.locator(".garage-row.dragging").count() == 1, "kortti ei noussut pitkällä painalluksella"
+        for i in range(1, 11):
+            pg.mouse.move(x, y + (y1 - 160 - y) * i / 10); pg.wait_for_timeout(20)
+        pg.mouse.up(); pg.wait_for_timeout(300)
+        assert jarjestys(s) == ["tst3", "tst1", "tst2"]
+        assert pg.evaluate("location.hash") == "#home", "vapautus avasi ajoneuvon"
+        assert pg.eval_on_selector_all(".garage-row", "e => e.map(x => x.dataset.car)") == ["tst3", "tst1", "tst2"]
+        # Lyhyt napautus avaa edelleen ajoneuvon; liike ennen pitkää painallusta ei siirrä korttia.
+        x, y = keski(pg, "tst2")
+        pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x, y - 40); pg.wait_for_timeout(650)
+        assert pg.locator(".garage-row.dragging").count() == 0
+        pg.mouse.up()
+        assert jarjestys(s) == ["tst3", "tst1", "tst2"]
+        pg.click(".garage-row[data-car=tst1] .row-info"); pg.wait_for_function("location.hash === '#vehicle/tst1'")
+        pg.reload(); pg.wait_for_selector("#app-screen .screen-content")
+        assert jarjestys(s) == ["tst3", "tst1", "tst2"]
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_jarjestys_kosketuksella(browser, base):
+    """Puhelin: kosketus pitkään paikallaan, sitten veto alas. Näkymä ei vieritä vedon alla."""
+    s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, kello=KELLO)
+    pg = s.page
+    try:
+        cdp = pg.context.new_cdp_session(pg)
+        kosketa = lambda tyyppi, x, y: cdp.send("Input.dispatchTouchEvent", {
+            "type": tyyppi, "touchPoints": [] if tyyppi == "touchEnd" else [{"x": x, "y": y, "id": 1}]})
+        x, y = keski(pg, "tst1"); _, y3 = keski(pg, "tst3", "")
+        kosketa("touchStart", x, y); pg.wait_for_timeout(650)
+        assert pg.locator(".garage-row.dragging").count() == 1
+        for i in range(1, 13):
+            kosketa("touchMove", x, y + (y3 + 80 - y) * i / 12); pg.wait_for_timeout(20)
+        kosketa("touchEnd", 0, 0); pg.wait_for_timeout(300)
+        assert jarjestys(s) == ["tst2", "tst3", "tst1"]
+        assert pg.evaluate("location.hash") == "#home"
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
