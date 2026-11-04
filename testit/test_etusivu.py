@@ -53,6 +53,9 @@ def test_kuvakepainikkeet(browser, base, leveys):
                 assert plus["width"] <= 14 and ico["width"] >= 20
                 assert plus["x"] < ico["x"] + ico["width"] < plus["x"] + plus["width"], (cid, ico, plus)
                 assert plus["y"] < ico["y"] + ico["height"] < plus["y"] + plus["height"], (cid, ico, plus)
+                # 0.91 (Niklas): plus lähellä kuvaketta, vähintään puoliksi sen päällä kumpaankin suuntaan.
+                assert ico["x"] + ico["width"] - plus["x"] >= plus["width"] / 2, (cid, ico, plus)
+                assert ico["y"] + ico["height"] - plus["y"] >= plus["height"] / 2, (cid, ico, plus)
                 kortti = rivi.bounding_box()
                 assert kortti["x"] <= r["x"] and r["x"] + r["width"] <= kortti["x"] + kortti["width"], f"{cid}: yli kortin"
         assert pg.locator(".add-vehicle-row").count() == 0
