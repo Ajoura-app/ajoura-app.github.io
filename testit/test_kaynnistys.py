@@ -1,7 +1,11 @@
 """Käynnistysanimaatio (0.83): vaalea auto, 5–8 paperikuittia lentää auton takaa logoon ja häipyy,
-iskulause "matka jää muistiin" (EN/SV käännetty), ei vaakavieritystä, rauhallinen versio ilman kuitteja,
+iskulause "Matka jää muistiin!" (0.85, myös tervetulosivulla; EN/SV käännetty), ei vaakavieritystä, rauhallinen versio ilman kuitteja,
 kun laitteessa on vähennetty liikettä. Animaatio ajetaan pysäytettynä ja kelataan tiettyihin hetkiin."""
 import pytest
+
+from apu import avaa
+
+ISKULAUSEET = [("fi", "Matka jää muistiin!"), ("en", "Every journey remembered!"), ("sv", "Resan stannar i minnet!")]
 
 KUITIT = """() => [...document.querySelectorAll('.intro-overlay .rc')].map(rc => {
   const p = rc.querySelector('.rc-p'), r = p.getBoundingClientRect();
@@ -27,8 +31,7 @@ def kelaa(page, ms):
     page.evaluate("t => document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })", ms)
 
 
-@pytest.mark.parametrize("kieli,teksti", [("fi", "matka jää muistiin"), ("en", "every journey remembered"),
-                                          ("sv", "resan stannar i minnet")])
+@pytest.mark.parametrize("kieli,teksti", ISKULAUSEET)
 def test_iskulause(browser, base, kieli, teksti):
     ctx, page, virheet = avaa_intro(browser, base, kieli=kieli)
     try:
@@ -94,7 +97,7 @@ def test_vahennetty_liike(browser, base):
     ctx, page, _ = avaa_intro(browser, base, liike="reduce")
     try:
         assert page.eval_on_selector(".intro-overlay .intro-receipts", "e => getComputedStyle(e).display") == "none"
-        assert page.inner_text(".intro-overlay .intro-slogan").strip() == "matka jää muistiin"
+        assert page.inner_text(".intro-overlay .intro-slogan").strip() == "Matka jää muistiin!"
         page.wait_for_selector(".intro-overlay", state="detached", timeout=3000)
     finally:
         ctx.close()
@@ -113,3 +116,14 @@ def test_sulkeutuu_itse(browser, base):
         page.wait_for_selector(".intro-overlay", state="detached", timeout=1500)
     finally:
         ctx.close()
+
+
+@pytest.mark.parametrize("kieli,teksti", ISKULAUSEET)
+def test_tervetulosivun_iskulause(browser, base, kieli, teksti):
+    """0.85: tervetulosivulla sama iskulause kuin käynnistysanimaatiossa (ennen "huolehtii autostasi.")."""
+    sivu = avaa(browser, base, nakyma="welcome", kieli=kieli)
+    try:
+        assert sivu.page.inner_text(".welcome h2 span").strip() == teksti
+        assert not sivu.virheet, sivu.virheet
+    finally:
+        sivu.sulje()
