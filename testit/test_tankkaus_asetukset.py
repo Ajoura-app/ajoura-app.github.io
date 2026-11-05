@@ -298,3 +298,22 @@ def test_asetusikkunan_kaannokset(browser, base, kieli, otsikko, jaksot):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize("kieli,haku,osat", [
+    ("fi", "järjestän", ["Tankkaus ja lataus -välilehden", "Palauta widgettien järjestys"]),
+    ("en", "arrange", ["Fuel and charging tab", "Reset widget order"]),
+    ("sv", "ordnar", ["Tankning och laddning", "Återställ widgetarnas ordning"])])
+def test_ohjeissa_jarjestys_ja_aikavalit(browser, base, kieli, haku, osat):
+    """Ohjeisiin kysymykset widgettien järjestyksestä ja korttien omasta aikavälistä (pitkä painallus ei näy itsestään)."""
+    s = avaa(browser, base, "help", autot=talli(), kieli=kieli, kello=KELLO)
+    pg = s.page
+    try:
+        pg.fill("#help-search", haku); pg.wait_for_timeout(300)
+        nakyvat = pg.eval_on_selector_all(".faq:not([hidden])", "e => e.map(d => d.innerText)")
+        assert any(all(o in t for o in osat) for t in nakyvat), nakyvat
+        kaikki = pg.eval_on_selector_all(".faq", "e => e.map(d => d.textContent)")
+        assert sum("aikav" in t.lower() or "period" in t.lower() for t in kaikki) >= 1
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

@@ -207,6 +207,8 @@
   const faq=[
     ['Miten lisään auton?','Etusivu → ＋ Lisää ajoneuvo. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
     ['Miten muutan ajoneuvojen järjestystä?','Pidä etusivulla ajoneuvon korttia painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti ja säilyy myös varmuuskopiossa.'],
+    ['Miten järjestän Tankkaus ja lataus -välilehden?','Pidä korttia, kaaviota tai listaa painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti tähän laitteeseen. Alkuperäisen järjestyksen saat takaisin, kun napautat tunnusluvun kuvaketta ja valitset Palauta widgettien järjestys.'],
+    ['Voiko tunnusluvulla olla oma aikaväli?','Voi. Napauta Tankkaus ja lataus -välilehdellä tunnusluvun sinistä kuvaketta ja valitse aikaväli, esimerkiksi Kuluva kuukausi tai Mukautettu. Kortti näyttää käyttämänsä aikavälin luvun alla. Käytä sivun aikaväliä palauttaa kortin seuraamaan sivun yläosan valintaa.'],
     ['Voinko lisätä moottoripyörän, veneen tai mopon?','Voit. Etusivu → ＋ Lisää ajoneuvo ja valitse ensin ajoneuvolaji: auto, moottoripyörä, mopo, mopoauto, mönkijä, moottorikelkka, vene, traktori tai muu moottorilaite. Veneillä, traktoreilla ja muilla laitteilla seurataan käyttötunteja kilometrien sijaan.'],
     ['Miten kirjaan huollon tai korjauksen?','Avaa auto ja paina ＋ Lisää merkintä. Pakollisia ovat vain tyyppi ja päivämäärä. Kilometrit, kulut, tehdyt toimenpiteet, kuvat ja kuitit voit lisätä heti tai myöhemmin.'],
     ['Miten lisään kuitin tai kuvan?','Merkinnässä on erikseen Lisää kuvia ja Lisää kuitit. Voit ottaa kuvan kameralla tai valita sen kuvista. Kuvat pienennetään automaattisesti, jotta ne mahtuvat puhelimeen.'],
@@ -505,7 +507,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.99 (testiversio)';
+  const appVersion='0.100 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
