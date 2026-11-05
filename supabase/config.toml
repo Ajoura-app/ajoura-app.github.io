@@ -1,0 +1,9 @@
+# Supabase-asetukset GitHub-yhteydelle (AJOURA, projekti sjamwwcqrwspwvilurqn). Supabase lukee tästä vain
+# julkaistavat funktiot. Kirjautumisen ja rajapinnan asetukset tehdään Supabasen hallinnassa: tässä ei ole
+# [remotes]-lohkoa, joten tiedosto ei muuta tuotannon asetuksia. Tietokannan muutokset ovat kansiossa migrations/.
+project_id = "ajoura"
+
+[functions.tekoaly]
+enabled = true
+# Alusta tarkistaa istuntotunnisteen ennen funktiota; funktio tarkistaa käyttäjän ja Plus-tilauksen vielä itse.
+verify_jwt = true
