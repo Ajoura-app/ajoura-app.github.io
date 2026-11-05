@@ -451,7 +451,7 @@
   // the kind first. A car goes on to the car flow as before; other kinds get their own two steps in the same style.
   const kindsOn=()=>!!Kinds&&(!window.AjouraRoles||window.AjouraRoles.feature('kinds'));
   let carPicked=false;
-  function kindStep(){return `${back('home','Koti')}<h2 class="app-heading">Uusi ajoneuvo</h2><p class="app-subtitle">Mikä ajoneuvo on kyseessä?</p><div class="kind-list">${Kinds.list.map(k=>`<button class="kind-card" type="button" data-kind="${k.id}"><span class="kind-art" aria-hidden="true">${k.id==='car'?Car.render('suv','#eef1f4','',{img:'https://d8j0ntlcm91z4.cloudfront.net/user_3KLO7sd44ZlhjzL21Y0wVlpDTKr/hf_20261012_115346_738cdd8e-8e30-41d5-9f50-e2154aac6af5.png',dimsOf:{L:4.69,WB:2.87,fo:.92,wd:.74}}):Kinds.icon(k.id)}</span><strong>${k.name}</strong><small>${k.hint}</small></button>`).join('')}</div><p class="app-fineprint">Kaikki ajoneuvosi näkyvät samassa tallissa.</p>`;}
+  function kindStep(){return `${back('home','Koti')}<h2 class="app-heading">Uusi ajoneuvo</h2><p class="app-subtitle">Mikä ajoneuvo on kyseessä?</p><div class="kind-list">${Kinds.list.map(k=>`<button class="kind-card" type="button" data-kind="${k.id}"><span class="kind-art" aria-hidden="true">${k.id==='car'?Car.render('suv','#eef1f4','',{img:'autokuvat/hf_20261012_115346_738cdd8e-8e30-41d5-9f50-e2154aac6af5.webp',dimsOf:{L:4.69,WB:2.87,fo:.92,wd:.74}}):Kinds.icon(k.id)}</span><strong>${k.name}</strong><small>${k.hint}</small></button>`).join('')}</div><p class="app-fineprint">Kaikki ajoneuvosi näkyvät samassa tallissa.</p>`;}
   const fuelSelect=f=>`<label>Käyttövoima <small>· valinnainen</small><select name="fuel"><option value="">Valitse</option>${fuels.map(x=>`<option${x===f?' selected':''}>${x}</option>`).join('')}</select></label>`;
   const engineField=(kindId,v)=>kindId==='boat'||kindId==='other'?`<label>Moottori <small>· valinnainen</small><input name="engine" maxlength="40" autocomplete="off" placeholder="${kindId==='boat'?'Esim. Yamaha F60':'Esim. Honda GX160'}" value="${escape(v||'')}"></label>`:'';
   const regField=v=>`<label>Rekisteritunnus <small>· valinnainen</small><input name="reg" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${escape(v||'')}"></label>`;
@@ -511,7 +511,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.104 (testiversio)';
+  const appVersion='0.105 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
