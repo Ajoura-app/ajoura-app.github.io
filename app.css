@@ -1512,3 +1512,33 @@ html.dark .device-glass .fv-grid .fv-w.dragging{box-shadow:none;outline:2px soli
 .fk-more{display:flex;flex-direction:column;align-items:flex-start;gap:0;margin:14px 0 0;padding-top:8px;border-top:1px solid var(--hairline)}
 .fk-more .link-button{border:0;background:none;padding:6px 0;min-height:40px;color:#0b5ed7;font:inherit;font-size:13px;font-weight:650;cursor:pointer;text-align:left}
 .fk-more small{font-size:11px;color:#4f5f72}
+/* 0.102 (Niklas, havainnekuva): Raportit samaan ilmeeseen kuin Tankkaus ja lataus: sama ylärivi (ajoneuvo, aikaväli,
+   Lisää merkintä), samat tunnuslukukortit ja sama järjesteltävä ruudukko (.fv-grid). Kululajien värit ovat samat
+   kaikkialla: sininen polttoaine ja lataus, vihreä huollot, violetti korjaukset, harmaa muut. */
+.rp-wgrid>.rp-vsec{margin:0}
+.rp-wgrid>.rp-vsec .rp-vlist .rp-vcard:last-child{margin-bottom:0}
+.fv-vall{display:grid;place-items:center;background:#e8f0fe;color:var(--blue)}
+.fv-vall svg{width:24px;height:24px}
+.rp-veh .fv-mname{padding-left:9px}
+.rp-vck{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#fff}
+.rp-vmi.on .rp-vck{background:#0b5ed7}
+.rp-basis{grid-column:1/-1;margin:-4px 0 0;font-size:11px;line-height:1.3;color:#4f5f72}
+.rp-drow.off .rp-dn,.rp-drow.off b,.rp-drow.off em{color:#6b7a8c}
+.rp-drow.off .rp-dbar i{opacity:.35}
+.rp-doff{display:block;margin-top:2px;font-size:11px;color:#4f5f72;text-align:left}
+.rp-xbtn:disabled{opacity:.5;cursor:default}
+.rp-vlinks{margin-top:4px}
+.rp-toall{margin:10px 0 0}
+.rp-addopts{display:grid;gap:8px;margin:12px 0 2px}
+.rp-addopt{display:flex;align-items:center;gap:11px;width:100%;min-height:56px;padding:9px 12px;background:#fff;border:1px solid var(--hairline);border-radius:14px;font:inherit;text-align:left;color:var(--ink);cursor:pointer}
+.rp-addopt:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.rp-addopt .rp-rtxt strong{font-size:14px}
+.rp-addopt .rp-rtxt small{font-size:11.5px;color:#4f5f72}
+.rp-addsheet .sheet-car{font-size:13px}
+html.dark .device-glass .rp-addopt{background:#e9eef4;border-color:#dce3ec}
+html.dark .device-glass .rp-vmi.on .rp-vck{filter:invert(1) hue-rotate(180deg)}
+/* 0.102: kuukauden erittely yhtenä sarakkeena (kululajin nimi ei katkea) ja kokonaissumma omalla rivillään. */
+.rp-mlist{grid-template-columns:1fr}
+.rp-mlist li span{white-space:normal}
+.rp-mtot{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:6px 0 0;padding-bottom:6px;border-bottom:1px solid #dfe6ee;font-size:12.5px;color:#3d4b5c}
+.rp-mtot .rp-mt{margin:0;font-size:15px;color:var(--ink)}

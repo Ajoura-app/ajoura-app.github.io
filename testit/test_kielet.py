@@ -26,12 +26,13 @@ YKSIKOT = re.compile(r"(l/100 ?km|kWh/100 ?km|€/100 ?km|€/km|€/h|€/l|€
 # Näkymä ja toimenpiteet ennen tekstien keruuta (napautukset).
 NAKYMAT = {
     "home": [], "menu": [], "me": [], "help": [], "settings": [], "tips": [], "feedback": [], "newcar": [],
-    "reports": ["[data-rp-kind=fuel]", ".rp-cmenu>summary"], "reports-cars": ["[data-rp-tab=cars]"], "vehicle/tst1": [],
+    "reports": ["[data-rp-kind=fuel]", ".rp-veh>summary"], "reports-lisaa": ["[data-rp-add]"], "reports-asetus": ["[data-rp-set=tot]"],
+    "reports-auto": [".rp-veh>summary", "[data-rp-car=tst1]"], "vehicle/tst1": [],
     "vehicle/tst3": [], "event/tst1/e1": [], "add/tst1": [], "edit/tst1/e1": [], "report/tst1": [],
     "notes/tst1": [], "fuel/tst1": [], "fuel/tst2": [], "fuel-vertailu": [".fv-veh>summary", "[data-fl-cmpcar=tst2]"],
     "owner/tst1": [], "caredit/tst1": [], "tankkausikkuna": [".fl-add"], "asennusohje": [".install-button"],
 }
-OSOITE = {"reports-cars": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
+OSOITE = {"reports-lisaa": "reports", "reports-asetus": "reports", "reports-auto": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
           "asennusohje": "home"}
 
 KERUU = """() => {

@@ -178,7 +178,7 @@ def test_raportit_ja_ajoneuvosivu_hybridi(browser, base):
     s = avaa(browser, base, "reports", autot=[hybridi()], kello=KELLO)
     pg = s.page
     try:
-        pg.click("[data-rp-tab=cars]"); pg.wait_for_selector(".rp-rep")
+        pg.click(".rp-veh>summary"); pg.click('.rp-veh [data-rp-car="hyb1"]'); pg.wait_for_selector(".rp-rep")  # 0.102: valitun ajoneuvon raportit
         kirjat = pg.eval_on_selector_all("a.rp-rep[href*='#fuel/']", "a => a.map(x => x.innerText.replace(/\\s+/g, ' '))")
         assert len(kirjat) == 2 and "Tankkauskirja" in kirjat[0] and "Latauskirja" in kirjat[1], kirjat
         pg.click("a.rp-rep[href*='#fuel/'] >> nth=1"); pg.wait_for_selector(".fl-kinds")

@@ -96,30 +96,34 @@ def kuvien_talli():
 def test_raportit_ei_harhaanjohtavaa_vertailua(browser, base):
     s = avaa(browser, base, "reports", autot=kuvien_talli(), extra=RP_V, kello=KELLO)
     try:
-        r = s.page.evaluate("""() => ({kpi: document.querySelector('.rp-total')?.innerText.replace(/\\s+/g, ' '),
+        r = s.page.evaluate("""() => ({kpi: document.querySelector('.rp-vlist')?.innerText.replace(/\\s+/g, ' '),
             muutokset: document.querySelectorAll('.rp-delta').length,
             kortit: [...document.querySelectorAll('.rp-vcard')].map(e => e.innerText.replace(/\\s+/g, ' '))})""")
         # Ei muutosprosenttia: polttoainekuluja ei ole kirjattu vertailujaksolta (ennen 0.76: +299 % ja +230 %).
         assert r["muutokset"] == 0, r
         # Ei elinkaaren kilometreistä laskettua €/km:ää (ennen 0.76: 16 650 km ja < 0,01 €/km).
-        assert "Ei riittävästi tietoja" in r["kpi"] and "km" not in r["kortit"][1].replace("€/km", ""), r
+        assert "ei riittävästi tietoja" in r["kpi"] and "km" not in r["kortit"][1].replace("€/km", ""), r
         assert all("< 0,01" not in k for k in r["kortit"]), r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
 
 
-def test_muutos_kun_vertailujakso_kirjattu(browser, base):
+@pytest.mark.skipif(not __import__("shutil").which("pdftotext"), reason="pdftotext puuttuu")
+def test_muutos_kun_vertailujakso_kirjattu(browser, base, tmp_path):
+    """0.102: näytön tunnusluvuissa ei ole enää muutosprosenttia (havainnekuva); PDF-yhteenveto näyttää muutoksen yhä,
+    kun vertailujaksolta on kirjauksia, eikä sitä näytetä harhaanjohtavasti (0.76)."""
+    import subprocess
     autot = kuvien_talli()[:1]
     autot[0]["fuels"][:0] = [T("v1", "2024-12-20", 190000, 50, 85), T("v2", "2025-05-20", 207000, 50, 90)]
-    s = avaa(browser, base, "reports", autot=autot, extra=RP_V, kello=KELLO)
+    s = avaa(browser, base, "reports", autot=autot, extra=RP_V, mobiili=False, kello=KELLO)
     try:
-        d = s.page.locator(".rp-delta")
-        assert d.count() >= 1
-        varit = s.page.evaluate("() => [...document.querySelectorAll('.rp-delta')].map(e => getComputedStyle(e).color)")
-        # Muutosta ei merkitä vihreäksi tai punaiseksi (0.76): ei rgb(11, 113, 72) eikä rgb(180, 42, 42).
-        assert all(v not in ("rgb(11, 113, 72)", "rgb(180, 42, 42)") for v in varit), varit
-        assert "verrattuna samaan jaksoon vuotta aiemmin" in s.page.inner_text(".screen-content")
+        assert s.page.locator(".rp-delta").count() == 0
+        with s.page.expect_download() as d:
+            s.page.click("[data-rp-pdf]")
+        pdf = tmp_path / "k.pdf"; d.value.save_as(pdf)
+        t = subprocess.run(["pdftotext", "-layout", str(pdf), "-"], capture_output=True, text=True).stdout
+        assert "Vertailujakso" in t and any(m in t for m in ("+", "−")) and "%" in t, t[:800]
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
