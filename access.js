@@ -11,24 +11,23 @@
 // Tekoälyominaisuutta saa käyttää vain, kun molemmat ovat voimassa (ja kuukausikiintiötä on jäljellä, jos sellainen on).
 //
 // TURVALLISUUS: tämä tiedosto on vain käyttöliittymän lukitus. Selaimessa ajettavaa koodia voi aina muuttaa, joten
-// varsinainen suoja on palvelimella: tekoälypalvelun on tarkistettava käyttäjän voimassa oleva tilaus ja kiintiö
-// omasta tietokannastaan JOKAISESSA pyynnössä, eikä se saa luottaa mihinkään selaimen lähettämään tietoon oikeuksista.
-// Maksumuuri ei ole turvallinen ennen kuin tämä palvelin on olemassa.
+// varsinainen suoja on palvelimella: tekoälyfunktio tarkistaa käyttäjän, voimassa olevan tilauksen ja kiintiön
+// omasta tietokannastaan JOKAISESSA pyynnössä eikä luota mihinkään selaimen lähettämään tietoon oikeuksista.
 //
-// Taustapalvelu, jota tämä odottaa (ei vielä olemassa, SERVICE alla tyhjä):
-// 1. GET SERVICE.entitlements, käyttäjän istuntotunniste otsakkeessa Authorization: Bearer …
-//    → 200 {"plan":"plus","status":"active","validUntil":"2027-01-31T23:59:59Z",
-//           "quota":{"ai":{"limit":100,"used":12,"resetsAt":"2026-12-01T00:00:00Z"}}}
-//    plan: 'free' | 'plus'; status 'active' tai muu (päättynyt, peruttu, maksu epäonnistui); quota.ai.limit null =
-//    ei rajaa. 401/403/virhe → Free. Tilaustieto tulee palvelimen omasta tietokannasta (maksupalvelun webhookit).
-// 2. POST SERVICE.ai, runko = kuva, otsakkeet Authorization ja X-Ajoura-Feature (esim. ai.receipt).
-//    Palvelin tarkistaa ensin tilauksen ja kiintiön, kasvattaa käyttölaskuria ja vasta sitten lähettää kuvan
-//    tekoälylle. Vastaukset: 200 tunnistettu tulos (JSON), 402 tai 403 ei Plus-oikeutta, 429 kiintiö täynnä.
-//    Tekoälypalvelun avain on vain palvelimella, ei koskaan tässä repossa.
-// Kirjautuminen (sync.js) on pois käytöstä, joten käyttäjää ei voi vielä tunnistaa: kaikki ovat Free-käyttäjiä.
+// Taustapalvelu (v0.112): Supabase-projekti sjamwwcqrwspwvilurqn, koodi kansiossa supabase/ (testit/test_supabase.py).
+// 1. GET /rest/v1/rpc/get_entitlement käyttäjän istuntotunnisteella (Authorization: Bearer …)
+//    → {"plan":"plus","status":"active","validUntil":"2027-01-31T23:59:59Z",
+//       "quota":{"ai":{"limit":30,"used":12,"resetsAt":"2026-12-01T00:00:00Z"}}}
+//    plan: 'free' | 'plus'; quota.ai.limit null = ei rajaa. Virhe tai puuttuva tieto → Free.
+// 2. POST /functions/v1/tekoaly, runko = kuva, otsakkeet Authorization ja X-Ajoura-Feature (esim. ai.receipt).
+//    Vastaukset: 200 tulos (JSON), 401/402/403 ei oikeutta, 429 kiintiö täynnä, 503 tekoälyä ei ole otettu käyttöön.
+// Kirjautuminen (sähköpostikoodi, Supabase Auth) on vain tiimin testikäyttöön (Ylläpito → ominaisuus "account").
+// Ilman kirjautumista sovellus ei ota yhteyttä palvelimeen lainkaan: oikeuksia ei kysytä eikä mitään lähetetä.
 (() => {
-  // Tyhjä osoite = palvelua ei ole: oikeuksia ei haeta eikä mitään lähetetä verkkoon.
-  const SERVICE = { entitlements: '', ai: '' };
+  // Supabase-projekti. key on julkinen (publishable) avain: se kuuluu selaimeen, ja rivitason suojaus ja funktiot
+  // rajaavat, mitä sillä saa. Tyhjä avain = palvelua ei ole kytketty: mitään ei lähetetä verkkoon.
+  const SUPABASE = { url: 'https://sjamwwcqrwspwvilurqn.supabase.co', key: 'sb_publishable_Eo71xHp7YIscRqDdLOOVcA_qzywcyZb' };
+  const SERVICE = SUPABASE.key ? { entitlements: SUPABASE.url + '/rest/v1/rpc/get_entitlement', ai: SUPABASE.url + '/functions/v1/tekoaly' } : { entitlements: '', ai: '' };
 
   // Paketit ja niiden ominaisuudet. Hintoja ja lopullisia käyttörajoja ei ole päätetty: rajat tulevat palvelimelta.
   const PLANS = { free: [], plus: ['ai.receipt', 'ai.odometer', 'ai.servicebook'] };
@@ -42,10 +41,49 @@
 
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const del = k => { try { localStorage.removeItem(k); } catch (e) {} };
 
   const FREE = Object.freeze({ plan: 'free', active: false, validUntil: 0, quota: Object.freeze({}) });
   let ent = FREE;
-  let status = SERVICE.entitlements ? 'checking' : 'none'; // none = ei palvelua, ok = tarkistettu, error = ei yhteyttä
+
+  // ---- Tili (Supabase Auth) ---------------------------------------------------------------------------------
+  // Istunto on Supabasen allekirjoittama tunniste: sen muokkaaminen ei anna oikeuksia, palvelin tarkistaa sen.
+  // Oma avain (ei sync.js:n 'ajoura-session', joka kuuluu vanhaan, käytöstä poistettuun projektiin).
+  const SESSION = 'ajoura-tili';
+  const readSession = () => { try { const v = JSON.parse(get(SESSION) || 'null'); return v && v.access_token && v.refresh_token && v.user && v.user.id ? v : null; } catch (e) { return null; } };
+  let session = SERVICE.entitlements ? readSession() : null;
+  const keep = d => { session = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (Number(d.expires_in) || 3600) * 1000, user: { id: d.user.id, email: d.user.email || '' } }; set(SESSION, JSON.stringify(session)); };
+  async function auth(path, body) {
+    const r = await fetch(SUPABASE.url + '/auth/v1/' + path, { method: 'POST', credentials: 'omit', cache: 'no-store', headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const b = await r.json().catch(() => null);
+    if (!r.ok) throw Object.assign(new Error('auth ' + r.status), { status: r.status });
+    return b;
+  }
+  // Voimassa oleva tunniste; vanheneva uusitaan. Hylätty uusinta = uloskirjaus (tili poistettu tai istunto peruttu).
+  async function token() {
+    if (!session) return '';
+    if (session.expires_at - Date.now() > 60000) return session.access_token;
+    try { keep(await auth('token?grant_type=refresh_token', { refresh_token: session.refresh_token })); return session.access_token; }
+    catch (e) { if (e.status >= 400 && e.status < 500) forget(); return ''; }
+  }
+  function forget() { session = null; del(SESSION); ent = FREE; status = 'none'; changed(); }
+  // Sähköpostiin tulee kirjautumiskoodi (tai linkki, jos Supabasen viestipohjassa on vain linkki: sen voi liittää koodin tilalle).
+  async function sendCode(email) { if (!SERVICE.entitlements) throw fail('service'); await auth('otp', { email: String(email).trim(), create_user: true }); }
+  async function verifyCode(email, input) {
+    if (!SERVICE.entitlements) throw fail('service');
+    let body = { type: 'email', email: String(email).trim(), token: String(input).replace(/\s/g, '') };
+    try { const u = new URL(String(input).trim()); const t = u.searchParams.get('token_hash') || u.searchParams.get('token'); if (t) body = { type: u.searchParams.get('type') || 'magiclink', token_hash: t }; } catch (e) { /* koodi, ei linkki */ }
+    keep(await auth('verify', body));
+    await refresh();
+  }
+  async function signOut() {
+    const t = session && session.access_token;
+    forget();
+    if (t) fetch(SUPABASE.url + '/auth/v1/logout', { method: 'POST', credentials: 'omit', headers: { apikey: SUPABASE.key, Authorization: 'Bearer ' + t } }).catch(() => {});
+  }
+  const account = () => (session ? { email: session.user.email } : null);
+
+  let status = session ? 'checking' : 'none'; // none = ei palvelua tai ei kirjautunut, ok = tarkistettu, error = ei yhteyttä
 
   // Palvelimen vastaus → sisäinen tila. Kaikki tuntematon tai puutteellinen tulkitaan Freeksi. Kiintiön raja null = ei
   // rajaa; puuttuva tai virheellinen raja = 0 (ei käyttöä), jotta virhe ei koskaan avaa rajatonta käyttöä.
@@ -65,16 +103,16 @@
   // Tilaus voi päättyä sovelluksen ollessa auki: voimassaolo tarkistetaan joka kutsulla, ei vain haettaessa.
   const current = () => (ent.active && ent.validUntil > Date.now() ? ent : FREE);
 
-  const changed = () => { try { document.dispatchEvent(new CustomEvent('ajoura-access')); } catch (e) {} };
-  // Käyttäjän istuntotunniste palvelimelle. Kirjautuminen on pois käytöstä, joten tunnistetta ei ole.
-  const authHeaders = () => ({});
+  function changed() { try { document.dispatchEvent(new CustomEvent('ajoura-access')); } catch (e) {} }
+  const authHeaders = async () => { const t = await token(); return t ? { apikey: SUPABASE.key, Authorization: 'Bearer ' + t } : null; };
 
   let pending = null, checkedAt = 0, expiry = 0; // expiry: ilmoitus, kun tilauskausi päättyy sovelluksen ollessa auki
   function refresh() {
-    if (!SERVICE.entitlements) return Promise.resolve(current());
+    if (!SERVICE.entitlements || !session) return Promise.resolve(current());
     if (pending) return pending;
-    pending = fetch(SERVICE.entitlements, { headers: authHeaders(), credentials: 'omit', cache: 'no-store' })
-      .then(r => (r.ok ? r.json() : null))
+    pending = authHeaders()
+      .then(h => (h ? fetch(SERVICE.entitlements, { headers: h, credentials: 'omit', cache: 'no-store' }) : null))
+      .then(r => (r && r.ok ? r.json() : null))
       .then(b => { ent = parse(b); status = 'ok'; }, () => { ent = FREE; status = 'error'; })
       .then(() => { clearTimeout(expiry); if (ent.active) expiry = setTimeout(changed, Math.min(ent.validUntil - Date.now() + 50, 2 ** 31 - 1)); })
       .then(() => { pending = null; checkedAt = Date.now(); changed(); return current(); });
@@ -112,9 +150,11 @@
     if (!SERVICE.ai) throw fail('service');
     let r;
     try {
+      const h = await authHeaders();
+      if (!h) throw fail('plan');
       r = await fetch(SERVICE.ai, { method: 'POST', body: file, credentials: 'omit', cache: 'no-store',
-        headers: { ...authHeaders(), 'Content-Type': (file && file.type) || 'application/octet-stream', 'X-Ajoura-Feature': f } });
-    } catch (e) { throw fail('network'); }
+        headers: { ...h, 'Content-Type': (file && file.type) || 'application/octet-stream', 'X-Ajoura-Feature': f } });
+    } catch (e) { throw e.reason ? e : fail('network'); }
     if (r.status === 402 || r.status === 403 || r.status === 401) { ent = FREE; changed(); refresh(); throw fail('plan'); }
     if (r.status === 429) { refresh(); throw fail('quota'); }
     if (!r.ok) throw fail('service');
@@ -132,6 +172,7 @@
   Object.defineProperty(window, 'AjouraAccess', { enumerable: true, value: Object.freeze({
     plans: Object.freeze(Object.keys(PLANS)), features: Object.freeze(Object.keys(FEATURES)),
     plan, entitled, aiEnabled, setAiEnabled, check, can: f => check(f).ok, quota, recognize, refresh,
-    status: () => status, serviceReady: () => !!(SERVICE.entitlements && SERVICE.ai)
+    status: () => status, serviceReady: () => !!(SERVICE.entitlements && SERVICE.ai),
+    account, sendCode, verifyCode, signOut
   }) });
 })();
