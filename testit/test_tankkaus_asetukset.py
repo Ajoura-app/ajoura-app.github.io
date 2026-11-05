@@ -317,3 +317,27 @@ def test_ohjeissa_jarjestys_ja_aikavalit(browser, base, kieli, haku, osat):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+def test_mukautetun_paivat_ylarivin_alla(browser, base, leveys):
+    """0.101: Mukautettu-jakson päivät ovat ylärivin alla koko leveydellä; Uusi tankkaus pysyy ylärivillä (0.99:ssä
+    päivät olivat ylärivin sisällä ja painike putosi omalle rivilleen)."""
+    s = avaa(browser, base, "fuel/tst1", autot=talli(), leveys=leveys, kello=KELLO,
+             extra={"ajoura-fuel": '{"p":"custom","cf":"2026-01-01","ct":"2026-10-29"}'})
+    pg = s.page
+    try:
+        r = pg.evaluate("""() => {const b = e => document.querySelector(e).getBoundingClientRect();
+          const bar = b('.fv-bar'), add = b('.fv-bar .fv-add'), per = b('.fv-bar [data-fl-period]').top ? b('.fv-bar .rp-pick:has([data-fl-period])') : null,
+            d = document.querySelector('[data-fl-custom]');
+          return {inBar: !!d.closest('.fv-bar'), addTop: add.top, perTop: per.top, barBottom: bar.bottom, dTop: d.getBoundingClientRect().top,
+            inputs: [...d.querySelectorAll('input')].map(i => i.getBoundingClientRect().width),
+            over: document.getElementById('app-screen').scrollWidth - document.getElementById('app-screen').clientWidth};}""")
+        assert not r["inBar"], r
+        assert abs(r["addTop"] - r["perTop"]) < 2, r
+        assert r["dTop"] >= r["barBottom"] - 1, r
+        assert min(r["inputs"]) > 100, r
+        assert r["over"] <= 0, r
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

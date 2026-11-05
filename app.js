@@ -507,7 +507,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.100 (testiversio)';
+  const appVersion='0.101 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -758,7 +758,8 @@
     const items=cars.map(x=>{const has=(x.fuels||[]).length,on=cmp?!!has&&!o.off.includes(x.id):x.id===c.id,i=cars.indexOf(x)%flCol.length;
       return `<div class="fv-mi${on?' on':''}"><button type="button" class="fv-mck" data-fl-cmpcar="${x.id}" aria-pressed="${on}"${has?'':' disabled'}><span class="fl-mck" aria-hidden="true">${on?flCk:''}</span><span class="sr-only">Vertailuun</span> <span class="sr-only" translate="no">${escape(carName(x))}</span></button><button type="button" class="fv-mname" data-fl-car="${x.id}"${!cmp&&x.id===c.id?' aria-current="true"':''}>${flPic(x)}<span class="fv-mtxt"><span class="fl-mn" translate="no">${escape(carName(x))}</span>${x.plate||!has?`<small>${x.plate?`<span translate="no">${escape(x.plate)}</span>`:''}${x.plate&&!has?' · ':''}${has?'':'<span>ei tankkauksia</span>'}</small>`:''}</span>${cmp&&on?`<i class="fl-sw" aria-hidden="true" style="border-top-color:${flCol[i]}${flDash[i]?';border-top-style:'+(flDash[i].startsWith('1.5')?'dotted':'dashed'):''}"></i>`:''}</button></div>`;}).join('');
     const veh=`<details class="rp-pick fl-cmenu fv-veh"${open?' open':''}><summary><span class="sr-only">Ajoneuvot</span>${shown}${chev}</summary><div class="fl-cmenu-list fv-mlist" role="group" aria-label="Ajoneuvot">${items}${fueled.length>1?'<p class="fv-mhint">Napauta ajoneuvoa, niin näet sen tiedot. Ruksi useampi, niin voit vertailla niitä.</p>':''}</div></details>`;
-    return `<div class="fv-bar">${veh}${pPick}${add}</div>`;}
+    // 0.101: Mukautettu's two dates under the row, not inside it (in 0.99 they pushed the Uusi tankkaus button down).
+    return `<div class="fv-bar">${veh}${pPick}${add}</div>${o.p==='custom'?flDates('data-fl-custom',o.cf,o.ct):''}`;}
   function fuel(c,from){const o=flPrefs();
     const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
     if(!c)return `${top()}${head()}${emptyGarage()}`;
@@ -768,7 +769,7 @@
     if(o.car!==c.id||o.t!==flPrefs().t){o.car=c.id;prefSet(flKey,flKeep(o));}
     // 0.99: Mukautettu opens the two dates under the top row (the same form as on Raportit); the end can not be set
     // before the start (min) and a wrong pair is not saved.
-    const pPick=rpPick('data-fl-period','Jakso',pLabel(o.p),flPeriods.map(([k,n])=>[k,k==='custom'?'Mukautettu…':n]),o.p)+(o.p==='custom'?flDates('data-fl-custom',o.cf,o.ct):''),msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
+    const pPick=rpPick('data-fl-period','Jakso',pLabel(o.p),flPeriods.map(([k,n])=>[k,k==='custom'?'Mukautettu…':n]),o.p),msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
     const addB=(id,k,name)=>`<button type="button" class="fl-add fv-add" data-quickfuel="${id}" data-kind="${k}" title="${name}">${actIcon(fuelTabIcon)}<span class="sr-only">${name}</span></button>`;
     if(o.t==='cmp')return fuelCompare(o,head(),flBar(o,c,pPick,true,addB(c.id,'',chargeKinds(c).includes('el')?(chargeKinds(c).length>1?'Uusi tankkaus tai lataus':'Uusi lataus'):'Uusi tankkaus')),msg);
     const real=c,kinds=chargeKinds(real),kd=kinds.includes(o.k)?o.k:kinds.length>1?'all':kinds[0];c=kd==='all'?real:fcar(real,kd);
