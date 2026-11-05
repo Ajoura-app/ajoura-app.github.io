@@ -42,6 +42,7 @@ Pysähdy vasta, kun
 
 ## Koodin säännöt
 - Kaikki näkyvät tekstit ovat kolmella kielellä (suomi, englanti, ruotsi). Suomenkieliset tekstit koodissa kääntyvät sanakirjoista i18n.js ja i18n-sv.js: lisää jokaiselle uudelle tai muutetulle tekstille oma lohko ja tarkista ensin, onko avain jo olemassa. Huolto- ja kausivinkit ovat tips.js:ssä (kolme kieltä samalla rivillä). test_kielet.py löytää kääntämättömät tekstit.
+- Värit ja teemat (0.110): app.css:n, roles.css:n ja ajoura.css:n värit ovat muotoa `var(--c-xxxxxx,#xxxxxx)`; teemat (Asetukset → Teeman valinta) antavat niille omat arvonsa teemat.css:ssä. Kirjoita uusi väri tavallisesti (#xxxxxx) ja aja sen jälkeen `python3 tyokalut/teemat.py`, joka muuttaa sen muuttujaksi ja laskee teemoille vastineet. test_teemat.py huomaa unohtuneen ajon ja heikentyneen kontrastin. Teemakohtaiset piirteet kirjoitetaan teemat.css:n loppuosaan.
 - Luettavuus: muutetussa näkymässä teksti vähintään 11 px (puhelimessa noin 12 px) ja kontrasti vähintään 4,5:1. Lomakekentät iPhonessa vähintään 16 px.
 - Ulkoasumuutoksista tee ennen/jälkeen-kuvat (leveydet 320–430 px, tumma tila, kolme kieltä, tuloste) ja liitä ne yhteenvetoon.
 - Etsi koodista ensin olemassa oleva ratkaisu ennen kuin teet uuden (esim. raporttien laskenta rpCalc, tankkausten laskenta fuelStats). Älä kopioi laskentaa.
