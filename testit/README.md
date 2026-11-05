@@ -60,6 +60,7 @@ git worktree remove ../edellinen
 | `test_kielet.py` | Kääntämättömät tekstit englanniksi ja ruotsiksi |
 | `test_leveys.py` | Ei vaakavieritystä 320 ja 430 px leveydellä |
 | `test_teemat.py` | Teemat (0.110): Asetukset → Teeman valinta, valinta säilyy uudelleenavauksessa, vanha tumma tila säilyy, Alkuperäinen-teema ennallaan (varavärit), tyokalut/teemat.py ajettu, tekstien kontrasti jokaisessa teemassa vähintään Alkuperäisen tasoa, ei vaakavieritystä 320 px:llä |
+| `test_plus.py` | Tekoälyavustaja ja Ajoura Plus -valmius (0.111): Free näkee lukon ja maksumuurin (ei hintaa eikä ostoa), Plus kytkee tekoälyn päälle ja pois (oletus pois), valinta säilyy uudelleenavauksessa, tekoäly pois = ei yhtään pyyntöä tekoälypalveluun, tilauksen päättyminen ja palvelimen kielto lukitsevat, localStoragen tai JavaScriptin muokkaus ei avaa oikeutta, kiintiö, varmuuskopion palautus ja CSV-vienti toimivat ilman tekoälyä, ulkoasu kaikissa teemoissa ja 320 px:llä. Plus-tilat keksityllä palvelimella (oikeudet.test, tekoaly.test) |
 | `test_offline.py` | Offline-osa (sw.js): asennus, avaus ilman verkkoa, hidas sivu avautuu tallennetusta 3 s:n jälkeen, palvelinvirhe, päivitys uuteen versioon hyvällä ja heikolla yhteydellä (sivu ja skriptit aina samaa versiota), tiedot säilyvät, sw.js:n numerot ja tiedostolista |
 
 ## Tunnetut puutteet

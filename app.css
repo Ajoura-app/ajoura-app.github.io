@@ -1621,3 +1621,31 @@ html.dark .device-glass .tab-fab{filter:none}
 .th-more .success-note{width:100%;margin:0}
 .th-note{margin:14px 0 0}
 .th-viewer img{max-height:80vh}
+/* 0.111: Asetukset → Uudet ominaisuudet (Tekoälyavustaja, Ajoura Plus) ja maksumuuri. Kytkin on tavallinen checkbox
+   (role=switch), joten näppäimistö ja ruudunlukija toimivat; koko rivi on sen label. Tekstit vähintään 11 px. */
+.set-new .menu-group{margin:4px 0 0}
+.set-new .ai-row{cursor:default;min-height:60px}
+.set-new label.ai-row{cursor:pointer}
+.ai-txt{min-width:0;flex:1}
+.set-new .ai-txt strong{display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px;font-size:13px}
+.set-new .ai-txt small{font-size:11.5px;color:var(--c-4f5f72,#4f5f72);margin-top:3px}
+.plus-tag{display:inline-block;padding:1px 7px;border-radius:999px;background:var(--c-1464e8,#1464e8);color:var(--c-ffffff,#fff);font-size:11px;font-weight:750;letter-spacing:.08em;line-height:1.55}
+.ai-lock{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;color:var(--c-62768a,#62768a)}
+.ai-lock svg{width:20px;height:20px}
+.ai-switch{-webkit-appearance:none;appearance:none;position:relative;flex-shrink:0;width:48px;height:28px;margin:0 0 0 auto;border-radius:999px;background:var(--c-7d8fa6,#7d8fa6);cursor:pointer;transition:background .2s}
+.ai-switch::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--c-ffffff,#fff);box-shadow:0 1px 3px var(--c-0d1b2e40,#0d1b2e40);transition:transform .2s}
+.ai-switch:checked{background:var(--c-1464e8,#1464e8)}
+.ai-switch:checked::before{transform:translateX(20px)}
+.ai-switch:focus-visible{outline:2px solid var(--c-1464e8,#1464e8);outline-offset:2px}
+.set-new .ai-more{min-height:46px;color:var(--c-1464e8,#1464e8);font-weight:650;font-size:13px}
+.set-new .ai-more .chevron{color:var(--c-1464e8,#1464e8)}
+.set-new p.ai-note{margin:8px 2px 0;font-size:11.5px;color:var(--c-4f5f72,#4f5f72)}
+.plus-sheet .sheet-head{min-height:40px}
+.plus-hero{display:grid;place-items:center;width:56px;height:56px;margin:4px auto 12px;border-radius:18px;background:var(--c-edf4fd,#edf4fd);color:var(--c-1464e8,#1464e8)}
+.plus-hero svg{width:30px;height:30px}
+.plus-sheet h2{font-size:20px;line-height:1.25;letter-spacing:-.03em;text-align:center;margin:0 0 8px}
+.plus-lead{font-size:13px;line-height:1.55;color:var(--c-4f5f72,#4f5f72);text-align:center;margin:0 4px 16px}
+.plus-sheet .app-button{font-size:14px}
+.plus-sheet .soon-tag{font-size:11px}
+.plus-sheet .app-button:not(.secondary) .soon-tag{background:var(--c-ffffff,#fff);color:var(--c-1464e8,#1464e8)}
+html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:invert(1) hue-rotate(180deg)}
