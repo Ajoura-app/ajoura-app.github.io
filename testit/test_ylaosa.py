@@ -41,3 +41,22 @@ def test_tankkaus_otsikko_kaannetty(browser, base, kieli, otsikko):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+SANAT_JS = """() => {const c = document.createElement('span'); document.body.appendChild(c);
+  const out = [...document.querySelectorAll('.fv-lab2')].map(e => {c.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:' + getComputedStyle(e).font + ';letter-spacing:' + getComputedStyle(e).letterSpacing;
+    const pisin = Math.max(...e.textContent.split(/[\\s\\u00ad]+/).map(w => {c.textContent = w; return c.getBoundingClientRect().width;}));
+    return [e.textContent, pisin <= e.getBoundingClientRect().width + 0.5];}); c.remove(); return out.filter(x => !x[1]).map(x => x[0]);}"""
+
+
+@pytest.mark.parametrize("kieli", ["fi", "en", "sv"])
+@pytest.mark.parametrize("leveys", [320, 360, 390, 430])
+@pytest.mark.parametrize("nakyma", ["reports", "fuel/tst1", "fuel/tst2"])
+def test_kortin_otsikko_ei_katkea_kesken_sanan(browser, base, kieli, leveys, nakyma):
+    """0.104: 0.102:ssa 320 px:n leveydellä "Kokonaiskulut" katkesi muotoon "Kokonaiskulu / t"."""
+    s = avaa(browser, base, nakyma, autot=tiedot.talli(), kieli=kieli, leveys=leveys, kello=KELLO)
+    try:
+        assert s.page.evaluate(SANAT_JS) == []
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

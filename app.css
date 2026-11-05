@@ -1553,3 +1553,6 @@ html.fullscreen .app-top.bare{top:8px;min-height:0}html.standalone .app-top.bare
 @container(max-width:250px){.app-top.bare{right:12px}}
 @media print{.app-top.bare{display:none}}
 .app-top.row{justify-content:flex-end}
+/* 0.104: kapeimmalla puhelimella (320 px) tunnusluvun otsikon pisin sana (esim. Kokonaiskulut) mahtuu riville
+   katkeamatta: kuvakkeen ja otsikon väli 8 → 5 px ja hieman tiiviimpi kirjainväli. */
+@container(max-width:349.98px){.fv-card{column-gap:5px}.fv-lab2{letter-spacing:-.01em}}

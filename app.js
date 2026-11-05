@@ -232,7 +232,8 @@
   // Language and light/dark theme: per-device conveniences, chosen on the welcome screen or in settings.
   const prefGet=k=>{try{return localStorage.getItem(k)||'';}catch(e){return '';}},prefSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
   // Text that never reaches the DOM (calendar file, share sheet) goes through the language layer by hand.
-  const tl=s=>window.AjouraI18n?window.AjouraI18n.t(s):s;
+  // 0.104: PDFs and files get no soft hyphens (a word-break hint for the screen, e.g. Medel\u00adförbrukning).
+  const tl=s=>{const v=window.AjouraI18n?window.AjouraI18n.t(s):s;return typeof v==='string'?v.replace(/\u00ad/g,''):v;};
   const lang=()=>window.AjouraI18n?window.AjouraI18n.lang:'fi',theme=()=>document.documentElement.classList.contains('dark')?'dark':'light';
   function setTheme(t){document.documentElement.classList.toggle('dark',t==='dark');prefSet('ajoura-theme',t);document.querySelector('meta[name=theme-color]')?.setAttribute('content',t==='dark'?'#0b1119':'#f5f8fc');}
   const seg=(name,cur,opts)=>`<div class="seg" role="group" aria-label="${name}">${opts.map(([v,l])=>`<button type="button" data-pref="${name}" data-value="${v}" aria-pressed="${v===cur}"${name==='Kieli'?' translate="no"':''}>${l}</button>`).join('')}</div>`;
@@ -510,7 +511,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.103 (testiversio)';
+  const appVersion='0.104 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
