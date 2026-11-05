@@ -41,7 +41,7 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         assert abs(r["vasen"]) <= 2 and abs(r["oikea"]) <= 2 and abs(r["keski"]) <= 1, r
         assert r["py"] >= r["h"] / 2 - 1 and r["korostus"] != "rgba(0, 0, 0, 0)", r
         assert r["alaväli"] <= 10, r  # 0.74: kapseli lähellä alareunaa (iPhonessa kotipalkin yläpuolella)
-        assert r["korostus"] != "rgb(228, 237, 251)" and r["korostus"].startswith("rgb("), r  # 0.74: valittu täyteen siniseksi (ei vaalea tausta)
+        assert r["korostus"] == "rgb(223, 234, 253)", r  # 0.109 (Niklas): valittu vaaleansiniseksi kortin painikkeiden tapaan (0.74–0.108 täysi sininen)
         assert max(r["valit"]) - min(r["valit"]) <= 1.5, r  # kuvakkeet tasavälein
         assert not s.virheet, s.virheet
     finally:

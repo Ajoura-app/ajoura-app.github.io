@@ -42,7 +42,7 @@ def test_sijainti_ja_ulkoasu(browser, base, leveys, nakyma, extra):
         assert r["n"] == 1 and r["dockissa"], r  # yksi painike, alavalikon kiinteässä kerroksessa
         assert 16 <= r["oikea"] <= 20 and 12 <= r["ylos"] <= 16, r
         assert r["w"] >= 56 and r["h"] >= 56 and r["pyorea"] and not r["peittaa"] and r["naytolla"], r
-        assert r["tausta"] == "rgb(20, 100, 232)" and r["teksti"] == "" and r["varjo"] != "none", r  # --blue, ei tekstiä
+        assert r["tausta"] == "rgb(223, 234, 253)" and r["teksti"] == "" and r["varjo"] != "none", r  # 0.109: vaaleansininen, ei tekstiä
         # Pysyy paikallaan vieritettäessä.
         pg.evaluate("document.querySelector('#app-screen').scrollTop = 400"); pg.wait_for_timeout(100)
         r2 = pg.evaluate(SIJAINTI_JS)
@@ -62,8 +62,8 @@ def test_iphone_safe_area_ja_tumma(browser, base, kotipalkki):
             pg.wait_for_timeout(200)
         r = pg.evaluate(SIJAINTI_JS)
         assert 12 <= r["ylos"] <= 16 and not r["peittaa"] and r["naytolla"], r
-        # Tumma tila kääntää näkymän värit suodattimella; painike käännetään takaisin, joten se näkyy sinisenä.
-        assert "invert(1)" in r["suodatin"] and r["varjo"] == "none", r
+        # 0.109: tumma tila kääntää näkymän värit suodattimella; painike kääntyy muun näkymän mukana (kuten kortin painikkeet).
+        assert r["suodatin"] == "none", r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -222,6 +222,30 @@ def test_kaannokset(browser, base, kieli, nimet):
         pg.click(".tab-fab"); pg.wait_for_timeout(100)
         assert pg.get_attribute(".tab-fab", "aria-label") == nimet[1]
         assert pg.eval_on_selector_all("#fab-menu [role=menuitem]", "e => e.map(x => x.innerText.trim())") == nimet[2:]
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+# 0.109 (Niklas): kelluva ＋ ja valittu alavalikon välilehti samaan vaaleaan värimaailmaan kuin ajoneuvokortin
+# painikkeet: sama vaaleansininen tausta ja reunus kuin tankkauspainikkeella, sininen kuvake (kontrasti ≥ 3:1).
+VARI_JS = """() => {const c = s => getComputedStyle(document.querySelector(s)), f = c('.tab-fab'), t = c('.main-tabs a[aria-current]'),
+  k = document.querySelector('.garage-row .row-btn.fuel') && c('.garage-row .row-btn.fuel');
+  const rgb = v => v.match(/\\d+/g).slice(0, 3).map(Number), lum = v => {const [r, g, b] = rgb(v).map(x => {x /= 255; return x <= .03928 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4;}); return .2126 * r + .7152 * g + .0722 * b;};
+  const kontrasti = (a, b) => {const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05);};
+  return {fab: f.backgroundColor, fabReuna: f.borderTopColor, tab: t.backgroundColor, kortti: k && k.backgroundColor, korttiReuna: k && k.borderTopColor,
+          fabK: kontrasti(f.color, f.backgroundColor), tabK: kontrasti(t.color, t.backgroundColor)};}"""
+
+
+@pytest.mark.parametrize("nakyma", ["home", "fuel/a1", "reports"])
+def test_vaalea_varimaailma(browser, base, nakyma):
+    s = avaa(browser, base, nakyma, autot=autot(), kello=KELLO)
+    try:
+        r = s.page.evaluate(VARI_JS)
+        assert r["fab"] == r["tab"] == "rgb(223, 234, 253)" and r["fabReuna"] == "rgb(183, 207, 243)", r
+        if r["kortti"]:
+            assert r["kortti"] == r["fab"] and r["korttiReuna"] == r["fabReuna"], r
+        assert r["fabK"] >= 3 and r["tabK"] >= 3, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

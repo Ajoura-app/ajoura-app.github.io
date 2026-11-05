@@ -1590,3 +1590,12 @@ html.dark .device-glass .tab-fab{filter:invert(1) hue-rotate(180deg);box-shadow:
 .app-top:has(>.app-brand){position:relative;justify-content:center}
 .app-top:has(>.app-brand)>:is(.r-top-right,.demo-label){position:absolute;right:0;top:calc(100% + 15.5px);transform:translateY(-50%);z-index:2}
 .app-top:has(>.app-brand)~.home-heading{min-height:31px;padding-right:104px}
+/* 0.109 (Niklas): valittu alavalikon välilehti ja kelluva ＋ samaan vaaleaan värimaailmaan kuin ajoneuvokortin
+   painikkeet (vaaleansininen tausta, sininen kuvake, ohut reunus) täyden sinisen sijaan. Tummassa tilassa ne kääntyvät
+   muun näkymän mukana (kuten kortin painikkeet), joten tumma ＋ ei enää ole kirkkaan sininen. */
+html .tab-bar.main-tabs a[aria-current]{background:#dfeafd;color:var(--blue);box-shadow:inset 0 0 0 1px #b7cff3}
+html .tab-dock>.tab-bar.main-tabs a[aria-current],html.dark .device-glass .tab-dock>.tab-bar.main-tabs a[aria-current]{box-shadow:inset 0 0 0 1px #b7cff3}
+.tab-fab{background:#dfeafd;color:var(--blue);border:1px solid #b7cff3;box-shadow:0 5px 14px #10243f29,0 1px 3px #10243f1f}
+.tab-fab:hover{background:#d2e2fb}
+.tab-fab.open{background:#d2e2fb}
+html.dark .device-glass .tab-fab{filter:none}
