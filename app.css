@@ -1585,3 +1585,8 @@ html.dark .device-glass .tab-fab{filter:invert(1) hue-rotate(180deg);box-shadow:
 /* Tankkauksen ja Raporttien ylärivissä on nyt kaksi valitsinta (ajoneuvo ja aikaväli). */
 .fv-bar{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
 @container(max-width:349.98px){.fv-bar{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}
+/* 0.108 (Niklas): etusivun AJOURA-logo keskellä; Aloitussivu ja TESTIVERSIO oikeassa reunassa Etusivu-otsikon tasalla
+   (pystykeskitettynä otsikon riviin). Otsikon oikeaan reunaan jätetään tilaa, ettei pitkä käännös mene niiden alle. */
+.app-top:has(>.app-brand){position:relative;justify-content:center}
+.app-top:has(>.app-brand)>:is(.r-top-right,.demo-label){position:absolute;right:0;top:calc(100% + 15.5px);transform:translateY(-50%);z-index:2}
+.app-top:has(>.app-brand)~.home-heading{min-height:31px;padding-right:104px}
