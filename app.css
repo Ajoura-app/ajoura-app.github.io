@@ -1542,3 +1542,14 @@ html.dark .device-glass .rp-vmi.on .rp-vck{filter:invert(1) hue-rotate(180deg)}
 .rp-mlist li span{white-space:normal}
 .rp-mtot{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:6px 0 0;padding-bottom:6px;border-bottom:1px solid #dfe6ee;font-size:12.5px;color:#3d4b5c}
 .rp-mtot .rp-mt{margin:0;font-size:15px;color:var(--ink)}
+/* 0.103 (Niklas): Aloitussivu oikeassa reunassa ja TESTIVERSIO sen alla. Muilla sivuilla kuin etusivulla ei ole
+   AJOURA-logoa: yläosa on otsikon rinnalla oikeassa yläkulmassa, joten sisältö alkaa ylempää. */
+.app-top .r-top-right{flex-direction:column;align-items:flex-end;gap:3px}
+.screen-content{position:relative}
+.app-top.bare{position:absolute;top:7px;right:18px;z-index:2;min-height:0;margin:0}
+html.fullscreen .app-top.bare{top:8px;min-height:0}html.standalone .app-top.bare{top:12px}
+.app-top.bare~.app-heading,.app-top.bare~.rp-head{display:flex;align-items:center;min-height:44px;padding-right:104px;box-sizing:border-box}
+.app-top.bare~.rp-head .app-heading{display:block;min-height:0;padding:0}
+@container(max-width:250px){.app-top.bare{right:12px}}
+@media print{.app-top.bare{display:none}}
+.app-top.row{justify-content:flex-end}

@@ -155,7 +155,10 @@
   const plateOk=v=>/^[A-ZÅÄÖ]{1,3}-\d{1,3}$/.test(v);
   const maskPlate=value=>{const v=String(value).toUpperCase().replace(/[^A-ZÅÄÖ0-9]/g,''),letters=(v.match(/^[A-ZÅÄÖ]{0,3}/)||[''])[0],digits=letters?v.slice(letters.length).replace(/\D/g,'').slice(0,3):'';return letters+(digits||/-$/.test(value)&&letters.length?'-'+digits:'');};
   const normalPlate=value=>{const v=String(value).toUpperCase().replace(/\s+/g,'');return /^[A-ZÅÄÖ]{1,3}\d{1,3}$/.test(v)?v.replace(/^([A-ZÅÄÖ]+)/,'$1-'):v;};
-  const top=()=>'<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="demo-label">TESTIVERSIO</span></div>';
+  // 0.103 (Niklas): the AJOURA logo only on the home screen (top(true)); elsewhere the top is only Aloitussivu with
+  // TESTIVERSIO under it at the right edge, beside the page title (.app-top.bare, app.css), so the page starts higher.
+  // The welcome screen keeps the top on its own row (top('row')): its language and theme buttons sit under it.
+  const top=(brand=false)=>brand===true?'<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="demo-label">TESTIVERSIO</span></div>':`<div class="app-top ${brand==='row'?'row':'bare'}"><span class="demo-label">TESTIVERSIO</span></div>`;
   const back=(target,label)=>`<a class="app-back nav-back" href="#${target}">← ${label}</a>`;
   const compact=document.documentElement.classList.contains('fullscreen'),startView=saved?'home':installed||compact?'welcome':'launcher';
   const route=()=>{let [view=startView,id='',eventId='']=(location.hash.slice(1)||startView).split('/');if(installed&&view==='launcher')view='home';if(compact&&view==='launcher')view='welcome';return {view,id,eventId};};
@@ -271,7 +274,7 @@
     launchTimer=setTimeout(()=>{screen.innerHTML=introHtml('Testiversio');glass.classList.remove('launcher-mode');runIntro(screen.querySelector('.intro'),()=>{launchTimer=setTimeout(()=>{launchTimer=0;go('welcome');},quick?400:4300);});},quick?0:260);
   }
   let welcomeStep='';
-  function welcome(){const intro=`${top()}<div class="welcome">${prefsBar(true)}<img class="welcome-logo" src="mark.svg" alt="" width="49" height="49"><h2><b class="ajo">AJO</b>URA<br><span>Matka jää muistiin!</span></h2><p>Autosi oma huoltokirja: huollot, katsastukset, kilometrit ja kulut. Pienetkin yksityiskohdat talteen.</p>`;
+  function welcome(){const intro=`${top('row')}<div class="welcome">${prefsBar(true)}<img class="welcome-logo" src="mark.svg" alt="" width="49" height="49"><h2><b class="ajo">AJO</b>URA<br><span>Matka jää muistiin!</span></h2><p>Autosi oma huoltokirja: huollot, katsastukset, kilometrit ja kulut. Pienetkin yksityiskohdat talteen.</p>`;
     const R=window.AjouraRoles,shopRole=R&&R.role()==='huolto',started=cars.some(c=>!c.sample);
     // Back on the start page after using the app: one tap continues where the user left off, nothing is lost.
     return intro+`<div class="welcome-choices">${shopRole?'<a class="app-button" href="#shop">Jatka autohuoltoon <span aria-hidden="true">→</span></a>'+(cars.some(c=>!c.sample)?'<a class="app-button secondary" href="#home">Jatka omaan talliin <span aria-hidden="true">→</span></a>':''):started?'<a class="app-button" href="#home">Jatka omaan talliin <span aria-hidden="true">→</span></a>':''}${started&&!shopRole?'':`<button class="app-button${shopRole?' secondary':''}" type="button" data-start>Aloita ilman kirjautumista</button>`}${window.AjouraSync&&window.AjouraSync.enabled?(window.AjouraSync.signedIn()?'':'<a class="app-button secondary" href="#login">Kirjaudu sisään</a>'):'<button class="app-button secondary" type="button" data-welcome="login">Kirjaudu sisään <small class="soon-tag">tulossa</small></button>'}</div><div class="video-embed welcome-video" data-video="phone" role="button" tabindex="0" aria-label="Toista AJOURA-esittelyvideo"><img src="media/ajoura-esittely-poster.jpg" alt="" loading="lazy"><span class="video-play" aria-hidden="true">▶</span><span class="video-caption">Esittelyvideo · 0:46</span></div>${welcomeStep==='login'?'<p class="login-note" role="status"><strong>Kirjautuminen on tulossa.</strong> Tili tallentaa autosi ja merkintäsi turvallisesti, ja ne siirtyvät mukanasi uuteen puhelimeen. Sitä ennen voit jatkaa ilman kirjautumista.</p>':''}<p class="app-fineprint">Ilman kirjautumista tiedot tallentuvat vain tähän laitteeseen.</p></div>`;}
@@ -342,14 +345,14 @@
     chips.push(`<button class="today-chip" type="button" data-scroll-to="garage" data-scroll-block="start"><span class="chip-ico" aria-hidden="true">${svg(icons.car)}</span><span class="chip-txt"><b>${cars.length}</b><small>${cars.length===1?'ajoneuvo tallissa':'ajoneuvoa tallissa'}</small></span></button>`);
     return `<section class="today-card" aria-label="Tänään huomioitavaa">${scene()}<div class="today-top"><span class="today-bell" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">TÄNÄÄN HUOMIOITAVAA</span>${headline}<p>${sub}</p></div></div><div class="today-chips n${chips.length}">${chips.join('')}</div></section>`;}
   function home(){
-    if(!cars.length)return `${top()}<h2 class="app-heading">Oma talli</h2>${emptyGarage()}`;
+    if(!cars.length)return `${top(true)}<h2 class="app-heading">Oma talli</h2>${emptyGarage()}`;
     const year=today().slice(0,4),rows=cars.map(c=>({c,d:dueInfo(c)}));
     const backupCard=backupDue()?`<div class="reminder-card backup-due"><span class="event-symbol" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">VARMUUSKOPIO</span><strong>${stamp(backupKey)?'Edellisestä varmuuskopiosta on yli kuukausi':'Ota ensimmäinen varmuuskopio'}</strong><small>Tiedot ovat vain tässä puhelimessa. Tallenna ne tiedostoon, niin ne säilyvät, vaikka puhelin vaihtuisi tai hajoaisi.</small><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div>`:'';
     // 0.45 (AJ-01, AJ-21, AJ-25): in a browser tab the data can be deleted (Safari: a week without a visit), so while the
     // garage holds own vehicles a card asks to install and to take a backup. It replaces the backup reminder there and
     // cannot be hidden on purpose: the people who lose data are the ones who visit rarely.
     const when=backupWhen(),browserCard=!installed&&cars.some(c=>!c.sample)?`<div class="reminder-card browser-data"><span class="event-symbol" aria-hidden="true">${svg(icons.save)}</span><div><span class="mini-label">TIEDOT TÄSSÄ SELAIMESSA</span><strong>Asenna AJOURA, niin tiedot pysyvät tallessa</strong><small>${ios?'Safari voi poistaa tiedot, jos AJOURAa ei avata viikkoon. Asennettu sovellus aloittaa tyhjänä, joten tallenna ensin varmuuskopio ja palauta se sovelluksessa.':'Selain voi poistaa tiedot, jos AJOURAa ei avata pitkään aikaan. Asennettuna ne ovat paremmin tallessa. Ota myös varmuuskopio.'}</small>${when?`<small class="bk-last">${when}</small>`:''}<div class="bd-actions"><button class="link-button" type="button" data-install-open>Näin asennat →</button><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div></div>`:'';
-    return `${top()}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading" id="garage"><h3>Oma talli</h3><a class="garage-add" href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}`;
+    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading" id="garage"><h3>Oma talli</h3><a class="garage-add" href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   // 0.67: every fuel can be picked on every vehicle (a diesel car is sometimes filled with HVO100, a petrol car with E85, a
@@ -507,7 +510,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.102 (testiversio)';
+  const appVersion='0.103 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -761,7 +764,7 @@
     // 0.101: Mukautettu's two dates under the row, not inside it (in 0.99 they pushed the Uusi tankkaus button down).
     return `<div class="fv-bar">${veh}${pPick}${add}</div>${o.p==='custom'?flDates('data-fl-custom',o.cf,o.ct):''}`;}
   function fuel(c,from){const o=flPrefs();
-    const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus ja lataus</h2></div></div>`;
+    const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2></div></div>`;
     if(!c)return `${top()}${head()}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
     // the tab itself (#fuel) keeps the view the user left.
