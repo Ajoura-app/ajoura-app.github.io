@@ -150,16 +150,16 @@ def test_kooste(browser, base):
         r = s.page.evaluate("""() => {const q = s => document.querySelector(s), add = q('.fl-add').getBoundingClientRect();
           return {kortit: [...document.querySelectorAll('.fv-card')].map(d => d.innerText.replace(/\\s+/g, ' ')),
             vanhat: document.querySelectorAll('.rp-tabs:not(.fl-kinds), .rp-filters, .fl-hero, .rp-kpis, .fl-costs, .fv-sum, .fv-cmp').length,
-            addKoko: [Math.round(add.width), Math.round(add.height)], addTeksti: q('.fl-add').innerText.trim(),
+            addKoko: [Math.round(add.width), Math.round(add.height)], addTeksti: q('.fl-add').getAttribute('aria-label'), addKelluu: !!q('.tab-dock > .tab-fab.fl-add'),
             rivi: [...q('.fv-bar').children].map(e => e.matches('.fv-veh') ? 'ajoneuvo' : e.matches('.fl-add') ? 'lisaa' : e.querySelector('[data-fl-period]') ? 'jakso' : '?').join(','),
             pdf: q('.rp-pdf')?.innerText.replace(/\\s+/g, ' ')};}""")
         k = r["kortit"]
-        assert len(k) == 4 and r["vanhat"] == 0 and r["rivi"] == "ajoneuvo,jakso,lisaa", r  # 0.98: jakso keskellä, lisäys oikealla
+        assert len(k) == 4 and r["vanhat"] == 0 and r["rivi"] == "ajoneuvo,jakso", r  # 0.107: lisäys kelluvassa ＋:ssa
         assert "Keskikulutus" in k[0] and fi(keskikulutus(autot[0]["fuels"])) in k[0] and "l/100 km" in k[0], r
         assert "Keskihinta" in k[1] and "1,800 €/l" in k[1], r
         assert "Kulut yhteensä" in k[2] and "243 €" in k[2], r
         assert "Tankkaukset" in k[3] and "3 / 135 l" in k[3], r
-        assert r["addKoko"][0] >= 44 and r["addKoko"][1] >= 44 and r["addTeksti"] == "Uusi tankkaus", r
+        assert r["addKoko"][0] >= 44 and r["addKoko"][1] >= 44 and r["addTeksti"] == "Lisää tankkaus" and r["addKelluu"], r
         assert "Tallenna tankkauskirja" in r["pdf"] and "Skoda Octavia" in r["pdf"] and "12 kk" in r["pdf"], r
         assert not s.virheet, s.virheet
     finally:

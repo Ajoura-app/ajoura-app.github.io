@@ -104,7 +104,7 @@ def test_hybridi_polttoaine_ja_sahko_erikseen(browser, base):
         pg.click("[data-fl-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-fl-kind=el]').getAttribute('aria-pressed')==='true'")
         assert fi(keskikulutus(el_fills)) in pg.inner_text(".fl-big") and "kWh/100 km" in pg.inner_text(".fl-big")
         assert "Lataukset" in pg.inner_text(".fl-sum") and "11 €" in pg.inner_text(".fl-sum")  # 3 + 3,6 + 4,2
-        assert "Uusi lataus" in pg.inner_text(".fl-add")
+        assert pg.get_attribute(".fl-add", "aria-label") == "Lisää lataus"  # 0.107: kelluva ＋
         # Uusi lataus: tallentuu el: true, kWh, ei litroja.
         pg.click(".fl-add"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert pg.query_selector(F + " [name=grade]") is None, "sähkölle ei polttoainelajia"

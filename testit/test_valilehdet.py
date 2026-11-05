@@ -55,7 +55,8 @@ LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scroll
   const n = document.querySelector('.main-tabs'), d = n.closest('.tab-dock'), b = n.getBoundingClientRect(), g = sc.getBoundingClientRect();
   const sis = [...document.querySelectorAll('.screen-content > *')].filter(e => e.getBoundingClientRect().height);
   const viim = sis[sis.length - 1].getBoundingClientRect(), dc = d && getComputedStyle(d), nc = getComputedStyle(n);
-  return {alusta: !!d, rako: b.top - viim.bottom, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
+  const f = document.querySelector('.tab-dock > .tab-fab'), fb = f && f.getBoundingClientRect();
+  return {alusta: !!d, rako: b.top - viim.bottom, fabRako: fb ? fb.top - viim.bottom : null, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
           kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', sticky: dc ? dc.position : '',
           varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
 
@@ -74,7 +75,10 @@ def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, 
         r = s.page.evaluate(LOPPU_JS)
         assert r["alusta"] and r["sticky"] == "sticky" and "gradient" in r["tausta"], r
         assert r["alaReuna"] <= 0.5, r  # alusta ulottuu näytön alareunaan asti: sisältö ei näy kapselin alta
-        assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
+        if r["fabRako"] is None:
+            assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
+        else:  # 0.107: kelluva ＋ kapselin yläpuolella; viimeinen kortti jää kokonaan myös sen yläpuolelle
+            assert 8 <= r["fabRako"] <= 40, r
         assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r  # 0.74:n paikka säilyy
         if teema == "dark":
             assert r["varjo"] == "none", r  # käänteisvärisuodatin tekisi varjosta vaalean hehkun

@@ -65,8 +65,9 @@ def test_rakenne_ja_summat(browser, base):
         assert pg.locator("[data-rp-tab], .rp-tabs, .rp-filters, .rp-total").count() == 0, "vanha yläosa jäi"
         r = pg.evaluate("""() => {const b = [...document.querySelector('.fv-bar').children].map(e => e.getBoundingClientRect());
           return {n: b.length, rivi: new Set(b.map(x => Math.round(x.top))).size, korkeus: new Set(b.map(x => Math.round(x.height))).size,
-                  lisaa: document.querySelector('.fv-bar [data-rp-add]')?.innerText.trim(), aria: document.querySelector('[data-rp-add] .sr-only')?.textContent};}""")
-        assert r["n"] == 3 and r["rivi"] == 1 and r["korkeus"] == 1 and r["lisaa"] == "Lisää merkintä" and r["aria"] == "Lisää merkintä", r
+                  lisaa: document.querySelectorAll('.fv-bar [data-rp-add], .fv-bar .fv-add').length, aria: document.querySelector('.tab-dock > .tab-fab[data-fab-menu]')?.getAttribute('aria-label')};}""")
+        # 0.107: ylärivissä ajoneuvo ja jakso; Lisää merkintä on kelluva ＋ alavalikon yläpuolella.
+        assert r["n"] == 2 and r["rivi"] == 1 and r["korkeus"] == 1 and r["lisaa"] == 0 and r["aria"] == "Lisää merkintä", r
         assert jarjestys(pg) == OLETUS
         assert [kortti(pg, k) for k in ("tot", "fuel", "svc")] == [YHT, POLTTO, HUOLLOT + KORJAUKSET]
         # Keskimäärin / kk: 1 265 € / (9 + 29/31 kk) = 127 €; jakaja näkyy.
@@ -324,21 +325,27 @@ def test_ei_kuluja(browser, base):
 
 
 def test_lisaa_merkinta(browser, base):
+    """0.107: kelluvan ＋:n valikko: Lisää huolto ja Lisää muistiinpano. Kaikki ajoneuvot: ajoneuvo valitaan ensin;
+    yksi ajoneuvo valittuna: lomake aukeaa suoraan sille."""
     s = avaa(browser, base, "reports", autot=talli(), extra=VUOSI, kello=KELLO)
     pg = s.page
     try:
-        pg.click("[data-rp-add]"); pg.wait_for_selector(".rp-addsheet")
-        assert pg.eval_on_selector_all(".rp-addsheet input[name=car]", "e => e.map(i => i.value)") == ["a1", "a2", "a3"]
-        pg.check('.rp-addsheet input[value="a2"]'); pg.click("[data-rp-addev]")
+        pg.click("[data-fab-menu]"); pg.wait_for_selector("#fab-menu:not([hidden])")
+        pg.click("[data-fab-act=svc]"); pg.wait_for_selector(".rp-addsheet")
+        assert pg.eval_on_selector_all(".rp-addsheet [data-rp-pickcar]", "e => e.map(i => i.dataset.rpPickcar)") == ["a1", "a2", "a3"]
+        assert "Lisää huolto" in pg.inner_text(".rp-addsheet") and pg.locator("#fab-menu:not([hidden])").count() == 0
+        pg.click('[data-rp-pickcar="a2"]')
         pg.wait_for_function("location.hash === '#add/a2'"); pg.wait_for_selector("#event-form")
         assert pg.locator("#event-form").count() == 1 and pg.locator(".sheet-layer").count() == 0
-        # Valittu ajoneuvo: ei ajoneuvokysymystä, tankkaus avaa nykyisen tankkausikkunan.
+        # Valittu ajoneuvo: ei ajoneuvokysymystä, muistiinpano avaa ajoneuvon muistiinpanot.
         pg.evaluate("localStorage.setItem('ajoura-reports', '{\"p\":\"year\",\"car\":\"a1\"}')")
         pg.goto(base + "/app.html#reports"); pg.wait_for_selector("[data-w-grid=reports]")
-        pg.click("[data-rp-add]"); pg.wait_for_selector(".rp-addsheet")
-        assert pg.locator(".rp-addsheet input[name=car]").count() == 0 and "Testi Pakettiauto" in pg.inner_text(".rp-addsheet")
-        pg.click("[data-rp-addfuel]"); pg.wait_for_selector(".sheet form [name=ppu]")
-        assert pg.locator(".rp-addsheet").count() == 0
+        pg.click("[data-fab-menu]"); pg.click("[data-fab-act=memo]")
+        pg.wait_for_function("location.hash === '#notes/a1'")
+        assert pg.locator(".sheet-layer").count() == 0
+        pg.goto(base + "/app.html#reports"); pg.wait_for_selector("[data-w-grid=reports]")
+        pg.click("[data-fab-menu]"); pg.click("[data-fab-act=svc]")
+        pg.wait_for_function("location.hash === '#add/a1'"); pg.wait_for_selector("#event-form")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -429,17 +436,17 @@ def test_varit_yhtenaiset(browser, base, teema):
         s.sulje()
 
 
-@pytest.mark.parametrize("kieli,otsikko,lisaa", [("en", "Total cost settings", "Add entry"),
-                                                 ("sv", "Inställningar för totala kostnader", "Lägg till post")])
+@pytest.mark.parametrize("kieli,otsikko,lisaa", [("en", "Total cost settings", "Choose vehicle"),
+                                                 ("sv", "Inställningar för totala kostnader", "Välj fordon")])
 def test_kaannokset(browser, base, kieli, otsikko, lisaa):
     s = avaa(browser, base, "reports", autot=talli(), kieli=kieli, extra=VUOSI, kello=KELLO)
     pg = s.page
     try:
         pg.click("[data-rp-set=tot]"); pg.wait_for_selector(".fk-sheet"); pg.wait_for_timeout(200)
         assert otsikko in pg.inner_text(".fk-sheet")
-        pg.keyboard.press("Escape"); pg.click("[data-rp-add]"); pg.wait_for_selector(".rp-addsheet"); pg.wait_for_timeout(200)
+        pg.keyboard.press("Escape"); pg.click("[data-fab-menu]"); pg.click("[data-fab-act=svc]"); pg.wait_for_selector(".rp-addsheet"); pg.wait_for_timeout(200)
         t = pg.inner_text(".rp-addsheet")
-        assert lisaa in t and "Huolto, korjaus tai muu kulu" not in t, t
+        assert lisaa in t and "Valitse ajoneuvo" not in t and "Lisää huolto" not in t, t
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

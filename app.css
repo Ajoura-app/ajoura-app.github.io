@@ -1556,3 +1556,32 @@ html.fullscreen .app-top.bare{top:8px;min-height:0}html.standalone .app-top.bare
 /* 0.104: kapeimmalla puhelimella (320 px) tunnusluvun otsikon pisin sana (esim. Kokonaiskulut) mahtuu riville
    katkeamatta: kuvakkeen ja otsikon väli 8 → 5 px ja hieman tiiviimpi kirjainväli. */
 @container(max-width:349.98px){.fv-card{column-gap:5px}.fv-lab2{letter-spacing:-.01em}}
+/* 0.107 (Niklas): yhteinen kelluva ＋-painike (FAB) Kodissa, Tankkauksessa ja Raporteissa. Painike on alavalikon kanssa
+   samassa kiinteässä kerroksessa (.tab-dock, sticky), joten se pysyy paikallaan vieritettäessä ja seuraa alavalikon
+   todellista korkeutta ja iPhonen safe areaa. Telakan yläreunassa on 16 px liukuväri, joten 100% - 4px = 12 px
+   alavalikon yläreunasta. Tummassa tilassa koko näkymä käännetään suodattimella; painike käännetään takaisin, jotta
+   se pysyy Ajouran sinisenä. Sivun loppuun tulee vieritysvara, jottei painike peitä viimeistä korttia. */
+.tab-fab{position:absolute;margin:0;min-height:0;right:16px;bottom:calc(100% - 4px);z-index:2;display:grid;place-items:center;width:56px;height:56px;padding:0;border:0;border-radius:50%;background:var(--blue);color:#fff;box-shadow:0 6px 16px #1464e84d,0 2px 4px #10243f33;pointer-events:auto;cursor:pointer;text-decoration:none;transition:transform .15s,background .15s}
+.tab-fab:hover{background:#0c51c4}
+.tab-fab:active{transform:scale(.94)}
+.tab-fab:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.tab-fab .fab-plus{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;transition:transform .2s}
+.tab-fab.open .fab-plus{transform:rotate(45deg)}
+.fab-menu{position:absolute;right:16px;bottom:calc(100% + 62px);z-index:2;display:flex;flex-direction:column;gap:2px;min-width:210px;max-width:calc(100% - 32px);padding:6px;border:1px solid #d3dfee;border-radius:16px;background:#fff;box-shadow:0 10px 28px #10243f2e,0 2px 6px #10243f1a;pointer-events:auto;transform-origin:100% 100%;animation:fab-menu-in .16s ease-out}
+.fab-menu[hidden]{display:none}
+.fab-menu button{display:flex;align-items:center;gap:12px;min-height:50px;padding:7px 12px 7px 8px;border:0;border-radius:11px;background:none;font:inherit;font-size:14px;font-weight:650;color:var(--ink);text-align:left;cursor:pointer}
+.fab-menu button:hover,.fab-menu button:focus-visible{background:#eef4ff}
+.fab-menu button:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.fab-mi-ico{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#e3eefe;color:var(--blue)}
+.fab-mi-ico svg{width:20px;height:20px}
+@keyframes fab-menu-in{from{opacity:0;transform:translateY(6px) scale(.97)}}
+.screen-content:has(+.tab-dock>.tab-fab){padding-bottom:84px}
+.today-card+.garage-rows{margin-top:12px}
+.rp-addq{margin:0 0 8px;font-size:13px;font-weight:650;color:#4f5f72}
+.rp-addthumb{overflow:hidden}.rp-addthumb>img,.rp-addthumb>svg{width:100%;height:100%;object-fit:cover}
+html.dark .device-glass .tab-fab{filter:invert(1) hue-rotate(180deg);box-shadow:none}
+@media(prefers-reduced-motion:reduce){.fab-menu{animation:none}}
+@media print{.tab-fab,.fab-menu{display:none!important}}
+/* Tankkauksen ja Raporttien ylärivissä on nyt kaksi valitsinta (ajoneuvo ja aikaväli). */
+.fv-bar{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+@container(max-width:349.98px){.fv-bar{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}}

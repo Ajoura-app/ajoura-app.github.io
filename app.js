@@ -205,14 +205,26 @@
   // with a bolt, since fuel and charging are logged on the same tab.
   const fuelTabIcon='<path d="M3.5 20V5.5A1.5 1.5 0 0 1 5 4h6a1.5 1.5 0 0 1 1.5 1.5V20M2.5 20h11M3.5 10h9"/><path d="M19 5l-3.2 7h3L17.200 19l4-8.200h-3z"/>';
   // 0.75: the capsule sits on a dock (app.css .tab-dock) so content never shows around or under it.
-  const tabBar=view=>`<div class="tab-dock"><nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#fuel" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#reports" aria-label="Raportit"${tabOf(view)==='reports'?here:''}>${svg(icons.chart)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;
+  // 0.107 (Niklas): one floating ＋ button (FAB) for the three main tabs. It sits in the same sticky dock as the tab bar,
+  // just above it (app.css .tab-fab), so it follows the dock's real height and the iPhone safe area and never scrolls away.
+  // Koti: the Lisää ajoneuvo form (#newcar). Tankkaus: the existing fill-up sheet (data-quickfuel, same as the old top
+  // button, so the vehicle and kind shown on the tab are the defaults). Raportit: a small menu with Lisää huolto (#add)
+  // and Lisää muistiinpano (#notes); with Kaikki ajoneuvot and several vehicles the vehicle is chosen first (rpCarSheet).
+  let fabFuel=null;
+  const fabPlus='<svg class="fab-plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>';
+  function fab(view){
+    if(view==='home')return `<a class="tab-fab" href="#newcar" aria-label="Lisää ajoneuvo" title="Lisää ajoneuvo">${fabPlus}</a>`;
+    if(view==='fuel'&&fabFuel&&cars.some(c=>c.id===fabFuel.id))return `<button type="button" class="tab-fab fl-add" data-quickfuel="${fabFuel.id}" data-kind="${fabFuel.kind}" aria-label="${fabFuel.name}" title="${fabFuel.name}">${fabPlus}</button>`;
+    if(view==='reports'&&cars.length)return `<div class="fab-menu" id="fab-menu" role="menu" aria-label="Lisää merkintä" hidden><button type="button" role="menuitem" data-fab-act="svc"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.wrench)}</span><span>Lisää huolto</span></button><button type="button" role="menuitem" data-fab-act="memo"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.note)}</span><span>Lisää muistiinpano</span></button></div><button type="button" class="tab-fab" data-fab-menu aria-haspopup="menu" aria-expanded="false" aria-controls="fab-menu" aria-label="Lisää merkintä" title="Lisää merkintä">${fabPlus}</button>`;
+    return '';}
+  const tabBar=view=>`<div class="tab-dock">${fab(view)}<nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#fuel" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#reports" aria-label="Raportit"${tabOf(view)==='reports'?here:''}>${svg(icons.chart)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
-    ['Miten lisään auton?','Etusivu → ＋ Lisää ajoneuvo. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
+    ['Miten lisään auton?','Etusivu → sininen ＋ oikeassa alakulmassa. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
     ['Miten muutan ajoneuvojen järjestystä?','Pidä etusivulla ajoneuvon korttia painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti ja säilyy myös varmuuskopiossa.'],
     ['Miten järjestän Tankkaus ja lataus -välilehden?','Pidä korttia, kaaviota tai listaa painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti tähän laitteeseen. Alkuperäisen järjestyksen saat takaisin, kun napautat tunnusluvun kuvaketta ja valitset Palauta widgettien järjestys.'],
     ['Voiko tunnusluvulla olla oma aikaväli?','Voi. Napauta Tankkaus ja lataus -välilehdellä tunnusluvun sinistä kuvaketta ja valitse aikaväli, esimerkiksi Kuluva kuukausi tai Mukautettu. Kortti näyttää käyttämänsä aikavälin luvun alla. Käytä sivun aikaväliä palauttaa kortin seuraamaan sivun yläosan valintaa.'],
-    ['Voinko lisätä moottoripyörän, veneen tai mopon?','Voit. Etusivu → ＋ Lisää ajoneuvo ja valitse ensin ajoneuvolaji: auto, moottoripyörä, mopo, mopoauto, mönkijä, moottorikelkka, vene, traktori tai muu moottorilaite. Veneillä, traktoreilla ja muilla laitteilla seurataan käyttötunteja kilometrien sijaan.'],
+    ['Voinko lisätä moottoripyörän, veneen tai mopon?','Voit. Etusivu → sininen ＋ oikeassa alakulmassa ja valitse ensin ajoneuvolaji: auto, moottoripyörä, mopo, mopoauto, mönkijä, moottorikelkka, vene, traktori tai muu moottorilaite. Veneillä, traktoreilla ja muilla laitteilla seurataan käyttötunteja kilometrien sijaan.'],
     ['Miten kirjaan huollon tai korjauksen?','Avaa auto ja paina ＋ Lisää merkintä. Pakollisia ovat vain tyyppi ja päivämäärä. Kilometrit, kulut, tehdyt toimenpiteet, kuvat ja kuitit voit lisätä heti tai myöhemmin.'],
     ['Miten lisään kuitin tai kuvan?','Merkinnässä on erikseen Lisää kuvia ja Lisää kuitit. Voit ottaa kuvan kameralla tai valita sen kuvista. Kuvat pienennetään automaattisesti, jotta ne mahtuvat puhelimeen.'],
     ['Kuva ei lataudu. Mitä teen?','Kokeile toista kuvaa tai ota kuvasta kuvakaappaus ja lisää se. Jotkin kuvamuodot (esim. osa HEIC-kuvista) eivät aukea kaikissa selaimissa.'],
@@ -346,14 +358,14 @@
     chips.push(`<button class="today-chip" type="button" data-scroll-to="garage" data-scroll-block="start"><span class="chip-ico" aria-hidden="true">${svg(icons.car)}</span><span class="chip-txt"><b>${cars.length}</b><small>${cars.length===1?'ajoneuvo tallissa':'ajoneuvoa tallissa'}</small></span></button>`);
     return `<section class="today-card" aria-label="Tänään huomioitavaa">${scene()}<div class="today-top"><span class="today-bell" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">TÄNÄÄN HUOMIOITAVAA</span>${headline}<p>${sub}</p></div></div><div class="today-chips n${chips.length}">${chips.join('')}</div></section>`;}
   function home(){
-    if(!cars.length)return `${top(true)}<h2 class="app-heading">Oma talli</h2>${emptyGarage()}`;
+    if(!cars.length)return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${emptyGarage()}`;
     const year=today().slice(0,4),rows=cars.map(c=>({c,d:dueInfo(c)}));
     const backupCard=backupDue()?`<div class="reminder-card backup-due"><span class="event-symbol" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">VARMUUSKOPIO</span><strong>${stamp(backupKey)?'Edellisestä varmuuskopiosta on yli kuukausi':'Ota ensimmäinen varmuuskopio'}</strong><small>Tiedot ovat vain tässä puhelimessa. Tallenna ne tiedostoon, niin ne säilyvät, vaikka puhelin vaihtuisi tai hajoaisi.</small><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div>`:'';
     // 0.45 (AJ-01, AJ-21, AJ-25): in a browser tab the data can be deleted (Safari: a week without a visit), so while the
     // garage holds own vehicles a card asks to install and to take a backup. It replaces the backup reminder there and
     // cannot be hidden on purpose: the people who lose data are the ones who visit rarely.
     const when=backupWhen(),browserCard=!installed&&cars.some(c=>!c.sample)?`<div class="reminder-card browser-data"><span class="event-symbol" aria-hidden="true">${svg(icons.save)}</span><div><span class="mini-label">TIEDOT TÄSSÄ SELAIMESSA</span><strong>Asenna AJOURA, niin tiedot pysyvät tallessa</strong><small>${ios?'Safari voi poistaa tiedot, jos AJOURAa ei avata viikkoon. Asennettu sovellus aloittaa tyhjänä, joten tallenna ensin varmuuskopio ja palauta se sovelluksessa.':'Selain voi poistaa tiedot, jos AJOURAa ei avata pitkään aikaan. Asennettuna ne ovat paremmin tallessa. Ota myös varmuuskopio.'}</small>${when?`<small class="bk-last">${when}</small>`:''}<div class="bd-actions"><button class="link-button" type="button" data-install-open>Näin asennat →</button><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div></div>`:'';
-    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="history-heading" id="garage"><h3>Oma talli</h3><a class="garage-add" href="#newcar">＋ Lisää ajoneuvo</a></div><div class="garage-rows">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}`;
+    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${todayCard(rows)}<div class="garage-rows" id="garage">${rows.map(r=>garageRow(r.c,r.d,year)).join('')}</div>${rows.some(r=>r.d&&r.d.kmLeft!==null)?`<p class="garage-note">Kilometrit päivittyvät, kun kirjaat tankkauksen tai merkinnän. Väli ${profile.months} kk / ${number(profile.km)} km on oma asetuksesi kohdassa Valikko → Asetukset.</p>`:''}${browserCard||backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   // 0.67: every fuel can be picked on every vehicle (a diesel car is sometimes filled with HVO100, a petrol car with E85, a
@@ -511,7 +523,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.106 (testiversio)';
+  const appVersion='0.107 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -764,7 +776,7 @@
     const veh=`<details class="rp-pick fl-cmenu fv-veh"${open?' open':''}><summary><span class="sr-only">Ajoneuvot</span>${shown}${chev}</summary><div class="fl-cmenu-list fv-mlist" role="group" aria-label="Ajoneuvot">${items}${fueled.length>1?'<p class="fv-mhint">Napauta ajoneuvoa, niin näet sen tiedot. Ruksi useampi, niin voit vertailla niitä.</p>':''}</div></details>`;
     // 0.101: Mukautettu's two dates under the row, not inside it (in 0.99 they pushed the Uusi tankkaus button down).
     return `<div class="fv-bar">${veh}${pPick}${add}</div>${o.p==='custom'?flDates('data-fl-custom',o.cf,o.ct):''}`;}
-  function fuel(c,from){const o=flPrefs();
+  function fuel(c,from){const o=flPrefs();fabFuel=null;
     const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2></div></div>`;
     if(!c)return `${top()}${head()}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
@@ -774,12 +786,13 @@
     // 0.99: Mukautettu opens the two dates under the top row (the same form as on Raportit); the end can not be set
     // before the start (min) and a wrong pair is not saved.
     const pPick=rpPick('data-fl-period','Jakso',pLabel(o.p),flPeriods.map(([k,n])=>[k,k==='custom'?'Mukautettu…':n]),o.p),msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    const addB=(id,k,name)=>`<button type="button" class="fl-add fv-add" data-quickfuel="${id}" data-kind="${k}" title="${name}">${actIcon(fuelTabIcon)}<span class="sr-only">${name}</span></button>`;
-    if(o.t==='cmp')return fuelCompare(o,head(),flBar(o,c,pPick,true,addB(c.id,'',chargeKinds(c).includes('el')?(chargeKinds(c).length>1?'Uusi tankkaus tai lataus':'Uusi lataus'):'Uusi tankkaus')),msg);
+    // 0.107: the add button is the floating ＋ (fab); flBar no longer has a third box.
+    const addB=(id,k,name)=>{fabFuel={id,kind:k,name};return '';};
+    if(o.t==='cmp')return fuelCompare(o,head(),flBar(o,c,pPick,true,addB(c.id,'',chargeKinds(c).includes('el')?(chargeKinds(c).length>1?'Lisää tankkaus tai lataus':'Lisää lataus'):'Lisää tankkaus')),msg);
     const real=c,kinds=chargeKinds(real),kd=kinds.includes(o.k)?o.k:kinds.length>1?'all':kinds[0];c=kd==='all'?real:fcar(real,kd);
     const kindTabs=kinds.length>1?`<div class="rp-tabs fl-kinds" role="group" aria-label="Laji"><button type="button" data-fl-kind="all" aria-pressed="${kd==='all'}">${svg(icons.chart)}<span>Yhteensä</span></button>${kinds.map(k=>`<button type="button" data-fl-kind="${k}" aria-pressed="${kd===k}">${svg(k==='el'?bolt:icons.fuel)}<span>${k==='el'?'Sähkö':k==='gas'?'Kaasu':'Polttoaine'}</span></button>`).join('')}</div>`:'';
     const u=unitOf(c),ev=u==='kWh',pu=`${u}/${per(c)}`;
-    const addName=kd==='all'?(kinds.includes('el')?'Uusi tankkaus tai lataus':'Uusi tankkaus'):ev?'Uusi lataus':kd==='gas'?'Uusi kaasutankkaus':'Uusi tankkaus';
+    const addName=kd==='all'?(kinds.includes('el')?'Lisää tankkaus tai lataus':'Lisää tankkaus'):ev?'Lisää lataus':'Lisää tankkaus';
     const bar=flBar(o,real,pPick,false,addB(real.id,kd==='all'?'':kd,addName));
     const sample=c.sample?'<p class="app-note">Esimerkkiauto: kuvitteelliset tankkaukset ja hinnat.</p>':'';
     if(kd==='all')return `${top()}${head()}${bar}${kindTabs}${msg}${fuelAll(real,kinds,o)}${sample}`;
@@ -1336,8 +1349,7 @@
     const shown=one?`${flPic(c1)}<span class="rp-pick-t" translate="no">${escape(c1.plate||carName(c1))}</span>`:`${rpAllPic}<span class="rp-pick-t">Kaikki</span>`;
     const veh=`<details class="rp-pick fl-cmenu fv-veh rp-veh"><summary><span class="sr-only">Ajoneuvot</span>${shown}${chev}</summary><div class="fl-cmenu-list fv-mlist" role="group" aria-label="Ajoneuvot">${items}</div></details>`;
     const pPick=rpPick('data-rp-period','Jakso',pLabel(o.p),flPeriods.map(([k,n])=>[k,k==='custom'?'Mukautettu…':n]),o.p);
-    const add=`<button type="button" class="fv-add rp-add" data-rp-add aria-haspopup="dialog" title="Lisää merkintä">${actIcon(icons.doc)}<span class="sr-only">Lisää merkintä</span></button>`;
-    const bar=`<div class="fv-bar">${veh}${pPick}${add}</div>${o.p==='custom'?flDates('data-rp-custom',o.cf,o.ct):''}`;
+    const bar=`<div class="fv-bar">${veh}${pPick}</div>${o.p==='custom'?flDates('data-rp-custom',o.cf,o.ct):''}`;
     // Key figures. A card with its own period gets its own rpCalc (same vehicle, its period).
     const kv=k=>{const x=o.kp[k]||o,same=x.p===o.p&&(x.p!=='custom'||x.cf===o.cf&&x.ct===o.ct);return {x,d:same?d:rpCalc({...o,p:x.p,cu:x.cu})};};
     const gsum=(dd,ks)=>dd.rows.reduce((m,r)=>m+ks.reduce((n,k)=>n+r.s[k],0),0),eB=v=>`<b>${number(Math.round(v))}</b> <span>€</span>`;
@@ -1439,28 +1451,27 @@
     kpiSheet({title:rpSetT[k],x:o.kp[k]||null,pg:o,back:from,sel,
       save:nx=>{const o2=rpPrefs();if(nx)o2.kp[k]=nx;else delete o2.kp[k];rpSave(o2,sel);},
       resetOrder:()=>{const o2=rpPrefs();o2.w=[...rpWidgets];notice='✓ Widgettien järjestys palautettu.';rpSave(o2,sel);}});}
-  // Lisää merkintä (0.102): the existing ways to add, in a small sheet: the entry form (#add: service, repair, inspection,
-  // tyres or other costs) or the fill-up sheet (openSheet). With Kaikki ajoneuvot the vehicle is chosen first.
-  function rpAddSheet(from){const o=rpPrefs(),list=o.car?cars.filter(c=>c.id===o.car):cars;if(!list.length)return;
-    const fname=c=>chargeKinds(c).includes('el')?(chargeKinds(c).length>1?'Tankkaus tai lataus':'Lataus'):'Tankkaus';
-    closeSheet();sheetBack=from||null;sheetSel='[data-rp-add]';const l=document.createElement('div');l.className='sheet-layer';
-    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">Lisää merkintä</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
-      <form class="fk-form" novalidate>${list.length>1?`<fieldset class="fk-set"><legend class="fk-leg">Ajoneuvo</legend>${list.map((c,i)=>`<label class="fk-opt"><input type="radio" name="car" value="${c.id}"${i?'':' checked'}><span translate="no">${escape(carName(c))}</span>${c.plate?`<small translate="no">${escape(c.plate)}</small>`:''}</label>`).join('')}</fieldset>`:`<p class="sheet-car"><span class="sheet-thumb" aria-hidden="true">${rpThumb(list[0])}</span><strong translate="no">${escape(carName(list[0]))}</strong></p>`}
-      <div class="rp-addopts"><button type="button" class="rp-addopt" data-rp-addev><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.wrench)}</span><span class="rp-rtxt"><strong>Huolto, korjaus tai muu kulu</strong><small>Huolto, korjaus, katsastus, renkaat tai muu kulu</small></span><span class="chevron" aria-hidden="true">›</span></button>
-      <button type="button" class="rp-addopt" data-rp-addfuel><span class="rp-pdf-ico" aria-hidden="true">${svg(fuelTabIcon)}</span><span class="rp-rtxt"><strong data-rp-fname>${fname(list[0])}</strong><small>Mittarilukema, määrä ja hinta</small></span><span class="chevron" aria-hidden="true">›</span></button></div></form></div>`;
-    glass.appendChild(l);screen.inert=true;const f=l.querySelector('form'),pick=()=>{const v=f.elements.car?f.elements.car.value:list[0].id;return cars.find(c=>c.id===v)||list[0];};
-    f.addEventListener('change',()=>{l.querySelector('[data-rp-fname]').textContent=tl(fname(pick()));});
-    l.addEventListener('click',e=>{if(e.target.closest('[data-rp-addev]')){const c=pick();closeSheet();go('add/'+c.id);return;}
-      if(e.target.closest('[data-rp-addfuel]')){const c=pick();openSheet(c,from,null);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();});
+  // 0.107: Lisää huolto or Lisää muistiinpano from the Raportit ＋ menu. With one vehicle chosen (or only one in the
+  // garage) the form opens straight away; with Kaikki ajoneuvot the vehicle is picked first in this small sheet.
+  const fabGo=(act,c)=>go((act==='memo'?'notes/':'add/')+c.id);
+  function rpCarSheet(act,from){closeSheet();sheetBack=from||null;sheetSel='[data-fab-menu]';const l=document.createElement('div');l.className='sheet-layer';
+    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${act==='memo'?'Lisää muistiinpano':'Lisää huolto'}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
+      <p class="rp-addq">Valitse ajoneuvo</p><div class="rp-addopts">${cars.map(c=>`<button type="button" class="rp-addopt" data-rp-pickcar="${c.id}"><span class="rp-pdf-ico rp-addthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong>${c.plate?`<small translate="no">${escape(c.plate)}</small>`:''}</span><span class="chevron" aria-hidden="true">›</span></button>`).join('')}</div></div>`;
+    glass.appendChild(l);screen.inert=true;
+    l.addEventListener('click',e=>{const b=e.target.closest('[data-rp-pickcar]');if(b){const c=cars.find(x=>x.id===b.dataset.rpPickcar);sheetBack=null;closeSheet();if(c)fabGo(act,c);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();});
     l.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const fl=focusables(l.querySelector('.sheet'));if(!fl.length)return;const first=fl[0],lastEl=fl[fl.length-1];
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();lastEl.focus();}else if(!e.shiftKey&&document.activeElement===lastEl){e.preventDefault();first.focus();}});
-    requestAnimationFrame(()=>{l.classList.add('open');const q=f.querySelector('input:checked')||l.querySelector('[data-rp-addev]');if(q)q.focus({preventScroll:true});});}
+    requestAnimationFrame(()=>{l.classList.add('open');const q=l.querySelector('[data-rp-pickcar]');if(q)q.focus({preventScroll:true});});}
+  // The ＋ menu: the first tap opens it, a second tap, a tap outside, Escape, a choice or leaving the tab closes it.
+  function fabMenu(open,focus){const b=screen.querySelector('[data-fab-menu]'),m=screen.querySelector('#fab-menu');if(!b||!m)return;
+    m.hidden=!open;b.setAttribute('aria-expanded',String(open));b.classList.toggle('open',open);
+    if(open&&focus!==false)m.querySelector('[role=menuitem]').focus({preventScroll:true});else if(!open&&focus)b.focus({preventScroll:true});}
+  function fabAct(act,from){fabMenu(false);const o=rpPrefs(),one=cars.find(c=>c.id===o.car)||(cars.length===1?cars[0]:null);if(one)fabGo(act,one);else if(cars.length)rpCarSheet(act,from);}
   function reportsClick(t){const o=rpPrefs(),flip=(l,v)=>l.includes(v)?l.filter(x=>x!==v):[...l,v];
     if(t.closest('[data-rp-pdf]:not([disabled])')){fleetPdf();return true;}
     if(t.closest('[data-rp-csv]:not([disabled])')){rpCsv();return true;}
     const rm=t.closest('[data-rp-m]');if(rm){rpMonth=Number(rm.dataset.rpM);const y=screen.scrollTop;render();screen.scrollTop=y;return true;}
     const st=t.closest('[data-rp-set]');if(st){rpSheet(st.dataset.rpSet,st);return true;}
-    const ad=t.closest('[data-rp-add]');if(ad){rpAddSheet(ad);return true;}
     // A vehicle from the list (or "Vertaa kaikkia"), or a tap on a vehicle's row: the whole page shows that vehicle.
     const car=t.closest('[data-rp-car]');if(car){const id=car.dataset.rpCar;if(id&&!cars.some(c=>c.id===id))return true;rpMonth=null;o.car=id;rpSave(o,'.rp-veh>summary');return true;}
     const op=t.closest('[data-rp-open]');if(op){const id=op.dataset.rpOpen;if(!cars.some(c=>c.id===id))return true;rpMonth=null;o.car=id;prefSet(rpKey,flKeep(o));render();screen.scrollTop=0;refocus('.rp-veh>summary');return true;}
@@ -1881,6 +1892,15 @@
   function reset(){if(!confirm('Poistetaanko kaikki autot ja merkinnät?'))return;cars=[];profile={...defaultProfile};sequence=0;notice='';draft=null;lookup=null;try{[storeKey,backupKey,sinceKey].forEach(k=>localStorage.removeItem(k));}catch(e){}idb.del(storeKey).catch(()=>{});if(window.AjouraSync)window.AjouraSync.forget();document.getElementById('demo-announcement').textContent='Kaikki tiedot poistettu.';go(installed?'welcome':'launcher');}
   screen.addEventListener('click',event=>{const kl=event.target.closest('[data-fl-kindlink]');if(kl){const o=flPrefs();o.k=kl.dataset.flKindlink;prefSet(flKey,flKeep(o));}const q=event.target.closest('[data-quickfuel]');if(q){const c=cars.find(c=>c.id===q.dataset.quickfuel);if(c)openSheet(c,q,null,q.dataset.kind);return;}const to=event.target.closest('[data-scroll-to]');if(to){const el=document.getElementById(to.dataset.scrollTo);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:to.dataset.scrollBlock||'center'});}});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&glass.querySelector('.sheet-layer'))closeSheet();});
+  // 0.107: the Raportit ＋ menu (fab). A tap outside closes it before the tap is handled (capture).
+  document.addEventListener('click',e=>{const m=screen.querySelector('#fab-menu');if(m&&!m.hidden&&!e.target.closest('#fab-menu,[data-fab-menu]'))fabMenu(false,false);},true);
+  screen.addEventListener('click',e=>{const b=e.target.closest('[data-fab-menu]');if(b){fabMenu(b.getAttribute('aria-expanded')!=='true',e.detail===0);return;}const a=e.target.closest('[data-fab-act]');if(a)fabAct(a.dataset.fabAct,screen.querySelector('[data-fab-menu]'));});
+  screen.addEventListener('keydown',e=>{const m=screen.querySelector('#fab-menu');if(!m||m.hidden)return;
+    if(e.key==='Escape'){e.preventDefault();fabMenu(false,true);return;}
+    const items=[...m.querySelectorAll('[role=menuitem]')],i=items.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();items[(i+(e.key==='ArrowDown'?1:items.length-1))%items.length].focus();}
+    else if(e.key==='Home'||e.key==='End'){e.preventDefault();items[e.key==='Home'?0:items.length-1].focus();}
+    else if(e.key==='Tab'&&i>=0)fabMenu(false,false);});
   window.addEventListener('hashchange',closeSheet);
   // 0.62: an open vehicle list (Raportit, Vertailu) closes with a tap outside it or with Escape. The check runs before
   // the tap is handled (capture), because a tap inside the list redraws the page and the old list is then gone.

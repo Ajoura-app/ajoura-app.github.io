@@ -86,9 +86,9 @@ def kuusi_autoa():
 
 
 @pytest.mark.parametrize("leveys", [320, 390, 430])
-@pytest.mark.parametrize("nakyma,extra,valikot,laatikot", [("fuel/a1", {}, 0, 3),
-                                                           ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}, 0, 3),
-                                                           ("reports", RP, 0, 3)])
+@pytest.mark.parametrize("nakyma,extra,valikot,laatikot", [("fuel/a1", {}, 0, 2),
+                                                           ("fuel", {"ajoura-fuel": '{"p":"12","t":"cmp"}'}, 0, 2),
+                                                           ("reports", RP, 0, 2)])
 def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra, valikot, laatikot):
     s = avaa(browser, base, nakyma, autot=kuusi_autoa(), leveys=leveys, extra=extra, kello=KELLO)
     try:

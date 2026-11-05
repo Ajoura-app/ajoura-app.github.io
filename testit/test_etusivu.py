@@ -59,7 +59,8 @@ def test_kuvakepainikkeet(browser, base, leveys):
                 kortti = rivi.bounding_box()
                 assert kortti["x"] <= r["x"] and r["x"] + r["width"] <= kortti["x"] + kortti["width"], f"{cid}: yli kortin"
         assert pg.locator(".add-vehicle-row").count() == 0
-        assert pg.locator("a.garage-add[href='#newcar']").count() == 1
+        # 0.107: Oma talli -otsikko ja sen Lisää ajoneuvo -linkki poistettu; ajoneuvo lisätään kelluvasta ＋:sta.
+        assert pg.locator("a.garage-add").count() == 0 and pg.locator(".tab-dock > a.tab-fab[href='#newcar']").count() == 1
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
