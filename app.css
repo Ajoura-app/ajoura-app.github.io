@@ -1649,3 +1649,11 @@ html.dark .device-glass .tab-fab{filter:none}
 .plus-sheet .soon-tag{font-size:11px}
 .plus-sheet .app-button:not(.secondary) .soon-tag{background:var(--c-ffffff,#fff);color:var(--c-1464e8,#1464e8)}
 html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:invert(1) hue-rotate(180deg)}
+/* 0.112: Tili (tiimin testi) Uudet ominaisuudet -osiossa. Kentät 16 px, jotta iPhone ei suurenna näkymää. */
+.ai-acct{margin:14px 0 0;padding:12px;border:1px dashed var(--c-cfdbe8,#cfdbe8);border-radius:14px}
+.ai-acct h4{margin:0 0 8px;font-size:12px;font-weight:650;color:var(--c-17283d,#17283d)}
+.set-new p.ai-who{margin:0 0 10px;font-size:12px;color:var(--c-3f4f63,#3f4f63);overflow-wrap:anywhere}
+.ai-login label{margin-bottom:10px;font-size:12px}
+.ai-login input{font-size:16px!important}
+.ai-acct .app-button{margin-top:0}
+.ai-acct .link-button{font-size:12px}

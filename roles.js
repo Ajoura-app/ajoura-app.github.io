@@ -27,10 +27,12 @@
   };
 
   // ---- Feature switches -------------------------------------------------------------------------
-  // [key, group, name, what it does, CSS selectors hidden when off]
+  // [key, group, name, what it does, CSS selectors hidden when off, default (false = off until switched on)]
   const FEATURES = [
     ['shop', 'yleinen', 'Autohuollon näkymä', 'Autohuolto yläkulman näkymävalikossa ja korjaamon työkalut.', ''],
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
+    // 0.112: kirjautuminen vain tiimin laitteille Ajoura Plussan testaamiseen (ei julkinen ennen tietosuojaselostetta).
+    ['account', 'yleinen', 'Tili ja Plus (testi)', 'Kirjautuminen kohdassa Asetukset → Uudet ominaisuudet Ajoura Plussan testaamiseen. Vain tiimin laitteille.', '', false],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
     ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel"],.fuel-cost,[data-quickfuel],[data-fl-tocmp]'],
@@ -54,7 +56,7 @@
   ];
   const GROUPS = SHOP_ENABLED ? { yleinen: 'Yleiset', asiakas: 'Asiakkaat', huolto: 'Autohuollot' } : { yleinen: 'Yleiset', asiakas: 'Asiakkaat' };
   const SHOWN = FEATURES.filter(f => SHOP_ENABLED || !SHOP_KEYS.includes(f[0]));
-  const defaults = { features: Object.fromEntries(FEATURES.map(f => [f[0], true])), notice: '' };
+  const defaults = { features: Object.fromEntries(FEATURES.map(f => [f[0], f[5] !== false])), notice: '' };
   let published = { features: { ...defaults.features }, notice: '', updated: '', feedbackUrl: '' };
   // Feedback goes only to the team's own Google Apps Script web app (Hannes chose this 13.10.2026).
   const okUrl = u => typeof u === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) ? u : '';

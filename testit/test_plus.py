@@ -1,9 +1,10 @@
-"""Tekoälyavustaja ja Ajoura Plus -valmius (v0.111): Asetukset → Uudet ominaisuudet, käyttäjän oma kytkin (aiEnabled),
-palvelimen vahvistama käyttöoikeus (aiEntitled), maksumuuri ja keskitetty tarkistus access.js:ssä.
+"""Tekoälyavustaja ja Ajoura Plus (v0.111–0.112): Asetukset → Uudet ominaisuudet, käyttäjän oma kytkin (aiEnabled),
+palvelimen vahvistama käyttöoikeus (aiEntitled), maksumuuri, keskitetty tarkistus access.js:ssä ja tiimin
+testikirjautuminen (Supabase Auth, sähköpostikoodi).
 
-Taustapalvelua ei vielä ole (access.js: SERVICE tyhjä), joten julkaistussa sovelluksessa kaikki ovat Free-käyttäjiä.
-Plus-tilanteet testataan keksityllä palvelimella: testi vaihtaa selaimeen tulevaan access.js:ään testiosoitteet ja
-vastaa niihin itse (oikeudet.test ja tekoaly.test). Oikeaa palvelua tai maksua ei käytetä.
+Julkaistussa sovelluksessa kirjautuminen on vain tiimin laitteilla, joten muut ovat Free-käyttäjiä eikä sovellus ota
+yhteyttä palvelimeen. Plus-tilanteet testataan keksityllä palvelimella: testi antaa selaimeen tulevalle access.js:lle
+testiavaimen ja vastaa Supabase-projektin osoitteisiin itse. Oikeaa palvelua, tiliä tai maksua ei käytetä.
 """
 import json
 import re
@@ -16,39 +17,75 @@ import tiedot
 from apu import KELLO, avaa
 
 JUURI = Path(__file__).resolve().parent.parent
-OIKEUDET = "https://oikeudet.test/v1/entitlements"
-TEKOALY = "https://tekoaly.test/v1/recognize"
+SB = "https://sjamwwcqrwspwvilurqn.supabase.co"
+OIKEUDET = SB + "/rest/v1/rpc/get_entitlement"
+TEKOALY = SB + "/functions/v1/tekoaly"
+AVAIN = "sb_publishable_testi"
+TUNNISTE = "testitunniste"
+ISTUNTO = json.dumps({"access_token": TUNNISTE, "refresh_token": "uusinta-1", "expires_at": 4102444800000,
+                      "user": {"id": "u-1", "email": "testi@esimerkki.test"}})
+TIIMI = json.dumps({"features": {"account": True}})
 PLUS = {"plan": "plus", "status": "active", "validUntil": "2099-01-01T00:00:00Z",
         "quota": {"ai": {"limit": None, "used": 0, "resetsAt": "2099-01-01T00:00:00Z"}}}
 TARKISTA = "f => AjouraAccess.check(f).reason || 'ok'"
 TUNNISTA = """f => AjouraAccess.recognize(f, new Blob(['kuitti'], {type: 'image/jpeg'})).then(() => 'ok', e => e.reason)"""
 
 
-def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True):
-    """Keksitty taustapalvelu: oikeudet ja tekoäly. Palauttaa tilan (dict), jota testi voi muuttaa kesken ajon:
-    tila['oikeus'] = palvelimen seuraava vastaus, tila['ai'] = tekoälypalvelun pyynnöt."""
-    tila = {"oikeus": oikeus, "ai_status": ai_status, "ai": [], "oikeuskyselyt": 0, "verkko": verkko}
+def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True):
+    """Keksitty Supabase: oikeudet, tekoälyfunktio ja kirjautuminen. Palauttaa tilan (dict), jota testi voi muuttaa
+    kesken ajon: tila['oikeus'] = palvelimen seuraava vastaus, tila['ai'] = tekoälyfunktion pyynnöt,
+    tila['auth'] = kirjautumispyynnöt. Palvelin hyväksyy vain oikean julkisen avaimen ja istuntotunnisteen."""
+    tila = {"oikeus": oikeus, "ai_status": ai_status, "ai": [], "oikeuskyselyt": 0, "verkko": verkko, "auth": [],
+            "uusinta_ok": True}
 
     def access(route):
         r = route.fetch()
-        body = r.text().replace("const SERVICE = { entitlements: '', ai: '' };",
-                                f"const SERVICE = {{ entitlements: '{OIKEUDET}', ai: '{TEKOALY}' }};")
-        assert OIKEUDET in body, "access.js:n SERVICE-rivi on muuttunut: päivitä testin korvaus"
+        body, n = re.subn(r"(const SUPABASE = \{ url: '([^']+)', key: )'[^']*'", rf"\1'{AVAIN}'", r.text(), count=1)
+        assert n == 1 and SB in body, "access.js:n SUPABASE-rivi on muuttunut: päivitä testin korvaus"
         route.fulfill(response=r, body=body)
+
+    def tunnistettu(route):
+        h = route.request.headers
+        return h.get("authorization") == f"Bearer {TUNNISTE}" and h.get("apikey") == AVAIN
 
     def oikeudet(route):
         tila["oikeuskyselyt"] += 1
         if not tila["verkko"]:
             return route.abort()
+        if not tunnistettu(route):
+            return route.fulfill(status=401, content_type="application/json", body='{"message":"JWT"}')
         route.fulfill(status=200, content_type="application/json", body=json.dumps(tila["oikeus"]))
 
     def tekoaly(route):
+        if not tunnistettu(route):
+            return route.fulfill(status=401, body="{}")
         tila["ai"].append(route.request.headers.get("x-ajoura-feature"))
         route.fulfill(status=tila["ai_status"], content_type="application/json", body='{"km": 123456}')
+
+    def auth(route):
+        rq = route.request
+        polku = rq.url[len(SB + "/auth/v1/"):]
+        runko = json.loads(rq.post_data or "{}")
+        tila["auth"].append((polku.split("?")[0], runko, rq.headers.get("apikey")))
+        istunto = {"access_token": TUNNISTE, "refresh_token": "uusinta-2", "expires_in": 3600,
+                   "user": {"id": "u-1", "email": runko.get("email", "testi@esimerkki.test")}}
+        if polku.startswith("otp"):
+            return route.fulfill(status=200, content_type="application/json", body="{}")
+        if polku.startswith("verify"):
+            ok = runko.get("token") == "123456" or runko.get("token_hash") == "linkkitunniste"
+            return route.fulfill(status=200 if ok else 403, content_type="application/json",
+                                 body=json.dumps(istunto if ok else {"error_code": "otp_expired"}))
+        if polku.startswith("token"):
+            return route.fulfill(status=200 if tila["uusinta_ok"] else 400, content_type="application/json",
+                                 body=json.dumps(istunto if tila["uusinta_ok"] else {"error_code": "refresh_token_not_found"}))
+        route.fulfill(status=204, body="")
 
     s.context.route("**/access.js*", access)
     s.context.route(OIKEUDET, oikeudet)
     s.context.route(TEKOALY, tekoaly)
+    s.context.route(SB + "/auth/v1/**", auth)
+    if kirjautunut:
+        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)", ISTUNTO)
     s.page.reload()
     s.page.wait_for_selector("#app-screen .screen-content", state="attached")
     s.page.wait_for_function("() => AjouraAccess.status() !== 'checking'")
@@ -80,7 +117,8 @@ def test_free_nakee_lukitun_tekoalyn_ja_maksumuurin(browser, base):
             "Tunnista tankkauskuitit, kilometrilukemat ja vanhat huoltomerkinnät automaattisesti."
         nappi = sheet.locator("[data-plus-more]")
         assert nappi.inner_text().startswith("Tutustu Ajoura Plussaan")
-        assert pg.evaluate("document.activeElement.matches('[data-plus-more]')"), "kohdistus ei siirtynyt ikkunaan"
+        # Kohdistus siirtyy seuraavassa ruudunpäivityksessä (requestAnimationFrame): odotetaan, ei tarkisteta heti.
+        pg.wait_for_function("() => document.activeElement && document.activeElement.matches('[data-plus-more]')", timeout=3000)
         assert not sheet.locator(".plus-soon").is_visible()
         nappi.click()
         assert sheet.locator(".plus-soon").is_visible()
@@ -397,6 +435,133 @@ def test_maksumuuri_kapealla(browser, base, kieli):
         assert laatikot == 0, f"{kieli}: maksumuurin sisältö yli reunan"
         palvelu(s)
         assert s.page.evaluate(MITTAUS)["yli"] <= 0, f"{kieli}: Plus-tila levittää näkymän"
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_ilman_kirjautumista_ei_yhteytta_palvelimeen(browser, base):
+    """Palvelu kytketty, mutta käyttäjä ei ole kirjautunut (kaikki julkiset käyttäjät): ei yhtään pyyntöä Supabaseen,
+    eikä kirjautumista näytetä ilman tiimin kytkintä."""
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO, extra={"ajoura-tekoaly": "1"})
+    ulos = []
+    s.page.on("request", lambda r: r.url.startswith(SB) and ulos.append(r.url))
+    try:
+        tila = palvelu(s, kirjautunut=False)
+        assert s.page.evaluate("[AjouraAccess.serviceReady(), AjouraAccess.status(), AjouraAccess.plan()]") == [True, "none", "free"]
+        assert s.page.evaluate(TUNNISTA, "ai.receipt") == "plan"
+        assert s.page.locator("#ai-login, .ai-acct").count() == 0, "kirjautuminen näkyy ilman tiimin kytkintä"
+        s.page.wait_for_timeout(300)
+        assert not ulos and tila["oikeuskyselyt"] == 0 and not tila["auth"], f"pyyntöjä Supabaseen: {ulos}"
+    finally:
+        s.sulje()
+
+
+def test_tiimin_kirjautuminen_koodilla(browser, base):
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO, extra={"ajoura-features-local": TIIMI})
+    try:
+        tila = palvelu(s, kirjautunut=False)
+        pg = s.page
+        assert osio(s).locator(".ai-lock").count() == 1
+        pg.fill("#ai-login [name=email]", "eiosoite")
+        pg.click("#ai-login [type=submit]")
+        assert "Tarkista sähköpostiosoite." in osio(s).inner_text() and not tila["auth"]
+        pg.fill("#ai-login [name=email]", "testi@esimerkki.test")
+        pg.click("#ai-login [type=submit]")
+        pg.wait_for_selector("#ai-code")
+        assert tila["auth"][-1] == ("otp", {"email": "testi@esimerkki.test", "create_user": True}, AVAIN)
+        assert "Koodi lähetetty" in osio(s).inner_text()
+        assert pg.evaluate("document.activeElement.name") == "code"
+        pg.fill("#ai-code [name=code]", "000000")
+        pg.click("#ai-code [type=submit]")
+        pg.wait_for_function("() => /ei kelpaa/.test(document.querySelector('.set-new').innerText)")
+        assert pg.evaluate("localStorage.getItem('ajoura-tili')") is None
+        pg.fill("#ai-code [name=code]", "123 456")
+        pg.click("#ai-code [type=submit]")
+        pg.wait_for_selector("[data-ai-toggle]")
+        assert pg.evaluate("AjouraAccess.plan()") == "plus"
+        assert "testi@esimerkki.test" in osio(s).inner_text() and "Kirjauduttu sisään." in osio(s).inner_text()
+        assert tila["auth"][-1][1] == {"type": "email", "email": "testi@esimerkki.test", "token": "123456"}
+        # Kirjautuminen säilyy uudelleenavauksessa; oikeus haetaan palvelimelta uudelleen.
+        pg.reload()
+        pg.wait_for_selector("[data-ai-toggle]")
+        # Uloskirjautuminen: istunto pois laitteesta, Free ja lukko heti.
+        pg.click("[data-ai-logout]")
+        pg.wait_for_selector(".set-new .ai-lock")
+        assert pg.evaluate("[localStorage.getItem('ajoura-tili'), AjouraAccess.plan()]") == [None, "free"]
+        pg.wait_for_timeout(200)
+        assert tila["auth"][-1][0] == "logout"
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_kirjautuminen_linkilla(browser, base):
+    """Jos Supabasen viestipohjassa on vain linkki, sen voi liittää koodikenttään."""
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO, extra={"ajoura-features-local": TIIMI})
+    try:
+        tila = palvelu(s, kirjautunut=False)
+        s.page.fill("#ai-login [name=email]", "testi@esimerkki.test")
+        s.page.click("#ai-login [type=submit]")
+        s.page.fill("#ai-code [name=code]", SB + "/auth/v1/verify?token=linkkitunniste&type=magiclink&redirect_to=http://localhost:3000")
+        s.page.click("#ai-code [type=submit]")
+        s.page.wait_for_selector("[data-ai-toggle]")
+        assert tila["auth"][-1][1] == {"type": "magiclink", "token_hash": "linkkitunniste"}
+    finally:
+        s.sulje()
+
+
+def test_vanheneva_istunto_uusitaan_tai_kirjataan_ulos(browser, base):
+    vanha = json.dumps({**json.loads(ISTUNTO), "access_token": "vanha", "expires_at": 1})
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO)
+    try:
+        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)", vanha)
+        tila = palvelu(s, kirjautunut=False)
+        assert s.page.evaluate("AjouraAccess.plan()") == "plus", "vanhentunutta tunnistetta ei uusittu"
+        assert tila["auth"][0][0] == "token" and tila["auth"][0][1] == {"refresh_token": "uusinta-1"}
+        assert json.loads(s.page.evaluate("localStorage.getItem('ajoura-tili')"))["refresh_token"] == "uusinta-2"
+        # Palvelin hylkää uusinnan (istunto peruttu): kirjataan ulos, Free.
+        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)", vanha)
+        tila["uusinta_ok"] = False
+        s.page.reload()
+        s.page.wait_for_selector(".set-new .ai-lock")
+        s.page.wait_for_function("() => localStorage.getItem('ajoura-tili') === null")
+        assert s.page.evaluate("AjouraAccess.plan()") == "free"
+    finally:
+        s.sulje()
+
+
+def test_vaarennetty_istunto_ei_avaa(browser, base):
+    """Istunto on palvelimen allekirjoittama: laitteeseen kirjoitettu keksitty istunto ei anna Plussaa."""
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO, extra={"ajoura-tekoaly": "1"})
+    try:
+        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)",
+                        json.dumps({**json.loads(ISTUNTO), "access_token": "vaarennetty"}))
+        tila = palvelu(s, kirjautunut=False)
+        assert tila["oikeuskyselyt"] == 1
+        assert s.page.evaluate("AjouraAccess.plan()") == "free"
+        assert s.page.evaluate(TUNNISTA, "ai.receipt") == "plan" and tila["ai"] == []
+    finally:
+        s.sulje()
+
+
+@pytest.mark.parametrize("kieli", ["en", "sv"])
+def test_kirjautuminen_kaannetty_ja_kapea(browser, base, kieli):
+    from test_leveys import MITTAUS
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO, kieli=kieli, leveys=320, korkeus=640,
+             extra={"ajoura-features-local": TIIMI})
+    try:
+        palvelu(s, kirjautunut=False)
+        for vaihe in ("email", "code"):
+            teksti = s.page.inner_text(".ai-acct")
+            for fi in ("Tili", "Sähköposti", "Lähetä", "Koodi", "lähetettiin", "Vaihda"):
+                assert fi not in teksti, f"{kieli}/{vaihe}: kääntämättä '{fi}': {teksti}"
+            assert s.page.evaluate(MITTAUS)["yli"] <= 0, f"{kieli}/{vaihe}: levittää näkymän"
+            assert s.page.evaluate("parseFloat(getComputedStyle(document.querySelector('.ai-login input')).fontSize)") >= 16
+            if vaihe == "email":
+                s.page.fill("#ai-login [name=email]", "pitka.osoite.testikayttaja@esimerkki-yritys.test")
+                s.page.click("#ai-login [type=submit]")
+                s.page.wait_for_selector("#ai-code")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
