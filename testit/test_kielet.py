@@ -14,12 +14,12 @@ from apu import KELLO, avaa
 POIKKEUKSET = {
     "kWh", "/kWh", "HVO100", "Latvia", "SEK", "Excel / CSV", "Android (Chrome)", "iCloud Drive", "Google Drive",
     "ajoura-app.github.io/app.html", "ajoura-app.github.io", "AJOURA", "AJOURA by DRONEX", "App", "PDF", "CSV",
-    "OK", "Diesel", "Beige", "Coupé", "Sedan", "Km",
+    "OK", "Diesel", "Beige", "Coupé", "Sedan", "Km", "Premium",
 }
 # Tunnetut puutteet, jotka korjataan omana versionaan. Poista rivi, kun käännös on lisätty.
 TUNNETUT = set()
 TUNNUS = re.compile(r"^AJ-[A-Z0-9-]+$")  # raportin tunniste, esim. AJ-TST101-20261029
-POIKKEUKSET_SV = {"Summa"}
+POIKKEUKSET_SV = {"Summa", "Eko"}
 # Yksiköt ja merkit, jotka jäävät ennalleen kaikilla kielillä (poistetaan ennen vertailua).
 YKSIKOT = re.compile(r"(l/100 ?km|kWh/100 ?km|€/100 ?km|€/km|€/h|€/l|€/kWh|l/h|km|kWh|h|l|kk|vm|€|%)(?![A-Za-zÅÄÖåäöÉé])")
 
@@ -31,8 +31,9 @@ NAKYMAT = {
     "vehicle/tst3": [], "event/tst1/e1": [], "add/tst1": [], "edit/tst1/e1": [], "report/tst1": [],
     "notes/tst1": [], "fuel/tst1": [], "fuel/tst2": [], "fuel-vertailu": [".fv-veh>summary", "[data-fl-cmpcar=tst2]"],
     "owner/tst1": [], "caredit/tst1": [], "tankkausikkuna": [".fl-add"], "asennusohje": [".install-button"],
+    "theme": [], "theme-valittu": ["[data-th-pick=eko]"], "theme-kaytossa": ["[data-th-pick=premium]", "[data-th-apply]"],
 }
-OSOITE = {"reports-lisaa": "reports", "reports-valitse": "reports", "reports-asetus": "reports", "reports-auto": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
+OSOITE = {"theme-valittu": "theme", "theme-kaytossa": "theme", "reports-lisaa": "reports", "reports-valitse": "reports", "reports-asetus": "reports", "reports-auto": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
           "asennusohje": "home"}
 
 KERUU = """() => {

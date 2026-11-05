@@ -59,6 +59,7 @@ git worktree remove ../edellinen
 | `test_haitallinen.py` | HTML-koodi käyttäjän teksteissä näkyy tekstinä (myös ostajan linkissä), CSV:n kaavasuoja |
 | `test_kielet.py` | Kääntämättömät tekstit englanniksi ja ruotsiksi |
 | `test_leveys.py` | Ei vaakavieritystä 320 ja 430 px leveydellä |
+| `test_teemat.py` | Teemat (0.110): Asetukset → Teeman valinta, valinta säilyy uudelleenavauksessa, vanha tumma tila säilyy, Alkuperäinen-teema ennallaan (varavärit), tyokalut/teemat.py ajettu, tekstien kontrasti jokaisessa teemassa vähintään Alkuperäisen tasoa, ei vaakavieritystä 320 px:llä |
 | `test_offline.py` | Offline-osa (sw.js): asennus, avaus ilman verkkoa, hidas sivu avautuu tallennetusta 3 s:n jälkeen, palvelinvirhe, päivitys uuteen versioon hyvällä ja heikolla yhteydellä (sivu ja skriptit aina samaa versiota), tiedot säilyvät, sw.js:n numerot ja tiedostolista |
 
 ## Tunnetut puutteet

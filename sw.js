@@ -11,10 +11,10 @@
 // Install fetches every file with this release's tag, so the saved set is one release (the tag also
 // bypasses GitHub's 10-minute cache). The user's own data (IndexedDB, localStorage) is never touched here.
 // VERSION must match the ?v=ak-N tag in app.html; CACHE is ajoura-pwa-(N + 50). testit/test_offline.py checks both.
-const VERSION = 'ak-97';
-const CACHE = 'ajoura-pwa-147';
+const VERSION = 'ak-98';
+const CACHE = 'ajoura-pwa-148';
 const WAIT = 3000;
-const FILES = ['./', 'app.html', 'app.css', 'ajoura.css', 'app.js', 'pdf-writer.js', 'roles.js', 'roles.css', 'sync.js', 'features.json', 'car-render.js','car-shapes.js','car-images.js','car-models.js','video.js','tips.js','vehicles.js','i18n-sv.js','i18n.js','tutorial.js','share.js', 'install.js', 'historia.html', 'tietosuoja.html', 'index.html', 'logo.svg', 'mark.svg', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
+const FILES = ['./', 'app.html', 'app.css', 'ajoura.css', 'app.js', 'pdf-writer.js', 'roles.js', 'roles.css', 'teemat.css', 'sync.js', 'features.json', 'car-render.js','car-shapes.js','car-images.js','car-models.js','video.js','tips.js','vehicles.js','i18n-sv.js','i18n.js','tutorial.js','share.js', 'install.js', 'historia.html', 'tietosuoja.html', 'index.html', 'logo.svg', 'mark.svg', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 
 // Saved copies are keyed by address without the ?query, as before.
 const key = url => { const u = new URL(url, self.location.href); u.search = ''; u.hash = ''; return u.href; };

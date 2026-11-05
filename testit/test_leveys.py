@@ -5,7 +5,7 @@ import tiedot
 from apu import KELLO, avaa
 
 NAKYMAT = ["home", "menu", "me", "tips", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1",
-           "report/tst1", "fuel/tst1", "newcar", "owner/tst1", "notes/tst1"]
+           "report/tst1", "fuel/tst1", "newcar", "owner/tst1", "notes/tst1", "settings", "theme"]
 
 # Tunnetut puutteet (näkymä, kieli, leveys), korjataan omana versionaan. Poista rivi korjauksen jälkeen.
 TUNNETUT = set()
