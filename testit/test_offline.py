@@ -140,7 +140,9 @@ def nosta(kansio):
     sw = (kansio / "sw.js").read_text("utf-8")
     n = int(re.search(r"VERSION = 'ak-(\d+)'", sw).group(1))
     vanha = re.search(r"appVersion='(\d+\.\d+) \(testiversio\)'", (kansio / "app.js").read_text("utf-8")).group(1)
-    uusi = f"{float(vanha) + 0.01:.2f}"
+    # 0.100: 0.99:n jälkeen 0.100, 0.101… (1.0 on varattu viralliselle julkaisulle), joten numero ei ole desimaaliluku.
+    paa, ali = vanha.split(".")
+    uusi = f"{paa}.{int(ali) + 1:02d}"
     for f in ["app.js", "index.html", "i18n.js", "i18n-sv.js"]:
         p = kansio / f
         t, c = re.subn(rf"(?<!v){re.escape(vanha)}(?= \(test| /)", uusi, p.read_text("utf-8"))
