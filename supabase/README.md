@@ -1,9 +1,14 @@
 # AJOURA Plus -taustapalvelu (Supabase)
 
 Projekti `sjamwwcqrwspwvilurqn` (https://sjamwwcqrwspwvilurqn.supabase.co). Supabasen GitHub-yhteys ottaa main-haaran
-muutokset käyttöön automaattisesti (Deploy to production): uudet tiedostot kansiossa `migrations/` ajetaan
+muutokset käyttöön automaattisesti: uudet tiedostot kansiossa `migrations/` ajetaan
 tietokantaan ja `config.toml`:ssä luetellut funktiot julkaistaan. Muita asetuksia (kirjautuminen, sähköpostit) ei
 viedä täältä, vaan ne tehdään Supabasen hallinnassa.
+
+GitHub-yhteyden asetukset (Project Settings → Integrations → GitHub): repo `Ajoura-app/ajoura-app.github.io`, Working
+directory `.`, Production branch `main`, Deploy to production päällä. Jos tuotantohaara puuttuu, Supabase ohittaa
+julkaisun viestillä "This git branch is not associated with any Supabase Branch" (näkyy commitin tarkistuksissa).
+Julkaisun tila: Supabase → Branches → main.
 
 | Kansio | Sisältö |
 |---|---|
