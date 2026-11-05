@@ -137,9 +137,10 @@ def test_kirjausikkunan_valitsin_ja_muokkaus(browser, base):
     pg = s.page
     try:
         assert pg.get_attribute(".row-btn.fuel", "aria-label") == "Lisää tankkaus tai lataus"
-        pg.click("[data-quickfuel=hyb1]"); pg.wait_for_selector(F)
+        pg.click("[data-quickfuel=hyb1]"); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert pg.get_attribute("[data-sheet-kind=fuel]", "aria-pressed") == "true"
         pg.click("[data-sheet-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-sheet-kind=el]').getAttribute('aria-pressed')==='true'")
+        ikkuna_valmis(pg)  # lajin vaihto avaa ikkunan uudelleen; kirjoitetaan vasta, kun kohdistus on siirtynyt siihen
         assert pg.input_value(F + " [name=kind]") == "el" and "Uusi lataus" in pg.inner_text("#sheet-title")
         pg.fill(F + " [name=km]", "152200"); pg.fill(F + " [name=qty]", "9"); pg.fill(F + " [name=cost]", "2.7")
         pg.click(F + " [type=submit]"); pg.wait_for_selector(F, state="detached")
