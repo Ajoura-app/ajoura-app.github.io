@@ -109,4 +109,79 @@ select pg_temp.odota('poistettu käyttäjä', (select to_jsonb(count(*)) from au
 select pg_temp.odota('poistetun talli', (select to_jsonb(count(*)) from public.garages where user_id = '00000000-0000-0000-0000-000000000005'), '0');
 select pg_temp.odota('poistetun tilaus', (select to_jsonb(count(*)) from public.subscriptions where user_id = '00000000-0000-0000-0000-000000000005'), '0');
 select pg_temp.odota('muut tilit ennallaan', (select to_jsonb(count(*)) from auth.users), '4');
+
+-- ---- Jaettu talli (0.117) ----------------------------------------------------------------------------
+insert into auth.users values
+  ('00000000-0000-0000-0000-000000000011', 'omistaja@esimerkki.test'),
+  ('00000000-0000-0000-0000-000000000012', 'puoliso@esimerkki.test'),
+  ('00000000-0000-0000-0000-000000000013', 'ulkopuolinen@esimerkki.test'),
+  ('00000000-0000-0000-0000-000000000014', 'toinen-omistaja@esimerkki.test');
+create temp table kutsut (nimi text primary key, token text);
+grant all on kutsut to authenticated;
+set role authenticated;
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000011');
+insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000011', '{"cars":[{"id":"omistajan"}]}');
+insert into kutsut select 'a', public.create_invite() ->> 'token';
+insert into kutsut select 'b', public.create_invite() ->> 'token';
+insert into kutsut select 'vanha', public.create_invite() ->> 'token';
+select pg_temp.odota('oma kutsu', public.accept_invite((select token from kutsut where nimi = 'a')), '{"ok":false,"reason":"own"}');
+select pg_temp.kielletty('kutsut eivät näy', 'select * from public.garage_invites');
+select pg_temp.kielletty('jäsenet eivät näy', 'select * from public.garage_members');
+reset role;
+update public.garage_invites set expires_at = now() - interval '1 second'
+  where token_hash = encode(extensions.digest((select token from kutsut where nimi = 'vanha'), 'sha256'), 'hex');
+select pg_temp.odota('vain tiiviste tallessa', (select to_jsonb(count(*)) from public.garage_invites where token_hash = (select token from kutsut where nimi = 'a')), '0');
+set role authenticated;
+-- Puolisolla on oma talli; liittyessä se poistuu pilvestä (sovellus on yhdistänyt sen laitteelle).
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000012');
+insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000012', '{"cars":[{"id":"puolison"}]}');
+select pg_temp.odota('vanhentunut kutsu', public.accept_invite((select token from kutsut where nimi = 'vanha')), '{"ok":false,"reason":"invalid"}');
+select pg_temp.odota('keksitty kutsu', public.accept_invite('arvattu'), '{"ok":false,"reason":"invalid"}');
+select pg_temp.odota('liittyminen', public.accept_invite((select token from kutsut where nimi = 'a')) - 'owner', '{"ok":true}');
+select pg_temp.odota('jäsenen näkymä', public.my_garage() - 'owner', '{"role":"member","owner_email":"omistaja@esimerkki.test"}');
+select pg_temp.odota('jäsen näkee tallin', (select data from public.garages), '{"cars":[{"id":"omistajan"}]}');
+update public.garages set data = '{"cars":[{"id":"omistajan"},{"id":"puolison"}]}', rev = rev + 1;
+select pg_temp.odota('jäsen muokkasi', (select data from public.garages where user_id = '00000000-0000-0000-0000-000000000011'), '{"cars":[{"id":"omistajan"},{"id":"puolison"}]}');
+select pg_temp.kielletty('jäsen ei luo riviä omistajalle', $q$insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000011', '{}')$q$);
+delete from public.garages;
+select pg_temp.odota('jäsen ei poista tallia', (select to_jsonb(count(*)) from public.garages), '1');
+select pg_temp.odota('käytetty kutsu', public.accept_invite((select token from kutsut where nimi = 'a')), '{"ok":false,"reason":"invalid"}');
+select pg_temp.odota('jo jäsen', public.accept_invite((select token from kutsut where nimi = 'b')), '{"ok":false,"reason":"already_member"}');
+do $$ begin perform public.create_invite(); raise exception 'VIRHE jäsen loi kutsun'; exception when insufficient_privilege then null; end $$;
+select public.remove_member('00000000-0000-0000-0000-000000000012');
+select pg_temp.odota('jäsen ei poista jäseniä', (select to_jsonb(count(*)) from public.garages), '1');
+-- Ulkopuolinen ei näe tallia eikä voi käyttää käytettyä kutsua.
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000013');
+select pg_temp.odota('ulkopuolinen ei näe', (select to_jsonb(count(*)) from public.garages where user_id = '00000000-0000-0000-0000-000000000011'), '0');
+select pg_temp.odota('käytetty kutsu toiselle', public.accept_invite((select token from kutsut where nimi = 'a')), '{"ok":false,"reason":"invalid"}');
+update public.garages set data = '{"hakkeroitu":true}' where user_id = '00000000-0000-0000-0000-000000000011';
+-- Omistajan näkymä ja jäsenen poisto.
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000011');
+select pg_temp.odota('omistajan näkymä', (select jsonb_agg(x - 'joined' - 'id') from jsonb_array_elements(public.my_garage() -> 'members') x), '[{"email":"puoliso@esimerkki.test"}]');
+select pg_temp.odota('ulkopuolinen ei muuttanut', (select data from public.garages), '{"cars":[{"id":"omistajan"},{"id":"puolison"}]}');
+select public.remove_member('00000000-0000-0000-0000-000000000012');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000012');
+select pg_temp.odota('poistettu jäsen ei näe', (select to_jsonb(count(*)) from public.garages), '0');
+select pg_temp.odota('poistettu jäsen on taas omistaja', public.my_garage() -> 'role', '"owner"');
+-- Uudelleen liittyminen toisella kutsulla ja poistuminen itse.
+select pg_temp.odota('uusi liittyminen', public.accept_invite((select token from kutsut where nimi = 'b')) - 'owner', '{"ok":true}');
+select public.leave_garage();
+select pg_temp.odota('poistunut ei näe', (select to_jsonb(count(*)) from public.garages), '0');
+-- Omaa talliaan jakava ei voi liittyä toiseen talliin.
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000014');
+insert into kutsut select 'c', public.create_invite() ->> 'token';
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000013');
+select pg_temp.odota('liittyminen 2', public.accept_invite((select token from kutsut where nimi = 'c')) - 'owner', '{"ok":true}');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000011');
+insert into kutsut select 'd', public.create_invite() ->> 'token';
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000014');
+select pg_temp.odota('jakaja ei liity', public.accept_invite((select token from kutsut where nimi = 'd')), '{"ok":false,"reason":"has_members"}');
+reset role;
+set role anon;
+select pg_temp.kielletty('anon: kutsu', 'select public.create_invite()');
+select pg_temp.kielletty('anon: liittyminen', $q$select public.accept_invite('x')$q$);
+reset role;
+-- Omistajan tilin poisto lopettaa jäsenyydet.
+delete from auth.users where id = '00000000-0000-0000-0000-000000000014';
+select pg_temp.odota('omistajan poisto', (select to_jsonb(count(*)) from public.garage_members where member_id = '00000000-0000-0000-0000-000000000013'), '0');
 select 'KAIKKI TARKISTUKSET OK';

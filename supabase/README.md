@@ -38,6 +38,12 @@ Testivaiheessa kirjautunut free saa tekoälyn 10 tunnistusta/kk. Kun maksut otet
 `update public.plan_limits set ai_enabled = false where plan = 'free';` (sovellukseen ei tarvita muutosta).
 Ilmainen taso: projekti pysähtyy viikon käyttämättömyyden jälkeen eikä ota varmuuskopioita. Ennen julkista versiota Pro.
 
+## Jaettu talli (0.117)
+
+Omistaja kutsuu jäseniä kertakäyttöisellä linkillä (`create_invite`, voimassa 7 pv, tallessa vain tiiviste). Jäsen
+(`garage_members`) lukee ja päivittää omistajan riviä taulussa `garages` (rivitason suojaus `ajoura_is_member`).
+Enintään 5 jäsentä ja 5 avointa kutsua. Liittyessä liittyjän oma pilvirivi poistetaan (sovellus on yhdistänyt sen).
+
 ## Ylläpito (Supabase → SQL Editor)
 
 Plus testaajalle 30 päiväksi (käyttäjä syntyy ensimmäisestä kirjautumisesta):
