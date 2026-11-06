@@ -82,3 +82,68 @@ test('virheelliset pyynnöt hylätään ennen kiintiötä', async () => {
   assert.equal(o.status, 200);
   assert.match(o.headers.get('access-control-allow-headers'), /x-ajoura-feature/);
 });
+
+// ---- Kuittitunnistus (v0.113): keksitty Claude-asiakas, oikeaan Anthropiciin ei oteta yhteyttä. ----
+const KUITTI = { is_receipt: true, date: '2026-11-03', quantity: 41.27, unit: 'l', price_per_unit: 1.889, total: 77.96, currency: 'EUR', fuel: 'Neste Futura 95E10' };
+function fakeClaude(vastaus, stop = 'end_turn') {
+  const kutsut = [];
+  const make = async (apiKey) => ({ messages: { create: async (body) => {
+    kutsut.push({ apiKey, body });
+    if (vastaus instanceof Error) throw vastaus;
+    return { stop_reason: stop, content: [{ type: 'thinking', thinking: '' }, { type: 'text', text: typeof vastaus === 'string' ? vastaus : JSON.stringify(vastaus) }] };
+  } } });
+  return { make, kutsut };
+}
+const AVAIMELLA = { ...ENV, ANTHROPIC_API_KEY: 'sk-ant-testi' };
+
+test('kuitti: Haiku 5.5, kuva base64:nä, rakenteinen vastaus; tulos tarkistettuna ja kiintiö kuluu', async () => {
+  const s = fakeSupabase({ plan: { 'u-plus': 'plus' } }), c = fakeClaude(KUITTI);
+  const h = createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make);
+  const r = await h(pyynto({ authorization: 'Bearer tunniste-plus' }, new Uint8Array([255, 216, 255, 1, 2])));
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), KUITTI);
+  assert.equal(s.used['u-plus'], 1);
+  const { apiKey, body } = c.kutsut[0];
+  assert.equal(apiKey, 'sk-ant-testi');
+  assert.equal(body.model, 'claude-haiku-5-5');
+  assert.equal(body.output_config.effort, 'low');
+  assert.equal(body.output_config.format.type, 'json_schema');
+  assert.equal(body.output_config.format.schema.additionalProperties, false);
+  assert.ok(!('temperature' in body) && !('thinking' in body), 'Haiku 5.5: ei näytteistysparametreja eikä pois kytkettyä ajattelua');
+  const kuva = body.messages[0].content[0];
+  assert.deepEqual(kuva, { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: Buffer.from([255, 216, 255, 1, 2]).toString('base64') } });
+});
+
+test('kuitti: tekoälyn vastaus ei ole luotettava syöte', async () => {
+  const s = fakeSupabase({ plan: { 'u-plus': 'plus' } });
+  const c = fakeClaude({ is_receipt: true, date: '2999-01-01', quantity: -5, unit: 'gallon', price_per_unit: 'x', total: 1e9, currency: 'euro', fuel: '<img src=x onerror=alert(1)>' });
+  const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus' }));
+  assert.deepEqual(await r.json(), { is_receipt: true, date: null, quantity: null, unit: null, price_per_unit: null, total: null, currency: null, fuel: null });
+});
+
+test('kuitti: kieltäytyminen, katkennut tai rikkinäinen vastaus ja tekoälyn virhe: 502, kiintiö ei kulu', async () => {
+  for (const [nimi, c] of [['refusal', fakeClaude(KUITTI, 'refusal')], ['max_tokens', fakeClaude(KUITTI, 'max_tokens')],
+    ['rikki', fakeClaude('{ei json')], ['virhe', fakeClaude(Object.assign(new Error('401'), { status: 401 }))]]) {
+    const s = fakeSupabase({ plan: { 'u-plus': 'plus' } });
+    const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus' }));
+    assert.equal(r.status, 502, nimi);
+    assert.equal(s.used['u-plus'], 0, nimi + ': kiintiö kului');
+  }
+});
+
+test('mittari ja huoltokirja eivät ole vielä valmiita: 501 ennen kiintiötä ja tekoälyä', async () => {
+  const s = fakeSupabase({ plan: { 'u-plus': 'plus' } }), c = fakeClaude(KUITTI);
+  for (const f of ['ai.odometer', 'ai.servicebook']) {
+    const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': f }));
+    assert.equal(r.status, 501, f);
+  }
+  assert.equal(c.kutsut.length, 0);
+  assert.ok(!s.calls.some(x => x.url.includes('/rpc/')));
+});
+
+test('free-käyttäjän kuva ei mene tekoälylle', async () => {
+  const s = fakeSupabase(), c = fakeClaude(KUITTI);
+  const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-free' }));
+  assert.equal(r.status, 402);
+  assert.equal(c.kutsut.length, 0);
+});

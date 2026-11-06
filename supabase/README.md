@@ -13,7 +13,7 @@ Julkaisun tila: Supabase → Branches → main.
 | Kansio | Sisältö |
 |---|---|
 | `migrations/` | Tietokanta: tilaukset (`subscriptions`), pakettien kiintiöt (`plan_limits`), kuukausikäyttö (`ai_usage`), funktiot `get_entitlement`, `ai_reserve`, `ai_release` |
-| `functions/tekoaly/` | Tekoälytunnistuksen palvelin: tarkistaa käyttäjän, Plus-tilauksen ja kiintiön jokaisessa pyynnössä |
+| `functions/tekoaly/` | Tekoälytunnistuksen palvelin: tarkistaa käyttäjän, Plus-tilauksen ja kiintiön jokaisessa pyynnössä ja lukee kuitin Claude Haiku 5.5:llä |
 | `testit/` | Testit (ajetaan `python3 -m pytest testit/test_supabase.py` repon juuresta) |
 | `garages.sql` | Vanhan, käytöstä poistetun synkronoinnin taulu (vanha projekti). Ei käytössä. |
 
@@ -22,6 +22,13 @@ Julkaisun tila: Supabase → Branches → main.
   saa olla sovelluksessa.
 - Uusi migraatio on uusi tiedosto (aikaleima nimessä). Julkaistua tiedostoa ei muuteta.
 - Jokainen taulu suojataan RLS:llä ja jokaisen funktion suoritusoikeus rajataan (`revoke … from public, anon, authenticated`).
+
+## Tekoäly (Anthropic, Claude Haiku 5.5)
+
+Funktio `tekoaly` lukee Anthropicin API-avaimen Supabasen salaisuudesta `ANTHROPIC_API_KEY` (Edge Functions → Secrets).
+Avainta ei koskaan laiteta tähän repoon eikä sovellukseen. Ilman avainta funktio vastaa 503 eikä mitään lähetetä.
+Aseta Anthropicin konsolissa kuukausittainen käyttöraja (Settings → Limits), jotta kulu ei voi yllättää. Arvio:
+noin 0,001 $ / kuitti (Haiku 5.5). Toteutettu: kuitti. Mittari ja huoltokirja vastaavat 501, kunnes ne tehdään.
 
 ## Ylläpito (Supabase → SQL Editor)
 
