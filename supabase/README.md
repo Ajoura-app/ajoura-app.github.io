@@ -32,8 +32,12 @@ noin 0,001 $ / kuitti (Haiku 5.5). Toteutettu: kuitti. Mittari ja huoltokirja va
 
 ## Kirjautuminen ja testivaihe (0.116)
 
-Kirjautuminen on kaikille avoin Google-tilillä (Authentication → Sign In / Providers → Google; Site URL ja Redirect URLs
+Kirjautuminen on Google-tilillä (Authentication → Sign In / Providers → Google; Site URL ja Redirect URLs
 `https://ajoura-app.github.io/app.html` ja `https://ajoura-app.github.io/**`). Kirjautuneen talli synkronoituu (sync.js).
+Julkinen kirjautuminen pidetään toistaiseksi suljettuna: asetus "Salli uusien käyttäjien rekisteröityminen" (Authentication →
+Sign In / Providers → User Signups) pitää olla pois päältä, jolloin vain jo luodut tilit pääsevät sisään. Testaajan lisäys:
+kytke asetus hetkeksi päälle, testaaja kirjautuu kerran Googlella, kytke takaisin pois. Julkisessa julkaisussa asetus
+kytketään päälle.
 Testivaiheessa kirjautunut free saa tekoälyn 10 tunnistusta/kk. Kun maksut otetaan käyttöön:
 `update public.plan_limits set ai_enabled = false where plan = 'free';` (sovellukseen ei tarvita muutosta).
 Ilmainen taso: projekti pysähtyy viikon käyttämättömyyden jälkeen eikä ota varmuuskopioita. Ennen julkista versiota Pro.
