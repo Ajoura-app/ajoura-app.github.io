@@ -85,7 +85,9 @@ Claude Code ja Codex kehittävät samaa GitHub-repositoriota.
 
 Siksi:
 
-- Tarkista Git-haara ja viimeisimmät muutokset ennen kehittämistä.
+- Tarkista Git-haara ja viimeisimmät muutokset ennen kehittämistä. Aloita tarkistamalla `git status -sb` sekä hakemalla etämuutokset komennolla `git fetch origin`; vertaile työhaaraa `origin/main`-haaraan.
+- Älä ylikirjoita keskeneräisiä paikallisia muutoksia tai tee ristiriitaisia merge/rebase-toimintoja automaattisesti.
+- Muista, että työkalujen paikalliset ja keskeneräiset muutokset eivät synkronoidu toisilleen automaattisesti; toinen kehittäjä näkee GitHubiin lähetetyt muutokset haettuaan uusimman version.
 - Tee koodimuutokset erillisessä kehityshaarassa.
 - Älä muuta tuotannon päähaaraa suoraan.
 - Älä yhdistä pull requesteja ilman käyttäjän hyväksyntää.
