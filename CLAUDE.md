@@ -21,13 +21,23 @@ Pysähdy vasta, kun
 4. testit kaatuvat eikä korjaus onnistu parilla yrityksellä, tai
 5. muutos kuuluu kysy-ensin-listaan.
 
-**Kysy-ensin-lista (kysy Niklakselta ennen tekemistä):** tallennettujen tietojen muoto, varmuuskopio ja siirto, synkronointi, offline-osa (sw.js), tietosuoja ja juridiikka, kustannukset.
+**Kysy-ensin-lista (kysy Niklakselta ennen tekemistä):** tallennettujen tietojen muoto, varmuuskopio ja siirto, synkronointi, offline-osa (sw.js), uusi tekoälytoiminto (tietosuojakohta ja kustannusarvio), tietosuoja ja juridiikka, kustannukset.
 
 ## Tallennettujen tietojen suoja
 - Käyttäjän tiedot ovat laitteessa (IndexedDB ja localStorage). Niitä ei koskaan tyhjennetä päivityksen tai välimuistin vaihdon yhteydessä.
 - Tallennettujen tietojen muotoa (auton, merkintöjen, muistiinpanojen ja tankkausten kentät, varmuuskopiotiedosto) ei muuteta ilman siirtokoodia ja testiä, jossa vanhan version varmuuskopio palautetaan.
 - Uusi toimenpide, korityyppi tai pakollinen kenttä rikkoo vanhan version palautuksen. Tarkista validCar ja allItems app.js:stä ennen kuin lisäät sellaisen.
-- Kirjautuminen ja pilvisynkronointi (sync.js, Supabase) ovat tarkoituksella pois käytöstä. Älä ota niitä käyttöön.
+- Kirjautuminen (Google) ja pilvisynkronointi ovat käytössä (0.116–0.117). Pilvitalli on kopio laitteen tiedoista; kuvat ja kuitit jäävät laitteelle. Pilvisynkronoinnin muutokset kuuluvat kysy-ensin-listaan (ks. Pilvi ja tekoäly).
+
+## Pilvi ja tekoäly (0.116–0.117)
+- Supabase-projekti `sjamwwcqrwspwvilurqn` (EU, ilmainen taso). Koodi on kansiossa `supabase/` (migrations/, functions/tekoaly, config.toml, README.md). Supabasen GitHub-yhteys ottaa main-haaran muutokset käyttöön automaattisesti, joten migraatio tai funktio menee tuotantoon main-pushin mukana. Julkaistua migraatiota ei muuteta: uusi muutos on uusi tiedosto.
+- Kirjautuminen: Google-tili, kaikille avoin. `sync.js` omistaa istunnon ja synkronoi tallin pilveen. Jaettu talli: omistaja kutsuu linkillä, jäsenet muokkaavat samaa tallia.
+- Tekoäly: kaikki oikeustarkistukset vain `access.js`:ssä (AjouraAccess) ja palvelimella. Tekoälykutsut kulkevat vain Supabasen tekoälyfunktion (`supabase/functions/tekoaly`) kautta, ei koskaan suoraan selaimesta. Funktio tarkistaa käyttäjän, oikeuden ja kiintiön jokaisessa pyynnössä. Selaimen asetus (esim. localStorage) ei koskaan anna oikeutta.
+- Malli: Claude Haiku 5.5 (`@anthropic-ai/sdk` 1.1.0). Avain on Supabasen salaisuus `ANTHROPIC_API_KEY`, ei koskaan repossa.
+- Toteutettu: kuitin tunnistus (tankkausikkunan "Täytä kuitista"). Mittari ja huoltokirja vastaavat palvelimelta 501.
+- Testivaihe: kirjautunut käyttäjä saa tekoälyn ilman Plussaa, 10 tunnistusta/kk (Plus 30). Maksujen tultua suljetaan yhdellä tietokantarivin muutoksella (supabase/README.md).
+- Päätökset: kehitetään ilman kustannuksia niin pitkään kuin mahdollista, maksulliset palvelut vasta oikeassa versiossa. Kuvia saa lähettää Anthropicille (tietosuojaseloste kertoo tämän). Jokainen uusi tekoälytoiminto tarvitsee oman kohdan tietosuojaselosteeseen (Niklas hyväksyy tekstin ennen julkaisua) ja kustannusarvion: tee ne ennen toteutusta ja kysy Niklakselta.
+- Testit: test_plus.py, test_kuitti.py, test_pilvi.py, test_jaettu.py, test_supabase.py (SQL ajetaan paikallisessa PostgreSQL:ssä, `apt-get install postgresql`).
 
 ## Julkaisun kulku
 1. Hae uusin main (git fetch). Lue VERSIOT.md: siinä on julkaistu versio ja historia.
