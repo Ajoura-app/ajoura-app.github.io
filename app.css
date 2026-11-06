@@ -1664,3 +1664,7 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 .sf-ai-ico{display:grid;place-items:center}.sf-ai-ico svg{width:18px;height:18px}
 .sf-ai-note{margin:6px 2px 0;font-size:12px;line-height:1.5;color:var(--c-3f4f63,#3f4f63)}
 .sf-ai-note.ok{color:var(--c-17663f,#17663f)}
+/* 0.116: Google-kirjautuminen ja tilin poisto (sync.js). */
+.sync-google{gap:10px;margin:16px 0 10px}
+.sync-g{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c-ffffff,#fff);color:var(--c-1464e8,#1464e8);font-weight:800;font-size:13px}
+.sync-delete{display:block;margin:10px 0 0;color:var(--c-b42318,#b42318);font-size:12px}

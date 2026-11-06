@@ -1,25 +1,25 @@
 'use strict';
-// AJOURA account and sync: sign in with an e-mail code and the garage follows you between the phone app
-// and the website. Data lives in the owners' Supabase project (EU region); each user can only read and
-// write their own row (row level security, see supabase/). Photos and receipts stay on the device for now.
-// Until BASE and KEY are filled in, nothing here talks to the network and the app works as before.
+// AJOURA account and sync: sign in (Google, v0.116) and the garage follows you between devices. Data lives in the
+// owners' Supabase project (EU, Ireland); each user can only read and write their own row (row level security,
+// supabase/migrations). Photos and receipts stay on the device. This file owns the session: access.js asks it for
+// the token (AjouraSync.accessToken), so there is one sign-in for the cloud copy and the AI assistant.
 (() => {
-  const BASE = 'https://qcziihilblykccfrvqui.supabase.co';
-  const KEY = 'sb_publishable_DhMJLU_Uv2XkXewz4ybw_Q_BwQ5gIR9'; // publishable (anon) key: public by design, row level security does the protecting
-  // Kirjautuminen ja synkronointi pois käytöstä 21.10.2026 (Niklas): ei vielä tietosuojaselostetta pilvitallennukselle.
-  // Palautus: vaihda takaisin muotoon !!(BASE && KEY). Ks. muistion kohta 9.
-  const enabled = false && !!(BASE && KEY);
+  const BASE = 'https://sjamwwcqrwspwvilurqn.supabase.co';
+  const KEY = 'sb_publishable_Eo71xHp7YIscRqDdLOOVcA_qzywcyZb'; // publishable key: public by design, row level security does the protecting
+  // 0.116 (Niklas 6.11.2026): kirjautuminen ja pilvitallennus käyttöön uudessa projektissa. Vanhan projektin
+  // (21.10.2026 pois käytöstä) tallennusavaimia ei lueta, joten vanhat istunnot eivät sekoitu uuteen.
+  const enabled = !!(BASE && KEY);
 
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { v === '' ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
   const getJson = k => { try { return JSON.parse(get(k) || 'null'); } catch (e) { return null; } };
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const sessionKey = 'ajoura-session', baseKey = 'ajoura-sync-base', syncedKey = 'ajoura-synced-at';
+  const sessionKey = 'ajoura-tili', baseKey = 'ajoura-pilvi-base', syncedKey = 'ajoura-pilvi-synced';
 
   // ---- Session --------------------------------------------------------------------------------------
   let session = getJson(sessionKey);
   if (!session || !session.refresh_token || !session.user) session = null;
-  const saveSession = s => { session = s; set(sessionKey, s ? JSON.stringify(s) : ''); };
+  const saveSession = s => { session = s; set(sessionKey, s ? JSON.stringify(s) : ''); try { document.dispatchEvent(new CustomEvent('ajoura-session')); } catch (e) {} };
   const fromAuth = d => ({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (d.expires_in || 3600) * 1000, user: { id: d.user.id, email: d.user.email } });
 
   async function call(path, opts = {}, auth = true) {
@@ -57,7 +57,9 @@
   const back = new URLSearchParams(location.hash.slice(1));
   const fromLink = back.get('access_token') && back.get('refresh_token') ? { access_token: back.get('access_token'), refresh_token: back.get('refresh_token'), expires_in: Number(back.get('expires_in')) || 3600 } : null;
   if (fromLink || back.get('error_code') || back.get('error_description')) history.replaceState(null, '', location.pathname + location.search + (fromLink ? (phoneBrowser ? '#login' : '#home') : '#login'));
-  let linkFlash = !fromLink && (back.get('error_code') || back.get('error_description')) ? 'Linkki on vanhentunut tai jo käytetty. Pyydä uusi.' : '';
+  let linkFlash = !fromLink && (back.get('error_code') || back.get('error_description')) ? 'Kirjautuminen ei onnistunut. Yritä uudelleen.' : '';
+  // Google-kirjautuminen: Supabase ohjaa Googleen ja takaisin tälle sivulle, istunto osoitteen #-osassa (yllä).
+  const googleUrl = () => BASE + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(appUrl());
 
   // ---- Merge ----------------------------------------------------------------------------------------
   // Three-way merge against the copy both sides agreed on last time (base): a change on either side wins
@@ -185,6 +187,15 @@
     rerender();
   }
 
+  // Tilin poisto (0.116): palvelin poistaa tilin, pilvitallin, tilauksen ja käytön. Tämän laitteen tiedot jäävät.
+  async function deleteAccount() {
+    const q = 'Poistetaanko tilisi ja pilveen tallennetut tiedot? Tämän laitteen autot ja merkinnät jäävät. Poistoa ei voi perua.';
+    if (!session || !confirm(window.AjouraI18n ? window.AjouraI18n.t(q) : q)) return;
+    try { await token(); await call('/rest/v1/rpc/delete_my_account', { method: 'POST', body: '{}' }); }
+    catch (e) { flash = 'Tilin poisto ei onnistunut. Tarkista verkkoyhteys ja yritä uudelleen.'; rerender(); return; }
+    signedOut('Tili ja pilvitiedot poistettu. Tiedot ovat yhä tällä laitteella.'); set(baseKey, ''); rerender();
+  }
+
   // ---- Screens --------------------------------------------------------------------------------------
   let step = { email: '', sent: false }, flash = linkFlash;
   const top = '<div class="app-top"><img class="app-brand" src="logo.svg" width="640" height="198" alt="AJOURA"><span class="demo-label">TESTIVERSIO</span></div>';
@@ -193,9 +204,8 @@
   function loginView() {
     const back = `<a class="app-back" href="${App() && App().cars().some(c => !c.sample) ? '#me' : '#welcome'}">← Takaisin</a>`;
     if (session) return `${top}${back}<h2 class="app-heading">Olet kirjautunut</h2><p class="success-note" role="status">Olet kirjautunut tilillä <strong translate="no">${esc(session.user.email)}</strong></p><p>Autosi ja merkintäsi siirtyvät nyt puhelimen ja verkkosivun välillä.</p>${phoneBrowser ? handoffBox() : ''}<a class="app-button${phoneBrowser ? ' secondary' : ''}" href="#home">${phoneBrowser ? 'Jatka selaimessa' : 'Omaan talliin'} <span aria-hidden="true">→</span></a>`;
-    const intro = '<p>Kirjaudu sähköpostilla, niin samat autot ja merkinnät näkyvät puhelimessa ja verkkosivulla. Salasanaa ei tarvita: lähetämme kertakäyttöisen kirjautumislinkin.</p>';
-    if (!step.sent) return `${top}${back}<h2 class="app-heading">Kirjaudu sisään</h2>${intro}<form class="app-form" id="sync-email-form" novalidate><label>Sähköposti<input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email" enterkeyhint="send" placeholder="nimi@esimerkki.fi" value="${esc(step.email)}"></label><p class="error-note" id="sync-error" role="alert">${esc(flash)}</p><button class="app-button" type="submit">Lähetä linkki</button></form><p class="app-fineprint">Jos sinulla on jo autoja tässä laitteessa, ne siirtyvät tilillesi kirjautuessa.<br>Kuvat ja kuitit pysyvät toistaiseksi tässä laitteessa.</p>${installedApp ? pasteBox() : ''}`;
-    return `${top}${back}<h2 class="app-heading">Avaa sähköposti</h2><p>Lähetimme viestin osoitteeseen <strong translate="no">${esc(step.email)}</strong></p>${installedApp ? '<p>Paina sähköpostin linkkiä pitkään, valitse Kopioi ja liitä linkki alle.</p><p>Jos linkki ehti avautua selaimeen, paina siellä Kopioi kirjautuminen ja liitä se tähän.</p>' : '<p>Avaa viestin kirjautumislinkki tällä laitteella.</p>'}<p>Katso myös roskapostikansio.</p><form class="app-form" id="sync-code-form" novalidate><label>Koodi tai linkki<input name="code" required maxlength="2000" autocomplete="one-time-code" enterkeyhint="done" autocapitalize="off" spellcheck="false" placeholder="https://…"></label><p class="error-note" id="sync-error" role="alert">${esc(flash)}</p><button class="app-button" type="submit">Kirjaudu</button></form><button class="app-back" type="button" data-sync-restart>← Vaihda sähköposti</button>`;
+    const note = flash ? `<p class="error-note" role="alert">${esc(flash)}</p>` : '';
+    return `${top}${back}<h2 class="app-heading">Kirjaudu sisään</h2>${note}<p>Kirjautumalla autosi, merkintäsi ja tankkauksesi tallentuvat pilveen ja näkyvät myös toisella laitteella. Kuvat ja kuitit jäävät tähän laitteeseen.</p><p>Testivaiheessa kirjautuneena voit kokeilla myös tekoälyavustajaa maksutta.</p><a class="app-button sync-google" href="${esc(googleUrl())}" data-sync-google><span class="sync-g" aria-hidden="true" translate="no">G</span> <span>Kirjaudu Google-tilillä</span></a><p class="app-fineprint">Tiedot tallentuvat Supabase-palveluun EU:ssa. <a href="tietosuoja.html">Tietosuoja</a></p>${installedApp ? pasteBox() : ''}`;
   }
   const handoffBox = () => `<div class="me-data sync-handoff"><h3>Käytätkö kotivalikon AJOURA-sovellusta?</h3><p>Linkki avautui selaimeen, joten kotivalikon sovellus ei vielä ole kirjautunut. Siirrä kirjautuminen sinne:</p><ol class="sync-steps"><li>Paina Kopioi kirjautuminen.</li><li>Avaa AJOURA kotivalikosta ja valitse Valikko → Varmuuskopio ja tiedot → Kirjaudu sisään.</li><li>Liitä teksti kohtaan Liitä kirjautuminen ja paina Kirjaudu.</li></ol><button class="app-button" type="button" data-sync-handoff>Kopioi kirjautuminen</button><p class="app-fineprint">Selain kirjautuu samalla ulos. Kirjautumisen voi siirtää vain yhdelle laitteelle.</p></div>`;
   const pasteBox = () => `<div class="me-data sync-handoff"><h3>Avasitko linkin selaimessa?</h3><p>Liitä selaimessa kopioimasi kirjautuminen tähän.</p><form class="app-form" id="sync-handoff-form" novalidate><label>Liitä kirjautuminen<input name="handoff" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ajoura-login:…"></label><p class="error-note" id="sync-handoff-error" role="alert"></p><button class="app-button secondary" type="submit">Kirjaudu</button></form></div>`;
@@ -209,8 +219,8 @@
   function meCard() {
     if (!enabled) return '';
     const note = flash ? `<p class="success-note" role="status">${esc(flash)}</p>` : ''; flash = '';
-    if (!session) return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautumalla autosi ja merkintäsi tallentuvat turvallisesti ja näkyvät myös verkkosivulla ja uudessa puhelimessa.</p><a class="app-button secondary" href="#login">Kirjaudu sisään</a></div>`;
-    return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautunut tilillä <strong translate="no">${esc(session.user.email)}</strong></p><p class="sync-status" role="status">${esc(statusText())}</p><div class="sync-actions"><button class="app-button secondary" type="button" data-sync-now>Synkronoi nyt</button><button class="app-back" type="button" data-sync-out>Kirjaudu ulos</button></div>${phoneBrowser ? '<a class="app-back" href="#login">Siirrä kirjautuminen kotivalikon sovellukseen →</a>' : ''}</div>`;
+    if (!session) return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautumalla autosi, merkintäsi ja tankkauksesi tallentuvat pilveen ja siirtyvät uuteen puhelimeen. Kuvat ja kuitit jäävät tähän laitteeseen.</p><a class="app-button secondary" href="#login">Kirjaudu sisään</a></div>`;
+    return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautunut tilillä <strong translate="no">${esc(session.user.email)}</strong></p><p class="sync-status" role="status">${esc(statusText())}</p><div class="sync-actions"><button class="app-button secondary" type="button" data-sync-now>Synkronoi nyt</button><button class="app-back" type="button" data-sync-out>Kirjaudu ulos</button></div>${phoneBrowser ? '<a class="app-back" href="#login">Siirrä kirjautuminen kotivalikon sovellukseen →</a>' : ''}</div><button class="app-back danger-link sync-delete" type="button" data-sync-delete>Poista tili ja pilvitiedot</button>`;
   }
   function paintStatus() { const el = document.querySelector('.sync-status'); if (el) { el.textContent = statusText(); if (window.AjouraI18n && window.AjouraI18n.apply) window.AjouraI18n.apply(el.parentNode); } }
   const rerender = () => { const s = document.getElementById('app-screen'), y = s ? s.scrollTop : 0; if (App()) App().refresh(); if (s) s.scrollTop = y; };
@@ -247,6 +257,7 @@
     if (t.closest('[data-sync-restart]')) { step = { email: step.email, sent: false }; rerender(); }
     if (t.closest('[data-sync-now]')) sync();
     if (t.closest('[data-sync-out]')) signOut();
+    if (t.closest('[data-sync-delete]')) deleteAccount();
     const h = t.closest('[data-sync-handoff]');
     if (h && session) {
       const text = 'ajoura-login:' + session.refresh_token;
@@ -268,6 +279,9 @@
 
   window.AjouraSync = {
     enabled, owns: v => enabled && v === 'login', paint, meCard,
+    // access.js: voimassa oleva istuntotunniste (uusitaan tarvittaessa) ja tili. Ei tunnistetta = ei kirjautunut.
+    accessToken: async () => { if (!enabled || !session || !session.user.id) return ''; try { await token(); } catch (e) { return ''; } return session ? session.access_token : ''; },
+    account: () => (session && session.user.id ? { email: session.user.email } : null), apiKey: KEY, base: BASE,
     signedIn: () => !!session, forget: () => { signedOut(''); set(baseKey, ''); }, changed: () => schedule(), start: () => schedule(0),
     _merge: merge // for tests
   };

@@ -31,8 +31,6 @@
   const FEATURES = [
     ['shop', 'yleinen', 'Autohuollon näkymä', 'Autohuolto yläkulman näkymävalikossa ja korjaamon työkalut.', ''],
     ['notice', 'yleinen', 'Tiedote käyttäjille', 'Alla kirjoittamasi tiedote näkyy kotinäkymän yläosassa.', ''],
-    // 0.112: kirjautuminen vain tiimin laitteille Ajoura Plussan testaamiseen (ei julkinen ennen tietosuojaselostetta).
-    ['account', 'yleinen', 'Tili ja Plus (testi)', 'Kirjautuminen kohdassa Asetukset → Uudet ominaisuudet Ajoura Plussan testaamiseen. Vain tiimin laitteille.', '', false],
     ['plate', 'asiakas', 'Rekisterihaku (demo)', 'Auton lisäys rekisteritunnuksella.', '[data-method="plate"]'],
     ['kinds', 'asiakas', 'Muut ajoneuvolajit', 'Moottoripyörät, mopot, mönkijät, kelkat, veneet ja muut laitteet ajoneuvon lisäyksessä.', ''],
     ['fuel', 'asiakas', 'Tankkauskirja', 'Tankkaukset, kulutus ja ajon hinta.', 'a[href^="#fuel"],.fuel-cost,[data-quickfuel],[data-fl-tocmp]'],

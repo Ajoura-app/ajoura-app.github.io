@@ -35,5 +35,9 @@ def test_tietosuoja_vastaa_nykyista_sovellusta(browser, base, kieli):
         for nimi in ("Supabase", "Anthropic", "Google", "GitHub Pages", "tietosuoja.fi"):
             assert nimi in teksti, f"{kieli}: puuttuu {nimi}"
         assert "CloudFront" not in teksti
+        # 0.116: kirjautuminen (Google) ja pilvitallennus kuvattu, tilin poisto ohjeistettu.
+        assert {"fi": "Poista tili ja pilvitiedot", "en": "Delete account and cloud data", "sv": "Radera konto och molndata"}[kieli] in teksti
+        for fi in ("pilveen", "tilisi", "Kirjautuminen on vapaaehtoista") if kieli != "fi" else ():
+            assert fi not in teksti, f"{kieli}: kääntämättä '{fi}'"
     finally:
         s.sulje()

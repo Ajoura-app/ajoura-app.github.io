@@ -14,22 +14,24 @@
 // varsinainen suoja on palvelimella: tekoälyfunktio tarkistaa käyttäjän, voimassa olevan tilauksen ja kiintiön
 // omasta tietokannastaan JOKAISESSA pyynnössä eikä luota mihinkään selaimen lähettämään tietoon oikeuksista.
 //
-// Taustapalvelu (v0.112): Supabase-projekti sjamwwcqrwspwvilurqn, koodi kansiossa supabase/ (testit/test_supabase.py).
+// Taustapalvelu (v0.112, v0.116): Supabase-projekti sjamwwcqrwspwvilurqn, koodi kansiossa supabase/ (testit/test_supabase.py).
 // 1. GET /rest/v1/rpc/get_entitlement käyttäjän istuntotunnisteella (Authorization: Bearer …)
-//    → {"plan":"plus","status":"active","validUntil":"2027-01-31T23:59:59Z",
+//    → {"plan":"plus","status":"active","validUntil":"2027-01-31T23:59:59Z","features":["ai.receipt",…],
 //       "quota":{"ai":{"limit":30,"used":12,"resetsAt":"2026-12-01T00:00:00Z"}}}
 //    plan: 'free' | 'plus'; quota.ai.limit null = ei rajaa. Virhe tai puuttuva tieto → Free.
 // 2. POST /functions/v1/tekoaly, runko = kuva, otsakkeet Authorization ja X-Ajoura-Feature (esim. ai.receipt).
 //    Vastaukset: 200 tulos (JSON), 401/402/403 ei oikeutta, 429 kiintiö täynnä, 503 tekoälyä ei ole otettu käyttöön.
-// Kirjautuminen (sähköpostikoodi, Supabase Auth) on vain tiimin testikäyttöön (Ylläpito → ominaisuus "account").
+// Kirjautuminen (Google, sync.js) on kaikille avoin 0.116:sta. Testivaiheessa kirjautunut free saa tekoälyn (10/kk).
 // Ilman kirjautumista sovellus ei ota yhteyttä palvelimeen lainkaan: oikeuksia ei kysytä eikä mitään lähetetä.
 (() => {
-  // Supabase-projekti. key on julkinen (publishable) avain: se kuuluu selaimeen, ja rivitason suojaus ja funktiot
-  // rajaavat, mitä sillä saa. Tyhjä avain = palvelua ei ole kytketty: mitään ei lähetetä verkkoon.
-  const SUPABASE = { url: 'https://sjamwwcqrwspwvilurqn.supabase.co', key: 'sb_publishable_Eo71xHp7YIscRqDdLOOVcA_qzywcyZb' };
-  const SERVICE = SUPABASE.key ? { entitlements: SUPABASE.url + '/rest/v1/rpc/get_entitlement', ai: SUPABASE.url + '/functions/v1/tekoaly' } : { entitlements: '', ai: '' };
+  // Supabase-projekti ja kirjautuminen tulevat sync.js:ltä (AjouraSync, ladataan ennen tätä): yksi istunto koko
+  // sovellukselle. Ilman sitä palvelua ei ole, eikä mitään lähetetä verkkoon.
+  const S = window.AjouraSync && window.AjouraSync.enabled ? window.AjouraSync : null;
+  const SERVICE = S ? { key: S.apiKey, entitlements: S.base + '/rest/v1/rpc/get_entitlement', ai: S.base + '/functions/v1/tekoaly' } : { key: '', entitlements: '', ai: '' };
 
-  // Paketit ja niiden ominaisuudet. Hintoja ja lopullisia käyttörajoja ei ole päätetty: rajat tulevat palvelimelta.
+  // Paketit ja niiden ominaisuudet oletuksena. Palvelin kertoo kullekin käyttäjälle sallitut ominaisuudet
+  // (get_entitlement → features): testivaiheessa myös kirjautunut free saa tekoälyn (10/kk). Kun maksut tulevat,
+  // free-paketilta poistetaan tekoäly tietokannassa, eikä sovellukseen tarvita muutosta.
   const PLANS = { free: [], plus: ['ai.receipt', 'ai.odometer', 'ai.servicebook'] };
   // Ominaisuudet: pref = mikä käyttäjän oma valinta vaaditaan lisäksi, quota = mikä kuukausikiintiö kuluu.
   const FEATURES = {
@@ -41,86 +43,52 @@
 
   const get = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
-  const del = k => { try { localStorage.removeItem(k); } catch (e) {} };
 
-  const FREE = Object.freeze({ plan: 'free', active: false, validUntil: 0, quota: Object.freeze({}) });
+  const FREE = Object.freeze({ plan: 'free', active: false, validUntil: 0, features: Object.freeze([]), quota: Object.freeze({}) });
   let ent = FREE;
+  const account = () => (S ? S.account() : null);
+  let status = account() ? 'checking' : 'none'; // none = ei palvelua tai ei kirjautunut, ok = tarkistettu, error = ei yhteyttä
 
-  // ---- Tili (Supabase Auth) ---------------------------------------------------------------------------------
-  // Istunto on Supabasen allekirjoittama tunniste: sen muokkaaminen ei anna oikeuksia, palvelin tarkistaa sen.
-  // Oma avain (ei sync.js:n 'ajoura-session', joka kuuluu vanhaan, käytöstä poistettuun projektiin).
-  const SESSION = 'ajoura-tili';
-  const readSession = () => { try { const v = JSON.parse(get(SESSION) || 'null'); return v && v.access_token && v.refresh_token && v.user && v.user.id ? v : null; } catch (e) { return null; } };
-  let session = SERVICE.entitlements ? readSession() : null;
-  const keep = d => { session = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (Number(d.expires_in) || 3600) * 1000, user: { id: d.user.id, email: d.user.email || '' } }; set(SESSION, JSON.stringify(session)); };
-  async function auth(path, body) {
-    const r = await fetch(SUPABASE.url + '/auth/v1/' + path, { method: 'POST', credentials: 'omit', cache: 'no-store', headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const b = await r.json().catch(() => null);
-    if (!r.ok) throw Object.assign(new Error('auth ' + r.status), { status: r.status });
-    return b;
-  }
-  // Voimassa oleva tunniste; vanheneva uusitaan. Hylätty uusinta = uloskirjaus (tili poistettu tai istunto peruttu).
-  async function token() {
-    if (!session) return '';
-    if (session.expires_at - Date.now() > 60000) return session.access_token;
-    try { keep(await auth('token?grant_type=refresh_token', { refresh_token: session.refresh_token })); return session.access_token; }
-    catch (e) { if (e.status >= 400 && e.status < 500) forget(); return ''; }
-  }
-  function forget() { session = null; del(SESSION); ent = FREE; status = 'none'; changed(); }
-  // Sähköpostiin tulee kirjautumiskoodi (tai linkki, jos Supabasen viestipohjassa on vain linkki: sen voi liittää koodin tilalle).
-  async function sendCode(email) { if (!SERVICE.entitlements) throw fail('service'); await auth('otp', { email: String(email).trim(), create_user: true }); }
-  async function verifyCode(email, input) {
-    if (!SERVICE.entitlements) throw fail('service');
-    let body = { type: 'email', email: String(email).trim(), token: String(input).replace(/\s/g, '') };
-    try { const u = new URL(String(input).trim()); const t = u.searchParams.get('token_hash') || u.searchParams.get('token'); if (t) body = { type: u.searchParams.get('type') || 'magiclink', token_hash: t }; } catch (e) { /* koodi, ei linkki */ }
-    keep(await auth('verify', body));
-    await refresh();
-  }
-  async function signOut() {
-    const t = session && session.access_token;
-    forget();
-    if (t) fetch(SUPABASE.url + '/auth/v1/logout', { method: 'POST', credentials: 'omit', headers: { apikey: SUPABASE.key, Authorization: 'Bearer ' + t } }).catch(() => {});
-  }
-  const account = () => (session ? { email: session.user.email } : null);
-
-  let status = session ? 'checking' : 'none'; // none = ei palvelua tai ei kirjautunut, ok = tarkistettu, error = ei yhteyttä
-
-  // Palvelimen vastaus → sisäinen tila. Kaikki tuntematon tai puutteellinen tulkitaan Freeksi. Kiintiön raja null = ei
-  // rajaa; puuttuva tai virheellinen raja = 0 (ei käyttöä), jotta virhe ei koskaan avaa rajatonta käyttöä.
+  // Palvelimen vastaus → sisäinen tila. Kaikki tuntematon tai puutteellinen tulkitaan ilman oikeuksia. Plus vaatii
+  // voimassaolon (validUntil); free on voimassa kirjautuneena. Kiintiön raja null = ei rajaa; puuttuva tai virheellinen
+  // raja = 0 (ei käyttöä), jotta virhe ei koskaan avaa rajatonta käyttöä.
   const nonNeg = v => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null);
   function parse(b) {
-    if (!b || typeof b !== 'object' || !Object.prototype.hasOwnProperty.call(PLANS, b.plan) || b.plan === 'free') return FREE;
+    if (!b || typeof b !== 'object' || !Object.prototype.hasOwnProperty.call(PLANS, b.plan) || b.status !== 'active') return FREE;
     const until = typeof b.validUntil === 'string' ? Date.parse(b.validUntil) : NaN;
-    if (b.status !== 'active' || !(until > Date.now())) return FREE;
+    if (b.plan === 'plus' && !(until > Date.now())) return FREE;
+    const features = (Array.isArray(b.features) ? b.features : PLANS[b.plan]).filter(f => typeof f === 'string' && Object.prototype.hasOwnProperty.call(FEATURES, f));
     const quota = {};
     for (const [k, q] of Object.entries(b.quota && typeof b.quota === 'object' ? b.quota : {})) {
       if (!q || typeof q !== 'object') continue;
       const limit = q.limit === null ? null : nonNeg(q.limit) ?? 0, used = nonNeg(q.used) || 0, resets = Date.parse(q.resetsAt);
       quota[k] = Object.freeze({ limit, used, resetsAt: Number.isNaN(resets) ? 0 : resets });
     }
-    return Object.freeze({ plan: b.plan, active: true, validUntil: until, quota: Object.freeze(quota) });
+    return Object.freeze({ plan: b.plan, active: true, validUntil: b.plan === 'plus' ? until : 0, features: Object.freeze(features), quota: Object.freeze(quota) });
   }
   // Tilaus voi päättyä sovelluksen ollessa auki: voimassaolo tarkistetaan joka kutsulla, ei vain haettaessa.
-  const current = () => (ent.active && ent.validUntil > Date.now() ? ent : FREE);
+  const current = () => (ent.active && (!ent.validUntil || ent.validUntil > Date.now()) ? ent : FREE);
 
   function changed() { try { document.dispatchEvent(new CustomEvent('ajoura-access')); } catch (e) {} }
-  const authHeaders = async () => { const t = await token(); return t ? { apikey: SUPABASE.key, Authorization: 'Bearer ' + t } : null; };
+  const authHeaders = async () => { const t = S ? await S.accessToken() : ''; return t ? { apikey: SERVICE.key, Authorization: 'Bearer ' + t } : null; };
 
   let pending = null, checkedAt = 0, expiry = 0; // expiry: ilmoitus, kun tilauskausi päättyy sovelluksen ollessa auki
   function refresh() {
-    if (!SERVICE.entitlements || !session) return Promise.resolve(current());
+    if (!SERVICE.entitlements || !account()) { ent = FREE; status = 'none'; return Promise.resolve(current()); }
     if (pending) return pending;
     pending = authHeaders()
       .then(h => (h ? fetch(SERVICE.entitlements, { headers: h, credentials: 'omit', cache: 'no-store' }) : null))
       .then(r => (r && r.ok ? r.json() : null))
       .then(b => { ent = parse(b); status = 'ok'; }, () => { ent = FREE; status = 'error'; })
-      .then(() => { clearTimeout(expiry); if (ent.active) expiry = setTimeout(changed, Math.min(ent.validUntil - Date.now() + 50, 2 ** 31 - 1)); })
+      .then(() => { clearTimeout(expiry); if (ent.validUntil) expiry = setTimeout(changed, Math.min(ent.validUntil - Date.now() + 50, 2 ** 31 - 1)); })
       .then(() => { pending = null; checkedAt = Date.now(); changed(); return current(); });
     return pending;
   }
+  // Kirjautuminen tai uloskirjautuminen (sync.js): oikeus haetaan uudelleen tai nollataan heti.
+  document.addEventListener('ajoura-session', () => { if (account()) refresh(); else { ent = FREE; status = 'none'; clearTimeout(expiry); changed(); } });
 
   const plan = () => current().plan;
-  const entitled = f => Object.prototype.hasOwnProperty.call(FEATURES, f) && PLANS[plan()].includes(f);
+  const entitled = f => Object.prototype.hasOwnProperty.call(FEATURES, f) && current().features.includes(f);
   const prefOn = p => get(PREF[p]) === '1';
   const aiEnabled = () => prefOn('ai');
   function setAiEnabled(on) { set(PREF.ai, on ? '1' : '0'); changed(); }
@@ -173,6 +141,8 @@
     plans: Object.freeze(Object.keys(PLANS)), features: Object.freeze(Object.keys(FEATURES)),
     plan, entitled, aiEnabled, setAiEnabled, check, can: f => check(f).ok, quota, recognize, refresh,
     status: () => status, serviceReady: () => !!(SERVICE.entitlements && SERVICE.ai),
-    account, sendCode, verifyCode, signOut
+    // Testivaihe: tekoäly on käytössä ilman Plussaa (palvelin sallii sen free-paketille).
+    trial: () => plan() === 'free' && current().features.length > 0,
+    account
   }) });
 })();
