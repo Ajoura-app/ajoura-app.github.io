@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Ajoura: ohje Claude Codelle
 
 Ajoura on digitaalinen auton huoltokirja (PWA, selainsovellus). Koodi on tässä repossa, ja main-haara julkaistaan automaattisesti GitHub Pagesiin (ajoura-app.github.io/app.html). Repo on julkinen. Sovellus on rakennettu Clauden avulla, tekijöitä on kaksi (Niklas ja Hannes), eikä kumpikaan ole koodauksen tai yritystoiminnan asiantuntija.
@@ -12,7 +14,7 @@ Ajoura on digitaalinen auton huoltokirja (PWA, selainsovellus). Koodi on tässä
 - Pysy siinä, mitä pyydetään.
 
 ## Itsenäinen työ
-Kun Niklas antaa tehtävän tai tehtäväjonon, suunnittele, toteuta, testaa ja julkaise ilman välihyväksyntöjä omien suositustesi mukaan. Älä pyydä erikseen hyväksyntää suunnitelmalle tai julkaisulle.
+Kun käyttäjä antaa kehitystehtävän, suunnittele, toteuta ja testaa muutokset itsenäisesti ilman tarpeettomia välihyväksyntöjä. Tee muutokset aina erilliseen kehityshaaraan. Älä yhdistä muutoksia main-haaraan tai julkaise tuotantoon ilman käyttäjän nimenomaista hyväksyntää. Noudata AGENTS.md-tiedoston yhteisiä kehitysohjeita.
 
 Pysähdy vasta, kun
 1. tehtävä tai jono on tehty,
