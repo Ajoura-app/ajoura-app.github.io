@@ -36,7 +36,7 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True):
     kesken ajon: tila['oikeus'] = palvelimen seuraava vastaus, tila['ai'] = tekoälyfunktion pyynnöt,
     tila['auth'] = kirjautumispyynnöt. Palvelin hyväksyy vain oikean julkisen avaimen ja istuntotunnisteen."""
     tila = {"oikeus": oikeus, "ai_status": ai_status, "ai": [], "oikeuskyselyt": 0, "verkko": verkko, "auth": [],
-            "uusinta_ok": True}
+            "uusinta_ok": True, "ai_vastaus": {"km": 123456}, "ai_pyynnot": []}
 
     def access(route):
         r = route.fetch()
@@ -60,7 +60,8 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True):
         if not tunnistettu(route):
             return route.fulfill(status=401, body="{}")
         tila["ai"].append(route.request.headers.get("x-ajoura-feature"))
-        route.fulfill(status=tila["ai_status"], content_type="application/json", body='{"km": 123456}')
+        tila["ai_pyynnot"].append({"tyyppi": route.request.headers.get("content-type"), "koko": len(route.request.post_data_buffer or b"")})
+        route.fulfill(status=tila["ai_status"], content_type="application/json", body=json.dumps(tila["ai_vastaus"]))
 
     def auth(route):
         rq = route.request

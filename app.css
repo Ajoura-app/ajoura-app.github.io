@@ -1657,3 +1657,10 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 .ai-login input{font-size:16px!important}
 .ai-acct .app-button{margin-top:0}
 .ai-acct .link-button{font-size:12px}
+/* 0.113: Täytä kuitista (tekoäly, Ajoura Plus) tankkausikkunassa. Näkyy vain, kun tekoäly on sallittu. */
+.sf-ai{margin:0 0 12px}
+.sf-ai-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;border:1px dashed var(--c-9db8e0,#9db8e0);border-radius:12px;background:var(--c-edf4fd,#edf4fd);color:var(--c-1464e8,#1464e8);font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.sf-ai-btn:disabled{opacity:.6;cursor:progress}
+.sf-ai-ico{display:grid;place-items:center}.sf-ai-ico svg{width:18px;height:18px}
+.sf-ai-note{margin:6px 2px 0;font-size:12px;line-height:1.5;color:var(--c-3f4f63,#3f4f63)}
+.sf-ai-note.ok{color:var(--c-17663f,#17663f)}
