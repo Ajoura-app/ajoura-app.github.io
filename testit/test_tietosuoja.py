@@ -37,6 +37,7 @@ def test_tietosuoja_vastaa_nykyista_sovellusta(browser, base, kieli):
         assert "CloudFront" not in teksti
         # 0.116: kirjautuminen (Google) ja pilvitallennus kuvattu, tilin poisto ohjeistettu.
         assert {"fi": "Poista tili ja pilvitiedot", "en": "Delete account and cloud data", "sv": "Radera konto och molndata"}[kieli] in teksti
+        assert {"fi": "Jaettu talli:", "en": "Shared garage:", "sv": "Delat garage:"}[kieli] in teksti  # 0.117
         for fi in ("pilveen", "tilisi", "Kirjautuminen on vapaaehtoista") if kieli != "fi" else ():
             assert fi not in teksti, f"{kieli}: kääntämättä '{fi}'"
     finally:

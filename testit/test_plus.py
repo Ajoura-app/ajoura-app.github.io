@@ -22,8 +22,17 @@ OIKEUDET = SB + "/rest/v1/rpc/get_entitlement"
 TEKOALY = SB + "/functions/v1/tekoaly"
 AVAIN = re.search(r"const KEY = '([^']+)'", (JUURI / "sync.js").read_text(encoding="utf-8")).group(1)
 TUNNISTE = "testitunniste"
-ISTUNTO = json.dumps({"access_token": TUNNISTE, "refresh_token": "uusinta-1", "expires_at": 4102444800000,
-                      "user": {"id": "u-1", "email": "testi@esimerkki.test"}})
+KAYTTAJAT = {TUNNISTE: ("u-1", "testi@esimerkki.test"), "tunniste-2": ("u-2", "puoliso@esimerkki.test"),
+             "tunniste-3": ("u-3", "ulkopuolinen@esimerkki.test")}
+
+
+def istunto(tunniste=TUNNISTE):
+    uid, email = KAYTTAJAT[tunniste]
+    return json.dumps({"access_token": tunniste, "refresh_token": "uusinta-1", "expires_at": 4102444800000,
+                       "user": {"id": uid, "email": email}})
+
+
+ISTUNTO = istunto()
 PLUS = {"plan": "plus", "status": "active", "validUntil": "2099-01-01T00:00:00Z",
         "quota": {"ai": {"limit": None, "used": 0, "resetsAt": "2099-01-01T00:00:00Z"}}}
 # Testivaiheen kirjautunut free (0.116): palvelin sallii tekoälyn 10/kk.
@@ -39,18 +48,35 @@ def uusi_tila(oikeus=PLUS, ai_status=200, verkko=True):
     """Keksityn Supabasen tila. Saman tilan voi antaa kahdelle laitteelle (pilvitallennuksen testit)."""
     return {"oikeus": oikeus, "ai_status": ai_status, "ai": [], "oikeuskyselyt": 0, "verkko": verkko, "auth": [],
             "uusinta_ok": True, "ai_vastaus": {"km": 123456}, "ai_pyynnot": [], "pilvi": None, "pilvipyynnot": [],
-            "poistettu": False}
+            "poistettu": False, "pilvet": {}, "jasenet": {}, "kutsut": {}}
 
 
-def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=None, lataa=True):
+def _rivi(tila, omistaja):
+    return tila["pilvi"] if omistaja == "u-1" else tila["pilvet"].get(omistaja)
+
+
+def _aseta(tila, omistaja, rivi):
+    if omistaja == "u-1":
+        tila["pilvi"] = rivi
+    elif rivi is None:
+        tila["pilvet"].pop(omistaja, None)
+    else:
+        tila["pilvet"][omistaja] = rivi
+
+
+def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=None, lataa=True, tunniste=TUNNISTE):
     """Keksitty Supabase: kirjautuminen, oikeudet, tekoälyfunktio ja pilvitalli. Palvelin hyväksyy vain oikean julkisen
     avaimen ja istuntotunnisteen. tila['oikeus'] = seuraava oikeusvastaus, tila['pilvi'] = pilvessä oleva talli
     ({"data", "rev"} tai None), tila['ai'] = tekoälyfunktion pyynnöt, tila['auth'] = kirjautumispyynnöt."""
     tila = tila or uusi_tila(oikeus, ai_status, verkko)
 
-    def tunnistettu(route):
+    def kuka(route):
         h = route.request.headers
-        return h.get("authorization") == f"Bearer {TUNNISTE}" and h.get("apikey") == AVAIN
+        t = (h.get("authorization") or "").replace("Bearer ", "")
+        return KAYTTAJAT[t][0] if t in KAYTTAJAT and h.get("apikey") == AVAIN else None
+
+    def tunnistettu(route):
+        return kuka(route) is not None
 
     def ei(route, status=401):
         route.fulfill(status=status, content_type="application/json", body='{"message":"JWT"}')
@@ -75,10 +101,11 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=N
         polku = rq.url[len(SB + "/auth/v1/"):]
         runko = json.loads(rq.post_data or "{}") if rq.method == "POST" else {}
         tila["auth"].append((polku.split("?")[0], runko, rq.headers.get("apikey")))
-        istunto = {"access_token": TUNNISTE, "refresh_token": "uusinta-2", "expires_in": 3600,
-                   "user": {"id": "u-1", "email": "testi@esimerkki.test"}}
+        t = (rq.headers.get("authorization") or "").replace("Bearer ", "")
+        uid, email = KAYTTAJAT.get(t, KAYTTAJAT[tunniste])
+        istunto = {"access_token": tunniste, "refresh_token": "uusinta-2", "expires_in": 3600, "user": {"id": KAYTTAJAT[tunniste][0], "email": KAYTTAJAT[tunniste][1]}}
         if polku.startswith("user"):
-            return route.fulfill(status=200, content_type="application/json", body=json.dumps(istunto["user"])) if tunnistettu(route) else ei(route)
+            return route.fulfill(status=200, content_type="application/json", body=json.dumps({"id": uid, "email": email})) if tunnistettu(route) else ei(route)
         if polku.startswith("token"):
             return route.fulfill(status=200 if tila["uusinta_ok"] else 400, content_type="application/json",
                                  body=json.dumps(istunto if tila["uusinta_ok"] else {"error_code": "refresh_token_not_found"}))
@@ -89,24 +116,71 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=N
         tila["pilvipyynnot"].append(rq.method)
         if not tila["verkko"]:
             return route.abort()
-        if not tunnistettu(route):
+        me = kuka(route)
+        if not me:
             return ei(route)
+        m = re.search(r"user_id=eq\.([\w-]+)", rq.url)
+        omistaja = m.group(1) if m else None
+        sallittu = omistaja in (me, tila["jasenet"].get(me))
         if rq.method == "GET":
-            rivit = [] if tila["pilvi"] is None else [tila["pilvi"]]
-            return route.fulfill(status=200, content_type="application/json", body=json.dumps(rivit))
+            rivi = _rivi(tila, omistaja) if sallittu else None
+            return route.fulfill(status=200, content_type="application/json", body=json.dumps([] if rivi is None else [rivi]))
         runko = json.loads(rq.post_data or "{}")
         if rq.method == "POST":
-            if tila["pilvi"] is not None:
+            if runko.get("user_id") != me:
+                return ei(route, 403)
+            if _rivi(tila, me) is not None:
                 return route.fulfill(status=409, content_type="application/json", body='{"code":"23505"}')
-            tila["pilvi"] = {"data": runko["data"], "rev": runko.get("rev", 1)}
+            _aseta(tila, me, {"data": runko["data"], "rev": runko.get("rev", 1)})
             return route.fulfill(status=201, body="")
         if rq.method == "PATCH":
             rev = int(rq.url.split("rev=eq.")[1].split("&")[0])
-            if tila["pilvi"] is None or tila["pilvi"]["rev"] != rev:
+            rivi = _rivi(tila, omistaja)
+            if not sallittu or rivi is None or rivi["rev"] != rev:
                 return route.fulfill(status=200, content_type="application/json", body="[]")
-            tila["pilvi"] = {"data": runko["data"], "rev": runko["rev"]}
-            return route.fulfill(status=200, content_type="application/json", body=json.dumps([tila["pilvi"]]))
+            _aseta(tila, omistaja, {"data": runko["data"], "rev": runko["rev"]})
+            return route.fulfill(status=200, content_type="application/json", body=json.dumps([_rivi(tila, omistaja)]))
         route.fulfill(status=405, body="")
+
+    def talli_rpc(route):
+        me = kuka(route)
+        if not me:
+            return ei(route)
+        nimi = route.request.url.split("/rpc/")[1].split("?")[0]
+        args = json.loads(route.request.post_data or "{}")
+        email = {v[0]: v[1] for v in KAYTTAJAT.values()}
+        vastaa = lambda b: route.fulfill(status=200, content_type="application/json", body=json.dumps(b))
+        if nimi == "my_garage":
+            if me in tila["jasenet"]:
+                o = tila["jasenet"][me]
+                return vastaa({"owner": o, "role": "member", "owner_email": email[o]})
+            return vastaa({"owner": me, "role": "owner", "members": [{"id": m, "email": email[m], "joined": "2026-11-06"} for m, o in tila["jasenet"].items() if o == me]})
+        if nimi == "create_invite":
+            if me in tila["jasenet"]:
+                return ei(route, 403)
+            koodi = f"kutsu{len(tila['kutsut']) + 1}abcdefgh"
+            tila["kutsut"][koodi] = me
+            return vastaa({"token": koodi, "expires": "2026-11-13T00:00:00Z"})
+        if nimi == "accept_invite":
+            o = tila["kutsut"].get(args.get("p_token"))
+            if not o:
+                return vastaa({"ok": False, "reason": "invalid"})
+            if o == me:
+                return vastaa({"ok": False, "reason": "own"})
+            if me in tila["jasenet"]:
+                return vastaa({"ok": False, "reason": "already_member"})
+            tila["jasenet"][me] = o
+            tila["kutsut"][args["p_token"]] = None
+            _aseta(tila, me, None)
+            return vastaa({"ok": True, "owner": o})
+        if nimi == "remove_member":
+            if tila["jasenet"].get(args.get("p_member")) == me:
+                del tila["jasenet"][args["p_member"]]
+            return route.fulfill(status=204, body="")
+        if nimi == "leave_garage":
+            tila["jasenet"].pop(me, None)
+            return route.fulfill(status=204, body="")
+        route.fulfill(status=404, body="")
 
     def poisto(route):
         if not tunnistettu(route):
@@ -119,8 +193,10 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=N
     s.context.route(SB + "/auth/v1/**", auth)
     s.context.route(SB + "/rest/v1/garages*", pilvi)
     s.context.route(SB + "/rest/v1/rpc/delete_my_account", poisto)
+    for nimi in ("my_garage", "create_invite", "accept_invite", "remove_member", "leave_garage"):
+        s.context.route(SB + "/rest/v1/rpc/" + nimi, talli_rpc)
     if kirjautunut:
-        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)", ISTUNTO)
+        s.page.evaluate("t => localStorage.setItem('ajoura-tili', t)", istunto(tunniste))
     if lataa:
         s.page.reload()
         s.page.wait_for_selector("#app-screen .screen-content", state="attached")

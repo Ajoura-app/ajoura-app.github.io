@@ -1668,3 +1668,12 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 .sync-google{gap:10px;margin:16px 0 10px}
 .sync-g{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c-ffffff,#fff);color:var(--c-1464e8,#1464e8);font-weight:800;font-size:13px}
 .sync-delete{display:block;margin:10px 0 0;color:var(--c-b42318,#b42318);font-size:12px}
+/* 0.117: jaettu talli (Valikko → Varmuuskopio ja tiedot → Tili). */
+.sync-share{margin:16px 0 0;padding:12px;border:1px solid var(--c-dce6ef,#dce6ef);border-radius:14px;background:var(--c-f8fbfe,#f8fbfe)}
+.sync-share h4{margin:0 0 6px;font-size:12.5px;font-weight:650;color:var(--c-17283d,#17283d)}
+.sync-share p{font-size:12px;color:var(--c-3f4f63,#3f4f63);line-height:1.55;margin:0 0 10px}
+.sync-members{list-style:none;margin:0 0 10px;padding:0}
+.sync-members li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--c-e2e8f0,#e2e8f0);font-size:12px;overflow-wrap:anywhere}
+.sync-members li:first-child{border-top:0}
+.sync-invite{display:block;font-size:12px;margin:0 0 8px}
+.sync-invite input{font-size:16px!important}

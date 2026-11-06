@@ -127,6 +127,67 @@
     return { ...full, cars };
   }
 
+  // ---- Jaettu talli (0.117) -------------------------------------------------------------------------
+  // Omistaja kutsuu linkillä (#liity=koodi, kertakäyttöinen, 7 pv). Kutsu odottaa laitteella kirjautumisen yli.
+  const inviteKey = 'ajoura-kutsu';
+  if (/^#liity=[\w-]{8,100}$/.test(location.hash)) { set(inviteKey, location.hash.slice(7)); history.replaceState(null, '', location.pathname + location.search + '#liity'); }
+  let garage = null, inviteLink = '';
+  const rpc = (name, args) => call('/rest/v1/rpc/' + name, { method: 'POST', body: JSON.stringify(args || {}) });
+  async function loadGarage() {
+    const before = JSON.stringify(garage);
+    garage = await rpc('my_garage');
+    if (before !== JSON.stringify(garage) && /^#(me|liity)/.test(location.hash)) setTimeout(rerender, 0);
+    return garage;
+  }
+  const say = msg => (window.AjouraI18n ? window.AjouraI18n.t(msg) : msg);
+  const joinErrors = { invalid: 'Kutsu on vanhentunut tai jo käytetty. Pyydä uusi kutsu.', own: 'Tämä on oma kutsusi. Lähetä linkki sille, jonka haluat kutsua.',
+    already_member: 'Kuulut jo jaettuun talliin. Poistu siitä ensin.', has_members: 'Olet jakanut oman tallisi. Poista ensin sen jäsenet.', full: 'Tallissa on jo enimmäismäärä jäseniä.' };
+  async function joinGarage(btn) {
+    const code = get(inviteKey); if (!code || !session) return;
+    btn.disabled = true;
+    try {
+      await sync(); // ensin oma talli laitteelle, jotta mikään ei jää pilveen yhdistämättä
+      const r = await rpc('accept_invite', { p_token: code });
+      set(inviteKey, '');
+      if (!r || !r.ok) { flash = joinErrors[r && r.reason] || joinErrors.invalid; rerender(); return; }
+      set(baseKey, ''); garage = null;
+      await sync();
+      flash = 'Liityit jaettuun talliin. Omat autosi ja merkintäsi ovat nyt yhteisessä tallissa.'; location.hash = 'me'; rerender();
+    } catch (e) { btn.disabled = false; flash = 'Liittyminen ei onnistunut. Tarkista verkkoyhteys ja yritä uudelleen.'; rerender(); }
+  }
+  async function createInvite() {
+    try { await token(); const r = await rpc('create_invite'); inviteLink = appUrl() + '#liity=' + r.token; flash = ''; }
+    catch (e) { flash = 'Kutsua ei voitu luoda. Tallissa voi olla enintään viisi jäsentä ja viisi avointa kutsua.'; }
+    rerender();
+  }
+  async function removeMember(id, email) {
+    if (!confirm(say('Poistetaanko jäsen jaetusta tallista? Hänen laitteelleen jo siirtyneet tiedot jäävät hänelle.') + '\n' + email)) return;
+    try { await token(); await rpc('remove_member', { p_member: id }); await loadGarage(); flash = 'Jäsen poistettu.'; }
+    catch (e) { flash = 'Jäsenen poisto ei onnistunut. Yritä uudelleen.'; }
+    rerender();
+  }
+  async function leaveGarage() {
+    if (!confirm(say('Poistutaanko jaetusta tallista? Tallin tiedot jäävät tähän laitteeseen omaksi kopioksesi.'))) return;
+    try { await token(); await rpc('leave_garage'); set(baseKey, ''); garage = null; await sync(); flash = 'Poistuit jaetusta tallista. Tiedot jäivät tähän laitteeseen.'; }
+    catch (e) { flash = 'Poistuminen ei onnistunut. Yritä uudelleen.'; }
+    rerender();
+  }
+  function shareBox() {
+    if (!garage) return '';
+    if (garage.role === 'member') return `<div class="sync-share"><h4>Jaettu talli</h4><p><span>Tämä talli on jaettu käyttäjältä</span> <strong translate="no">${esc(garage.owner_email || '')}</strong><span>. Voit muokata sitä kuten omaasi.</span></p><button class="app-back" type="button" data-sync-leave>Poistu jaetusta tallista</button></div>`;
+    const members = garage.members || [];
+    const list = members.length ? `<ul class="sync-members">${members.map(m => `<li><span translate="no">${esc(m.email)}</span><button class="app-back danger-link" type="button" data-sync-remove="${esc(m.id)}" data-email="${esc(m.email)}">Poista</button></li>`).join('')}</ul>` : '';
+    const link = inviteLink ? `<label class="app-form sync-invite">Kutsulinkki (kertakäyttöinen, voimassa 7 päivää)<input readonly value="${esc(inviteLink)}" data-sync-link></label><div class="sync-actions"><button class="app-button" type="button" data-sync-share-link>Jaa linkki</button></div>` : '';
+    return `<div class="sync-share"><h4>Jaettu talli</h4><p>Kutsu esimerkiksi puolisosi: hän kirjautuu omalla Google-tilillään ja näkee ja muokkaa samaa tallia. Kuvat ja kuitit eivät jakaudu.</p>${list}${link}${inviteLink ? '' : `<button class="app-button secondary" type="button" data-sync-invite>Luo kutsulinkki</button>`}</div>`;
+  }
+  function joinView() {
+    const code = get(inviteKey);
+    const note = flash ? `<p class="error-note" role="alert">${esc(flash)}</p>` : '';
+    if (!code) return `${top}<h2 class="app-heading">Jaettu talli</h2>${note}<p>Kutsua ei löytynyt. Pyydä tallin omistajalta uusi kutsulinkki.</p><a class="app-button secondary" href="#home">Omaan talliin</a>`;
+    if (!session) return `${top}<h2 class="app-heading">Sinut on kutsuttu jaettuun talliin</h2>${note}<p>Kirjaudu ensin omalla Google-tililläsi. Sen jälkeen voit liittyä talliin.</p><a class="app-button sync-google" href="${esc(googleUrl())}" data-sync-google><span class="sync-g" aria-hidden="true" translate="no">G</span> <span>Kirjaudu Google-tilillä</span></a><p class="app-fineprint">Tiedot tallentuvat Supabase-palveluun EU:ssa. <a href="tietosuoja.html">Tietosuoja</a></p>`;
+    return `${top}<h2 class="app-heading">Liity jaettuun talliin?</h2>${note}<p>Omat autosi, merkintäsi ja tankkauksesi siirtyvät yhteiseen talliin, ja tallin muut jäsenet näkevät ja voivat muokata niitä. Kuvat ja kuitit jäävät tähän laitteeseen.</p><p>Voit poistua tallista myöhemmin, jolloin tiedot jäävät laitteellesi.</p><button class="app-button" type="button" data-sync-join>Liity talliin</button><button class="app-back" type="button" data-sync-join-cancel>Peruuta</button>`;
+  }
+
   // ---- Sync -----------------------------------------------------------------------------------------
   let state = 'idle', lastError = '', timer = 0, running = null, again = false;
   const App = () => window.AjouraApp;
@@ -136,9 +197,13 @@
   async function syncOnce() {
     await token();
     const uid = session.user.id;
-    const rows = await call('/rest/v1/garages?select=data,rev&user_id=eq.' + uid);
+    // 0.117 jaettu talli: talli on omistajan rivi. Jäsen synkronoi omistajan riviä; muuten oma rivi.
+    const g = await loadGarage(), owner = g && g.owner ? g.owner : uid;
+    const rows = await call('/rest/v1/garages?select=data,rev&user_id=eq.' + owner);
     const row = rows && rows[0];
-    const stored = getJson(baseKey), base = row && stored && stored.user === uid ? stored.data : null; // no cloud row: upload, never treat local cars as deleted
+    if (!row && owner !== uid) return 'empty'; // omistaja ei ole vielä tallentanut talliaan pilveen
+    // Pohjakopio kelpaa vain samalle tallille: talli vaihtui (liittyminen, poistuminen) = yhdistetään, ei poisteta mitään.
+    const stored = getJson(baseKey), base = row && stored && stored.user === uid && (stored.owner || stored.user) === owner ? stored.data : null; // no cloud row: upload, never treat local cars as deleted
     let full = App().state();
     const remote = row ? row.data : { cars: [], sequence: 0, profile: full.profile };
     if (!base && row) full = separate(full, remote);
@@ -149,13 +214,13 @@
       if (!App().apply(withImages(merged, full))) throw new Error('invalid data');
     }
     // This device now holds the cloud copy merged in: if the save below fails or loses a race, the retry merges against it.
-    if (row) set(baseKey, JSON.stringify({ user: uid, data: row.data }));
+    if (row) set(baseKey, JSON.stringify({ user: uid, owner, data: row.data }));
     if (!row) await call('/rest/v1/garages', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ user_id: uid, data: merged, rev: 1 }) });
     else if (!same(merged, row.data)) {
-      const done = await call('/rest/v1/garages?user_id=eq.' + uid + '&rev=eq.' + row.rev, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ data: merged, rev: row.rev + 1, updated_at: new Date().toISOString() }) });
+      const done = await call('/rest/v1/garages?user_id=eq.' + owner + '&rev=eq.' + row.rev, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ data: merged, rev: row.rev + 1, updated_at: new Date().toISOString() }) });
       if (!done || !done.length) return 'conflict'; // another device saved in between: merge again
     }
-    set(baseKey, JSON.stringify({ user: uid, data: merged }));
+    set(baseKey, JSON.stringify({ user: uid, owner, data: merged }));
     set(syncedKey, String(Date.now()));
     return 'ok';
   }
@@ -167,7 +232,7 @@
       try {
         let r = 'conflict';
         for (let i = 0; i < 3 && r === 'conflict'; i++) r = await syncOnce();
-        state = r === 'later' ? 'waiting' : r === 'ok' ? 'ok' : 'error'; lastError = r === 'conflict' ? 'Toinen laite tallensi samaan aikaan. Yritetään uudelleen.' : '';
+        state = r === 'later' ? 'waiting' : r === 'ok' || r === 'empty' ? 'ok' : 'error'; lastError = r === 'conflict' ? 'Toinen laite tallensi samaan aikaan. Yritetään uudelleen.' : '';
       } catch (e) {
         state = session ? 'error' : 'idle';
         lastError = !navigator.onLine || e instanceof TypeError ? 'Ei verkkoyhteyttä. Merkinnät ovat tallessa tässä laitteessa ja siirtyvät, kun yhteys palaa.' : 'Synkronointi ei onnistunut juuri nyt. Yritetään pian uudelleen.';
@@ -179,7 +244,7 @@
   }
   const schedule = (ms = 1500) => { if (!enabled || !session) return; clearTimeout(timer); timer = setTimeout(sync, ms); };
   // The base copy stays (it is per user): signing back in later merges instead of duplicating entries.
-  function signedOut(note) { saveSession(null); set(syncedKey, ''); state = 'idle'; flash = note || ''; }
+  function signedOut(note) { saveSession(null); set(syncedKey, ''); state = 'idle'; flash = note || ''; garage = null; inviteLink = ''; }
   async function signOut() {
     if (!confirm('Kirjaudutaanko ulos? Autosi ja merkintäsi jäävät myös tähän laitteeseen.')) return;
     const s = session; signedOut('Kirjauduit ulos. Tiedot ovat yhä tällä laitteella.');
@@ -193,7 +258,7 @@
     if (!session || !confirm(window.AjouraI18n ? window.AjouraI18n.t(q) : q)) return;
     try { await token(); await call('/rest/v1/rpc/delete_my_account', { method: 'POST', body: '{}' }); }
     catch (e) { flash = 'Tilin poisto ei onnistunut. Tarkista verkkoyhteys ja yritä uudelleen.'; rerender(); return; }
-    signedOut('Tili ja pilvitiedot poistettu. Tiedot ovat yhä tällä laitteella.'); set(baseKey, ''); rerender();
+    signedOut('Tili ja pilvitiedot poistettu. Tiedot ovat yhä tällä laitteella.'); set(baseKey, ''); garage = null; inviteLink = ''; rerender();
   }
 
   // ---- Screens --------------------------------------------------------------------------------------
@@ -209,8 +274,8 @@
   }
   const handoffBox = () => `<div class="me-data sync-handoff"><h3>Käytätkö kotivalikon AJOURA-sovellusta?</h3><p>Linkki avautui selaimeen, joten kotivalikon sovellus ei vielä ole kirjautunut. Siirrä kirjautuminen sinne:</p><ol class="sync-steps"><li>Paina Kopioi kirjautuminen.</li><li>Avaa AJOURA kotivalikosta ja valitse Valikko → Varmuuskopio ja tiedot → Kirjaudu sisään.</li><li>Liitä teksti kohtaan Liitä kirjautuminen ja paina Kirjaudu.</li></ol><button class="app-button" type="button" data-sync-handoff>Kopioi kirjautuminen</button><p class="app-fineprint">Selain kirjautuu samalla ulos. Kirjautumisen voi siirtää vain yhdelle laitteelle.</p></div>`;
   const pasteBox = () => `<div class="me-data sync-handoff"><h3>Avasitko linkin selaimessa?</h3><p>Liitä selaimessa kopioimasi kirjautuminen tähän.</p><form class="app-form" id="sync-handoff-form" novalidate><label>Liitä kirjautuminen<input name="handoff" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ajoura-login:…"></label><p class="error-note" id="sync-handoff-error" role="alert"></p><button class="app-button secondary" type="submit">Kirjaudu</button></form></div>`;
-  function paint(screen) {
-    screen.innerHTML = '<div class="screen-content">' + loginView() + '</div>';
+  function paint(screen, view) {
+    screen.innerHTML = '<div class="screen-content">' + (view === 'liity' ? joinView() : loginView()) + '</div>';
     screen.scrollTop = 0; document.title = 'AJOURA App — Kirjaudu sisään'; // flash stays until the next try or leaving the screen
     const f = screen.querySelector('form input'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 50);
     if (window.AjouraI18n && window.AjouraI18n.apply) window.AjouraI18n.apply(screen);
@@ -218,9 +283,10 @@
   // Account card on the Minä tab.
   function meCard() {
     if (!enabled) return '';
-    const note = flash ? `<p class="success-note" role="status">${esc(flash)}</p>` : ''; flash = '';
+    // Viesti pysyy, kunnes käyttäjä siirtyy pois (hashchange tyhjentää), vaikka kortti piirretään välillä uudelleen.
+    const note = flash ? `<p class="success-note" role="status">${esc(flash)}</p>` : '';
     if (!session) return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautumalla autosi, merkintäsi ja tankkauksesi tallentuvat pilveen ja siirtyvät uuteen puhelimeen. Kuvat ja kuitit jäävät tähän laitteeseen.</p><a class="app-button secondary" href="#login">Kirjaudu sisään</a></div>`;
-    return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautunut tilillä <strong translate="no">${esc(session.user.email)}</strong></p><p class="sync-status" role="status">${esc(statusText())}</p><div class="sync-actions"><button class="app-button secondary" type="button" data-sync-now>Synkronoi nyt</button><button class="app-back" type="button" data-sync-out>Kirjaudu ulos</button></div>${phoneBrowser ? '<a class="app-back" href="#login">Siirrä kirjautuminen kotivalikon sovellukseen →</a>' : ''}</div><button class="app-back danger-link sync-delete" type="button" data-sync-delete>Poista tili ja pilvitiedot</button>`;
+    return `<div class="me-data sync-box"><h3>Tili</h3>${note}<p>Kirjautunut tilillä <strong translate="no">${esc(session.user.email)}</strong></p><p class="sync-status" role="status">${esc(statusText())}</p><div class="sync-actions"><button class="app-button secondary" type="button" data-sync-now>Synkronoi nyt</button><button class="app-back" type="button" data-sync-out>Kirjaudu ulos</button></div>${phoneBrowser ? '<a class="app-back" href="#login">Siirrä kirjautuminen kotivalikon sovellukseen →</a>' : ''}${shareBox()}</div><button class="app-back danger-link sync-delete" type="button" data-sync-delete>Poista tili ja pilvitiedot</button>`;
   }
   function paintStatus() { const el = document.querySelector('.sync-status'); if (el) { el.textContent = statusText(); if (window.AjouraI18n && window.AjouraI18n.apply) window.AjouraI18n.apply(el.parentNode); } }
   const rerender = () => { const s = document.getElementById('app-screen'), y = s ? s.scrollTop : 0; if (App()) App().refresh(); if (s) s.scrollTop = y; };
@@ -258,6 +324,17 @@
     if (t.closest('[data-sync-now]')) sync();
     if (t.closest('[data-sync-out]')) signOut();
     if (t.closest('[data-sync-delete]')) deleteAccount();
+    if (t.closest('[data-sync-invite]')) createInvite();
+    const rm = t.closest('[data-sync-remove]'); if (rm) removeMember(rm.dataset.syncRemove, rm.dataset.email || '');
+    if (t.closest('[data-sync-leave]')) leaveGarage();
+    const jn = t.closest('[data-sync-join]'); if (jn) joinGarage(jn);
+    if (t.closest('[data-sync-join-cancel]')) { set(inviteKey, ''); location.hash = 'home'; }
+    if (t.closest('[data-sync-share-link]') && inviteLink) {
+      const text = say('Liity jaettuun AJOURA-talliini');
+      if (navigator.share) navigator.share({ title: 'AJOURA', text, url: inviteLink }).catch(() => {});
+      else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(inviteLink).then(() => { flash = 'Linkki kopioitu.'; rerender(); }, () => {});
+    }
+    if (t.matches('[data-sync-link]')) t.select();
     const h = t.closest('[data-sync-handoff]');
     if (h && session) {
       const text = 'ajoura-login:' + session.refresh_token;
@@ -274,11 +351,11 @@
 
   if (enabled && fromLink) {
     session = { ...fromAuth({ ...fromLink, user: { id: '', email: '' } }) };
-    call('/auth/v1/user').then(u => { saveSession({ ...session, user: { id: u.id, email: u.email } }); flash = ''; schedule(0); rerender(); }, () => { session = null; flash = 'Kirjautuminen ei onnistunut. Pyydä uusi linkki.'; location.hash = 'login'; rerender(); });
+    call('/auth/v1/user').then(u => { saveSession({ ...session, user: { id: u.id, email: u.email } }); flash = ''; schedule(0); if (get(inviteKey)) location.hash = 'liity'; rerender(); }, () => { session = null; flash = 'Kirjautuminen ei onnistunut. Pyydä uusi linkki.'; location.hash = 'login'; rerender(); });
   }
 
   window.AjouraSync = {
-    enabled, owns: v => enabled && v === 'login', paint, meCard,
+    enabled, owns: v => enabled && (v === 'login' || v === 'liity'), paint, meCard,
     // access.js: voimassa oleva istuntotunniste (uusitaan tarvittaessa) ja tili. Ei tunnistetta = ei kirjautunut.
     accessToken: async () => { if (!enabled || !session || !session.user.id) return ''; try { await token(); } catch (e) { return ''; } return session ? session.access_token : ''; },
     account: () => (session && session.user.id ? { email: session.user.email } : null), apiKey: KEY, base: BASE,
