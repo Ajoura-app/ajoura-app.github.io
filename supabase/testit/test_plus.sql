@@ -1,15 +1,17 @@
--- Migraation testi (ajetaan testit/test_supabase.py:stä paikallisessa PostgreSQL:ssä). Jokainen tarkistus
--- keskeyttää ajon virheeseen, jos tulos on väärä.
+-- Migraatioiden testi (ajetaan testit/test_supabase.py:stä paikallisessa PostgreSQL:ssä kaikkien migraatioiden
+-- jälkeen). Jokainen tarkistus keskeyttää ajon virheeseen, jos tulos on väärä.
 \set ON_ERROR_STOP on
 insert into auth.users values
   ('00000000-0000-0000-0000-000000000001', 'free@esimerkki.test'),
   ('00000000-0000-0000-0000-000000000002', 'plus@esimerkki.test'),
   ('00000000-0000-0000-0000-000000000003', 'vanhentunut@esimerkki.test'),
-  ('00000000-0000-0000-0000-000000000004', 'peruttu@esimerkki.test');
+  ('00000000-0000-0000-0000-000000000004', 'peruttu@esimerkki.test'),
+  ('00000000-0000-0000-0000-000000000005', 'poistuva@esimerkki.test');
 insert into public.subscriptions (user_id, plan, status, valid_until) values
   ('00000000-0000-0000-0000-000000000002', 'plus', 'active', now() + interval '30 days'),
   ('00000000-0000-0000-0000-000000000003', 'plus', 'active', now() - interval '1 second'),
-  ('00000000-0000-0000-0000-000000000004', 'plus', 'canceled', now() + interval '30 days');
+  ('00000000-0000-0000-0000-000000000004', 'plus', 'canceled', now() + interval '30 days'),
+  ('00000000-0000-0000-0000-000000000005', 'plus', 'active', now() + interval '30 days');
 
 create function pg_temp.odota(nimi text, saatu jsonb, odotettu jsonb) returns void language plpgsql as $$
 begin
@@ -21,13 +23,24 @@ begin
   raise exception 'VIRHE %: kysely onnistui, vaikka sen pitäisi olla kielletty: %', nimi, kysely;
 exception when insufficient_privilege then null;
 end $$;
+create function pg_temp.kayttaja(id text) returns void language sql as $$ select set_config('request.jwt.claim.sub', id, false) $$;
+create function pg_temp.ilman(j jsonb) returns jsonb language sql as $$
+  select (j - 'quota') || jsonb_build_object('quota', (j -> 'quota' -> 'ai') - 'resetsAt') $$;
 
--- Kirjautunut Plus-käyttäjä näkee oman tilansa ja kiintiön.
+-- ---- Oikeudet: Plus ja testivaiheen free (kirjautunut) ------------------------------------------------
 set role authenticated;
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', false);
-select pg_temp.odota('plus: paketti', (select get_entitlement() - 'validUntil' - 'quota'), '{"plan":"plus","status":"active"}');
-select pg_temp.odota('plus: kiintiö', ((get_entitlement() -> 'quota' -> 'ai') - 'resetsAt'), '{"limit":30,"used":0}');
--- Selain ei pääse tauluihin eikä kiintiöfunktioihin, ei myöskään omiin riveihinsä.
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000002');
+select pg_temp.odota('plus', pg_temp.ilman(get_entitlement()) - 'validUntil',
+  '{"plan":"plus","status":"active","features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":30,"used":0}}');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000001');
+select pg_temp.odota('free (testivaihe)', pg_temp.ilman(get_entitlement()),
+  '{"plan":"free","status":"active","validUntil":null,"features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":10,"used":0}}');
+-- Vanhentunut tai peruttu Plus = free.
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000003');
+select pg_temp.odota('vanhentunut', get_entitlement() -> 'plan', '"free"');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000004');
+select pg_temp.odota('peruttu', get_entitlement() -> 'plan', '"free"');
+-- Selain ei pääse tilaus-, raja- tai käyttötauluihin eikä kiintiöfunktioihin.
 select pg_temp.kielletty('lue tilaukset', 'select * from public.subscriptions');
 select pg_temp.kielletty('anna itselle plus', $q$insert into public.subscriptions (user_id, plan, status, valid_until) values ('00000000-0000-0000-0000-000000000001', 'plus', 'active', now() + interval '1 year')$q$);
 select pg_temp.kielletty('jatka omaa tilausta', $q$update public.subscriptions set valid_until = now() + interval '10 years'$q$);
@@ -36,33 +49,64 @@ select pg_temp.kielletty('muuta rajaa', 'update public.plan_limits set ai_monthl
 select pg_temp.kielletty('varaa itse', $q$select public.ai_reserve('00000000-0000-0000-0000-000000000002')$q$);
 select pg_temp.kielletty('palauta itse', $q$select public.ai_release('00000000-0000-0000-0000-000000000002', current_date)$q$);
 select pg_temp.kielletty('kysy toisen paketti', $q$select public.ajoura_active_plan('00000000-0000-0000-0000-000000000002')$q$);
-
--- Free, vanhentunut ja peruttu tilaus: Free.
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
-select pg_temp.odota('free', get_entitlement(), '{"plan":"free","status":"none"}');
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
-select pg_temp.odota('vanhentunut', get_entitlement(), '{"plan":"free","status":"expired"}');
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000004', false);
-select pg_temp.odota('peruttu', get_entitlement(), '{"plan":"free","status":"canceled"}');
--- Ilman kirjautumista (anon) funktio ei ole käytettävissä lainkaan.
 reset role;
 set role anon;
-select pg_temp.kielletty('anon', 'select public.get_entitlement()');
+select pg_temp.kielletty('anon: oikeus', 'select public.get_entitlement()');
+select pg_temp.kielletty('anon: tallit', 'select * from public.garages');
+select pg_temp.kielletty('anon: tilin poisto', 'select public.delete_my_account()');
 
--- Palvelin (tekoälyfunktio): varaus vain Plussalle ja enintään kiintiön verran; palautus vapauttaa yhden.
+-- ---- Kiintiö (palvelin) ------------------------------------------------------------------------------
 reset role;
 set role service_role;
-select pg_temp.odota('varaus free', public.ai_reserve('00000000-0000-0000-0000-000000000001'), '{"ok":false,"reason":"plan"}');
-select pg_temp.odota('varaus vanhentunut', public.ai_reserve('00000000-0000-0000-0000-000000000003'), '{"ok":false,"reason":"plan"}');
-select pg_temp.odota('varaus peruttu', public.ai_reserve('00000000-0000-0000-0000-000000000004'), '{"ok":false,"reason":"plan"}');
+select public.ai_reserve('00000000-0000-0000-0000-000000000001') from generate_series(1, 9);
+select pg_temp.odota('free 10.', public.ai_reserve('00000000-0000-0000-0000-000000000001') - 'period', '{"ok":true,"used":10,"limit":10}');
+select pg_temp.odota('free 11.', public.ai_reserve('00000000-0000-0000-0000-000000000001'), '{"ok":false,"reason":"quota","limit":10}');
 select public.ai_reserve('00000000-0000-0000-0000-000000000002') from generate_series(1, 29);
-select pg_temp.odota('30. varaus', public.ai_reserve('00000000-0000-0000-0000-000000000002') - 'period', '{"ok":true,"used":30,"limit":30}');
-select pg_temp.odota('31. varaus', public.ai_reserve('00000000-0000-0000-0000-000000000002'), '{"ok":false,"reason":"quota","limit":30}');
+select pg_temp.odota('plus 30.', public.ai_reserve('00000000-0000-0000-0000-000000000002') - 'period', '{"ok":true,"used":30,"limit":30}');
+select pg_temp.odota('plus 31.', public.ai_reserve('00000000-0000-0000-0000-000000000002'), '{"ok":false,"reason":"quota","limit":30}');
 select public.ai_release('00000000-0000-0000-0000-000000000002', date_trunc('month', now() at time zone 'utc')::date);
-select pg_temp.odota('varaus palautuksen jälkeen', public.ai_reserve('00000000-0000-0000-0000-000000000002') - 'period', '{"ok":true,"used":30,"limit":30}');
+select pg_temp.odota('palautuksen jälkeen', public.ai_reserve('00000000-0000-0000-0000-000000000002') - 'period', '{"ok":true,"used":30,"limit":30}');
+select pg_temp.odota('tuntematon käyttäjä', public.ai_reserve('00000000-0000-0000-0000-0000000000ff'), '{"ok":false,"reason":"plan"}');
+
+-- Maksujen tultua: free ilman tekoälyä yhdellä päivityksellä; Plus ennallaan.
+reset role;
+update public.plan_limits set ai_enabled = false where plan = 'free';
+set role service_role;
+select pg_temp.odota('free ilman tekoälyä', public.ai_reserve('00000000-0000-0000-0000-000000000004'), '{"ok":false,"reason":"plan"}');
 reset role;
 set role authenticated;
-select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', false);
-select pg_temp.odota('käyttö näkyy', ((get_entitlement() -> 'quota' -> 'ai') - 'resetsAt'), '{"limit":30,"used":30}');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000004');
+select pg_temp.odota('free ilman tekoälyä: oikeus', get_entitlement() -> 'features', '[]');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000002');
+select pg_temp.odota('plus yhä', get_entitlement() -> 'features', '["ai.receipt","ai.odometer","ai.servicebook"]');
 reset role;
+update public.plan_limits set ai_enabled = true where plan = 'free';
+
+-- ---- Pilvitalli: jokainen näkee ja muuttaa vain omaansa -----------------------------------------------
+set role authenticated;
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000001');
+insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000001', '{"cars":[{"id":"a"}]}');
+select pg_temp.kielletty('talli toiselle', $q$insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000002', '{"cars":[]}')$q$);
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000002');
+select pg_temp.odota('toisen talli ei näy', (select to_jsonb(count(*)) from public.garages), '0');
+update public.garages set data = '{"hakkeroitu":true}';
+delete from public.garages;
+insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000002', '{"cars":[{"id":"b"}]}');
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000001');
+select pg_temp.odota('oma talli koskematon', (select data from public.garages), '{"cars":[{"id":"a"}]}');
+do $$ begin
+  update public.garages set data = jsonb_build_object('x', repeat('a', 2100000));
+  raise exception 'VIRHE liian suuri talli hyväksyttiin';
+exception when check_violation then null;
+end $$;
+
+-- ---- Tilin poisto: vain oma tili, ja pilvitalli, tilaus ja käyttö poistuvat ---------------------------
+select pg_temp.kayttaja('00000000-0000-0000-0000-000000000005');
+insert into public.garages (user_id, data) values ('00000000-0000-0000-0000-000000000005', '{"cars":[]}');
+select public.delete_my_account();
+reset role;
+select pg_temp.odota('poistettu käyttäjä', (select to_jsonb(count(*)) from auth.users where id = '00000000-0000-0000-0000-000000000005'), '0');
+select pg_temp.odota('poistetun talli', (select to_jsonb(count(*)) from public.garages where user_id = '00000000-0000-0000-0000-000000000005'), '0');
+select pg_temp.odota('poistetun tilaus', (select to_jsonb(count(*)) from public.subscriptions where user_id = '00000000-0000-0000-0000-000000000005'), '0');
+select pg_temp.odota('muut tilit ennallaan', (select to_jsonb(count(*)) from auth.users), '4');
 select 'KAIKKI TARKISTUKSET OK';

@@ -12,10 +12,10 @@ Julkaisun tila: Supabase → Branches → main.
 
 | Kansio | Sisältö |
 |---|---|
-| `migrations/` | Tietokanta: tilaukset (`subscriptions`), pakettien kiintiöt (`plan_limits`), kuukausikäyttö (`ai_usage`), funktiot `get_entitlement`, `ai_reserve`, `ai_release` |
+| `migrations/` | Tietokanta: tilaukset (`subscriptions`), pakettien kiintiöt ja tekoälylupa (`plan_limits`), kuukausikäyttö (`ai_usage`), pilvitalli (`garages`, 0.116), funktiot `get_entitlement`, `ai_reserve`, `ai_release`, `delete_my_account` |
 | `functions/tekoaly/` | Tekoälytunnistuksen palvelin: tarkistaa käyttäjän, Plus-tilauksen ja kiintiön jokaisessa pyynnössä ja lukee kuitin Claude Haiku 5.5:llä |
 | `testit/` | Testit (ajetaan `python3 -m pytest testit/test_supabase.py` repon juuresta) |
-| `garages.sql` | Vanhan, käytöstä poistetun synkronoinnin taulu (vanha projekti). Ei käytössä. |
+| `garages.sql` | Vanhan projektin taulu (historiaa). Nykyinen taulu on migraatiossa 20261106120000. |
 
 ## Säännöt
 - Salaisia avaimia (`sb_secret_…`, `service_role`, `sbp_…`) ei koskaan tähän repoon. Julkinen avain (`sb_publishable_…`)
@@ -29,6 +29,14 @@ Funktio `tekoaly` lukee Anthropicin API-avaimen Supabasen salaisuudesta `ANTHROP
 Avainta ei koskaan laiteta tähän repoon eikä sovellukseen. Ilman avainta funktio vastaa 503 eikä mitään lähetetä.
 Aseta Anthropicin konsolissa kuukausittainen käyttöraja (Settings → Limits), jotta kulu ei voi yllättää. Arvio:
 noin 0,001 $ / kuitti (Haiku 5.5). Toteutettu: kuitti. Mittari ja huoltokirja vastaavat 501, kunnes ne tehdään.
+
+## Kirjautuminen ja testivaihe (0.116)
+
+Kirjautuminen on kaikille avoin Google-tilillä (Authentication → Sign In / Providers → Google; Site URL ja Redirect URLs
+`https://ajoura-app.github.io/app.html` ja `https://ajoura-app.github.io/**`). Kirjautuneen talli synkronoituu (sync.js).
+Testivaiheessa kirjautunut free saa tekoälyn 10 tunnistusta/kk. Kun maksut otetaan käyttöön:
+`update public.plan_limits set ai_enabled = false where plan = 'free';` (sovellukseen ei tarvita muutosta).
+Ilmainen taso: projekti pysähtyy viikon käyttämättömyyden jälkeen eikä ota varmuuskopioita. Ennen julkista versiota Pro.
 
 ## Ylläpito (Supabase → SQL Editor)
 
