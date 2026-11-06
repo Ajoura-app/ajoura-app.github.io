@@ -564,7 +564,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.113 (testiversio)';
+  const appVersion='0.114 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -695,17 +695,18 @@
   // Litres, price per unit and total: when two are typed the third is filled in. A field the user typed is never
   // overwritten; only the filled-in one is recalculated.
   const decIn=v=>String(v==null?'':v).replace(/[\s\u00a0]/g,'').replace(',','.');
+  // 0.114: laskettu arvo desimaalipilkulla kuten käyttäjän kirjoittamat (decIn lukee molemmat).
   function fuelCalc(form,changed){const el=form.elements,F=['qty','ppu','cost'],num=n=>{const v=decIn(el[n].value);return v===''?null:Number(v);};let user=(form.dataset.user||'').split(',').filter(Boolean);const auto=form.dataset.auto||'';
     if(changed&&F.includes(changed)){user=user.filter(n=>n!==changed);if(el[changed].value!=='')user.push(changed);if(changed===auto)form.dataset.auto='';if(changed==='ppu')el.est.value='';else if(el.est.value==='1'&&user.includes('qty')&&user.includes('cost')){user=user.filter(n=>n!=='ppu');el.est.value='';}}
     form.dataset.user=user.join(',');const r=(v,d)=>String(Math.round(v*10**d)/10**d);
     if(user.length!==2){if(user.length<2&&form.dataset.auto&&form.dataset.auto!==changed){el[form.dataset.auto].value='';form.dataset.auto='';}return;}
     const target=F.find(n=>!user.includes(n)),q=num('qty'),p=num('ppu'),t=num('cost');let v=null;
     if(target==='cost'&&q>0&&p!==null)v=r(q*p,2);else if(target==='ppu'&&q>0&&t!==null)v=r(t/q,3);else if(target==='qty'&&p>0&&t!==null)v=r(t/p,2);
-    if(v!==null){el[target].value=v;form.dataset.auto=target;}}
+    if(v!==null){el[target].value=v.replace('.',',');form.dataset.auto=target;}}
   function fuelGuess(form,c){if(!c)return;const el=form.elements,h=form.querySelector('.sheet-help'),user=(form.dataset.user||'').split(',');
     if(user.includes('qty')&&user.includes('cost')){if(h)h.textContent=tl('Hinta on jo laskettu litroista ja summasta.');return;}
     const cur=curOf(el.country.value),rate=cur==='EUR'?1:Number(decIn(el.rate.value))||1,g=priceGuess(c,String(el.date.value||today()));
-    el.ppu.value=String(Math.round(g.v*rate*1000)/1000);fuelCalc(form,'ppu');el.est.value='1';if(h)h.textContent=[g.own?'Arvio omien lähimpien tankkaustesi hinnasta.':'Karkea keskihinta, koska aiempia hintoja ei ole.',user.includes('qty')||user.includes('cost')?'':'Kirjoita vielä litrat tai summa.','Korjaa, jos muistat oikean.'].filter(Boolean).map(tl).join(' ');}
+    el.ppu.value=String(Math.round(g.v*rate*1000)/1000).replace('.',',');fuelCalc(form,'ppu');el.est.value='1';if(h)h.textContent=[g.own?'Arvio omien lähimpien tankkaustesi hinnasta.':'Karkea keskihinta, koska aiempia hintoja ei ole.',user.includes('qty')||user.includes('cost')?'':'Kirjoita vielä litrat tai summa.','Korjaa, jos muistat oikean.'].filter(Boolean).map(tl).join(' ');}
   function saveFuel(form,c=cars.find(x=>x.id===route().id)){if(!c)return;const edit=form.dataset.edit?(c.fuels||[]).find(x=>x.id===form.dataset.edit):null,d=new FormData(form),kd=c.fuel==='Sähkö'||d.get('kind')==='el'?'el':'fuel',err=form.querySelector('[role=alert]'),dt=String(d.get('date')),km=Number(d.get('km')),qty=Number(decIn(d.get('qty'))||NaN),costRaw=decIn(d.get('cost')),country=String(d.get('country')||'FI'),cur=curOf(country),rate=cur==='EUR'?1:Number(decIn(d.get('rate'))||NaN),amt=costRaw===''?null:Number(costRaw),cost=amt===null?null:amt/rate;if(cur!=='EUR'&&!(rate>0&&rate<1000)){err.textContent='Tarkista valuuttakurssi.';return;}
     if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)||dt>today()){err.textContent='Tarkista päivämäärä.';return;}if(String(d.get('km')).trim()===''){err.textContent='Syötä nykyinen mittarilukema.';return;}if(!Number.isSafeInteger(km)||km<0||km>2000000){err.textContent='Tarkista mittarilukema.';return;}if(!(Math.round(qty*100)/100>0&&qty<=500)){err.textContent=kd==='el'?'Kirjoita ladattu määrä (kWh).':kd==='gas'?'Kirjoita tankattu määrä (kg).':'Kirjoita tankatut litrat.';return;}if(cost!==null&&!(cost>=0&&cost<=5000&&amt<=100000)){err.textContent='Tarkista hinta.';return;}
     const clash=(c.fuels||[]).find(f=>f!==edit&&(f.km===km||(f.date<dt&&f.km>km)||(f.date>dt&&f.km<km))),sig=dt+'|'+km;if(clash&&form.dataset.confirmed!==sig){form.dataset.confirmed=sig;err.textContent=`Lukema ${number(km)} ${ku(c)} ei sovi yhteen kirjauksen ${date(clash.date)} (${number(clash.km)} ${ku(c)}) kanssa. Tarkista lukema tai tallenna silti.`;const b=form.querySelector('[type=submit]');if(b)b.textContent='Tallenna silti';return;}
