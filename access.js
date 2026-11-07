@@ -32,11 +32,12 @@
   // Paketit ja niiden ominaisuudet oletuksena. Palvelin kertoo kullekin käyttäjälle sallitut ominaisuudet
   // (get_entitlement → features): testivaiheessa myös kirjautunut free saa tekoälyn (10/kk). Kun maksut tulevat,
   // free-paketilta poistetaan tekoäly tietokannassa, eikä sovellukseen tarvita muutosta.
-  const PLANS = { free: [], plus: ['ai.receipt', 'ai.odometer', 'ai.servicebook'] };
+  const PLANS = { free: [], plus: ['ai.receipt', 'ai.pump', 'ai.odometer', 'ai.servicebook'] };
   // Ominaisuudet: pref = mikä käyttäjän oma valinta vaaditaan lisäksi, quota = mikä kuukausikiintiö kuluu.
   const FEATURES = {
     'ai.receipt': { pref: 'ai', quota: 'ai' },     // tankkauskuitit
-    'ai.odometer': { pref: 'ai', quota: 'ai' },    // mittariston kilometrilukema
+    'ai.pump': { pref: 'ai', quota: 'ai' },        // tankkausmittarin näyttö (litrahinta, litrat, summa)
+    'ai.odometer': { pref: 'ai', quota: 'ai' },    // auton mittariston kokonaiskilometrit
     'ai.servicebook': { pref: 'ai', quota: 'ai' }  // vanhan huoltokirjan merkinnät
   };
   const PREF = { ai: 'ajoura-tekoaly' };

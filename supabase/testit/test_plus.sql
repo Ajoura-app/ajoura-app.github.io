@@ -31,10 +31,10 @@ create function pg_temp.ilman(j jsonb) returns jsonb language sql as $$
 set role authenticated;
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000002');
 select pg_temp.odota('plus', pg_temp.ilman(get_entitlement()) - 'validUntil',
-  '{"plan":"plus","status":"active","features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":30,"used":0}}');
+  '{"plan":"plus","status":"active","features":["ai.receipt","ai.pump","ai.odometer","ai.servicebook"],"quota":{"limit":30,"used":0}}');
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000001');
 select pg_temp.odota('free (testivaihe)', pg_temp.ilman(get_entitlement()),
-  '{"plan":"free","status":"active","validUntil":null,"features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":10,"used":0}}');
+  '{"plan":"free","status":"active","validUntil":null,"features":["ai.receipt","ai.pump","ai.odometer","ai.servicebook"],"quota":{"limit":10,"used":0}}');
 -- Vanhentunut tai peruttu Plus = free.
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000003');
 select pg_temp.odota('vanhentunut', get_entitlement() -> 'plan', '"free"');
@@ -78,7 +78,7 @@ set role authenticated;
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000004');
 select pg_temp.odota('free ilman tekoälyä: oikeus', get_entitlement() -> 'features', '[]');
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000002');
-select pg_temp.odota('plus yhä', get_entitlement() -> 'features', '["ai.receipt","ai.odometer","ai.servicebook"]');
+select pg_temp.odota('plus yhä', get_entitlement() -> 'features', '["ai.receipt","ai.pump","ai.odometer","ai.servicebook"]');
 reset role;
 update public.plan_limits set ai_enabled = true where plan = 'free';
 

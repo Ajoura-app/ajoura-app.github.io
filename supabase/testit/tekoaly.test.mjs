@@ -131,14 +131,88 @@ test('kuitti: kieltäytyminen, katkennut tai rikkinäinen vastaus ja tekoälyn v
   }
 });
 
-test('mittari ja huoltokirja eivät ole vielä valmiita: 501 ennen kiintiötä ja tekoälyä', async () => {
+test('huoltokirja ei ole vielä valmis: 501 ennen kiintiötä ja tekoälyä', async () => {
   const s = fakeSupabase({ plan: { 'u-plus': 'plus' } }), c = fakeClaude(KUITTI);
-  for (const f of ['ai.odometer', 'ai.servicebook']) {
-    const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': f }));
-    assert.equal(r.status, 501, f);
-  }
+  const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': 'ai.servicebook' }));
+  assert.equal(r.status, 501);
   assert.equal(c.kutsut.length, 0);
   assert.ok(!s.calls.some(x => x.url.includes('/rpc/')));
+});
+
+// ---- Tankkausmittari (ai.pump) ja auton mittaristo (ai.odometer), 1.19 ----
+const PUMPPU = { is_pump: true, quantity: 45.6, unit: 'l', price_per_unit: 1.859, total: 84.77, currency: null, fuel: '95E10' };
+const MITTARI = { is_odometer: true, odometer: 218450, unit: 'km' };
+const kutsu = (feature, vastaus, plan = { 'u-plus': 'plus' }) => {
+  const s = fakeSupabase({ plan }), c = fakeClaude(vastaus);
+  return { s, c, vastaa: () => createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': feature })) };
+};
+
+test('tankkausmittari: oma ohje ja skeema, tulos tarkistettuna, kiintiö kuluu, kuvaa ei tallenneta', async () => {
+  const { s, c, vastaa } = kutsu('ai.pump', PUMPPU);
+  const r = await vastaa();
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { ...PUMPPU, mismatch: false });
+  assert.equal(s.used['u-plus'], 1);
+  const { body } = c.kutsut[0];
+  assert.equal(body.model, 'claude-haiku-5-5');
+  assert.deepEqual(body.output_config.format.schema.required, ['is_pump', 'quantity', 'unit', 'price_per_unit', 'total', 'currency', 'fuel']);
+  assert.match(body.messages[0].content[1].text, /fuel pump or EV charger/);
+  assert.ok(!('date' in body.output_config.format.schema.properties), 'mittarissa ei ole päivää');
+});
+
+test('tankkausmittari: litrahinta × litrat ei vastaa summaa → mismatch (väärin luettu numero)', async () => {
+  for (const [nimi, v] of [['hinta', { ...PUMPPU, price_per_unit: 1.689 }], ['summa', { ...PUMPPU, total: 74.77 }], ['määrä', { ...PUMPPU, quantity: 54.6 }]]) {
+    const r = await kutsu('ai.pump', v).vastaa();
+    assert.equal((await r.json()).mismatch, true, nimi);
+  }
+  // Pyöristysero (litrahinta kolmella desimaalilla, summa sentteinä) ei ole virhe.
+  for (const v of [{ ...PUMPPU, total: 84.8 }, { ...PUMPPU, quantity: 45.61, total: 84.79 }]) {
+    assert.equal((await (await kutsu('ai.pump', v).vastaa()).json()).mismatch, false, JSON.stringify(v));
+  }
+  // Puuttuva luku ei ole ristiriita: sovellus laskee kolmannen kahdesta.
+  assert.equal((await (await kutsu('ai.pump', { ...PUMPPU, total: null }).vastaa()).json()).mismatch, false);
+});
+
+test('tankkausmittari: tekoälyn vastaus ei ole luotettava syöte', async () => {
+  const r = await kutsu('ai.pump', { is_pump: true, quantity: -5, unit: 'gallon', price_per_unit: 'x', total: 1e9, currency: 'euro', fuel: '<b>', date: '2020-01-01', mismatch: false }).vastaa();
+  assert.deepEqual(await r.json(), { is_pump: true, quantity: null, unit: null, price_per_unit: null, total: null, currency: null, fuel: null, mismatch: false });
+  const ei = await kutsu('ai.pump', { is_pump: false, quantity: 1, unit: 'l', price_per_unit: 1, total: 1, currency: null, fuel: null }).vastaa();
+  assert.equal((await ei.json()).is_pump, false);
+});
+
+test('mittaristo: kokonaiskilometrit kokonaislukuna, ohje erottaa osamatkan, kiintiö kuluu', async () => {
+  const { s, c, vastaa } = kutsu('ai.odometer', { ...MITTARI, odometer: 218450.7 });
+  const r = await vastaa();
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { is_odometer: true, odometer: 218451, unit: 'km' });
+  assert.equal(s.used['u-plus'], 1);
+  const { body } = c.kutsut[0];
+  assert.deepEqual(body.output_config.format.schema.required, ['is_odometer', 'odometer', 'unit']);
+  assert.match(body.messages[0].content[1].text, /Never return the trip meter/);
+});
+
+test('mittaristo: mahdottomat arvot ja ei-mittaristo muuttuvat tyhjiksi', async () => {
+  for (const [nimi, v, odotettu] of [
+    ['negatiivinen', { is_odometer: true, odometer: -5, unit: 'km' }, { is_odometer: true, odometer: null, unit: 'km' }],
+    ['nolla', { is_odometer: true, odometer: 0, unit: 'km' }, { is_odometer: true, odometer: null, unit: 'km' }],
+    ['liian iso', { is_odometer: true, odometer: 9e7, unit: 'km' }, { is_odometer: true, odometer: null, unit: 'km' }],
+    ['teksti', { is_odometer: true, odometer: '123456', unit: 'furlong' }, { is_odometer: true, odometer: null, unit: null }],
+    ['ei mittaristo', { is_odometer: false, odometer: 123456, unit: 'km' }, { is_odometer: false, odometer: null, unit: 'km' }],
+    ['mailit', { is_odometer: true, odometer: 54321, unit: 'mi' }, { is_odometer: true, odometer: 54321, unit: 'mi' }],
+  ]) {
+    assert.deepEqual(await (await kutsu('ai.odometer', v).vastaa()).json(), odotettu, nimi);
+  }
+});
+
+test('mittaristo ja tankkausmittari: ilman Plussaa/lupaa 402 ja virhe palauttaa kiintiön', async () => {
+  for (const f of ['ai.pump', 'ai.odometer']) {
+    const ei = kutsu(f, f === 'ai.pump' ? PUMPPU : MITTARI, {});
+    assert.equal((await ei.vastaa()).status, 402, f);
+    assert.equal(ei.c.kutsut.length, 0, f + ': kuva lähti tekoälylle ilman oikeutta');
+    const vika = kutsu(f, Object.assign(new Error('500'), { status: 500 }));
+    assert.equal((await vika.vastaa()).status, 502, f);
+    assert.equal(vika.s.used['u-plus'], 0, f + ': kiintiö kului virheestä');
+  }
 });
 
 test('free-käyttäjän kuva ei mene tekoälylle', async () => {
