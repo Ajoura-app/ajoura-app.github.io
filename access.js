@@ -19,7 +19,8 @@
 //    → {"plan":"plus","status":"active","validUntil":"2027-01-31T23:59:59Z","features":["ai.receipt",…],
 //       "quota":{"ai":{"limit":30,"used":12,"resetsAt":"2026-12-01T00:00:00Z"}}}
 //    plan: 'free' | 'plus'; quota.ai.limit null = ei rajaa. Virhe tai puuttuva tieto → Free.
-// 2. POST /functions/v1/tekoaly, runko = kuva, otsakkeet Authorization ja X-Ajoura-Feature (esim. ai.receipt).
+// 2. POST /functions/v1/tekoaly, runko = kuva (tai 1.20: JSON {text, today} tekoälytilan tekstistä), otsakkeet Authorization ja
+//    X-Ajoura-Feature (ai.receipt).
 //    Vastaukset: 200 tulos (JSON), 401/402/403 ei oikeutta, 429 kiintiö täynnä, 503 tekoälyä ei ole otettu käyttöön.
 // Kirjautuminen (Google, sync.js) on kaikille avoin 0.116:sta. Testivaiheessa kirjautunut free saa tekoälyn (30/kk).
 // Ilman kirjautumista sovellus ei ota yhteyttä palvelimeen lainkaan: oikeuksia ei kysytä eikä mitään lähetetä.

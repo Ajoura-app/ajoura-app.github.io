@@ -28,6 +28,9 @@ def kuva(tmp_path_factory):
 def ikkuna(s):
     s.page.click(".fl-add")
     ikkuna_valmis(s.page)
+    # 1.20: tekoälytila avautuu ensin; lomakkeen Täytä kuvasta -painike on Täytä käsin -valinnan takana.
+    if s.page.locator("[data-ai-manual]").count():
+        s.page.click("[data-ai-manual]")
 
 
 def avaa_plus(browser, base, tekoaly="1", **k):

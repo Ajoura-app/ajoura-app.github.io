@@ -34,6 +34,9 @@ def avaa_plus(browser, base, reitti="fuel/tst1", tekoaly="1", **k):
 def ikkuna(s):
     s.page.click(".fl-add")
     ikkuna_valmis(s.page)
+    # 1.20: tekoälytila avautuu ensin; lomakkeen Täytä kuvasta -painike on Täytä käsin -valinnan takana.
+    if s.page.locator("[data-ai-manual]").count():
+        s.page.click("[data-ai-manual]")
 
 
 def viesti(pg, teksti):
@@ -54,9 +57,9 @@ def test_vain_yksi_painike(browser, base):
     s, _ = avaa_plus(browser, base)
     try:
         ikkuna(s)
-        assert s.page.locator(".sf-ai-btn").count() == 1 and s.page.locator("[data-ai-file]").count() == 1
-        assert "Täytä kuvasta" in s.page.inner_text(".sf-ai-btn")
-        assert "Kuitti, tankkausmittari tai mittaristo" in s.page.inner_text(".sf-ai-btn")
+        assert s.page.locator(".sf-ai .sf-ai-btn").count() == 1 and s.page.locator("[data-ai-file]").count() == 1
+        assert "Täytä kuvasta" in s.page.inner_text(".sf-ai .sf-ai-btn")
+        assert "Kuitti, tankkausmittari tai mittaristo" in s.page.inner_text(".sf-ai .sf-ai-btn")
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -198,7 +201,7 @@ def test_kolme_kielta_ja_kapea_naytto(browser, base, kuva, kieli, painike, valmi
         tila = palvelu(s)
         ikkuna(s)
         assert painike in s.page.inner_text(".sf-ai")
-        r = s.page.evaluate("() => { const sh = document.querySelector('.sheet').getBoundingClientRect(), b = document.querySelector('.sf-ai-btn').getBoundingClientRect();"
+        r = s.page.evaluate("() => { const sh = document.querySelector('.sheet').getBoundingClientRect(), b = document.querySelector('.sf-ai .sf-ai-btn').getBoundingClientRect();"
                             " return { h: b.height, ok: b.left >= sh.left - 0.5 && b.right <= sh.right + 0.5 }; }")
         assert r["ok"] and r["h"] >= 44, r
         laheta(s, tila, PUMPPU, kuva)
