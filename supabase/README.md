@@ -42,7 +42,7 @@ Julkinen kirjautuminen pidetään toistaiseksi suljettuna: asetus "Salli uusien 
 Sign In / Providers → User Signups) pitää olla pois päältä, jolloin vain jo luodut tilit pääsevät sisään. Testaajan lisäys:
 kytke asetus hetkeksi päälle, testaaja kirjautuu kerran Googlella, kytke takaisin pois. Julkisessa julkaisussa asetus
 kytketään päälle.
-Testivaiheessa kirjautunut free saa tekoälyn 10 tunnistusta/kk. Kun maksut otetaan käyttöön:
+Testivaiheessa kirjautunut free saa tekoälyn 30 tunnistusta/kk (10 → 30 migraatiolla 20261107120000). Kun maksut otetaan käyttöön:
 `update public.plan_limits set ai_enabled = false where plan = 'free';` (sovellukseen ei tarvita muutosta).
 Ilmainen taso: projekti pysähtyy viikon käyttämättömyyden jälkeen eikä ota varmuuskopioita. Ennen julkista versiota Pro.
 
