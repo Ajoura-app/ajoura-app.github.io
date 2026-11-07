@@ -30,7 +30,9 @@ Avainta ei koskaan laiteta tähän repoon eikä sovellukseen. Ilman avainta funk
 Aseta Anthropicin konsolissa kuukausittainen käyttöraja (Billing → Spend limits), jotta kulu ei voi yllättää. Arvio:
 noin 0,0004 $ / kuva (Haiku 5.5, oma arvio; vanha 0,001 $ on varma yläraja).
 Toteutettu: `ai.receipt` = tankkausikkunan "Täytä kuvasta" (1.19): yksi kuva, jonka lajin tekoäly tunnistaa itse (kuitti,
-tankkausmittarin näyttö tai auton mittaristo), yksi yhteinen kuukausikiintiö. `ai.odometer` ja `ai.servicebook` vastaavat 501,
+tankkausmittarin näyttö tai auton mittaristo), yksi yhteinen kuukausikiintiö. Sama ominaisuus ottaa vastaan tekoälytilan tekstin
+(1.20): runko `application/json` `{text, today}`, enintään 500 merkkiä, ja päivä enintään puolentoista vuorokauden päässä
+palvelimen kellosta (muuten 400 ennen kiintiötä). `ai.odometer` ja `ai.servicebook` vastaavat 501,
 kunnes ne tehdään. Uusi kuvalaji: lisää se `ai.receipt`-ohjeeseen ja skeemaan sekä `cleanPhoto`-funktioon; uusi
 ominaisuusnimi (esim. oma painike) vaatii lisäksi `access.js`:n `FEATURES`-listan ja uuden migraation `get_entitlement`-funktioon.
 
