@@ -498,18 +498,35 @@
   // tukee puheentunnistusta. Toinen painallus lopettaa kuuntelun; ikkunan sulkeminen, lähetys ja Täytä käsin keskeyttävät sen.
   const speechApi=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
   let aiRec=null;
-  function stopListen(){const r=aiRec;aiRec=null;if(r)try{r.abort();}catch(e){}}
+  // Keskeytys (sulkeminen, lähetys, Täytä käsin): ei viestiä, ajastimet pois.
+  function stopListen(){const r=aiRec;aiRec=null;if(r)try{r.__cancel?r.__cancel():r.abort();}catch(e){}}
   const micMsg={'not-allowed':'Mikrofonin käyttö on estetty. Salli mikrofoni selaimen asetuksista, kirjoita teksti tai käytä näppäimistön sanelua.','service-not-allowed':'Puheentunnistus ei ole käytettävissä tässä selaimessa. Kirjoita teksti tai käytä näppäimistön sanelua.','no-speech':'Puhetta ei kuulunut. Yritä uudelleen tai kirjoita teksti.','audio-capture':'Mikrofonia ei löytynyt. Kirjoita teksti tai käytä näppäimistön sanelua.','network':'Puheentunnistus tarvitsee verkkoyhteyden. Kirjoita teksti tai käytä näppäimistön sanelua.','language-not-supported':'Puheentunnistus ei tue tätä kieltä tällä laitteella. Kirjoita teksti tai käytä näppäimistön sanelua.'};
+  // 1.22: iPhonen Safari voi aloittaa kuuntelun antamatta koskaan tulosta, virhettä tai lopetusta. Siksi:
+  // - jos ääntä tai tulosta ei tule 6 sekunnissa, kuuntelu keskeytetään ja käyttäjää neuvotaan käyttämään näppäimistön sanelua,
+  // - kuuntelu lopetetaan viimeistään 20 sekunnissa,
+  // - toinen painallus lopettaa (stop, jolloin Safari antaa tuloksen); jos selain ei päätä 2 sekunnissa, kuuntelu katkaistaan ja
+  //   jo kuultu teksti jää kenttään.
+  const micWait=6000,micMax=20000,micEnd=2000;
   function panelListen(l){const SR=speechApi(),btn=l.querySelector('[data-ai-mic]'),inp=l.querySelector('#ai-say-in');if(!SR||!btn||!inp)return;
-    if(aiRec){const r=aiRec;try{r.stop();}catch(e){stopListen();}return;}
-    const rec=new SR(),base=inp.value.trim(),off=()=>btn.setAttribute('aria-pressed','false');let heard='',failed=false;
+    if(aiRec){if(aiRec.__stop)aiRec.__stop();else stopListen();return;}
+    const rec=new SR(),base=inp.value.trim(),fail='Puheentunnistus ei onnistunut. Kirjoita teksti tai käytä näppäimistön sanelua.';
+    let heard='',alive=false,done=false,t1=0,t2=0,t3=0;
+    const kill=()=>{try{rec.abort();}catch(e){}};
+    // Yksi lopetus kaikille poluille: msg undefined = tavallinen loppu (tulos tai "ei kuulunut"), '' = hiljainen keskeytys.
+    const finish=msg=>{if(done)return;done=true;clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);if(aiRec===rec)aiRec=null;btn.setAttribute('aria-pressed','false');
+      if(!l.isConnected)return;if(msg!==undefined){if(msg)panelSay(l,msg);return;}
+      if(heard){panelSay(l,'Tarkista teksti ja paina Lähetä.');const sb=l.querySelector('[data-ai-send]');if(sb)sb.focus({preventScroll:true});}else panelSay(l,'Puhetta ei kuulunut. Yritä uudelleen tai kirjoita teksti.');};
+    rec.__stop=()=>{try{rec.stop();}catch(e){}clearTimeout(t3);t3=setTimeout(()=>{kill();finish();},micEnd);};
+    rec.__cancel=()=>{kill();finish('');};
     rec.lang={en:'en-US',sv:'sv-SE'}[(window.AjouraI18n||{}).lang]||'fi-FI';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-    rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;heard=t.trim();inp.value=(base?base+' ':'')+heard;};
-    rec.onerror=e=>{failed=true;const er=e&&e.error;if(er!=='aborted')panelSay(l,micMsg[er]||'Puheentunnistus ei onnistunut. Kirjoita teksti tai käytä näppäimistön sanelua.');};
-    rec.onend=()=>{if(aiRec===rec)aiRec=null;off();if(failed||!l.isConnected)return;
-      if(heard){panelSay(l,'Tarkista teksti ja paina Lähetä.');const s=l.querySelector('[data-ai-send]');if(s)s.focus({preventScroll:true});}else panelSay(l,'Puhetta ei kuulunut. Yritä uudelleen tai kirjoita teksti.');};
-    aiRec=rec;btn.setAttribute('aria-pressed','true');panelSay(l,'Kuunnellaan… Puhu nyt.');
-    try{rec.start();}catch(e){aiRec=null;off();panelSay(l,'Puheentunnistus ei onnistunut. Kirjoita teksti tai käytä näppäimistön sanelua.');}}
+    rec.onaudiostart=rec.onspeechstart=()=>{alive=true;};
+    rec.onresult=e=>{alive=true;let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;heard=t.trim();inp.value=(base?base+' ':'')+heard;};
+    rec.onerror=e=>{const er=e&&e.error;finish(er==='aborted'?'':micMsg[er]||fail);};
+    rec.onend=()=>finish();
+    aiRec=rec;btn.setAttribute('aria-pressed','true');panelSay(l,'Kuunnellaan… Puhu ja paina mikrofonia uudelleen, kun olet valmis.');
+    t1=setTimeout(()=>{if(!alive){kill();finish('Puheentunnistus ei vastaa tällä laitteella. Kirjoita teksti tai käytä näppäimistön sanelua (mikrofoni näppäimistössä).');}},micWait);
+    t2=setTimeout(()=>{if(aiRec===rec)rec.__stop();},micMax);
+    try{rec.start();}catch(e){finish(fail);}}
   // Kirjoitettu teksti ja laitteen päivä (sanoja kuten "eilen" varten) palvelimelle JSONina; enintään 300 merkkiä.
   function panelText(f,l){const inp=l.querySelector('#ai-say-in'),t=inp?inp.value.trim():'';if(!inp)return;
     if(!t){panelSay(l,'Kirjoita ensin tankkauksen tiedot, esimerkiksi litrat, hinta ja mittarilukema.');inp.focus();return;}
@@ -631,7 +648,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='1.21 (testiversio)';
+  const appVersion='1.22 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
