@@ -1660,10 +1660,21 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 /* 0.113: Täytä kuitista (tekoäly, Ajoura Plus) tankkausikkunassa. Näkyy vain, kun tekoäly on sallittu. */
 .sf-ai{margin:0 0 12px}
 .sf-ai-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;border:1px dashed var(--c-9db8e0,#9db8e0);border-radius:12px;background:var(--c-edf4fd,#edf4fd);color:var(--c-1464e8,#1464e8);font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.sf-ai-txt{display:grid;gap:1px;text-align:center;line-height:1.25}.sf-ai-txt small{font-size:12px;font-weight:500}
 .sf-ai-btn:disabled{opacity:.6;cursor:progress}
 .sf-ai-ico{display:grid;place-items:center}.sf-ai-ico svg{width:18px;height:18px}
 .sf-ai-note{margin:6px 2px 0;font-size:12px;line-height:1.5;color:var(--c-3f4f63,#3f4f63)}
 .sf-ai-note.ok{color:var(--c-17663f,#17663f)}
+.ai-mode{display:grid;gap:10px;margin:0 0 12px}.ai-mode[hidden]{display:none}
+.ai-lead{margin:0;font-size:13px;line-height:1.45;color:var(--c-3f4f63,#3f4f63)}
+.ai-cam{min-height:56px}
+.ai-say.app-form{display:flex;gap:8px;align-items:center;margin:0}
+.ai-say.app-form input{flex:1;margin-top:0;min-height:44px;border-radius:12px}
+.ai-send{flex:none;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:12px;background:var(--c-1464e8,#1464e8);color:var(--c-ffffff,#ffffff);cursor:pointer}
+.ai-send svg{width:20px;height:20px}
+.ai-send:disabled,.ai-say input:disabled{opacity:.6;cursor:progress}
+.ai-note{margin:0;font-size:12px;line-height:1.5;color:var(--c-3f4f63,#3f4f63)}
+.ai-manual{justify-self:start;margin:0}
 /* 0.116: Google-kirjautuminen ja tilin poisto (sync.js). */
 .sync-google{gap:10px;margin:16px 0 10px}
 .sync-g{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--c-ffffff,#fff);color:var(--c-1464e8,#1464e8);font-weight:800;font-size:13px}

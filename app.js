@@ -195,7 +195,9 @@
     save:'<path d="M12 4v10"/><path d="m8 10 4 4 4-4"/><path d="M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15"/>',
     play:'<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/>',
     chat:'<path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3.5v-3.5h.5a2 2 0 0 1-2-2z"/>',
-    share:'<circle cx="17" cy="6" r="2.3"/><circle cx="7" cy="12" r="2.3"/><circle cx="17" cy="18" r="2.3"/><path d="m9 10.9 6-3.6M9 13.1l6 3.6"/>'
+    share:'<circle cx="17" cy="6" r="2.3"/><circle cx="7" cy="12" r="2.3"/><circle cx="17" cy="18" r="2.3"/><path d="m9 10.9 6-3.6M9 13.1l6 3.6"/>',
+    camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    send:'<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>'
   };
   const iconFor={'Huolto':'wrench','Vuosihuolto':'wrench','Moottoriöljyn vaihto':'oil','Ilmansuodattimen vaihto':'filter','Renkaiden vaihto':'tyre','Katsastus':'inspection','Jarruhuolto':'brake','Korjaus':'repair','Osan vaihto':'part','Muu huolto':'wrench','Kausihuolto':'wrench','Korjaus ja osan vaihto':'repair','Mittarilukeman päivitys':'gauge','Omistajanvaihdos':'user'};
   const eventIcon=type=>svg(icons[iconFor[type]||'note']);
@@ -417,8 +419,8 @@
     const lbl=(t,unit)=>`<span>${t}</span> <small>(<span data-cur>${sym}</span>${unit})</small>`;
     return `<div class="sheet-backdrop" data-sheet-close></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${f?(ev?'Muokkaa latausta':'Muokkaa tankkausta'):(ev?'Uusi lataus':'Uusi tankkaus')}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
       ${mixed?`<div class="rp-tabs sf-kinds" role="group" aria-label="Kirjauksen laji">${chargeKinds(c0).map(k=>`<button type="button" data-sheet-kind="${k}" aria-pressed="${kd===k}">${svg(k==='el'?bolt:icons.fuel)}<span>${k==='el'?'Lataus':k==='gas'?'Kaasu':'Tankkaus'}</span></button>`).join('')}</div>`:''}<p class="sheet-car"><span class="sheet-thumb">${rpThumb(c)}</span><span class="sheet-ctxt"><strong translate="no">${escape(carName(c))}</strong> <span translate="no">· ${plateTxt(c)}</span>${prevF?`<small><span>${ev?'Edellinen lataus':'Edellinen tankkaus'}</span> <span>${dm(prevF.date)}</span> · <span class="nw"><span>${number(prevF.km)}</span> <span>${ku(c)}</span></span></small>`:''}</span></p>
-      ${!f&&aiScanOn()?`<div class="sf-ai"><button type="button" class="sf-ai-btn" data-ai-scan><span class="sf-ai-ico" aria-hidden="true">${svg(icons.spark)}</span><span>Täytä kuitista</span></button><input type="file" accept="image/*" class="sr-only" data-ai-file tabindex="-1" aria-hidden="true"><p class="sf-ai-note" role="status" hidden></p></div>`:''}
-      <form class="app-form sheet-form" id="quickfuel-form" novalidate data-car="${c.id}" data-unit="${un}"${prevF?` data-prev="${prevF.km}"`:''}${f?` data-edit="${f.id}" data-user="${sum!==null?'qty,ppu':'qty'}"${sum!==null?' data-auto="cost"':''}`:''}>
+      ${!f&&aiScanOn()?`${aiPanel()}<div class="sf-ai" hidden><button type="button" class="sf-ai-btn" data-ai-scan><span class="sf-ai-ico" aria-hidden="true">${svg(icons.spark)}</span><span class="sf-ai-txt"><span>Täytä kuvasta</span><small>Kuitti, tankkausmittari tai mittaristo</small></span></button><input type="file" accept="image/*" class="sr-only" data-ai-file tabindex="-1" aria-hidden="true"><p class="sf-ai-note" role="status" hidden></p></div>`:''}
+      <form class="app-form sheet-form" id="quickfuel-form"${!f&&aiScanOn()?' hidden':''} novalidate data-car="${c.id}" data-unit="${un}"${prevF?` data-prev="${prevF.km}"`:''}${f?` data-edit="${f.id}" data-user="${sum!==null?'qty,ppu':'qty'}"${sum!==null?' data-auto="cost"':''}`:''}>
       <label class="sf-km">${meterLabel(c)}<input name="km" type="number" enterkeyhint="next" required min="0" max="2000000" inputmode="numeric" value="${kmNow}"><small class="sf-gap"${gap?'':' hidden'}><span data-gap>${gap?number(gap):''}</span> <span>${ku(c)}</span> <span>${ev?'edellisestä latauksesta':'edellisestä tankkauksesta'}</span></small></label>
       <div class="form-row three sf-calc"><label>${lbl(un==='l'?'Litrahinta':'Hinta','/'+un)}<input name="ppu" type="text" enterkeyhint="next" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="${ev?'0,30':un==='kg'?'1,60':'1,85'}" value="${ppu!==null?dec(ppu,3):''}"></label><label>${lbl('Summa','')}<input name="cost" type="text" enterkeyhint="next" inputmode="decimal" autocomplete="off" maxlength="10" placeholder="89,40" value="${sum!==null?dec(sum,2):''}"></label><label><span>${un==='l'?'Litrat':un}</span><input name="qty" type="text" enterkeyhint="done" inputmode="decimal" autocomplete="off" maxlength="9" placeholder="${ev?'45':un==='kg'?'15':'48,2'}" value="${f?dec(f.qty,2):''}"></label></div>
       <p class="field-help sheet-help">Anna kaksi kolmesta, niin kolmas lasketaan.</p><input type="hidden" name="est" value="${f&&f.est?'1':''}"><input type="hidden" name="kind" value="${kd}">
@@ -435,21 +437,64 @@
   const aiMsg={quota:'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.',plan:'Plus-oikeutta ei voitu vahvistaa. Kirjaa tiedot käsin.',off:'Tekoälyavustaja on pois käytöstä.'};
   const dataUrlBlob=d=>{const b=atob(d.slice(d.indexOf(',')+1)),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:'image/jpeg'});};
   const normFuel=v=>String(v||'').toLowerCase().replace(/[^a-z0-9åäö]/g,'');
-  async function scanReceipt(f,l,file){const A=window.AjouraAccess,btn=l.querySelector('[data-ai-scan]'),note=l.querySelector('.sf-ai-note');if(!A||!btn)return;
-    const say=(t,ok)=>{note.hidden=false;note.textContent=t;note.classList.toggle('ok',!!ok);};
-    btn.disabled=true;say('Luetaan kuittia…');
-    const d=await shrink(file,1568,.85);if(!d){btn.disabled=false;say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
-    let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;say(aiMsg[e&&e.reason]||'Kuittia ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
-    btn.disabled=false;if(!f.isConnected)return;
-    if(!r||!r.is_receipt){say('Kuvasta ei löytynyt tankkaus- tai latauskuittia.');return;}
-    const el=f.elements,unitOk=!r.unit||r.unit===f.dataset.unit,eur=!r.currency||r.currency==='EUR';
-    if(r.date&&r.date<=today())el.date.value=r.date;
+  // Päivä, polttoaine ja kaksi kolmesta (summa, määrä, litrahinta) lomakkeelle; kolmas lasketaan (fuelCalc).
+  function fillFuelFrom(f,r,withDate){const el=f.elements,unitOk=!r.unit||r.unit===f.dataset.unit,eur=!r.currency||r.currency==='EUR';
+    if(withDate&&r.date&&r.date<=today())el.date.value=r.date;
     if(el.grade&&r.fuel){const o=[...el.grade.options].find(o=>o.value&&normFuel(r.fuel).includes(normFuel(o.value)));if(o)el.grade.value=o.value;}
     const vals={cost:eur?r.total:null,qty:unitOk?r.quantity:null,ppu:eur&&unitOk?r.price_per_unit:null},use=['cost','qty','ppu'].filter(n=>vals[n]!=null).slice(0,2);
     for(const n of ['qty','ppu','cost'])if(use.includes(n))el[n].value=dec(vals[n],n==='ppu'?3:2).replace(/\s/g,'');
     if(use.length){f.dataset.user=use.join(',');f.dataset.auto='';fuelCalc(f);}
-    say(!unitOk?'Kuitin yksikkö ei vastaa tätä ajoneuvoa: määrää ei täytetty.':!eur?'Kuitti ei ole euroissa: hintaa ei täytetty. Valitse maa Lisävalinnoista.':use.length?'Tiedot luettu kuitista. Tarkista ne ja lisää mittarilukema.':'Kuitista ei saatu määrää eikä hintaa. Kirjaa ne käsin.',use.length&&unitOk&&eur);
-    el.km.focus({preventScroll:true});}
+    return {unitOk,eur,use};}
+  // 1.20 Tekoälytila: uusi tankkaus alkaa tekoälystä (kuva tai kirjoitettu teksti), kun tekoäly on käytettävissä. Tulos avaa tutun
+  // lomakkeen esitäytettynä, ja käyttäjä tarkistaa ja tallentaa itse. "Täytä käsin" avaa lomakkeen heti. Ilman tekoälyä (ei
+  // kirjautumista, tekoäly pois) ja muokatessa avautuu suoraan lomake. Mikrofoni tulee myöhemmin.
+  const aiPanel=()=>`<div class="ai-mode" data-ai-mode><p class="ai-lead">Kerro tankkaus kuvalla tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.</p><button type="button" class="sf-ai-btn ai-cam" data-ai-cam><span class="sf-ai-ico" aria-hidden="true">${svg(icons.camera)}</span><span class="sf-ai-txt"><span>Ota tai valitse kuva</span><small>Kuitti, tankkausmittari tai mittaristo</small></span></button><input type="file" accept="image/*" class="sr-only" data-ai-cam-file tabindex="-1" aria-hidden="true"><div class="app-form ai-say"><input type="text" id="ai-say-in" maxlength="300" autocomplete="off" enterkeyhint="send" aria-label="Kirjoita tankkauksen tiedot" placeholder="Esim. 45,6 l dieseliä 84,77 € mittari 218450"><button type="button" class="ai-send" data-ai-send aria-label="Lähetä">${svg(icons.send)}</button></div><p class="ai-note" role="status" hidden></p><button type="button" class="app-back ai-manual" data-ai-manual>Täytä käsin →</button></div>`;
+  // Tekoälyn tulos lomakkeelle (r.kind: receipt, pump, odometer = kuva; text = tekoälytilan teksti; other = ei tunnistettu).
+  // Palauttaa [viesti, onnistui, täytettiinkö jotain]. Ristiriitaiset tai epäselvät luvut eivät täytä mitään.
+  function applyAi(f,r){const el=f.elements,k=r&&r.kind,car=cars.find(x=>x.id===f.dataset.car)||{},low='Luettu lukema on pienempi kuin edellisessä tankkauksessa. Tarkista se.';
+    // Kokonaiskilometrit kilometrikenttään: ei maileja (ei muunneta arvaamalla) eikä tuntimittarille. '' = ei täytetty.
+    const km=()=>{if(r.odometer==null||r.odometer_unit==='mi'||hourly(car))return '';const lo=Number(f.dataset.prev)>0&&r.odometer<Number(f.dataset.prev);el.km.value=String(r.odometer);el.km.dispatchEvent(new Event('input',{bubbles:true}));return lo?'low':'ok';};
+    if(k==='receipt'){const {unitOk,eur,use}=fillFuelFrom(f,r,true);
+      return [!unitOk?'Kuitin yksikkö ei vastaa tätä ajoneuvoa: määrää ei täytetty.':!eur?'Kuitti ei ole euroissa: hintaa ei täytetty. Valitse maa Lisävalinnoista.':use.length?'Tiedot luettu kuitista. Tarkista ne ja lisää mittarilukema.':'Kuitista ei saatu määrää eikä hintaa. Kirjaa ne käsin.',use.length&&unitOk&&eur,use.length>0];}
+    if(k==='pump'){// Tankkausmittari: ei päivää. Jos litrahinta × määrä ei vastaa summaa, palvelin merkitsee luvut epäluotettaviksi (mismatch).
+      if(r.mismatch)return ['Mittarin luvut eivät täsmää keskenään. Kokeile uutta kuvaa tai kirjaa tiedot käsin.',false,false];
+      const {unitOk,eur,use}=fillFuelFrom(f,r,false);
+      return [!unitOk?'Mittarin yksikkö ei vastaa tätä ajoneuvoa: määrää ei täytetty.':!eur?'Mittarin hinta ei ole euroissa: hintaa ei täytetty. Valitse maa Lisävalinnoista.':use.length?'Tiedot luettu tankkausmittarista. Tarkista ne ja lisää mittarilukema.':'Mittarista ei saatu määrää eikä hintaa. Kirjaa ne käsin.',use.length&&unitOk&&eur,use.length>0];}
+    if(k==='odometer'){
+      if(hourly(car))return ['Tämän ajoneuvon mittari on tuntimittari. Kirjoita lukema käsin.',false,false];
+      if(r.odometer==null)return ['Mittaristosta ei saatu luettua kokonaiskilometrejä. Kirjoita lukema käsin.',false,false];
+      if(r.odometer_unit==='mi')return ['Mittari näyttää maileja. Kirjoita kilometrit käsin.',false,false];
+      const st=km();return [st==='low'?low:'Kilometrilukema luettu mittaristosta. Tarkista se.',st==='ok',true];}
+    if(k==='text'){// Teksti voi kertoa sekä tankkauksen että mittarilukeman (ja päivän, esim. "eilen").
+      if(r.mismatch)return ['Tekstin luvut eivät täsmää keskenään (litrahinta × litrat ≠ summa). Tarkista ja kirjoita uudelleen.',false,false];
+      const {unitOk,eur,use}=fillFuelFrom(f,r,true),st=km();
+      if(!use.length&&!st)return ['Tekstistä ei löytynyt tankkauksen tietoja. Kirjoita esimerkiksi litrat, hinta ja mittarilukema.',false,false];
+      return [!unitOk?'Yksikkö ei vastaa tätä ajoneuvoa: määrää ei täytetty.':!eur?'Hinta ei ole euroissa: hintaa ei täytetty. Valitse maa Lisävalinnoista.':st==='low'?low:st?'Tiedot luettu tekstistä. Tarkista ne.':'Tiedot luettu tekstistä. Tarkista ne ja lisää mittarilukema.',unitOk&&eur&&st!=='low',true];}
+    return ['Kuvasta ei löytynyt kuittia, tankkausmittaria eikä mittaristoa.',false,false];}
+  // Lomakkeen Täytä kuvasta (1.19): kuva pienennetään laitteessa (shrink, JPEG) ja lähtee vain AjouraAccess.recognize-reitin kautta.
+  async function scanImage(f,l,file){const A=window.AjouraAccess,btn=l.querySelector('[data-ai-scan]'),note=l.querySelector('.sf-ai-note');if(!A||!btn)return;
+    const say=(t,ok)=>{note.hidden=false;note.textContent=t;note.classList.toggle('ok',!!ok);};
+    btn.disabled=true;say('Luetaan kuvaa…');
+    const d=await shrink(file,1568,.85);if(!d){btn.disabled=false;say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
+    let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;say(aiMsg[e&&e.reason]||'Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
+    btn.disabled=false;if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);say(m,ok);if(filled)f.elements.km.focus({preventScroll:true});}
+  // Tekoälytilasta lomakkeeseen (tulos tai Täytä käsin).
+  function showForm(l,f){const p=l.querySelector('[data-ai-mode]');if(p)p.hidden=true;const sa=l.querySelector('.sf-ai');if(sa)sa.hidden=false;f.hidden=false;}
+  const panelSay=(l,t)=>{const n=l.querySelector('.ai-note');if(n){n.hidden=false;n.textContent=t;}};
+  // Yksi pyyntö tekoälytilasta. Jos mitään ei täytetty (ei tunnistettu, ristiriita, virhe, kiintiö), tila pysyy auki viestin kanssa.
+  async function panelAsk(f,l,blob,busy,fail,none){const A=window.AjouraAccess,p=l.querySelector('[data-ai-mode]');if(!A||!p)return;
+    const parts=[...p.querySelectorAll('[data-ai-cam],[data-ai-send],#ai-say-in')],lock=on=>parts.forEach(x=>{x.disabled=on;});
+    lock(true);panelSay(l,busy);
+    let r;try{r=await A.recognize('ai.receipt',blob);}catch(e){lock(false);panelSay(l,aiMsg[e&&e.reason]||fail);return;}
+    lock(false);if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);
+    if(!filled){panelSay(l,r&&r.kind==='other'&&none?none:m);return;}
+    showForm(l,f);const n=l.querySelector('.sf-ai-note');if(n){n.hidden=false;n.textContent=m;n.classList.toggle('ok',!!ok);}f.elements.km.focus({preventScroll:true});}
+  async function panelImage(f,l,file){const d=await shrink(file,1568,.85);if(!d){panelSay(l,'Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
+    await panelAsk(f,l,dataUrlBlob(d),'Luetaan kuvaa…','Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');}
+  // Kirjoitettu teksti ja laitteen päivä (sanoja kuten "eilen" varten) palvelimelle JSONina; enintään 300 merkkiä.
+  function panelText(f,l){const inp=l.querySelector('#ai-say-in'),t=inp?inp.value.trim():'';if(!inp)return;
+    if(!t){panelSay(l,'Kirjoita ensin tankkauksen tiedot, esimerkiksi litrat, hinta ja mittarilukema.');inp.focus();return;}
+    panelAsk(f,l,new Blob([JSON.stringify({text:t.slice(0,300),today:today()})],{type:'application/json'}),'Luetaan tekstiä…','Tekstiä ei voitu lukea nyt. Kirjaa tiedot käsin.','Tekstistä ei löytynyt tankkauksen tietoja. Kirjoita esimerkiksi litrat, hinta ja mittarilukema.');}
   // AJ-04: the sheet is a real dialog. Focus moves into it, Tab stays inside it, the page behind it is inert, and
   // closing it (×, Escape, the backdrop or saving) returns the focus to the button that opened it.
   // After a save the screen is drawn again, so the opener is found again by what it opens (sheetSel).
@@ -458,18 +503,19 @@
   function refocusSheet(){const el=sheetSel&&(screen.querySelector(sheetSel)||screen.querySelector('.fl-add'));sheetSel='';if(el)el.focus({preventScroll:true});}
   const focusables=root=>[...root.querySelectorAll('a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null||x.tagName==='SUMMARY');
   function openSheet(c,from,fill,kind){const kd=fill?fillKind(c,fill):kind||pickKind(c),cv=fcar(c,kd);closeSheet();sheetBack=from||null;sheetSel=!from?'':from.classList.contains('fl-add')?'.fl-add':from.dataset.flEdit?`[data-fl-edit="${from.dataset.flEdit}"]`:from.dataset.quickfuel?`[data-quickfuel="${from.dataset.quickfuel}"]`:'';const l=document.createElement('div');l.className='sheet-layer';l.innerHTML=quickFuel(c,fill,kd);glass.appendChild(l);screen.inert=true;
-    const f=l.querySelector('form');f.addEventListener('submit',e=>{e.preventDefault();saveFuel(f,cars.find(x=>x.id===c.id)||c);});
+    const f=l.querySelector('#quickfuel-form');f.addEventListener('submit',e=>{e.preventDefault();saveFuel(f,cars.find(x=>x.id===c.id)||c);});
     const order=['km','ppu','cost','qty'];f.addEventListener('keydown',e=>{const i=order.indexOf(e.target.name);if(e.key==='Enter'&&i>=0&&i<order.length-1){e.preventDefault();f.elements[order[i+1]].focus();}});
     // Price per litre + total gives the litres (Niklas 19.10.2026); any two of the three fill in the third.
     f.addEventListener('input',e=>{if(['qty','ppu','cost'].includes(e.target.name))fuelCalc(f,e.target.name);if(e.target.name==='rate'&&f.elements.est.value==='1'&&Number(decIn(e.target.value))>0)fuelGuess(f,cv);
       if(e.target.name==='km'){const p=Number(f.dataset.prev),k=Number(e.target.value),gp=f.querySelector('.sf-gap');if(gp){const ok=f.dataset.prev&&k>p;gp.hidden=!ok;if(ok)gp.querySelector('[data-gap]').textContent=number(k-p);}}});
-    l.addEventListener('change',e=>{const inp=e.target.closest('[data-ai-file]');if(inp&&inp.files&&inp.files[0]){const file=inp.files[0];inp.value='';scanReceipt(f,l,file);}});
+    l.addEventListener('change',e=>{const inp=e.target.closest('[data-ai-file],[data-ai-cam-file]');if(inp&&inp.files&&inp.files[0]){const file=inp.files[0];inp.value='';(inp.hasAttribute('data-ai-cam-file')?panelImage:scanImage)(f,l,file);}});
+    l.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='ai-say-in'){e.preventDefault();panelText(f,l);}});
     f.addEventListener('change',e=>{if(e.target.name!=='country')return;const cur=curOf(e.target.value),fx=f.querySelector('.fx-rate');f.querySelectorAll('[data-cur]').forEach(x=>x.textContent=cur==='EUR'?'€':cur);fx.hidden=cur==='EUR';f.elements.rate.value=cur==='EUR'?'':rateFor(c,cur);if(f.elements.est.value==='1')fuelGuess(f,cv);});
     const label=f.querySelector('[type=submit]').textContent;f.addEventListener('input',e=>{if(f.dataset.confirmed&&(e.target.name==='km'||e.target.name==='date')){delete f.dataset.confirmed;f.querySelector('[type=submit]').textContent=label;}});
-    l.addEventListener('click',e=>{if(e.target.closest('[data-ai-scan]')){l.querySelector('[data-ai-file]').click();return;}const sk=e.target.closest('[data-sheet-kind]');if(sk){openSheet(c,sheetBack,null,sk.dataset.sheetKind);return;}const del=e.target.closest('[data-fl-del]');if(del){const id=del.dataset.flDel;closeSheet();removeFill(id);return;}if(e.target.closest('[data-fuel-guess]')){fuelGuess(f,cv);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();else if(e.target.closest('.sheet-more'))closeSheet();});
+    l.addEventListener('click',e=>{if(e.target.closest('[data-ai-scan]')){l.querySelector('[data-ai-file]').click();return;}if(e.target.closest('[data-ai-cam]')){l.querySelector('[data-ai-cam-file]').click();return;}if(e.target.closest('[data-ai-send]')){panelText(f,l);return;}if(e.target.closest('[data-ai-manual]')){showForm(l,f);f.elements.ppu.focus({preventScroll:true});return;}const sk=e.target.closest('[data-sheet-kind]');if(sk){openSheet(c,sheetBack,null,sk.dataset.sheetKind);return;}const del=e.target.closest('[data-fl-del]');if(del){const id=del.dataset.flDel;closeSheet();removeFill(id);return;}if(e.target.closest('[data-fuel-guess]')){fuelGuess(f,cv);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();else if(e.target.closest('.sheet-more'))closeSheet();});
     l.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const list=focusables(l.querySelector('.sheet'));if(!list.length)return;const first=list[0],lastEl=list[list.length-1];
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();lastEl.focus();}else if(!e.shiftKey&&document.activeElement===lastEl){e.preventDefault();first.focus();}});
-    requestAnimationFrame(()=>{l.classList.add('open');const q=fill?l.querySelector('.sheet-x'):f.elements.ppu;if(q)q.focus({preventScroll:true});});}
+    requestAnimationFrame(()=>{l.classList.add('open');const q=fill?l.querySelector('.sheet-x'):l.querySelector('[data-ai-mode]')?l.querySelector('[data-ai-cam]'):f.elements.ppu;if(q)q.focus({preventScroll:true});});}
   const fuels=['Bensiini','Diesel','Hybridi (bensiini/sähkö)','Lataushybridi','Sähkö','Kaasu','Muu'];
   function methodStep(){return `${kindsOn()?'<button class="app-back nav-back" type="button" data-step-to="kind">← Ajoneuvolaji</button>':back('home','Koti')}<h2 class="app-heading">Uusi ajoneuvo</h2><p class="app-subtitle">Miten haluat lisätä autosi?</p><div class="method-list"><button class="method-card" type="button" data-method="plate"><span class="plate-badge" aria-hidden="true"><b>FIN</b>ABC-123</span><strong>Rekisteritunnuksella</strong><small>Haku on vielä demo. Omalla tunnuksella jatkat täyttämällä tiedot itse.</small></button><button class="method-card" type="button" data-method="manual"><span class="method-icon" aria-hidden="true">${svg(icons.note)}</span><strong>Lisää manuaalisesti</strong><small>Kirjoitat auton tiedot itse.</small></button></div><p class="app-fineprint">Mallin valinnan jälkeen valitset vielä korimallin ja värin.</p>`;}
   function plateStep(){const pending=lookup&&lookup.pending;return `<button class="app-back nav-back" type="button" data-step-to="method">← Takaisin</button><h2 class="app-heading">Rekisteritunnus</h2><p class="app-subtitle">Syötä rekisteritunnus, niin AJOURA tunnistaa auton ja täyttää perustiedot.</p><form class="app-form" id="plate-form" novalidate><label for="plate-input">Rekisteritunnus</label><div class="plate-field"><span class="plate-country" aria-hidden="true">FIN</span><input id="plate-input" name="plate" maxlength="7" autocomplete="off" autocapitalize="characters" inputmode="text" spellcheck="false" placeholder="ABC-123" value="${escape(lookup?.plate||'')}"${pending?' disabled':''}></div><p class="error-note" id="form-error" role="alert">${lookup?.error?escape(lookup.error):''}</p><button class="app-button" type="submit"${pending?' disabled':''}>${pending?'<span class="spinner" aria-hidden="true"></span> Haetaan ajoneuvoa…':'Hae ajoneuvo'}</button><p class="field-help plate-examples"><span>Kokeile esimerkkitunnuksia:</span>${examplePlates.map(p=>`<button type="button" class="plate-chip" data-plate="${p}">${p}</button>`).join('')}</p><button class="app-back manual-link" type="button" data-method="manual">Syötä tiedot itse →</button><p class="app-fineprint">Simuloitu haku: demossa ei tehdä oikeaa rekisterihakua. Tunnistus perustuu kuvitteelliseen esimerkkiaineistoon.</p></form>`;}
@@ -566,7 +612,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='0.118 (testiversio)';
+  const appVersion='1.20 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

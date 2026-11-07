@@ -1,4 +1,5 @@
-"""Kuittitunnistus (v0.113, Ajoura Plus): tankkausikkunan Täytä kuitista. Kuva pienennetään laitteessa, lähtee vain
+"""Kuittitunnistus (v0.113, Ajoura Plus): tankkausikkunan Täytä kuvasta (v1.19: ennen Täytä kuitista; sama painike lukee myös
+tankkausmittarin ja mittariston, ks. test_mittari.py). Kuva pienennetään laitteessa, lähtee vain
 AjouraAccess.recognize-reitin kautta, ja tulos vain esitäyttää lomakkeen (käyttäjä tarkistaa ja tallentaa itse).
 
 Tekoälyfunktio ja Supabase ovat keksittyjä (test_plus.palvelu): oikeaan Anthropiciin ei oteta yhteyttä.
@@ -12,8 +13,8 @@ import tiedot
 from apu import KELLO, avaa, ikkuna_valmis
 from test_plus import palvelu
 
-KUITTI = {"is_receipt": True, "date": "2026-10-28", "quantity": 41.27, "unit": "l", "price_per_unit": 1.889,
-          "total": 77.96, "currency": "EUR", "fuel": "Neste Futura 95E10"}
+KUITTI = {"kind": "receipt", "date": "2026-10-28", "quantity": 41.27, "unit": "l", "price_per_unit": 1.889,
+          "total": 77.96, "currency": "EUR", "fuel": "Neste Futura 95E10", "mismatch": False, "odometer": None, "odometer_unit": None}
 
 
 @pytest.fixture(scope="module")
@@ -27,6 +28,9 @@ def kuva(tmp_path_factory):
 def ikkuna(s):
     s.page.click(".fl-add")
     ikkuna_valmis(s.page)
+    # 1.20: tekoälytila avautuu ensin; lomakkeen Täytä kuvasta -painike on Täytä käsin -valinnan takana.
+    if s.page.locator("[data-ai-manual]").count():
+        s.page.click("[data-ai-manual]")
 
 
 def avaa_plus(browser, base, tekoaly="1", **k):
@@ -97,10 +101,10 @@ def test_kuitti_esitayttaa_lomakkeen(browser, base, kuva):
 
 @pytest.mark.parametrize("tapaus,vastaus,status,viesti,taytetty", [
     ("kiintio", {}, 429, "Tämän kuun tunnistukset on käytetty", []),
-    ("ei-kuitti", {**KUITTI, "is_receipt": False}, 200, "ei löytynyt tankkaus- tai latauskuittia", []),
+    ("ei-kuitti", {**KUITTI, "kind": "other"}, 200, "ei löytynyt kuittia, tankkausmittaria eikä mittaristoa", []),
     ("valuutta", {**KUITTI, "currency": "SEK", "total": 820.5, "price_per_unit": 19.9}, 200, "ei ole euroissa", ["qty"]),
     ("yksikko", {**KUITTI, "unit": "kWh"}, 200, "yksikkö ei vastaa", ["cost"]),
-    ("palvelin", {}, 502, "Kuittia ei voitu lukea nyt", []),
+    ("palvelin", {}, 502, "Kuvaa ei voitu lukea nyt", []),
 ])
 def test_virheet_ja_poikkeukset(browser, base, kuva, tapaus, vastaus, status, viesti, taytetty):
     s, tila = avaa_plus(browser, base)
@@ -127,7 +131,7 @@ def test_kaannetty_ja_kapea(browser, base, kuva):
         ikkuna(s)
         s.page.set_input_files("[data-ai-file]", str(kuva))
         s.page.wait_for_function("() => /Kontrollera/.test(document.querySelector('.sf-ai-note').textContent)")
-        assert "Fyll i från kvitto" in s.page.inner_text(".sf-ai")
+        assert "Fyll i från bild" in s.page.inner_text(".sf-ai")
         assert s.page.evaluate("document.querySelector('.sheet').scrollWidth <= document.querySelector('.sheet').clientWidth")
         assert not s.virheet, s.virheet
     finally:

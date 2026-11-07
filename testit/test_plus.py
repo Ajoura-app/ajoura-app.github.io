@@ -93,7 +93,8 @@ def palvelu(s, oikeus=PLUS, ai_status=200, verkko=True, kirjautunut=True, tila=N
         if not tunnistettu(route):
             return ei(route)
         tila["ai"].append(route.request.headers.get("x-ajoura-feature"))
-        tila["ai_pyynnot"].append({"tyyppi": route.request.headers.get("content-type"), "koko": len(route.request.post_data_buffer or b"")})
+        tila["ai_pyynnot"].append({"tyyppi": route.request.headers.get("content-type"), "koko": len(route.request.post_data_buffer or b""),
+                                   "runko": route.request.post_data if "json" in (route.request.headers.get("content-type") or "") else None})
         route.fulfill(status=tila["ai_status"], content_type="application/json", body=json.dumps(tila["ai_vastaus"]))
 
     def auth(route):
