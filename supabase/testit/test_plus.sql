@@ -34,7 +34,7 @@ select pg_temp.odota('plus', pg_temp.ilman(get_entitlement()) - 'validUntil',
   '{"plan":"plus","status":"active","features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":30,"used":0}}');
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000001');
 select pg_temp.odota('free (testivaihe)', pg_temp.ilman(get_entitlement()),
-  '{"plan":"free","status":"active","validUntil":null,"features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":10,"used":0}}');
+  '{"plan":"free","status":"active","validUntil":null,"features":["ai.receipt","ai.odometer","ai.servicebook"],"quota":{"limit":30,"used":0}}');
 -- Vanhentunut tai peruttu Plus = free.
 select pg_temp.kayttaja('00000000-0000-0000-0000-000000000003');
 select pg_temp.odota('vanhentunut', get_entitlement() -> 'plan', '"free"');
@@ -58,9 +58,10 @@ select pg_temp.kielletty('anon: tilin poisto', 'select public.delete_my_account(
 -- ---- Kiintiö (palvelin) ------------------------------------------------------------------------------
 reset role;
 set role service_role;
-select public.ai_reserve('00000000-0000-0000-0000-000000000001') from generate_series(1, 9);
-select pg_temp.odota('free 10.', public.ai_reserve('00000000-0000-0000-0000-000000000001') - 'period', '{"ok":true,"used":10,"limit":10}');
-select pg_temp.odota('free 11.', public.ai_reserve('00000000-0000-0000-0000-000000000001'), '{"ok":false,"reason":"quota","limit":10}');
+-- Testivaiheen free: 30/kk (migraatio 20261107120000; ennen 10).
+select public.ai_reserve('00000000-0000-0000-0000-000000000001') from generate_series(1, 29);
+select pg_temp.odota('free 30.', public.ai_reserve('00000000-0000-0000-0000-000000000001') - 'period', '{"ok":true,"used":30,"limit":30}');
+select pg_temp.odota('free 31.', public.ai_reserve('00000000-0000-0000-0000-000000000001'), '{"ok":false,"reason":"quota","limit":30}');
 select public.ai_reserve('00000000-0000-0000-0000-000000000002') from generate_series(1, 29);
 select pg_temp.odota('plus 30.', public.ai_reserve('00000000-0000-0000-0000-000000000002') - 'period', '{"ok":true,"used":30,"limit":30}');
 select pg_temp.odota('plus 31.', public.ai_reserve('00000000-0000-0000-0000-000000000002'), '{"ok":false,"reason":"quota","limit":30}');

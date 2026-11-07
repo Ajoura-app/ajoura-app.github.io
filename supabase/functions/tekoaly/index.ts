@@ -9,7 +9,8 @@
 //      ANTHROPIC_API_KEY, ei koskaan repossa eikä selaimessa). Kuvaa ei tallenneta eikä kirjata lokiin.
 // Tekoälyn vastaus tarkistetaan täällä (luvut järkevillä väleillä, päivä ei tulevaisuudessa), ja sovellus vain
 // esitäyttää lomakkeen: käyttäjä tarkistaa ja tallentaa itse. Epäonnistunut tunnistus ei kuluta kiintiötä.
-// Ilman avainta vastaus on 503 (ai_not_configured). Toteutettu: kuitti (ai.receipt). Mittari ja huoltokirja: 501.
+// Ilman avainta vastaus on 503 (ai_not_configured). Toteutettu: ai.receipt = tankkausikkunan "Täytä kuvasta" (1.19): yksi kuva, jonka
+// lajin tekoäly tunnistaa itse (kuitti, tankkausmittari tai auton mittaristo). Mittari (ai.odometer) ja huoltokirja: 501.
 //
 // Testi: testit/test_supabase.py (Node ajaa tämän tiedoston keksityllä Supabasella).
 
@@ -31,13 +32,15 @@ const anthropicClient: MakeClient = async (apiKey) => {
 // Mitä kuvasta poimitaan. Kaikki kentät pakollisia; puuttuva tieto = null (rakenteinen vastaus, JSON-skeema).
 const num = { anyOf: [{ type: 'number' }, { type: 'null' }] };
 const str = { anyOf: [{ type: 'string' }, { type: 'null' }] };
-const SPECS: Record<string, { schema: Record<string, unknown>; prompt: string }> = {
+type Spec = { schema: Record<string, unknown>; prompt: string; clean: (o: any, today: string) => Record<string, unknown> };
+const SPECS: Record<string, Spec> = {
+  // Täytä kuvasta (0.113 kuitti, 1.19 yksi kuva kolmelle lajille). Kaikki kentät pakollisia; puuttuva tieto = null.
   'ai.receipt': {
     schema: {
       type: 'object', additionalProperties: false,
-      required: ['is_receipt', 'date', 'quantity', 'unit', 'price_per_unit', 'total', 'currency', 'fuel'],
+      required: ['kind', 'date', 'quantity', 'unit', 'price_per_unit', 'total', 'currency', 'fuel', 'odometer', 'odometer_unit'],
       properties: {
-        is_receipt: { type: 'boolean' },
+        kind: { type: 'string', enum: ['receipt', 'pump', 'odometer', 'other'] },
         date: { anyOf: [{ type: 'string', format: 'date' }, { type: 'null' }] },
         quantity: num,
         unit: { anyOf: [{ type: 'string', enum: ['l', 'kWh', 'kg'] }, { type: 'null' }] },
@@ -45,14 +48,23 @@ const SPECS: Record<string, { schema: Record<string, unknown>; prompt: string }>
         total: num,
         currency: str,
         fuel: str,
+        odometer: num,
+        odometer_unit: { anyOf: [{ type: 'string', enum: ['km', 'mi'] }, { type: 'null' }] },
       },
     },
-    prompt: 'The image should be a fuel or EV charging receipt, often Finnish. Extract the purchase. ' +
-      'is_receipt: false if the image is not a fuel or charging receipt. Use null for anything not clearly printed; never guess. ' +
-      'date: purchase date as YYYY-MM-DD (Finnish receipts write day.month.year). quantity: litres, kWh or kg bought, unit accordingly. ' +
-      'price_per_unit and total: as printed, in the receipt currency (decimal comma means decimal point). ' +
-      'currency: ISO 4217 code, EUR when the receipt shows € or EUR. fuel: product name as printed, e.g. "95E10", "98E5", "Diesel", "Neste MY Uusiutuva Diesel". ' +
-      'Ignore shop items other than the fuel or charging purchase.',
+    prompt: 'The image is one of three kinds. First decide kind. ' +
+      '"receipt": a fuel or EV charging receipt, often Finnish. "pump": the display of a fuel pump or EV charger. ' +
+      '"odometer": the instrument cluster or display of a vehicle showing its odometer. "other": anything else. ' +
+      'Fill in only the fields of the kind you chose and use null for everything else; use null for anything not clearly visible and never guess a digit. ' +
+      'Receipt: date as YYYY-MM-DD (Finnish receipts write day.month.year); quantity: litres, kWh or kg bought, unit accordingly; price_per_unit and total as printed ' +
+      'in the receipt currency (decimal comma means decimal point); currency: ISO 4217 code, EUR when the receipt shows € or EUR; fuel: product name as printed, ' +
+      'e.g. "95E10", "98E5", "Diesel", "Neste MY Uusiutuva Diesel". Ignore shop items other than the fuel or charging purchase. ' +
+      'Pump: quantity delivered, unit, price_per_unit (price per litre, kWh or kg) and total price to pay; do not take the price per unit for the total or the other way round; ' +
+      'date null; currency only if shown; fuel only if shown. ' +
+      'Odometer: odometer is the total distance driven in the vehicle\'s lifetime (often labelled ODO or shown with km, usually 4 to 7 digits), as a number without separators and without a decimal tenth; ' +
+      'odometer_unit km or mi as shown. Never use the trip meter (TRIP, A or B, Finnish "matka"), remaining range, speed, average consumption, clock or temperature; ' +
+      'if it is not certain which number is the total odometer, or digits are cut off, blurred or hidden by glare, use null.',
+    clean: (o, today) => cleanPhoto(o, today),
   },
 };
 
@@ -77,6 +89,26 @@ function cleanReceipt(o: any, today: string) {
     currency: short(o?.currency, /^[A-Z]{3}$/),
     fuel: short(o?.fuel, /^[\p{L}\p{N} .,+\-/()%]{1,60}$/u),
   };
+}
+
+// Yksi kuva, kolme lajia (1.19). Lopullinen vastaus on aina samanmuotoinen; ei-sopivat kentät ovat null. Kaikki luvut tarkistetaan:
+// tekoälyn vastaus ei ole luotettava syöte. Tankkausmittarissa litrahinta × määrä pitää vastata summaa (väärin luettu numero rikkoo
+// laskun): epäjohdonmukainen lukema merkitään (mismatch), eikä sovellus täytä sillä mitään. Mittaristo palauttaa kokonaiskilometrit
+// kokonaislukuna välillä 1–2 000 000 (sovelluksen kentän raja); mailit palautetaan sellaisenaan (sovellus ei muunna arvaamalla).
+function cleanPhoto(o: any, today: string) {
+  const kind = ['receipt', 'pump', 'odometer'].includes(o?.kind) ? (o.kind as string) : 'other';
+  const empty = { kind, date: null, quantity: null, unit: null, price_per_unit: null, total: null, currency: null, fuel: null, mismatch: false, odometer: null, odometer_unit: null };
+  if (kind === 'other') return empty;
+  if (kind === 'odometer') {
+    const v = o?.odometer;
+    return { ...empty, odometer: typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= 2_000_000 ? Math.round(v) : null,
+      odometer_unit: o?.odometer_unit === 'km' || o?.odometer_unit === 'mi' ? o.odometer_unit : null };
+  }
+  const c = cleanReceipt(o, today);
+  const fuel = { date: kind === 'receipt' ? c.date : null, quantity: c.quantity, unit: c.unit, price_per_unit: c.price_per_unit, total: c.total, currency: c.currency, fuel: c.fuel };
+  const { quantity: q, price_per_unit: p, total: t } = c;
+  const mismatch = kind === 'pump' && q !== null && p !== null && t !== null && Math.abs(q * p - t) > 0.06 + 0.001 * t;
+  return { ...empty, ...fuel, mismatch };
 }
 
 type Env = (name: string) => string;
@@ -171,7 +203,7 @@ export async function recognize(feature: string, image: Uint8Array, type: string
   const text = (msg.content || []).find((b: { type: string }) => b.type === 'text')?.text;
   if (!text) throw Object.assign(new Error('no text'), { name: 'no_text' });
   // Huominen UTC:nä: Suomessa päivä vaihtuu ennen UTC:tä. Sovellus rajaa lisäksi omaan päiväänsä.
-  return cleanReceipt(JSON.parse(text), new Date(Date.now() + 864e5).toISOString().slice(0, 10));
+  return spec.clean(JSON.parse(text), new Date(Date.now() + 864e5).toISOString().slice(0, 10));
 }
 
 let handler: ((req: Request) => Promise<Response>) | null = null;
