@@ -10,6 +10,10 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Ajoura – henkilökohtainen autosihteerisi": "Ajoura – your personal vehicle assistant",
+    "Henkilökohtainen autosihteerisi": "Your personal vehicle assistant",
+    "Kirjaa. Seuraa. Ennakoi.": "Log. Track. Plan ahead.",
+
     "Kuunnellaan…": "Listening…",
     // Vaihe 03: hahmot
     "Avustajan hahmo": "Assistant character",

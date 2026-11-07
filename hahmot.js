@@ -47,7 +47,7 @@
     if(!e.target.matches('[data-avatar-motion-toggle]'))return;
     motion=e.target.checked;try{localStorage.setItem(MOTION,motion?'1':'0');}catch(err){document.querySelector('[data-avatar-save-note]').textContent=t('Valinta toimii nyt, mutta sitä ei voitu tallentaa tälle laitteelle.');}paint();
   });
-  window.AjouraAvatar=Object.freeze({avatar,feedback,settings,react,name:()=>characters[character],
+  window.AjouraAvatar=Object.freeze({avatar,feedback,settings,react,motion:()=>motion,name:()=>characters[character],
     floating:()=>`<a class="avatar-shortcut" href="#settings" data-avatar-shortcut aria-label="${esc(t('Avustajan hahmo')+': '+characters[character])}">${avatar('small')}</a>`,
     sheet:()=>`<div class="avatar-sheet">${avatar('small')}<span translate="no" data-avatar-name>${characters[character]}</span>${feedback()}</div>`});
 })();
