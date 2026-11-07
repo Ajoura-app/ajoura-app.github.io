@@ -36,7 +36,7 @@ ISTUNTO = istunto()
 PLUS = {"plan": "plus", "status": "active", "validUntil": "2099-01-01T00:00:00Z",
         "quota": {"ai": {"limit": None, "used": 0, "resetsAt": "2099-01-01T00:00:00Z"}}}
 # Testivaiheen kirjautunut free (0.116): palvelin sallii tekoälyn 10/kk.
-FREE_AI = {"plan": "free", "status": "active", "validUntil": None, "features": ["ai.receipt", "ai.pump", "ai.odometer", "ai.servicebook"],
+FREE_AI = {"plan": "free", "status": "active", "validUntil": None, "features": ["ai.receipt", "ai.odometer", "ai.servicebook"],
            "quota": {"ai": {"limit": 10, "used": 0, "resetsAt": "2099-01-01T00:00:00Z"}}}
 # Maksujen jälkeen: kirjautunut free ilman tekoälyä.
 FREE_EI = {"plan": "free", "status": "active", "validUntil": None, "features": [], "quota": {"ai": {"limit": 0, "used": 0}}}
@@ -299,7 +299,7 @@ def test_plus_kayttaja_kytkee_paalle_ja_pois(browser, base):
         assert pg.locator("[data-ai-toggle]").is_checked()
         assert pg.evaluate("localStorage.getItem('ajoura-tekoaly')") == "1"
         assert pg.input_value("input[name=months]") == "9"
-        for f in ("ai.receipt", "ai.pump", "ai.odometer", "ai.servicebook"):
+        for f in ("ai.receipt", "ai.odometer", "ai.servicebook"):
             assert pg.evaluate(TARKISTA, f) == "ok", f
         assert "Tekoälyavustaja on käytössä." in osio(s).inner_text()
         # Näppäimistöllä pois (kohdistus pysyy kytkimessä).
@@ -373,7 +373,7 @@ def test_tekoaly_pois_ei_laheta_kuvia(browser, base):
         tila = palvelu(s)
         pg = s.page
         # Plus, mutta tekoäly pois (oletus): ei yhtään pyyntöä tekoälypalveluun millään tunnistuksella.
-        for f in ("ai.receipt", "ai.pump", "ai.odometer", "ai.servicebook"):
+        for f in ("ai.receipt", "ai.odometer", "ai.servicebook"):
             assert pg.evaluate(TUNNISTA, f) == "off", f
         pg.click("label.ai-row")
         pg.click("label.ai-row")

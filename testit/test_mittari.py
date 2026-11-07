@@ -1,6 +1,6 @@
-"""Tankkausmittarin ja auton mittariston tunnistus (v1.19): tankkausikkunan painikkeet Tankkausmittari ja Mittaristo.
-Kuva pienennetään laitteessa, lähtee vain AjouraAccess.recognize-reitin kautta (oma ominaisuus ai.pump / ai.odometer,
-yhteinen kiintiö), ja tulos vain esitäyttää lomakkeen: käyttäjä tarkistaa ja tallentaa itse.
+"""Täytä kuvasta (v1.19): tankkausikkunassa on yksi painike, ja tekoäly tunnistaa kuvan lajin itse: kuitti (test_kuitti.py),
+tankkausmittarin näyttö tai auton mittaristo. Kuva pienennetään laitteessa, lähtee vain AjouraAccess.recognize-reitin kautta
+(ominaisuus ai.receipt, yksi kuukausikiintiö), ja tulos vain esitäyttää lomakkeen: käyttäjä tarkistaa ja tallentaa itse.
 
 Tekoälyfunktio ja Supabase ovat keksittyjä (test_plus.palvelu): oikeaan Anthropiciin ei oteta yhteyttä.
 """
@@ -11,11 +11,11 @@ import tiedot
 from apu import KELLO, avaa, ikkuna_valmis
 from test_plus import PLUS, palvelu
 
-PUMPPU = {"is_pump": True, "quantity": 45.6, "unit": "l", "price_per_unit": 1.859, "total": 84.77, "currency": None,
-          "fuel": "95E10", "mismatch": False}
-MITTARI = {"is_odometer": True, "odometer": 153100, "unit": "km"}
+TYHJA = {"kind": "other", "date": None, "quantity": None, "unit": None, "price_per_unit": None, "total": None,
+         "currency": None, "fuel": None, "mismatch": False, "odometer": None, "odometer_unit": None}
+PUMPPU = {**TYHJA, "kind": "pump", "quantity": 45.6, "unit": "l", "price_per_unit": 1.859, "total": 84.77, "fuel": "95E10"}
+MITTARI = {**TYHJA, "kind": "odometer", "odometer": 153100, "odometer_unit": "km"}
 EDELLINEN_KM = tiedot.talli()[0]["fuels"][-1]["km"]  # 152400
-LUETTELO_ILMAN_MITTARIA = {**PLUS, "features": ["ai.receipt", "ai.odometer", "ai.servicebook"]}  # palvelin ennen ai.pump-migraatiota
 
 
 @pytest.fixture(scope="module")
@@ -26,9 +26,9 @@ def kuva(tmp_path_factory):
     return p
 
 
-def avaa_plus(browser, base, reitti="fuel/tst1", oikeus=PLUS, tekoaly="1", **k):
+def avaa_plus(browser, base, reitti="fuel/tst1", tekoaly="1", **k):
     s = avaa(browser, base, reitti, autot=tiedot.talli(), kello=KELLO, extra={"ajoura-tekoaly": tekoaly}, **k)
-    return s, palvelu(s, oikeus=oikeus)
+    return s, palvelu(s, oikeus=PLUS)
 
 
 def ikkuna(s):
@@ -44,32 +44,20 @@ def kentat(pg):
     return {n: pg.input_value(f"#quickfuel-form [name={n}]") for n in ("km", "qty", "ppu", "cost", "date")}
 
 
-@pytest.mark.parametrize("reitti,oikeus,tekoaly,pumppu,mittaristo", [
-    ("fuel/tst1", PLUS, "1", True, True),            # henkilöauto: molemmat
-    ("fuel/tst2", PLUS, "1", False, True),           # sähköauto: ei tankkausmittaria
-    ("fuel/tst3", PLUS, "1", True, False),           # vene (tunnit): ei kilometrimittaria
-    ("fuel/tst1", LUETTELO_ILMAN_MITTARIA, "1", False, True),  # palvelin ei vielä salli ai.pump
-    ("fuel/tst1", PLUS, "0", False, False),          # tekoäly pois: ei kumpaakaan
-])
-def test_painikkeet_nakyvat_vain_kun_sopii(browser, base, reitti, oikeus, tekoaly, pumppu, mittaristo):
-    s, _ = avaa_plus(browser, base, reitti, oikeus, tekoaly)
-    try:
-        ikkuna(s)
-        assert (s.page.locator("[data-ai-pump]").count() == 1) is pumppu, "tankkausmittari"
-        assert (s.page.locator("[data-ai-odo]").count() == 1) is mittaristo, "mittaristo"
-        assert not s.virheet, s.virheet
-    finally:
-        s.sulje()
+def laheta(s, tila, vastaus, kuva, status=200):
+    tila["ai_vastaus"], tila["ai_status"] = vastaus, status
+    s.page.set_input_files("[data-ai-file]", str(kuva))
 
 
-def test_painikkeet_eivat_nay_muokatessa(browser, base):
+def test_vain_yksi_painike(browser, base):
+    """Kuitille, tankkausmittarille ja mittaristolle ei ole omia painikkeita: yksi painike ja yksi tiedostokenttä."""
     s, _ = avaa_plus(browser, base)
     try:
         ikkuna(s)
-        s.page.keyboard.press("Escape")
-        s.page.locator("[data-fl-edit]").first.click()
-        ikkuna_valmis(s.page)
-        assert s.page.locator("[data-ai-pump], [data-ai-odo], [data-ai-scan]").count() == 0
+        assert s.page.locator(".sf-ai-btn").count() == 1 and s.page.locator("[data-ai-file]").count() == 1
+        assert "Täytä kuvasta" in s.page.inner_text(".sf-ai-btn")
+        assert "Kuitti, tankkausmittari tai mittaristo" in s.page.inner_text(".sf-ai-btn")
+        assert not s.virheet, s.virheet
     finally:
         s.sulje()
 
@@ -77,12 +65,11 @@ def test_painikkeet_eivat_nay_muokatessa(browser, base):
 def test_tankkausmittari_esitayttaa_lomakkeen(browser, base, kuva):
     s, tila = avaa_plus(browser, base)
     try:
-        tila["ai_vastaus"] = PUMPPU
         pg = s.page
-        ennen, talli = None, s.talli()
+        talli = s.talli()
         ikkuna(s)
         ennen = kentat(pg)
-        pg.set_input_files("[data-ai-file-pump]", str(kuva))
+        laheta(s, tila, PUMPPU, kuva)
         viesti(pg, "Tarkista ne")
         k = kentat(pg)
         assert k["qty"] == "45,60" and k["cost"] == "84,77"
@@ -90,13 +77,12 @@ def test_tankkausmittari_esitayttaa_lomakkeen(browser, base, kuva):
         assert k["date"] == ennen["date"] and k["km"] == ennen["km"], "mittari ei saa muuttaa päivää eikä kilometrejä"
         assert "tankkausmittarista" in pg.inner_text(".sf-ai-note")
         assert pg.evaluate("document.activeElement.name") == "km"
-        # Kuva lähti pienennettynä JPEG:nä, vain omaan ominaisuuteensa; mitään ei tallennettu.
-        assert tila["ai"] == ["ai.pump"]
+        # Kuva lähti pienennettynä JPEG:nä, vain yhteen ominaisuuteen; mitään ei tallennettu.
+        assert tila["ai"] == ["ai.receipt"]
         assert tila["ai_pyynnot"][0]["tyyppi"] == "image/jpeg"
         assert 0 < tila["ai_pyynnot"][0]["koko"] < kuva.stat().st_size
         assert s.talli() == talli
-        # Painikkeet ovat taas käytössä.
-        assert not pg.locator("[data-ai-scan], [data-ai-pump], [data-ai-odo]").evaluate_all("els => els.some(e => e.disabled)")
+        assert not pg.locator("[data-ai-scan]").is_disabled()
         # Käyttäjä tallentaa itse.
         pg.fill("#quickfuel-form [name=km]", str(EDELLINEN_KM + 600))
         pg.click("#quickfuel-form [type=submit]")
@@ -110,24 +96,23 @@ def test_tankkausmittari_esitayttaa_lomakkeen(browser, base, kuva):
 
 @pytest.mark.parametrize("tapaus,vastaus,status,teksti,taytetty", [
     ("ristiriita", {**PUMPPU, "mismatch": True}, 200, "eivät täsmää keskenään", []),
-    ("ei-mittari", {**PUMPPU, "is_pump": False}, 200, "ei löytynyt tankkausmittarin lukemia", []),
     ("yksikko", {**PUMPPU, "unit": "kWh"}, 200, "yksikkö ei vastaa", ["cost"]),
     ("valuutta", {**PUMPPU, "currency": "SEK"}, 200, "ei ole euroissa", ["qty"]),
     ("tyhja", {**PUMPPU, "quantity": None, "price_per_unit": None, "total": None}, 200, "ei saatu määrää eikä hintaa", []),
+    ("ei-tunnistettu", TYHJA, 200, "ei löytynyt kuittia, tankkausmittaria eikä mittaristoa", []),
     ("kiintio", {}, 429, "Tämän kuun tunnistukset on käytetty", []),
-    ("palvelin", {}, 502, "Tankkausmittaria ei voitu lukea nyt", []),
+    ("palvelin", {}, 502, "Kuvaa ei voitu lukea nyt", []),
 ])
 def test_tankkausmittari_virheet_ja_poikkeukset(browser, base, kuva, tapaus, vastaus, status, teksti, taytetty):
     s, tila = avaa_plus(browser, base)
     try:
-        tila["ai_vastaus"], tila["ai_status"] = vastaus, status
         ikkuna(s)
-        s.page.set_input_files("[data-ai-file-pump]", str(kuva))
+        laheta(s, tila, vastaus, kuva, status)
         viesti(s.page, teksti)
         for n in ("qty", "ppu", "cost"):
             arvo = s.page.input_value(f"#quickfuel-form [name={n}]")
             assert bool(arvo) == (n in taytetty), (tapaus, n, arvo)
-        assert not s.page.locator("[data-ai-pump]").is_disabled()
+        assert not s.page.locator("[data-ai-scan]").is_disabled()
     finally:
         s.sulje()
 
@@ -135,17 +120,16 @@ def test_tankkausmittari_virheet_ja_poikkeukset(browser, base, kuva, tapaus, vas
 def test_mittaristo_taytaa_kilometrit(browser, base, kuva):
     s, tila = avaa_plus(browser, base)
     try:
-        tila["ai_vastaus"] = MITTARI
         pg = s.page
         talli = s.talli()
         ikkuna(s)
-        pg.set_input_files("[data-ai-file-odo]", str(kuva))
-        viesti(pg, "Kilometrilukema luettu")
+        laheta(s, tila, MITTARI, kuva)
+        viesti(pg, "Kilometrilukema luettu mittaristosta")
         assert pg.input_value("#quickfuel-form [name=km]") == "153100"
         # Syötetapahtuma lähti: "edellisestä tankkauksesta" -ero päivittyi (153100 - 152400 = 700).
         assert "700" in pg.inner_text(".sf-gap")
         assert pg.evaluate("document.activeElement.name") == "km"
-        assert tila["ai"] == ["ai.odometer"]
+        assert tila["ai"] == ["ai.receipt"]
         assert tila["ai_pyynnot"][0]["tyyppi"] == "image/jpeg"
         assert 0 < tila["ai_pyynnot"][0]["koko"] < kuva.stat().st_size
         assert s.talli() == talli, "mittaristo ei saa tallentaa mitään"
@@ -156,64 +140,68 @@ def test_mittaristo_taytaa_kilometrit(browser, base, kuva):
         s.sulje()
 
 
-@pytest.mark.parametrize("tapaus,vastaus,status,teksti,km", [
-    ("pienempi", {**MITTARI, "odometer": 150000}, 200, "pienempi kuin edellisessä tankkauksessa", "150000"),
-    ("mailit", {**MITTARI, "unit": "mi"}, 200, "näyttää maileja", str(EDELLINEN_KM)),
-    ("ei-mittaristo", {"is_odometer": False, "odometer": None, "unit": None}, 200, "ei saatu luettua kokonaiskilometrejä", str(EDELLINEN_KM)),
-    ("tyhja", {**MITTARI, "odometer": None}, 200, "ei saatu luettua kokonaiskilometrejä", str(EDELLINEN_KM)),
-    ("kiintio", {}, 429, "Tämän kuun tunnistukset on käytetty", str(EDELLINEN_KM)),
-    ("palvelin", {}, 502, "Mittaristoa ei voitu lukea nyt", str(EDELLINEN_KM)),
+@pytest.mark.parametrize("tapaus,vastaus,teksti,km", [
+    ("pienempi", {**MITTARI, "odometer": 150000}, "pienempi kuin edellisessä tankkauksessa", "150000"),
+    ("mailit", {**MITTARI, "odometer_unit": "mi"}, "näyttää maileja", str(EDELLINEN_KM)),
+    ("tyhja", {**MITTARI, "odometer": None}, "ei saatu luettua kokonaiskilometrejä", str(EDELLINEN_KM)),
 ])
-def test_mittaristo_virheet_ja_poikkeukset(browser, base, kuva, tapaus, vastaus, status, teksti, km):
+def test_mittaristo_poikkeukset(browser, base, kuva, tapaus, vastaus, teksti, km):
     s, tila = avaa_plus(browser, base)
     try:
-        tila["ai_vastaus"], tila["ai_status"] = vastaus, status
         ikkuna(s)
         ennen = s.page.input_value("#quickfuel-form [name=km]")
-        s.page.set_input_files("[data-ai-file-odo]", str(kuva))
+        laheta(s, tila, vastaus, kuva)
         viesti(s.page, teksti)
         # Ilman kelvollista lukemaa kilometrikenttä pysyy ennallaan; "pienempi" täytetään ja varoitetaan.
-        odotettu = km if tapaus == "pienempi" else ennen
-        assert s.page.input_value("#quickfuel-form [name=km]") == odotettu, tapaus
-        assert not s.page.locator("[data-ai-odo]").is_disabled()
+        assert s.page.input_value("#quickfuel-form [name=km]") == (km if tapaus == "pienempi" else ennen), tapaus
+        assert not s.page.locator("[data-ai-scan]").is_disabled()
     finally:
         s.sulje()
 
 
-def test_tekoaly_pois_ei_laheta_mitaan(browser, base):
-    """Tekoäly pois: ei painikkeita, ja suora tunnistuskutsu torjutaan ennen verkkoa (oikeus tarkistetaan ensin)."""
+def test_tuntimittarille_ei_taytetä_kilometreja(browser, base, kuva):
+    """Veneen mittari on tuntimittari: mittaristokuvan kilometrit eivät mene tuntikenttään."""
+    s, tila = avaa_plus(browser, base, "fuel/tst3")
+    try:
+        ikkuna(s)
+        ennen = s.page.input_value("#quickfuel-form [name=km]")
+        laheta(s, tila, MITTARI, kuva)
+        viesti(s.page, "tuntimittari")
+        assert s.page.input_value("#quickfuel-form [name=km]") == ennen
+    finally:
+        s.sulje()
+
+
+def test_painike_vain_kun_tekoaly_paalla(browser, base):
     s, tila = avaa_plus(browser, base, tekoaly="0")
     try:
-        tila["ai_vastaus"] = MITTARI
-        for f in ("ai.pump", "ai.odometer"):
-            r = s.page.evaluate("f => AjouraAccess.recognize(f, new Blob(['x'], {type: 'image/jpeg'})).then(() => 'ok', e => e.reason)", f)
-            assert r == "off", (f, r)
+        ikkuna(s)
+        assert s.page.locator("[data-ai-scan]").count() == 0
+        # Suora tunnistuskutsu torjutaan ennen verkkoa (oikeus tarkistetaan ensin).
+        r = s.page.evaluate("AjouraAccess.recognize('ai.receipt', new Blob(['x'], {type: 'image/jpeg'})).then(() => 'ok', e => e.reason)")
+        assert r == "off"
         s.page.wait_for_timeout(200)
         assert tila["ai"] == []
     finally:
         s.sulje()
 
 
-@pytest.mark.parametrize("kieli,pumppu,mittaristo,valmis", [
-    ("fi", "Tankkausmittari", "Mittaristo", "Tarkista ne"),
-    ("en", "Fuel pump", "Dashboard", "Check them"),
-    ("sv", "Bränslepump", "Instrumentpanel", "Kontrollera dem"),
+@pytest.mark.parametrize("kieli,painike,valmis", [
+    ("fi", "Täytä kuvasta", "Tarkista ne"),
+    ("en", "Fill from photo", "Check them"),
+    ("sv", "Fyll i från bild", "Kontrollera dem"),
 ])
-def test_kolme_kielta_ja_kapea_nayttö(browser, base, kuva, kieli, pumppu, mittaristo, valmis):
+def test_kolme_kielta_ja_kapea_naytto(browser, base, kuva, kieli, painike, valmis):
     s = avaa(browser, base, "fuel/tst1", autot=tiedot.talli(), kello=KELLO, kieli=kieli, leveys=320, korkeus=640,
              extra={"ajoura-tekoaly": "1"})
     try:
         tila = palvelu(s)
-        tila["ai_vastaus"] = PUMPPU
         ikkuna(s)
-        teksti = s.page.inner_text(".sf-ai")
-        assert pumppu in teksti and mittaristo in teksti, teksti
-        # Kapealla näytöllä painikkeet mahtuvat arkin sisään ja ovat vähintään 44 px korkeita.
-        laatikot = s.page.evaluate("""() => { const sh = document.querySelector('.sheet').getBoundingClientRect();
-            return [...document.querySelectorAll('.sf-ai-btn')].map(b => { const r = b.getBoundingClientRect();
-              return { h: r.height, ok: r.left >= sh.left - 0.5 && r.right <= sh.right + 0.5 }; }); }""")
-        assert len(laatikot) == 3 and all(x["ok"] and x["h"] >= 44 for x in laatikot), laatikot
-        s.page.set_input_files("[data-ai-file-pump]", str(kuva))
+        assert painike in s.page.inner_text(".sf-ai")
+        r = s.page.evaluate("() => { const sh = document.querySelector('.sheet').getBoundingClientRect(), b = document.querySelector('.sf-ai-btn').getBoundingClientRect();"
+                            " return { h: b.height, ok: b.left >= sh.left - 0.5 && b.right <= sh.right + 0.5 }; }")
+        assert r["ok"] and r["h"] >= 44, r
+        laheta(s, tila, PUMPPU, kuva)
         viesti(s.page, valmis)
         assert s.page.evaluate("document.querySelector('.sheet').scrollWidth <= document.querySelector('.sheet').clientWidth")
         assert not s.virheet, s.virheet
