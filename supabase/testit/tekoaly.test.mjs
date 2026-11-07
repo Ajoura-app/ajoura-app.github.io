@@ -83,8 +83,11 @@ test('virheelliset pyynnöt hylätään ennen kiintiötä', async () => {
   assert.match(o.headers.get('access-control-allow-headers'), /x-ajoura-feature/);
 });
 
-// ---- Kuittitunnistus (v0.113): keksitty Claude-asiakas, oikeaan Anthropiciin ei oteta yhteyttä. ----
-const KUITTI = { is_receipt: true, date: '2026-11-03', quantity: 41.27, unit: 'l', price_per_unit: 1.889, total: 77.96, currency: 'EUR', fuel: 'Neste Futura 95E10' };
+// ---- Täytä kuvasta: kuitti (0.113), tankkausmittari ja mittaristo (1.19). Keksitty Claude-asiakas, oikeaan Anthropiciin ei oteta yhteyttä. ----
+const TYHJA = { kind: 'other', date: null, quantity: null, unit: null, price_per_unit: null, total: null, currency: null, fuel: null, mismatch: false, odometer: null, odometer_unit: null };
+const KUITTI = { ...TYHJA, kind: 'receipt', date: '2026-11-03', quantity: 41.27, unit: 'l', price_per_unit: 1.889, total: 77.96, currency: 'EUR', fuel: 'Neste Futura 95E10' };
+const PUMPPU = { ...TYHJA, kind: 'pump', quantity: 45.6, unit: 'l', price_per_unit: 1.859, total: 84.77, fuel: '95E10' };
+const MITTARI = { ...TYHJA, kind: 'odometer', odometer: 218450, odometer_unit: 'km' };
 function fakeClaude(vastaus, stop = 'end_turn') {
   const kutsut = [];
   const make = async (apiKey) => ({ messages: { create: async (body) => {
@@ -95,13 +98,16 @@ function fakeClaude(vastaus, stop = 'end_turn') {
   return { make, kutsut };
 }
 const AVAIMELLA = { ...ENV, ANTHROPIC_API_KEY: 'sk-ant-testi' };
+const kutsu = (vastaus, plan = { 'u-plus': 'plus' }, feature = 'ai.receipt') => {
+  const s = fakeSupabase({ plan }), c = fakeClaude(vastaus);
+  return { s, c, vastaa: (body) => createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': feature }, body)) };
+};
 
-test('kuitti: Haiku 5.5, kuva base64:nä, rakenteinen vastaus; tulos tarkistettuna ja kiintiö kuluu', async () => {
-  const s = fakeSupabase({ plan: { 'u-plus': 'plus' } }), c = fakeClaude(KUITTI);
-  const h = createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make);
-  const r = await h(pyynto({ authorization: 'Bearer tunniste-plus' }, new Uint8Array([255, 216, 255, 1, 2])));
+test('kuva: Haiku 5.5, kuva base64:nä, rakenteinen vastaus; tulos tarkistettuna ja kiintiö kuluu', async () => {
+  const { s, c, vastaa } = kutsu({ ...KUITTI, odometer: 5, odometer_unit: 'km', mismatch: true });
+  const r = await vastaa(new Uint8Array([255, 216, 255, 1, 2]));
   assert.equal(r.status, 200);
-  assert.deepEqual(await r.json(), KUITTI);
+  assert.deepEqual(await r.json(), KUITTI, 'kuitilla ei saa olla mittarin kenttiä eikä mismatchia');
   assert.equal(s.used['u-plus'], 1);
   const { apiKey, body } = c.kutsut[0];
   assert.equal(apiKey, 'sk-ant-testi');
@@ -109,19 +115,61 @@ test('kuitti: Haiku 5.5, kuva base64:nä, rakenteinen vastaus; tulos tarkistettu
   assert.equal(body.output_config.effort, 'low');
   assert.equal(body.output_config.format.type, 'json_schema');
   assert.equal(body.output_config.format.schema.additionalProperties, false);
+  assert.deepEqual(body.output_config.format.schema.properties.kind.enum, ['receipt', 'pump', 'odometer', 'other']);
   assert.ok(!('temperature' in body) && !('thinking' in body), 'Haiku 5.5: ei näytteistysparametreja eikä pois kytkettyä ajattelua');
+  assert.match(body.messages[0].content[1].text, /Never use the trip meter/);
   const kuva = body.messages[0].content[0];
   assert.deepEqual(kuva, { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: Buffer.from([255, 216, 255, 1, 2]).toString('base64') } });
 });
 
-test('kuitti: tekoälyn vastaus ei ole luotettava syöte', async () => {
-  const s = fakeSupabase({ plan: { 'u-plus': 'plus' } });
-  const c = fakeClaude({ is_receipt: true, date: '2999-01-01', quantity: -5, unit: 'gallon', price_per_unit: 'x', total: 1e9, currency: 'euro', fuel: '<img src=x onerror=alert(1)>' });
-  const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus' }));
-  assert.deepEqual(await r.json(), { is_receipt: true, date: null, quantity: null, unit: null, price_per_unit: null, total: null, currency: null, fuel: null });
+test('kuva: tekoälyn vastaus ei ole luotettava syöte', async () => {
+  const r = await kutsu({ kind: 'receipt', date: '2999-01-01', quantity: -5, unit: 'gallon', price_per_unit: 'x', total: 1e9, currency: 'euro', fuel: '<img src=x onerror=alert(1)>', odometer: 123456, odometer_unit: 'km' }).vastaa();
+  assert.deepEqual(await r.json(), { ...TYHJA, kind: 'receipt' });
+  // Tuntematon laji = other, ja silloin kaikki muu tyhjenee.
+  assert.deepEqual(await (await kutsu({ ...KUITTI, kind: 'salakuljetus' }).vastaa()).json(), TYHJA);
+  assert.deepEqual(await (await kutsu({ ...KUITTI, kind: 'other' }).vastaa()).json(), TYHJA);
 });
 
-test('kuitti: kieltäytyminen, katkennut tai rikkinäinen vastaus ja tekoälyn virhe: 502, kiintiö ei kulu', async () => {
+test('tankkausmittari: ei päivää, tulos tarkistettuna', async () => {
+  const r = await kutsu({ ...PUMPPU, date: '2026-11-03', odometer: 99 }).vastaa();
+  assert.deepEqual(await r.json(), PUMPPU);
+});
+
+test('tankkausmittari: litrahinta × litrat ei vastaa summaa → mismatch (väärin luettu numero)', async () => {
+  for (const [nimi, v] of [['hinta', { ...PUMPPU, price_per_unit: 1.689 }], ['summa', { ...PUMPPU, total: 74.77 }], ['määrä', { ...PUMPPU, quantity: 54.6 }]]) {
+    assert.equal((await (await kutsu(v).vastaa()).json()).mismatch, true, nimi);
+  }
+  // Pyöristysero (litrahinta kolmella desimaalilla, summa sentteinä) ei ole virhe.
+  for (const v of [{ ...PUMPPU, total: 84.8 }, { ...PUMPPU, quantity: 45.61, total: 84.79 }]) {
+    assert.equal((await (await kutsu(v).vastaa()).json()).mismatch, false, JSON.stringify(v));
+  }
+  // Puuttuva luku ei ole ristiriita: sovellus laskee kolmannen kahdesta.
+  assert.equal((await (await kutsu({ ...PUMPPU, total: null }).vastaa()).json()).mismatch, false);
+  // Kuitilla ristiriitaa ei tarkisteta (summaan voi sisältyä muutakin).
+  assert.equal((await (await kutsu({ ...KUITTI, total: 99 }).vastaa()).json()).mismatch, false);
+});
+
+test('mittaristo: kokonaiskilometrit kokonaislukuna, muut kentät tyhjiä, kiintiö kuluu', async () => {
+  const { s, vastaa } = kutsu({ ...MITTARI, odometer: 218450.7, quantity: 5, total: 7 });
+  const r = await vastaa();
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { ...MITTARI, odometer: 218451 });
+  assert.equal(s.used['u-plus'], 1);
+});
+
+test('mittaristo: mahdottomat arvot muuttuvat tyhjiksi, mailit säilyvät mailleina', async () => {
+  for (const [nimi, v, odotettu] of [
+    ['negatiivinen', { odometer: -5, odometer_unit: 'km' }, { odometer: null, odometer_unit: 'km' }],
+    ['nolla', { odometer: 0, odometer_unit: 'km' }, { odometer: null, odometer_unit: 'km' }],
+    ['liian iso', { odometer: 9e7, odometer_unit: 'km' }, { odometer: null, odometer_unit: 'km' }],
+    ['teksti', { odometer: '123456', odometer_unit: 'furlong' }, { odometer: null, odometer_unit: null }],
+    ['mailit', { odometer: 54321, odometer_unit: 'mi' }, { odometer: 54321, odometer_unit: 'mi' }],
+  ]) {
+    assert.deepEqual(await (await kutsu({ ...MITTARI, ...v }).vastaa()).json(), { ...MITTARI, ...odotettu }, nimi);
+  }
+});
+
+test('kuva: kieltäytyminen, katkennut tai rikkinäinen vastaus ja tekoälyn virhe: 502, kiintiö ei kulu', async () => {
   for (const [nimi, c] of [['refusal', fakeClaude(KUITTI, 'refusal')], ['max_tokens', fakeClaude(KUITTI, 'max_tokens')],
     ['rikki', fakeClaude('{ei json')], ['virhe', fakeClaude(Object.assign(new Error('401'), { status: 401 }))]]) {
     const s = fakeSupabase({ plan: { 'u-plus': 'plus' } });
@@ -131,12 +179,14 @@ test('kuitti: kieltäytyminen, katkennut tai rikkinäinen vastaus ja tekoälyn v
   }
 });
 
-test('mittari ja huoltokirja eivät ole vielä valmiita: 501 ennen kiintiötä ja tekoälyä', async () => {
+test('mittari-ominaisuus (ai.odometer) ja huoltokirja eivät ole vielä valmiita: 501 ennen kiintiötä ja tekoälyä; ai.pump ei ole ominaisuus', async () => {
   const s = fakeSupabase({ plan: { 'u-plus': 'plus' } }), c = fakeClaude(KUITTI);
   for (const f of ['ai.odometer', 'ai.servicebook']) {
     const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': f }));
     assert.equal(r.status, 501, f);
   }
+  const r = await createHandler(k => AVAIMELLA[k] || '', s.fetchImpl, c.make)(pyynto({ authorization: 'Bearer tunniste-plus', 'x-ajoura-feature': 'ai.pump' }));
+  assert.equal(r.status, 400);
   assert.equal(c.kutsut.length, 0);
   assert.ok(!s.calls.some(x => x.url.includes('/rpc/')));
 });

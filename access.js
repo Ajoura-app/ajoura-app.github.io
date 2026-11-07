@@ -21,7 +21,7 @@
 //    plan: 'free' | 'plus'; quota.ai.limit null = ei rajaa. Virhe tai puuttuva tieto → Free.
 // 2. POST /functions/v1/tekoaly, runko = kuva, otsakkeet Authorization ja X-Ajoura-Feature (esim. ai.receipt).
 //    Vastaukset: 200 tulos (JSON), 401/402/403 ei oikeutta, 429 kiintiö täynnä, 503 tekoälyä ei ole otettu käyttöön.
-// Kirjautuminen (Google, sync.js) on kaikille avoin 0.116:sta. Testivaiheessa kirjautunut free saa tekoälyn (10/kk).
+// Kirjautuminen (Google, sync.js) on kaikille avoin 0.116:sta. Testivaiheessa kirjautunut free saa tekoälyn (30/kk).
 // Ilman kirjautumista sovellus ei ota yhteyttä palvelimeen lainkaan: oikeuksia ei kysytä eikä mitään lähetetä.
 (() => {
   // Supabase-projekti ja kirjautuminen tulevat sync.js:ltä (AjouraSync, ladataan ennen tätä): yksi istunto koko
@@ -30,13 +30,13 @@
   const SERVICE = S ? { key: S.apiKey, entitlements: S.base + '/rest/v1/rpc/get_entitlement', ai: S.base + '/functions/v1/tekoaly' } : { key: '', entitlements: '', ai: '' };
 
   // Paketit ja niiden ominaisuudet oletuksena. Palvelin kertoo kullekin käyttäjälle sallitut ominaisuudet
-  // (get_entitlement → features): testivaiheessa myös kirjautunut free saa tekoälyn (10/kk). Kun maksut tulevat,
+  // (get_entitlement → features): testivaiheessa myös kirjautunut free saa tekoälyn (30/kk). Kun maksut tulevat,
   // free-paketilta poistetaan tekoäly tietokannassa, eikä sovellukseen tarvita muutosta.
   const PLANS = { free: [], plus: ['ai.receipt', 'ai.odometer', 'ai.servicebook'] };
   // Ominaisuudet: pref = mikä käyttäjän oma valinta vaaditaan lisäksi, quota = mikä kuukausikiintiö kuluu.
   const FEATURES = {
-    'ai.receipt': { pref: 'ai', quota: 'ai' },     // tankkauskuitit
-    'ai.odometer': { pref: 'ai', quota: 'ai' },    // mittariston kilometrilukema
+    'ai.receipt': { pref: 'ai', quota: 'ai' },     // tankkausikkunan "Täytä kuvasta": kuitti, tankkausmittari tai mittaristo (tekoäly tunnistaa lajin)
+    'ai.odometer': { pref: 'ai', quota: 'ai' },    // varattu: mittarin luku muualla kuin tankkausikkunassa (ei vielä)
     'ai.servicebook': { pref: 'ai', quota: 'ai' }  // vanhan huoltokirjan merkinnät
   };
   const PREF = { ai: 'ajoura-tekoaly' };
