@@ -10,6 +10,15 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Kuunnellaan…": "Listening…",
+    // Vaihe 03: hahmot
+    "Avustajan hahmo": "Assistant character",
+    "Hahmo ja animaatiot ovat tämän laitteen asetuksia. Kaikilla hahmoilla on samat toiminnot.": "Character and animation choices apply to this device. All characters have the same features.",
+    "Hahmon animaatiot": "Character animations",
+    "Tarkistetaan tietoja…": "Checking details…",
+    "Kirjaus tallennettu.": "Entry saved.",
+    "Valinta toimii nyt, mutta sitä ei voitu tallentaa tälle laitteelle.": "Your choice applies now but could not be saved on this device.",
+
     // Vaihe 02: teemat
     "AI-first-teemat": "AI-first themes",
     "Aiemmat teemat": "Earlier themes",

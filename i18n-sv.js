@@ -3,6 +3,15 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Kuunnellaan…": "Lyssnar…",
+    // Vaihe 03: hahmot
+    "Avustajan hahmo": "Assistentens figur",
+    "Hahmo ja animaatiot ovat tämän laitteen asetuksia. Kaikilla hahmoilla on samat toiminnot.": "Figur och animationer gäller på den här enheten. Alla figurer har samma funktioner.",
+    "Hahmon animaatiot": "Figurens animationer",
+    "Tarkistetaan tietoja…": "Kontrollerar uppgifterna…",
+    "Kirjaus tallennettu.": "Posten har sparats.",
+    "Valinta toimii nyt, mutta sitä ei voitu tallentaa tälle laitteelle.": "Ditt val gäller nu men kunde inte sparas på den här enheten.",
+
     // Vaihe 02: teemat
     "AI-first-teemat": "AI-first-teman",
     "Aiemmat teemat": "Tidigare teman",

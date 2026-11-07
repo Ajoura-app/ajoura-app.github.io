@@ -28,3 +28,38 @@
 html.dark .secretary-card{box-shadow:none}
 @media(max-width:350px){.secretary-card{padding:14px}.secretary-intro{gap:10px}.secretary-intro img{flex-basis:64px;width:64px;height:64px}.secretary-intro p{font-size:13px}}
 @media print{.secretary-home{display:none}}
+
+/* Shared original avatar artwork: no cropping or scaling beyond its safe area. */
+.assistant-avatar{position:relative;display:inline-grid;place-items:center;flex:none;isolation:isolate;overflow:visible;width:88px;height:88px;aspect-ratio:1;border-radius:50%;color:var(--ink)}
+.assistant-avatar img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;aspect-ratio:1;transform:none}
+.avatar-small{width:56px;height:56px}
+.avatar-choice{width:64px;height:64px}
+.secretary-intro .assistant-avatar img{width:100%;height:100%}
+.avatar-badge{display:none;position:absolute;right:0;bottom:0;min-width:18px;min-height:18px;padding:1px 4px;border:1px solid var(--hairline);border-radius:50%;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font-size:12px;line-height:18px;text-align:center;font-weight:700}
+[data-avatar-state=listening] .avatar-badge:after{content:'…'}
+[data-avatar-state=checking] .avatar-badge:after{content:'…'}
+[data-avatar-state=success] .avatar-badge:after{content:'✓'}
+[data-avatar-state=attention] .avatar-badge:after{content:'!'}
+[data-avatar-state]:not([data-avatar-state=neutral]) .avatar-badge{display:block}
+[data-avatar-motion=on]:not([data-avatar-state=neutral]){animation:avatar-response .45s ease-out 1}
+@keyframes avatar-response{0%{outline:2px solid transparent;outline-offset:6px}50%{outline:2px solid var(--blue);outline-offset:2px}100%{outline:2px solid transparent;outline-offset:0}}
+.avatar-feedback{display:block;font-size:12px;line-height:1.5;color:var(--ink)}
+.avatar-feedback:empty{display:none}
+.avatar-shortcut{position:absolute;left:16px;bottom:calc(100% - 4px);display:grid;place-items:center;width:56px;height:56px;border-radius:50%;border:1px solid var(--hairline);background:var(--t-surface,var(--c-ffffff,#ffffff));pointer-events:auto;z-index:2}
+.avatar-shortcut .assistant-avatar{width:48px;height:48px}
+.avatar-shortcut:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.screen-content:has(+.tab-dock>.avatar-shortcut){padding-bottom:84px}
+.avatar-settings p{font-size:13px;line-height:1.6}
+.avatar-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.avatar-choices button{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;min-height:110px;border:1px solid var(--hairline);border-radius:16px;padding:10px 4px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:12px;overflow-wrap:anywhere}
+.avatar-choices button[aria-pressed=true]{outline:2px solid var(--blue);outline-offset:-2px;font-weight:700}
+.avatar-motion{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;color:var(--ink)}
+.avatar-motion input{width:20px;height:20px;accent-color:var(--blue)}
+.avatar-sheet{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:14px;color:var(--ink)}
+.avatar-sheet .avatar-feedback{margin-left:auto}
+@media(max-width:350px){.secretary-intro .assistant-avatar{width:64px;height:64px}.secretary-intro .assistant-avatar img{flex-basis:auto;width:100%;height:100%}}
+@media(prefers-reduced-motion:reduce){.assistant-avatar{animation:none!important}}
+@media print{.avatar-shortcut,.avatar-settings,.avatar-sheet{display:none!important}}
+/* Give the two floating controls their own opaque footer area, so neither covers form controls. */
+.tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--paper))}
+.tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
