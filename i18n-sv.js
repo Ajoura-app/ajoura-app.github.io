@@ -3,6 +3,25 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Autosihteerin etusivu
+    "Autosihteeri": "Fordonsassistent",
+    "AUTOSIHTEERI": "FORDONSASSISTENT",
+    "Vaihda ajoneuvoa pyyhkäisemällä": "Svep för att byta fordon",
+    "Autan tankkauksen kirjaamisessa. Tarkistat tiedot ennen tallennusta.": "Jag hjälper dig att registrera en tankning. Du granskar uppgifterna innan du sparar.",
+    "Pidetään ajoneuvosi tiedot ajan tasalla. Voit kirjata tiedot käsin.": "Håll fordonets uppgifter uppdaterade. Du kan fylla i dem manuellt.",
+    "Puhu tankkauksesta": "Diktera en tankning",
+    "Kuvaa kuitti tai mittari": "Fota kvitto eller mätare",
+    "Lisää käsin": "Lägg till manuellt",
+    "Tämän ajoneuvon tehtävät": "Uppgifter för detta fordon",
+    "Huoltohistoria auttaa seuraamaan oman huoltovälin toteutumista.": "Servicehistoriken hjälper dig att följa ditt eget serviceintervall.",
+    "Tarkista huoltoväli": "Kontrollera serviceintervall",
+    "Muistutus perustuu tallennettuihin merkintöihin ja omaan huoltoväliisi.": "Påminnelsen bygger på sparade poster och ditt eget serviceintervall.",
+    "Kirjaa ensimmäinen tankkaus tai lataus": "Registrera första tankningen eller laddningen",
+    "Kulutuksen seuranta alkaa omista kirjauksistasi.": "Förbrukningsuppföljningen börjar med dina egna poster.",
+    "Tarkastele ajoneuvon historiaa": "Visa fordonets historik",
+    "Näet tallennetut huollot ja merkinnät päiväkirjassa.": "Se sparade servicetillfällen och poster i dagboken.",
+    "Tallennetut merkinnät": "Sparade poster",
+
     // Quick fill-up with price per litre 2026-10-19 (Niklas)
     'Litrahinta (€/l)': 'Literpris (€/l)',
     'Hinta (€/kWh)': 'Pris (€/kWh)',

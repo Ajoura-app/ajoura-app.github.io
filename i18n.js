@@ -10,6 +10,25 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Autosihteerin etusivu
+    "Autosihteeri": "Vehicle assistant",
+    "AUTOSIHTEERI": "VEHICLE ASSISTANT",
+    "Vaihda ajoneuvoa pyyhkäisemällä": "Swipe to change vehicle",
+    "Autan tankkauksen kirjaamisessa. Tarkistat tiedot ennen tallennusta.": "I can help log a fill-up. You review the details before saving.",
+    "Pidetään ajoneuvosi tiedot ajan tasalla. Voit kirjata tiedot käsin.": "Keep your vehicle records up to date. You can enter details by hand.",
+    "Puhu tankkauksesta": "Dictate a fill-up",
+    "Kuvaa kuitti tai mittari": "Scan receipt or meter",
+    "Lisää käsin": "Add by hand",
+    "Tämän ajoneuvon tehtävät": "Tasks for this vehicle",
+    "Huoltohistoria auttaa seuraamaan oman huoltovälin toteutumista.": "Service records help track your own service interval.",
+    "Tarkista huoltoväli": "Check service interval",
+    "Muistutus perustuu tallennettuihin merkintöihin ja omaan huoltoväliisi.": "The reminder uses saved records and your own service interval.",
+    "Kirjaa ensimmäinen tankkaus tai lataus": "Log your first fill-up or charge",
+    "Kulutuksen seuranta alkaa omista kirjauksistasi.": "Consumption tracking starts with your own records.",
+    "Tarkastele ajoneuvon historiaa": "View vehicle history",
+    "Näet tallennetut huollot ja merkinnät päiväkirjassa.": "View saved services and entries in the logbook.",
+    "Tallennetut merkinnät": "Saved entries",
+
     // Quick fill-up with price per litre 2026-10-19 (Niklas)
     'Litrahinta (€/l)': 'Price per litre (€/l)',
     'Hinta (€/kWh)': 'Price (€/kWh)',
