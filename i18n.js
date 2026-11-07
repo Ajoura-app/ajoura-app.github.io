@@ -10,6 +10,14 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Vaihe 02: teemat
+    "AI-first-teemat": "AI-first themes",
+    "Aiemmat teemat": "Earlier themes",
+    "Tumma talli ja turkoosi korostus.": "A dark garage with turquoise accents.",
+    "Syvä yönsininen ja laventeli.": "Deep midnight blue and lavender.",
+    "Vaalea, rauhallinen ja pohjoismainen.": "Light, calm and Nordic.",
+    "Metsänvihreä ja lämmin kulta.": "Forest green and warm gold.",
+
     // Autosihteerin etusivu
     "Autosihteeri": "Vehicle assistant",
     "AUTOSIHTEERI": "VEHICLE ASSISTANT",

@@ -3,6 +3,14 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Vaihe 02: teemat
+    "AI-first-teemat": "AI-first-teman",
+    "Aiemmat teemat": "Tidigare teman",
+    "Tumma talli ja turkoosi korostus.": "Ett mörkt garage med turkosa accenter.",
+    "Syvä yönsininen ja laventeli.": "Djup midnattsblå och lavendel.",
+    "Vaalea, rauhallinen ja pohjoismainen.": "Ljust, lugnt och nordiskt.",
+    "Metsänvihreä ja lämmin kulta.": "Skogsgrönt och varmt guld.",
+
     // Autosihteerin etusivu
     "Autosihteeri": "Fordonsassistent",
     "AUTOSIHTEERI": "FORDONSASSISTENT",
