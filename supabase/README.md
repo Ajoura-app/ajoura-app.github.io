@@ -27,8 +27,11 @@ Julkaisun tila: Supabase → Branches → main.
 
 Funktio `tekoaly` lukee Anthropicin API-avaimen Supabasen salaisuudesta `ANTHROPIC_API_KEY` (Edge Functions → Secrets).
 Avainta ei koskaan laiteta tähän repoon eikä sovellukseen. Ilman avainta funktio vastaa 503 eikä mitään lähetetä.
-Aseta Anthropicin konsolissa kuukausittainen käyttöraja (Settings → Limits), jotta kulu ei voi yllättää. Arvio:
-noin 0,001 $ / kuitti (Haiku 5.5). Toteutettu: kuitti. Mittari ja huoltokirja vastaavat 501, kunnes ne tehdään.
+Aseta Anthropicin konsolissa kuukausittainen käyttöraja (Billing → Spend limits), jotta kulu ei voi yllättää. Arvio:
+noin 0,0004 $ / kuva (Haiku 5.5, oma arvio; vanha 0,001 $ on varma yläraja). Toteutettu: kuitti (`ai.receipt`), tankkausmittari
+(`ai.pump`) ja auton mittaristo (`ai.odometer`), kaikki yhteisellä kuukausikiintiöllä. Huoltokirja (`ai.servicebook`) vastaa 501,
+kunnes se tehdään. Uusi tunnistustyyppi: lisää nimi funktion `SPECS`-listaan, `access.js`:n `FEATURES`-listaan ja uudella
+migraatiolla `get_entitlement`-funktion palauttamaan listaan.
 
 ## Kirjautuminen ja testivaihe (0.116)
 

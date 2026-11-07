@@ -4,7 +4,7 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Paluu vanhaan versioon:** kirjoita AJOURA-projektiin esimerkiksi *"palauta 0.09"*. Claude tallentaa ensin nykyisen tilan omaksi versiokseen (mitään ei katoa), palauttaa sovelluksen ja sivun valittuun versioon ja julkaisee sen. Käyttäjien autot ja merkinnät eivät muutu, koska ne ovat käyttäjien laitteilla ja tilillä, eivät sovelluksen koodissa.
 
-**Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …) Isompi hyppy (esim. 1.0 virallinen julkaisu) tehdään vain pyynnöstä.
+**Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Isompi hyppy (esim. 2.0) tehdään vain pyynnöstä.
 
 **Missä kopiot ovat:**
 - GitHubissa haara `backup/VVVV-KK-PP-vX.XX` (repo Ajoura-app/ajoura-app.github.io; 19.10.2026 asti MestariHannes/Ajoura). Tämä on varsinainen palautuspiste.
