@@ -7,9 +7,9 @@
 <meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-108">
-<script src="i18n-sv.js?v=ak-108" defer></script>
-<script src="i18n.js?v=ak-108" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-109">
+<script src="i18n-sv.js?v=ak-109" defer></script>
+<script src="i18n.js?v=ak-109" defer></script>
 </head>
 <body>
 <main class="legal">
@@ -51,12 +51,14 @@
 <p><span>Tekoälyavustaja toimii vain kirjautuneena (testivaiheessa maksutta, myöhemmin Ajoura Plus -tilauksella) ja kun olet itse kytkenyt sen päälle (Asetukset → Uudet ominaisuudet).</span> Kun valitset tankkausikkunassa Täytä kuvasta, valitsemasi kuva pienennetään laitteessa ja lähetetään AJOURAn palvelimen (Supabase, EU) kautta Anthropicin Claude-tekoälylle (Anthropic PBC, Yhdysvallat). Tekoäly tunnistaa itse, onko kuva kuitti, tankkausmittarin näyttö vai auton mittaristo. Se lukee kuitista päivän, määrän, hinnan ja polttoaineen, tankkausmittarista litrahinnan, määrän ja summan ja mittaristosta kokonaiskilometrit, ja ne täyttävät lomakkeen. Tarkistat ja tallennat tiedot itse.</p>
 <p>Kuvaa ei tallenneta AJOURAn palvelimelle. Anthropic ei sopimusehtojensa mukaan käytä sitä tekoälynsä kouluttamiseen, ja sen ilmoituksen mukaan se poistaa kuvan ja vastauksen järjestelmistään 30 päivän kuluessa. Kuvassa voi näkyä muutakin kuin kuitti tai mittari, esimerkiksi rekisterikilpi tai esineitä auton sisältä, joten ota kuva vain siitä, mitä tarvitaan. Kun tekoälyavustaja on pois päältä, kuvia ei lähetetä minnekään.</p>
 <p>Kun kirjoitat tankkauksen tiedot tekoälytilan tekstikenttään, kirjoittamasi teksti ja päivän päivämäärä lähetetään AJOURAn palvelimen (Supabase, EU) kautta Anthropicin Claude-tekoälylle (Anthropic PBC, Yhdysvallat). Tekoäly poimii tekstistä tankkauksen tiedot (päivä, määrä, hinta, summa, polttoaine ja mittarilukema), ja ne täyttävät lomakkeen. Tarkistat ja tallennat tiedot itse. Tekstiä ei tallenneta AJOURAn palvelimelle. Kirjoita kenttään vain tankkauksen tiedot.</p>
+<p>Mikrofoni: kun painat tekoälytilan mikrofonipainiketta, puheesi muutetaan tekstiksi selaimesi tai puhelimesi omalla puheentunnistuksella. Selaimesta riippuen puhe voidaan käsitellä selaimen valmistajan palvelussa (esimerkiksi Safarissa Applen, Chromessa Googlen) sen omien ehtojen mukaan. AJOURA ei saa eikä tallenna ääntä. Teksti näkyy kentässä, voit korjata sen, ja se lähtee tekoälylle vasta, kun painat Lähetä.</p>
 
 <h2>Palvelut, joiden kautta sivu toimii</h2>
 <ul>
 <li><strong>GitHub Pages</strong> (GitHub Inc.) jakaa sivuston. Kuten kaikki verkkopalvelimet, se näkee teknisiä tietoja, kuten IP-osoitteen, sivua ladattaessa.</li>
 <li><strong>Supabase</strong> (Supabase Inc., palvelimet EU:ssa, Irlannissa): kirjautuminen, pilvitallennus, Ajoura Plus -tilauksen tila ja tekoälytunnistuksen välitys. Käytössä vain kirjautuneena.</li>
 <li><strong>Anthropic</strong> (Anthropic PBC, Yhdysvallat): kuvan ja tekstin tekoälytunnistus tankkausikkunassa, vain kun käytät sitä.</li>
+<li><strong>Selaimen puheentunnistus</strong> (selaimen valmistaja, esimerkiksi Apple tai Google): puheen muuttaminen tekstiksi, vain kun käytät mikrofonia.</li>
 <li><strong>Google</strong> (Google LLC, Yhdysvallat): Google-kirjautuminen, kun kirjaudut, ja palautelomake (Google Apps Script), kun lähetät palautetta.</li>
 <li><strong>Automallien kuvat</strong> ovat AJOURAn omalla sivustolla (GitHub Pages), joten niitä ladattaessa ei oteta yhteyttä muihin palveluihin.</li>
 </ul>

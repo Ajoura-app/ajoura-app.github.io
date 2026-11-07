@@ -197,7 +197,8 @@
     chat:'<path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3.5v-3.5h.5a2 2 0 0 1-2-2z"/>',
     share:'<circle cx="17" cy="6" r="2.3"/><circle cx="7" cy="12" r="2.3"/><circle cx="17" cy="18" r="2.3"/><path d="m9 10.9 6-3.6M9 13.1l6 3.6"/>',
     camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
-    send:'<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>'
+    send:'<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>',
+    mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>'
   };
   const iconFor={'Huolto':'wrench','Vuosihuolto':'wrench','Moottoriöljyn vaihto':'oil','Ilmansuodattimen vaihto':'filter','Renkaiden vaihto':'tyre','Katsastus':'inspection','Jarruhuolto':'brake','Korjaus':'repair','Osan vaihto':'part','Muu huolto':'wrench','Kausihuolto':'wrench','Korjaus ja osan vaihto':'repair','Mittarilukeman päivitys':'gauge','Omistajanvaihdos':'user'};
   const eventIcon=type=>svg(icons[iconFor[type]||'note']);
@@ -448,7 +449,7 @@
   // 1.20 Tekoälytila: uusi tankkaus alkaa tekoälystä (kuva tai kirjoitettu teksti), kun tekoäly on käytettävissä. Tulos avaa tutun
   // lomakkeen esitäytettynä, ja käyttäjä tarkistaa ja tallentaa itse. "Täytä käsin" avaa lomakkeen heti. Ilman tekoälyä (ei
   // kirjautumista, tekoäly pois) ja muokatessa avautuu suoraan lomake. Mikrofoni tulee myöhemmin.
-  const aiPanel=()=>`<div class="ai-mode" data-ai-mode><p class="ai-lead">Kerro tankkaus kuvalla tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.</p><button type="button" class="sf-ai-btn ai-cam" data-ai-cam><span class="sf-ai-ico" aria-hidden="true">${svg(icons.camera)}</span><span class="sf-ai-txt"><span>Ota tai valitse kuva</span><small>Kuitti, tankkausmittari tai mittaristo</small></span></button><input type="file" accept="image/*" class="sr-only" data-ai-cam-file tabindex="-1" aria-hidden="true"><div class="app-form ai-say"><input type="text" id="ai-say-in" maxlength="300" autocomplete="off" enterkeyhint="send" aria-label="Kirjoita tankkauksen tiedot" placeholder="Esim. 45,6 l dieseliä 84,77 € mittari 218450"><button type="button" class="ai-send" data-ai-send aria-label="Lähetä">${svg(icons.send)}</button></div><p class="ai-note" role="status" hidden></p><button type="button" class="app-back ai-manual" data-ai-manual>Täytä käsin →</button></div>`;
+  const aiPanel=()=>`<div class="ai-mode" data-ai-mode><p class="ai-lead">${speechApi()?'Kerro tankkaus kuvalla, puheella tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.':'Kerro tankkaus kuvalla tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.'}</p><button type="button" class="sf-ai-btn ai-cam" data-ai-cam><span class="sf-ai-ico" aria-hidden="true">${svg(icons.camera)}</span><span class="sf-ai-txt"><span>Ota tai valitse kuva</span><small>Kuitti, tankkausmittari tai mittaristo</small></span></button><input type="file" accept="image/*" class="sr-only" data-ai-cam-file tabindex="-1" aria-hidden="true"><div class="app-form ai-say"><input type="text" id="ai-say-in" maxlength="300" autocomplete="off" enterkeyhint="send" aria-label="Kirjoita tankkauksen tiedot" placeholder="Esim. 45,6 l dieseliä 84,77 € mittari 218450">${speechApi()?`<button type="button" class="ai-mic" data-ai-mic aria-pressed="false" aria-label="Sanele tankkauksen tiedot">${svg(icons.mic)}</button>`:''}<button type="button" class="ai-send" data-ai-send aria-label="Lähetä">${svg(icons.send)}</button></div><p class="ai-note" role="status" hidden></p><button type="button" class="app-back ai-manual" data-ai-manual>Täytä käsin →</button></div>`;
   // Tekoälyn tulos lomakkeelle (r.kind: receipt, pump, odometer = kuva; text = tekoälytilan teksti; other = ei tunnistettu).
   // Palauttaa [viesti, onnistui, täytettiinkö jotain]. Ristiriitaiset tai epäselvät luvut eivät täytä mitään.
   function applyAi(f,r){const el=f.elements,k=r&&r.kind,car=cars.find(x=>x.id===f.dataset.car)||{},low='Luettu lukema on pienempi kuin edellisessä tankkauksessa. Tarkista se.';
@@ -479,11 +480,11 @@
     let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;say(aiMsg[e&&e.reason]||'Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
     btn.disabled=false;if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);say(m,ok);if(filled)f.elements.km.focus({preventScroll:true});}
   // Tekoälytilasta lomakkeeseen (tulos tai Täytä käsin).
-  function showForm(l,f){const p=l.querySelector('[data-ai-mode]');if(p)p.hidden=true;const sa=l.querySelector('.sf-ai');if(sa)sa.hidden=false;f.hidden=false;}
+  function showForm(l,f){stopListen();const p=l.querySelector('[data-ai-mode]');if(p)p.hidden=true;const sa=l.querySelector('.sf-ai');if(sa)sa.hidden=false;f.hidden=false;}
   const panelSay=(l,t)=>{const n=l.querySelector('.ai-note');if(n){n.hidden=false;n.textContent=t;}};
   // Yksi pyyntö tekoälytilasta. Jos mitään ei täytetty (ei tunnistettu, ristiriita, virhe, kiintiö), tila pysyy auki viestin kanssa.
   async function panelAsk(f,l,blob,busy,fail,none){const A=window.AjouraAccess,p=l.querySelector('[data-ai-mode]');if(!A||!p)return;
-    const parts=[...p.querySelectorAll('[data-ai-cam],[data-ai-send],#ai-say-in')],lock=on=>parts.forEach(x=>{x.disabled=on;});
+    stopListen();const parts=[...p.querySelectorAll('[data-ai-cam],[data-ai-send],[data-ai-mic],#ai-say-in')],lock=on=>parts.forEach(x=>{x.disabled=on;});
     lock(true);panelSay(l,busy);
     let r;try{r=await A.recognize('ai.receipt',blob);}catch(e){lock(false);panelSay(l,aiMsg[e&&e.reason]||fail);return;}
     lock(false);if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);
@@ -491,6 +492,24 @@
     showForm(l,f);const n=l.querySelector('.sf-ai-note');if(n){n.hidden=false;n.textContent=m;n.classList.toggle('ok',!!ok);}f.elements.km.focus({preventScroll:true});}
   async function panelImage(f,l,file){const d=await shrink(file,1568,.85);if(!d){panelSay(l,'Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
     await panelAsk(f,l,dataUrlBlob(d),'Luetaan kuvaa…','Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');}
+  // 1.21 Mikrofoni: selaimen oma puheentunnistus (Web Speech API; maksuton, ei uutta palvelua). Selaimesta riippuen puhe voidaan
+  // käsitellä selaimen valmistajan palvelussa (Safari: Apple, Chrome: Google); AJOURA ei saa ääntä. Puhe muuttuu tekstiksi
+  // tekstikenttään, jonka käyttäjä näkee ja voi korjata; mitään ei lähetetä ennen Lähetä-painiketta. Painike näkyy vain, jos selain
+  // tukee puheentunnistusta. Toinen painallus lopettaa kuuntelun; ikkunan sulkeminen, lähetys ja Täytä käsin keskeyttävät sen.
+  const speechApi=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
+  let aiRec=null;
+  function stopListen(){const r=aiRec;aiRec=null;if(r)try{r.abort();}catch(e){}}
+  const micMsg={'not-allowed':'Mikrofonin käyttö on estetty. Salli mikrofoni selaimen asetuksista, kirjoita teksti tai käytä näppäimistön sanelua.','service-not-allowed':'Puheentunnistus ei ole käytettävissä tässä selaimessa. Kirjoita teksti tai käytä näppäimistön sanelua.','no-speech':'Puhetta ei kuulunut. Yritä uudelleen tai kirjoita teksti.','audio-capture':'Mikrofonia ei löytynyt. Kirjoita teksti tai käytä näppäimistön sanelua.','network':'Puheentunnistus tarvitsee verkkoyhteyden. Kirjoita teksti tai käytä näppäimistön sanelua.','language-not-supported':'Puheentunnistus ei tue tätä kieltä tällä laitteella. Kirjoita teksti tai käytä näppäimistön sanelua.'};
+  function panelListen(l){const SR=speechApi(),btn=l.querySelector('[data-ai-mic]'),inp=l.querySelector('#ai-say-in');if(!SR||!btn||!inp)return;
+    if(aiRec){const r=aiRec;try{r.stop();}catch(e){stopListen();}return;}
+    const rec=new SR(),base=inp.value.trim(),off=()=>btn.setAttribute('aria-pressed','false');let heard='',failed=false;
+    rec.lang={en:'en-US',sv:'sv-SE'}[(window.AjouraI18n||{}).lang]||'fi-FI';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+    rec.onresult=e=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;heard=t.trim();inp.value=(base?base+' ':'')+heard;};
+    rec.onerror=e=>{failed=true;const er=e&&e.error;if(er!=='aborted')panelSay(l,micMsg[er]||'Puheentunnistus ei onnistunut. Kirjoita teksti tai käytä näppäimistön sanelua.');};
+    rec.onend=()=>{if(aiRec===rec)aiRec=null;off();if(failed||!l.isConnected)return;
+      if(heard){panelSay(l,'Tarkista teksti ja paina Lähetä.');const s=l.querySelector('[data-ai-send]');if(s)s.focus({preventScroll:true});}else panelSay(l,'Puhetta ei kuulunut. Yritä uudelleen tai kirjoita teksti.');};
+    aiRec=rec;btn.setAttribute('aria-pressed','true');panelSay(l,'Kuunnellaan… Puhu nyt.');
+    try{rec.start();}catch(e){aiRec=null;off();panelSay(l,'Puheentunnistus ei onnistunut. Kirjoita teksti tai käytä näppäimistön sanelua.');}}
   // Kirjoitettu teksti ja laitteen päivä (sanoja kuten "eilen" varten) palvelimelle JSONina; enintään 300 merkkiä.
   function panelText(f,l){const inp=l.querySelector('#ai-say-in'),t=inp?inp.value.trim():'';if(!inp)return;
     if(!t){panelSay(l,'Kirjoita ensin tankkauksen tiedot, esimerkiksi litrat, hinta ja mittarilukema.');inp.focus();return;}
@@ -499,7 +518,7 @@
   // closing it (×, Escape, the backdrop or saving) returns the focus to the button that opened it.
   // After a save the screen is drawn again, so the opener is found again by what it opens (sheetSel).
   let sheetBack=null,sheetSel='';
-  function closeSheet(){const l=glass.querySelector('.sheet-layer');if(!l)return;l.remove();screen.inert=false;if(sheetBack&&sheetBack.isConnected)sheetBack.focus({preventScroll:true});sheetBack=null;}
+  function closeSheet(){stopListen();const l=glass.querySelector('.sheet-layer');if(!l)return;l.remove();screen.inert=false;if(sheetBack&&sheetBack.isConnected)sheetBack.focus({preventScroll:true});sheetBack=null;}
   function refocusSheet(){const el=sheetSel&&(screen.querySelector(sheetSel)||screen.querySelector('.fl-add'));sheetSel='';if(el)el.focus({preventScroll:true});}
   const focusables=root=>[...root.querySelectorAll('a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null||x.tagName==='SUMMARY');
   function openSheet(c,from,fill,kind){const kd=fill?fillKind(c,fill):kind||pickKind(c),cv=fcar(c,kd);closeSheet();sheetBack=from||null;sheetSel=!from?'':from.classList.contains('fl-add')?'.fl-add':from.dataset.flEdit?`[data-fl-edit="${from.dataset.flEdit}"]`:from.dataset.quickfuel?`[data-quickfuel="${from.dataset.quickfuel}"]`:'';const l=document.createElement('div');l.className='sheet-layer';l.innerHTML=quickFuel(c,fill,kd);glass.appendChild(l);screen.inert=true;
@@ -512,7 +531,7 @@
     l.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='ai-say-in'){e.preventDefault();panelText(f,l);}});
     f.addEventListener('change',e=>{if(e.target.name!=='country')return;const cur=curOf(e.target.value),fx=f.querySelector('.fx-rate');f.querySelectorAll('[data-cur]').forEach(x=>x.textContent=cur==='EUR'?'€':cur);fx.hidden=cur==='EUR';f.elements.rate.value=cur==='EUR'?'':rateFor(c,cur);if(f.elements.est.value==='1')fuelGuess(f,cv);});
     const label=f.querySelector('[type=submit]').textContent;f.addEventListener('input',e=>{if(f.dataset.confirmed&&(e.target.name==='km'||e.target.name==='date')){delete f.dataset.confirmed;f.querySelector('[type=submit]').textContent=label;}});
-    l.addEventListener('click',e=>{if(e.target.closest('[data-ai-scan]')){l.querySelector('[data-ai-file]').click();return;}if(e.target.closest('[data-ai-cam]')){l.querySelector('[data-ai-cam-file]').click();return;}if(e.target.closest('[data-ai-send]')){panelText(f,l);return;}if(e.target.closest('[data-ai-manual]')){showForm(l,f);f.elements.ppu.focus({preventScroll:true});return;}const sk=e.target.closest('[data-sheet-kind]');if(sk){openSheet(c,sheetBack,null,sk.dataset.sheetKind);return;}const del=e.target.closest('[data-fl-del]');if(del){const id=del.dataset.flDel;closeSheet();removeFill(id);return;}if(e.target.closest('[data-fuel-guess]')){fuelGuess(f,cv);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();else if(e.target.closest('.sheet-more'))closeSheet();});
+    l.addEventListener('click',e=>{if(e.target.closest('[data-ai-scan]')){l.querySelector('[data-ai-file]').click();return;}if(e.target.closest('[data-ai-cam]')){l.querySelector('[data-ai-cam-file]').click();return;}if(e.target.closest('[data-ai-send]')){panelText(f,l);return;}if(e.target.closest('[data-ai-mic]')){panelListen(l);return;}if(e.target.closest('[data-ai-manual]')){showForm(l,f);f.elements.ppu.focus({preventScroll:true});return;}const sk=e.target.closest('[data-sheet-kind]');if(sk){openSheet(c,sheetBack,null,sk.dataset.sheetKind);return;}const del=e.target.closest('[data-fl-del]');if(del){const id=del.dataset.flDel;closeSheet();removeFill(id);return;}if(e.target.closest('[data-fuel-guess]')){fuelGuess(f,cv);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();else if(e.target.closest('.sheet-more'))closeSheet();});
     l.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const list=focusables(l.querySelector('.sheet'));if(!list.length)return;const first=list[0],lastEl=list[list.length-1];
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();lastEl.focus();}else if(!e.shiftKey&&document.activeElement===lastEl){e.preventDefault();first.focus();}});
     requestAnimationFrame(()=>{l.classList.add('open');const q=fill?l.querySelector('.sheet-x'):l.querySelector('[data-ai-mode]')?l.querySelector('[data-ai-cam]'):f.elements.ppu;if(q)q.focus({preventScroll:true});});}
@@ -612,7 +631,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='1.20 (testiversio)';
+  const appVersion='1.21 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
