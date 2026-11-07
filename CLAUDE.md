@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Ajoura: ohje Claude Codelle
 
 Ajoura on digitaalinen auton huoltokirja (PWA, selainsovellus). Koodi on tässä repossa, ja main-haara julkaistaan automaattisesti GitHub Pagesiin (ajoura-app.github.io/app.html). Repo on julkinen. Sovellus on rakennettu Clauden avulla, tekijöitä on kaksi (Niklas ja Hannes), eikä kumpikaan ole koodauksen tai yritystoiminnan asiantuntija.
@@ -12,7 +14,7 @@ Ajoura on digitaalinen auton huoltokirja (PWA, selainsovellus). Koodi on tässä
 - Pysy siinä, mitä pyydetään.
 
 ## Itsenäinen työ
-Kun Niklas antaa tehtävän tai tehtäväjonon, suunnittele, toteuta, testaa ja julkaise ilman välihyväksyntöjä omien suositustesi mukaan. Älä pyydä erikseen hyväksyntää suunnitelmalle tai julkaisulle.
+Kun käyttäjä antaa kehitystehtävän, suunnittele, toteuta ja testaa muutokset itsenäisesti ilman tarpeettomia välihyväksyntöjä. Tee muutokset aina erilliseen kehityshaaraan. Älä yhdistä muutoksia main-haaraan tai julkaise tuotantoon ilman käyttäjän nimenomaista hyväksyntää. Noudata AGENTS.md-tiedoston yhteisiä kehitysohjeita.
 
 Pysähdy vasta, kun
 1. tehtävä tai jono on tehty,
@@ -40,15 +42,15 @@ Pysähdy vasta, kun
 - Testit: test_plus.py, test_kuitti.py, test_pilvi.py, test_jaettu.py, test_supabase.py (SQL ajetaan paikallisessa PostgreSQL:ssä, `apt-get install postgresql`).
 
 ## Julkaisun kulku
-1. Hae uusin main (git fetch). Lue VERSIOT.md: siinä on julkaistu versio ja historia.
-2. Tee varmuuskopiohaara vanhasta mainista: backup/VVVV-KK-PP-ennen-v0.xx. Tee työ omassa haarassa: esikatselu/VVVV-KK-PP-v0.xx-aihe. Julkaisun yhteydessä tee myös backup/VVVV-KK-PP-v0.xx versiocommitista.
+1. Tarkista ensin työhaaran tila ja hae uusin etätilanne (`git status -sb` ja `git fetch origin`). Varmista työhaaran suhde `origin/main`-haaraan. Älä ylikirjoita paikallisia muutoksia tai tee automaattista rebasea ristiriitatilanteessa. Lue VERSIOT.md: siinä on julkaistu versio ja historia.
+2. Tee sovellusmuutokset erilliseen tehtäväkohtaiseen kehityshaaraan, joka perustuu ajantasaiseen `origin/main`-tilaan (esim. `claude/aihe` tai `codex/aihe`). Luo `esikatselu/`-haara vain, jos sitä todella käytetään erilliseen esikatselujulkaisuun. Luo `backup/`-haara ennen merkittävää tuotantojulkaisua vain sovitun varmistuskäytännön mukaisesti, ei jokaiselle pienelle muutokselle. Älä luo tai päivitä näitä lisähaaroja ilman käyttäjän lupaa.
 3. Jokainen korjaus tai muutos on oma versionsa ja oma commitinsa. Pieni korjaus ei saa kulkea mukana ulkoasumuutoksessa. Commitin tekijä: "Niklas (Claude) <noreply@anthropic.com>".
 4. Jokainen muutos lisää oman testinsä kansioon testit/. Uusi testi todetaan toimivaksi rikkomalla sovelluksen kopio tarkoituksella.
 5. Aja perussarja ennen julkaisua: `python3 -m pytest testit` (noin 4,5 min). Jos muutos koskee tallennusta, varmuuskopiota, PDF:ää, ulkoasua tai offline-osaa, aja myös laaja sarja edellistä versiota vastaan (ohje: testit/README.md).
 6. Versionumero on muotoa 1.xx (Niklas 7.11.2026: aiempi 0.1xx-numerointi päättyi versioon 0.118, ja 0.119 on nyt 1.19). Se nousee 0,01 jokaisesta sovellusmuutoksesta (1.19 → 1.20 → … → 1.99 → 1.100 → 1.101 …; 2.0 vain pyynnöstä) ja on neljässä paikassa: app.js (appVersion), index.html, i18n.js ja i18n-sv.js. Välimuistin numerot nousevat yhdessä: ak-N sivujen ?v=-tunnuksissa (app.html, index.html, tietosuoja.html, historia.html) ja sw.js:n VERSION-rivillä, sekä sw.js:n CACHE = 'ajoura-pwa-N', jossa N = ak-numero + 50. Testi test_offline.py huomaa, jos ne eivät täsmää. Uusi skriptitiedosto lisätään app.html:ään ja sw.js:n FILES-listaan.
 7. Pelkkä testi- tai dokumenttimuutos (testit/, VERSIOT.md, CLAUDE.md) ei nosta versionumeroa eikä välimuistin numeroita.
 8. Kirjaa versio VERSIOT.md:hen omana commitinaan (merkintä "Tämä on nyt julkaistu versio." siirretään uudelle riville).
-9. Vie main-haaraan, kun testit menevät läpi. Älä käytä pakotettua pushia (--force). Tarkista lopuksi, että Pages-julkaisu onnistui (GitHubin Actions-ajo "pages build and deployment").
+9. Kun asianmukaiset testit menevät läpi, lähetä kehityshaara GitHubiin ja valmistele pull request `main`-haaraan. Älä yhdistä PR:ää, tee suoraa `main`-pushia tai käynnistä tuotantojulkaisua ilman käyttäjän nimenomaista hyväksyntää. Älä käytä pakotettua pushia (`--force`). Hyväksytyn yhdistämisen jälkeen tarkista Pages-julkaisu (GitHub Actions: "pages build and deployment") sekä tarvittaessa Supabasen käyttöönoton tila.
 
 ## Koodin säännöt
 - Kaikki näkyvät tekstit ovat kolmella kielellä (suomi, englanti, ruotsi). Suomenkieliset tekstit koodissa kääntyvät sanakirjoista i18n.js ja i18n-sv.js: lisää jokaiselle uudelle tai muutetulle tekstille oma lohko ja tarkista ensin, onko avain jo olemassa. Huolto- ja kausivinkit ovat tips.js:ssä (kolme kieltä samalla rivillä). test_kielet.py löytää kääntämättömät tekstit.
