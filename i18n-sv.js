@@ -3,6 +3,27 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Edellinen": "Föregående",
+    "Seuraava": "Nästa",
+
+    "Pidä ajoneuvosi tiedot ajan tasalla. Kirjaa tankkaukset, seuraa huoltoja ja tarkastele kulujasi.": "Håll fordonets uppgifter uppdaterade. Registrera tankningar, följ service och granska dina kostnader.",
+    "Valitse avustajasi": "Välj din assistent",
+    "Voit vaihtaa hahmoa ja teemaa myöhemmin asetuksista.": "Du kan ändra figur och tema senare i Inställningar.",
+    "Näin pääset alkuun": "Kom igång",
+    "Lisää ajoneuvo ja kirjaa sen tiedot käsin. Tankkauksen voi täyttää myös kuvasta, tekstistä tai sanelusta tuetuissa selaimissa.": "Lägg till ett fordon och fyll i uppgifterna manuellt. Du kan också registrera tankningar från bilder, text eller diktering i webbläsare som stöds.",
+    "Tekoäly edellyttää kirjautumista, käytettävissä olevaa käyttöoikeutta ja omaa valintaasi. Tarkistat tiedot ennen tallennusta.": "AI kräver inloggning, tillgänglig behörighet och ditt eget val. Du granskar uppgifterna innan du sparar.",
+    "Katso lyhyt opastus": "Visa den korta guiden",
+    "Katso nykyisten toimintojen esittelyvideo": "Se videon om nuvarande funktioner",
+    "Kirjautuneena tallisi synkronoituu pilveen. Kuvat ja kuitit säilyvät laitteella.": "När du är inloggad synkroniseras ditt garage till molnet. Bilder och kvitton stannar på enheten.",
+    "Lyhyt käyttöönoton opastus": "Kort kom igång-guide",
+    "Ohita opastus": "Hoppa över guiden",
+    "Lisää ajoneuvosi": "Lägg till ditt fordon",
+    "Aloita lisäämällä ajoneuvo. Voit kirjata huollot ja tankkaukset käsin ilman tekoälyä.": "Börja med att lägga till ett fordon. Du kan registrera service och tankningar manuellt utan AI.",
+    "Kirjaa omalla tavallasi": "Registrera på ditt sätt",
+    "Tankkauksen voi täyttää myös kuvasta, tekstistä tai sanelusta tuetuissa selaimissa. Tekoäly edellyttää käyttöoikeutta ja omaa valintaasi. Tarkistat ja tallennat tiedot itse.": "Du kan också registrera tankningar från bilder, text eller diktering i webbläsare som stöds. AI kräver behörighet och ditt eget val. Du granskar och sparar uppgifterna själv.",
+    "Seuraa ja muokkaa": "Följ upp och ändra",
+    "Etusivulta pääset ajoneuvon tietoihin. Tankkaus näyttää kirjauksesi ja Raportit kulusi. Hahmoa ja teemaa voi vaihtaa asetuksista.": "Öppna fordonsuppgifter från startsidan. Tankning visar dina poster och Rapporter dina kostnader. Du kan ändra figur och tema i Inställningar.",
+
     "Ajoura – henkilökohtainen autosihteerisi": "Ajoura – din personliga fordonsassistent",
     "Henkilökohtainen autosihteerisi": "Din personliga fordonsassistent",
     "Kirjaa. Seuraa. Ennakoi.": "Registrera. Följ upp. Planera.",

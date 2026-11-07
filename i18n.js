@@ -10,6 +10,27 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Edellinen": "Previous",
+    "Seuraava": "Next",
+
+    "Pidä ajoneuvosi tiedot ajan tasalla. Kirjaa tankkaukset, seuraa huoltoja ja tarkastele kulujasi.": "Keep your vehicle records up to date. Log fill-ups, track services and review your costs.",
+    "Valitse avustajasi": "Choose your assistant",
+    "Voit vaihtaa hahmoa ja teemaa myöhemmin asetuksista.": "You can change the character and theme later in Settings.",
+    "Näin pääset alkuun": "Get started",
+    "Lisää ajoneuvo ja kirjaa sen tiedot käsin. Tankkauksen voi täyttää myös kuvasta, tekstistä tai sanelusta tuetuissa selaimissa.": "Add a vehicle and enter its details by hand. You can also log fill-ups from photos, text or dictation in supported browsers.",
+    "Tekoäly edellyttää kirjautumista, käytettävissä olevaa käyttöoikeutta ja omaa valintaasi. Tarkistat tiedot ennen tallennusta.": "AI requires sign-in, available access and your opt-in. You review the details before saving.",
+    "Katso lyhyt opastus": "View the short guide",
+    "Katso nykyisten toimintojen esittelyvideo": "Watch the current features video",
+    "Kirjautuneena tallisi synkronoituu pilveen. Kuvat ja kuitit säilyvät laitteella.": "When signed in, your garage syncs to the cloud. Photos and receipts stay on your device.",
+    "Lyhyt käyttöönoton opastus": "Short getting-started guide",
+    "Ohita opastus": "Skip guide",
+    "Lisää ajoneuvosi": "Add your vehicle",
+    "Aloita lisäämällä ajoneuvo. Voit kirjata huollot ja tankkaukset käsin ilman tekoälyä.": "Start by adding a vehicle. You can enter services and fill-ups by hand without AI.",
+    "Kirjaa omalla tavallasi": "Log your way",
+    "Tankkauksen voi täyttää myös kuvasta, tekstistä tai sanelusta tuetuissa selaimissa. Tekoäly edellyttää käyttöoikeutta ja omaa valintaasi. Tarkistat ja tallennat tiedot itse.": "You can also log fill-ups from photos, text or dictation in supported browsers. AI requires access and your opt-in. You review and save the details yourself.",
+    "Seuraa ja muokkaa": "Track and adjust",
+    "Etusivulta pääset ajoneuvon tietoihin. Tankkaus näyttää kirjauksesi ja Raportit kulusi. Hahmoa ja teemaa voi vaihtaa asetuksista.": "Open vehicle details from Home. Fuel shows your entries and Reports your costs. You can change your character and theme in Settings.",
+
     "Ajoura – henkilökohtainen autosihteerisi": "Ajoura – your personal vehicle assistant",
     "Henkilökohtainen autosihteerisi": "Your personal vehicle assistant",
     "Kirjaa. Seuraa. Ennakoi.": "Log. Track. Plan ahead.",
