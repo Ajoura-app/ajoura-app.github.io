@@ -15,12 +15,14 @@
   document.addEventListener('ajoura-lang',invalidate);
   window.addEventListener('hashchange',invalidate);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)invalidate();});
+  document.addEventListener('input',e=>{if(e.target.matches('.assistant-local input[type=text]'))invalidate();});
   document.addEventListener('change',e=>{if(e.target.matches('[data-assistant-opt]')){try{localStorage.setItem(key,e.target.checked?'1':'0');}catch(e){}invalidate();window.AjouraApp.refresh();}});
   document.addEventListener('click',async e=>{
     if(e.target.closest('[data-secretary-car]'))invalidate();
     if(!e.target.closest('[data-assistant-send]')||busy||!enabled())return;
     const box=e.target.closest('.assistant-local'),car=box?.dataset.assistantCar,input=box?.querySelector('input[type=text]'),result=box?.querySelector('.assistant-local-result');
-    if(!box||!input.value.trim())return;
+    const question=input?.value.trim();
+    if(!box||!question)return;
     if(!ready(car)){result.textContent=t('Synkronoi ajoneuvon tiedot ensin.');return;}
     const turn=++epoch,lang=document.documentElement.lang||'fi';busy=true;
     result.textContent=t('Muodostetaan vastausta…');
@@ -29,7 +31,7 @@
       const p=await transport.request({action:'prepare',vehicleId:car,lang});if(!valid())return;
       if(p.status!==200)throw new Error('prepare');
       if(await localDigest(car)!==p.body.localDigest||!valid()){if(valid())result.textContent=t('Synkronoi ajoneuvon tiedot ensin.');return;}
-      const r=await transport.request({action:'answer',vehicleId:car,lang,optIn:true,question:input.value.trim(),snapshotToken:p.body.snapshotToken,idempotencyKey:crypto.randomUUID()});if(!valid())return;
+      const r=await transport.request({action:'answer',vehicleId:car,lang,optIn:true,question,snapshotToken:p.body.snapshotToken,idempotencyKey:crypto.randomUUID()});if(!valid())return;
       if(await localDigest(car)!==p.body.localDigest||!valid()){if(valid())result.textContent=t('Synkronoi ajoneuvon tiedot ensin.');return;}
       if(r.status!==200||r.body.vehicleId!==car||typeof r.body.text!=='string')throw new Error('answer');
       result.textContent=r.body.text;

@@ -30,3 +30,34 @@ test('daily and minute limits retained after provider error',async()=>{const s=s
 test('cached answer blocked by revocation',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req(b)).status,200);s.revoke();assert.equal((await s.req(b)).status,403);});
 test('private cache purge without changing charged quota',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req(b)).status,200);s.ledger.purge(now+300001);assert.equal([...s.ledger.rows.values()][0].answer,null);assert.equal([...s.ledger.usage.values()][0],1);});
 test('cost and service summaries are deterministic',async()=>{for(const intent of ['service','costs']){const s=setup(),b=await s.prepare();s.provider.classify=async()=>intent;const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.intent,intent);if(intent==='costs')assert.equal(r.body.result.eur,216);else assert.deepEqual(r.body.result.dates,[{due:'2027-01-01',km:15500}]);}});
+
+test('missing cost records do not claim a known zero cost',async()=>{
+  const s=setup();s.state.car.events=[];for(const f of s.state.car.fuels)f.cost=null;
+  const b=await s.prepare();s.provider.classify=async()=> 'costs';
+  const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.eur,null);assert.match(r.body.text,/Tietoja ei ole riittävästi/);
+});
+test('explicit recorded zero cost is retained',async()=>{
+  const s=setup();s.state.car.events=[];for(const f of s.state.car.fuels)f.cost=null;s.state.car.fuels[0].cost=0;
+  const b=await s.prepare();s.provider.classify=async()=> 'costs';
+  const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.eur,0);assert.match(r.body.text,/0.00 EUR/);
+});
+for(const field of ['fuels','events'])test('null '+field+' entry is a data error before any provider call',async()=>{
+  const s=setup();s.state.car[field]=[null];
+  assert.equal((await s.req({action:'prepare',vehicleId:'a',lang:'fi'})).status,422);assert.equal(s.calls.length,0);
+});
+for(const cost of [false,[],{},' ','0x10'])test('invalid event cost '+JSON.stringify(cost)+' is not a zero amount',async()=>{
+  const s=setup();s.state.car.events[0].cost=cost;
+  assert.equal((await s.req({action:'prepare',vehicleId:'a',lang:'fi'})).status,422);
+});
+test('dependency errors cannot forge a success status or disclose private codes',async()=>{
+  const s=setup(),b=await s.prepare();s.provider.classify=async()=>{throw Object.assign(new Error('PRIVATE'),{status:200,code:'PRIVATE_CODE'});};
+  const r=await s.req(b);assert.equal(r.status,502);assert.deepEqual(r.body,{error:'provider'});
+});
+test('terminal ledger transitions cannot refund successful usage',()=>{
+  const ledger=new MemoryLedger();const {row}=ledger.reserve('u','k','h',now);ledger.start(row);ledger.complete(row,{text:'ok'},now);
+  ledger.reject(row);assert.equal(row.state,'completed');assert.equal([...ledger.usage.values()][0],1);assert.equal([...ledger.spent.values()][0],656000);
+});
+test('reserved ledger rejection releases its money once and stays failed',()=>{
+  const ledger=new MemoryLedger();const {row}=ledger.reserve('u','k','h',now);ledger.reject(row);ledger.reject(row);
+  assert.equal(row.state,'failed');assert.equal([...ledger.usage.values()][0],0);assert.equal([...ledger.spent.values()][0],0);
+});

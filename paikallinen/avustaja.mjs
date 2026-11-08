@@ -2,7 +2,8 @@
 import {createHmac,createHash,timingSafeEqual} from 'node:crypto';
 import Analytics from '../analytiikka.js';
 const CAP='ai.assistant', COST=656000;
-const fail=(status,code)=>{throw Object.assign(new Error(code),{status,code});};
+class AssistantError extends Error{constructor(status,code){super(code);this.status=status;this.code=code;}}
+const fail=(status,code)=>{throw new AssistantError(status,code);};
 import Contract from '../avustaja-sopimus.js';
 const {project,canonical,id,pick}=Contract;
 export {project};
@@ -14,15 +15,16 @@ export function summary(context,intent,today){
   if(intent==='costs'){
     const end=Date.parse(today+'T00:00:00Z'),start=end-89*864e5;
     const inside=x=>Date.parse(x.date+'T00:00:00Z')>=start&&Date.parse(x.date+'T00:00:00Z')<=end;
-    const value=car.events.filter(inside).reduce((n,x)=>n+Number(x.cost||0),0)+car.fuels.filter(inside).reduce((n,x)=>n+(x.cost||0),0);
-    return {intent,from:new Date(start).toISOString().slice(0,10),to:today,eur:Math.round(value*100)/100};
+    const pricedEvents=car.events.filter(inside).filter(x=>x.cost!==undefined&&x.cost!==null&&x.cost!==''),pricedFuels=car.fuels.filter(inside).filter(x=>x.cost!==null);
+    const count=pricedEvents.length+pricedFuels.length,value=pricedEvents.reduce((n,x)=>n+Number(x.cost),0)+pricedFuels.reduce((n,x)=>n+x.cost,0);
+    return {intent,from:new Date(start).toISOString().slice(0,10),to:today,eur:count?Math.round(value*100)/100:null};
   }fail(422,'unsupported');
 }
 export function render(result,lang){
   const l=labels[lang];if(!['fi','en','sv'].includes(lang))fail(422,'language');
   if(result.intent==='service')return l.service+': '+(result.dates.length?result.dates.map(x=>x.due+(x.km===null?'':' / '+x.km+' km')).join('; '):l.missing);
   if(result.intent==='consumption')return l.consumption+': '+(result.energy.length?result.energy.map(x=>x.average===null?l.missing:x.average.toFixed(1)+' '+x.unit+'/100 km').join('; '):l.missing);
-  return l.costs+': '+result.eur.toFixed(2)+' EUR ('+result.from+' – '+result.to+')';
+  return l.costs+': '+(result.eur===null?l.missing:result.eur.toFixed(2)+' EUR ('+result.from+' – '+result.to+')');
 }
 // Atomic only within a single Node process. NOT a production database/replicated ledger.
 export class MemoryLedger{
@@ -37,8 +39,9 @@ export class MemoryLedger{
     this.rate.set(dayKey,(this.rate.get(dayKey)||0)+1);this.rate.set(minuteKey,(this.rate.get(minuteKey)||0)+1);
     const row={hash,period,bucket,state:'reserved',cost:COST,answer:null,until:0};this.rows.set(id,row);this.usage.set(bucket,used+1);this.spent.set(period,total+COST);return {row,fresh:true};
   }
-  complete(row,answer,now){row.state='completed';row.answer=structuredClone(answer);row.until=now+300000;const timer=setTimeout(()=>{row.answer=null;},300000);timer.unref?.();}
-  reject(row){if(row.state==='reserved'){row.state='failed';this.spent.set(row.period,this.spent.get(row.period)-row.cost);}else row.state='unknown';if(!row.refunded){this.usage.set(row.bucket,this.usage.get(row.bucket)-1);row.refunded=true;}row.answer=null;}
+  start(row){if(row.state!=='reserved')throw new Error('Invalid transition');row.state='in_flight';}
+  complete(row,answer,now){if(row.state!=='in_flight')throw new Error('Invalid transition');const copy=structuredClone(answer);row.state='completed';row.answer=copy;row.until=now+300000;const timer=setTimeout(()=>{row.answer=null;},300000);timer.unref?.();}
+  reject(row){if(!['reserved','in_flight'].includes(row.state))return;if(row.state==='reserved'){row.state='failed';this.spent.set(row.period,this.spent.get(row.period)-row.cost);}else row.state='unknown';if(!row.refunded){this.usage.set(row.bucket,this.usage.get(row.bucket)-1);row.refunded=true;}row.answer=null;}
   purge(now){for(const row of this.rows.values())if(row.until&&row.until<=now)row.answer=null;}
 }
 export function createAssistant({enabled=false,secret,authenticate,readVehicle,entitled,provider,ledger=new MemoryLedger(),now=Date.now,deadlineMs=5000}={}){
@@ -68,7 +71,7 @@ export function createAssistant({enabled=false,secret,authenticate,readVehicle,e
       const hash=mac(canonical({s,question:b.question,lang:b.lang,version:Analytics.version}));
       const reservation=ledger.reserve(user,b.idempotencyKey,hash,now());row=reservation.row;
       if(!reservation.fresh){row=null;const old=reservation.row;if(old.state==='completed'&&old.answer)return reply(200,old.answer);if(['reserved','in_flight'].includes(old.state))return reply(202,{status:'pending'});fail(409,'request_finished');}
-      row.state='in_flight';
+      ledger.start(row);
       const intent=await bounded(()=>provider.classify({question:b.question,allowed:['service','consumption','costs','unsupported'],maxInputTokens:1000,maxOutputTokens:64}));
       if(!['service','consumption','costs'].includes(intent))fail(422,'unsupported');
       validate(await context(user,b.vehicleId));
@@ -79,7 +82,7 @@ export function createAssistant({enabled=false,secret,authenticate,readVehicle,e
       validate(await context(user,b.vehicleId));
       if(s.expires<=now())fail(409,'snapshot');
       const answer={version:Analytics.version,vehicleId:b.vehicleId,text:render(result,b.lang),result};ledger.complete(row,answer,now());row=null;return reply(200,answer);
-    }catch(e){if(row)ledger.reject(row);return reply(e.status||502,{error:e.code||'provider'});}
+    }catch(e){if(row)ledger.reject(row);const expected=e instanceof AssistantError||e instanceof Contract.ValidationError;return reply(expected?e.status:502,{error:expected?e.code:'provider'});}
   };
 }
 function reply(status,body){return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}

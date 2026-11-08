@@ -33,3 +33,11 @@ Paikallinen unknown-tila säilyttää mahdollisesti lähetetyn pyynnön rahavara
 Oikea malliadapteri puuttuu. Sen on pakotettava tokenrajat, estettävä SDK:n automaattiset uusinnat ja täsmäytettävä rahavaraus todelliseen laskutukseen. Nyt käytetyt maxInputTokens/maxOutputTokens ovat fixture-sopimuksen parametreja; tämä prototyyppi ei väitä niiden rajoittavan minkään olemattoman toimittajaintegraation laskutusta.
 
 Tarvitaan myös toimittajapäätös, tietosuojatekstin hyväksyntä, sopimus-/käsittelyalueiden tarkistus, pysyvä poistokäytäntö sekä oikean iPhonen testit. Haiku-, STT- ja TTS-palveluita ei tilata eikä avata tästä koodista. Julkaisu ja main-haaraan yhdistäminen edellyttävät käyttäjän erillistä lupaa.
+
+## Paikallisen katselmoinnin korjaukset
+
+Puuttuva kuluaineisto palauttaa nyt eur:null ja puuttuvan tiedon tekstin. Erikseen kirjattu nollahinta palauttaa edelleen 0,00 EUR. Virheelliset listaelementit ja hinnan tyypit hylätään ennen toimittajaa 422-vastauksella. Numeerinen muunnos ei saa tulkita taulukkoa, boolean-arvoa tai tyhjää välilyöntijonoa hinnaksi.
+
+Kiintiön start/complete/reject-siirtymät eivät voi muuttaa valmistunutta varausta uudelleen epäonnistuneeksi tai palauttaa onnistuneen vastauksen kiintiötä. Sama hylkäys voidaan käsitellä uudelleen ilman toista rahapalautusta. Vain avustajaytimen ja yhteisen validoinnin omat virheet pääsevät julkisiin virhekoodeihin; riippuvuuden virhe ei voi määrätä onnistunutta HTTP-tilaa tai palauttaa omaa yksityistä code-kenttäänsä asiakkaalle.
+
+Kysymys sidotaan Lähetä-painalluksen hetkeen. Kysymyksen muokkaus tyhjentää aiemman vastauksen ja mitätöi keskeneräisen kierroksen. Jo lähetettyä toimittajapyyntöä ei silti väitetä perutuksi tai maksuttomaksi.

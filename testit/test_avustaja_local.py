@@ -102,3 +102,22 @@ def test_node_contracts():
     result=subprocess.run(['node','--test','--test-reporter=tap','testit/analytiikka.test.cjs','paikallinen/avustaja.test.mjs'],cwd=JUURI,capture_output=True,text=True)
     assert result.returncode==0,(result.stdout+result.stderr)[-4000:]
     assert '# fail 0' in result.stdout
+
+@pytest.mark.parametrize('delay',['prepare','answer'])
+def test_question_edit_invalidates_pending_and_displayed_result(browser,base,local_api,delay):
+    request,url=local_api;s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO)
+    try:
+        bind(s,request);p=s.page;p.check('[data-assistant-opt]');before=s.talli()
+        p.evaluate("""delay=>{window.AjouraAssistantFixtureTransport.request=b=>b.action===delay?new Promise(resolve=>window.__resume=async()=>resolve(await window.assistantRequest(b))):window.assistantRequest(b);}""",delay)
+        p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]');p.wait_for_function('!!window.__resume')
+        p.fill('.assistant-local input[type=text]','huolto');p.evaluate('window.__resume()');p.wait_for_timeout(100)
+        assert p.locator('.assistant-local-result').inner_text()==''
+        p.evaluate('()=>{window.AjouraAssistantFixtureTransport.request=b=>window.assistantRequest(b);}')
+        p.click('[data-assistant-send]')
+        p.wait_for_function("document.querySelector('.assistant-local-result').textContent.startsWith('Seuraava huolto')")
+        calls_before=len(json.load(urllib.request.urlopen(url+'/calls')))
+        p.fill('.assistant-local input[type=text]','kulutus')
+        assert p.locator('.assistant-local-result').inner_text()==''
+        assert len(json.load(urllib.request.urlopen(url+'/calls')))==calls_before
+        assert before==s.talli();assert not s.virheet,s.virheet
+    finally:s.sulje()
