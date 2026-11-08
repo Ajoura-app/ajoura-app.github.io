@@ -78,6 +78,7 @@ class Palvelin:
         self.virhe = set()   # polut, joihin vastataan 503
         self.katki = False   # True: vastausta ei tule (kuin verkko olisi poikki)
         self.pyynnot = []    # saapuneet pyynnöt
+        self.odotus = {}     # polku → (pyyntö alkanut, vapauta vastaus, vastaus lähetetty)
         tila = self
 
         class Kasittelija(http.server.SimpleHTTPRequestHandler):
@@ -99,6 +100,13 @@ class Palvelin:
                     return
                 if not tila.katki:
                     time.sleep(tila.viive.get(polku, 0))
+                portti = tila.odotus.get(polku) if not tila.katki else None
+                if portti:
+                    alkanut, vapauta, valmis = portti
+                    alkanut.set()
+                    if not vapauta.wait(15):
+                        self.close_connection = True
+                        return
                 if tila.katki:
                     self.close_connection = True
                     return
@@ -106,7 +114,11 @@ class Palvelin:
                 # "ei muuttunut" -vastaus (304) piilottaisi version vaihtumisen.
                 del self.headers["If-Modified-Since"]
                 del self.headers["If-None-Match"]
-                super().do_GET()
+                try:
+                    super().do_GET()
+                finally:
+                    if portti:
+                        valmis.set()
 
         self.s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Kasittelija)
         self.s.daemon_threads = True
@@ -388,23 +400,28 @@ def test_paivitys_heikolla_yhteydella(browser, versiot):
 
 
 def test_myohassa_tullut_sivu_ei_sekoita(browser, versiot):
-    """Julkaisu heikolla yhteydellä ja verkko katki ennen kuin uusi offline-osa ehtii asentua: myöhässä tullutta
-    uutta sivua ei tallenneta vanhojen tiedostojen rinnalle, joten seuraava avaus on yhä kokonaan edellistä versiota."""
+    """A cached page opens before the held network response; releasing it must not mix versions."""
     p = Palvelin(versiot["A"][0])
     k = Kayttaja(browser, p, tiedot.talli())
+    alkanut, vapauta, valmis = (threading.Event() for _ in range(3))
     try:
         k.asenna()
         p.juuri = versiot["B"][0]
         p.virhe.add("sw.js")  # uusi offline-osa ei asennu
-        p.viive["app.html"] = 4
-        assert k.avaa() < 4
+        p.odotus["app.html"] = (alkanut, vapauta, valmis)
+        # The response stays pending until explicitly released, independent of rendering speed.
+        # Keep the same five-second opening budget used by the other offline/update tests.
+        assert k.avaa(aika=8000) < 5
+        assert alkanut.is_set() and not valmis.is_set()
         k.tarkista_versio(versiot, "A")
-        k.page.wait_for_timeout(2500)  # myöhässä tullut sivu on saapunut
+        vapauta.set()
+        assert valmis.wait(10), "myöhässä tullut vastaus ei valmistunut"
         p.katki = True
         k.avaa()
         k.tarkista_versio(versiot, "A")
         assert k.valimuistit() == [versiot["A"][2]]
     finally:
+        vapauta.set()
         k.sulje()
         p.sulje()
 
