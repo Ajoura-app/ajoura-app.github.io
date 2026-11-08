@@ -6,6 +6,12 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Isompi hyppy (esim. 2.0) tehdään vain pyynnöstä.
 
+## Valmisteltava versio 1.23 — ei vielä julkaistu
+
+8.11.2026, haara `codex/ai-first-julkaisu-1-23`: hyväksytty AI-first-kokonaisuus (vaiheet 01–08), Garage/Copilot/Nordic/Journey-teemat, alkuperäiset Emma/Mikko/Bottiankka-kuvat, uusi käynnistys ja vapaaehtoinen aloitusopastus, uudistettu julkinen etusivu, ajoneuvokohtaiset tehtävät, kirjauspolku ja paikalliset havainnot. Katsastusarviot erotetaan virallisista määräpäivistä. Ajoneuvojen järjestäminen säilyy erillisessä näkymässä. Tietosuojaseloste täsmentää pilvisynkronoinnin, jaetun tallin ja Anthropic-API:n säilytyksen poikkeukset FI/EN/SV. Välimuisti ak-123 / ajoura-pwa-173.
+
+Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuotantokoodi, tietomuoto ja synkronoinnin kirjoituspolku säilyvät ennallaan. Julkista rekisteröitymistä, ajanvarausta, push-ilmoituksia tai maksullista palvelua ei avata tässä muutoksessa. Julkaisumerkintä viimeistellään vasta hyväksytyn main-yhdistämisen ja käyttöönoton jälkeen; alla oleva 1.22 on yhä julkaistu versio.
+
 **Missä kopiot ovat:**
 - GitHubissa haara `backup/VVVV-KK-PP-vX.XX` (repo Ajoura-app/ajoura-app.github.io; 19.10.2026 asti MestariHannes/Ajoura). Tämä on varsinainen palautuspiste.
 - Koneellasi: `Ajoura\99_arkisto\versiot\X.XX_VVVV-KK-PP\` (zip: sovellus ja sivu, esittelyvideot erikseen kielittäin).
