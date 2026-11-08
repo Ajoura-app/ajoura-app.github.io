@@ -10,6 +10,11 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Assistant logging guide.
+    "Kirjaa huolto käsin": "Log service manually",
+    "Näytä kirjausohje": "Show logging guide",
+    "Valitse ensin ajoneuvo etusivulta. Lisää käsin avaa tankkauksen ja Kirjaa huolto käsin huoltolomakkeen. Tekoälyn käyttöoikeudella voit täyttää tankkauksen myös kuvasta, tekstistä tai sanelusta tuetussa selaimessa. Tarkista ajoneuvo ja tiedot ennen tallentamista.": "First select a vehicle on the home screen. Add manually opens a fuel entry and Log service manually opens the service form. With AI access, you can also fill in a fuel entry from a photo, text or dictation in a supported browser. Check the vehicle and details before saving.",
+
     "Myöhemmin": "Later",
     "Ohita": "Dismiss",
 

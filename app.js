@@ -484,14 +484,14 @@
   async function scanImage(f,l,file){const A=window.AjouraAccess,btn=l.querySelector('[data-ai-scan]'),note=l.querySelector('.sf-ai-note');if(!A||!btn)return;
     const say=(t,ok)=>{note.hidden=false;note.textContent=t;note.classList.toggle('ok',!!ok);};
     btn.disabled=true;window.AjouraAvatar.react('checking');window.AjouraTasks.ai(f.dataset.car,'draft');say('Luetaan kuvaa…');
-    const d=await shrink(file,1568,.85);if(!d){btn.disabled=false;aiTask(f,false);window.AjouraAvatar.react('attention');say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
+    const d=await shrink(file,1568,.85);if(!f.isConnected)return;if(!d){btn.disabled=false;aiTask(f,false);window.AjouraAvatar.react('attention');say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
     let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;if(f.isConnected)aiTask(f,false);if(f.isConnected)window.AjouraAvatar.react('attention');say(aiMsg[e&&e.reason]||'Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
     btn.disabled=false;if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);aiTask(f,filled);window.AjouraAvatar.react(filled?'neutral':'attention');say(m,ok);if(filled)f.elements.km.focus({preventScroll:true});}
   // Tekoälytilasta lomakkeeseen (tulos tai Täytä käsin).
   function showForm(l,f){stopListen();const p=l.querySelector('[data-ai-mode]');if(p)p.hidden=true;const sa=l.querySelector('.sf-ai');if(sa)sa.hidden=false;f.hidden=false;}
   const panelSay=(l,t)=>{const n=l.querySelector('.ai-note');if(n){n.hidden=false;n.textContent=t;}};
   // Yksi pyyntö tekoälytilasta. Jos mitään ei täytetty (ei tunnistettu, ristiriita, virhe, kiintiö), tila pysyy auki viestin kanssa.
-  async function panelAsk(f,l,blob,busy,fail,none){const A=window.AjouraAccess,p=l.querySelector('[data-ai-mode]');if(!A||!p)return;
+  async function panelAsk(f,l,blob,busy,fail,none){const A=window.AjouraAccess,p=l.querySelector('[data-ai-mode]');if(!A||!p||!f.isConnected)return;
     stopListen();const parts=[...p.querySelectorAll('[data-ai-cam],[data-ai-send],[data-ai-mic],#ai-say-in')],lock=on=>parts.forEach(x=>{x.disabled=on;});
     lock(true);window.AjouraAvatar.react('checking');window.AjouraTasks.ai(f.dataset.car,'draft');panelSay(l,busy);
     let r;try{r=await A.recognize('ai.receipt',blob);}catch(e){lock(false);if(f.isConnected)aiTask(f,false);if(l.isConnected)window.AjouraAvatar.react('attention');panelSay(l,aiMsg[e&&e.reason]||fail);return;}

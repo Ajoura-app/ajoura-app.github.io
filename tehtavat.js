@@ -13,7 +13,7 @@
       const days=(Date.parse(d.due+'T12:00:00Z')-now)/864e5;
       const near=days<=31||(d.km!==null&&d.km-c.km<=Math.max(0,d.intervalKm*.15));
       if(!near)continue;
-      out.push({key:`${c.id}:${d.what}:${d.from}:${d.due}:${d.km}`,car:c.id,kind:d.what,from:d.from,state:'open',title:d.what==='Katsastus'?'Tarkista tuleva katsastus':'Tarkista tuleva huolto',href:`#vehicle/${c.id}`,priority:days<0||(d.km!==null&&c.km>=d.km)?1:2});
+      out.push({key:`${c.id}:${d.what}:${d.from}:${d.due}:${d.km}`,car:c.id,kind:d.what,from:d.from,state:'open',title:d.what==='Katsastus'?'Tarkista tuleva katsastus':'Tarkista tuleva huolto',href:d.what==='Huolto'?`#add/${c.id}`:`#vehicle/${c.id}`,priority:days<0||(d.km!==null&&c.km>=d.km)?1:2});
     }
     const active=new Set(out.map(x=>x.key));
     for(const old of records.values())if(old.car===c.id&&old.kind!=='ai'&&!active.has(old.key)&&!['done','expired'].includes(old.state)){

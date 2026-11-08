@@ -3,6 +3,11 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Assistant logging guide.
+    "Kirjaa huolto käsin": "Registrera service manuellt",
+    "Näytä kirjausohje": "Visa registreringsguide",
+    "Valitse ensin ajoneuvo etusivulta. Lisää käsin avaa tankkauksen ja Kirjaa huolto käsin huoltolomakkeen. Tekoälyn käyttöoikeudella voit täyttää tankkauksen myös kuvasta, tekstistä tai sanelusta tuetussa selaimessa. Tarkista ajoneuvo ja tiedot ennen tallentamista.": "Välj först ett fordon på startsidan. Lägg till manuellt öppnar en tankning och Registrera service manuellt öppnar serviceformuläret. Med AI-behörighet kan du också fylla i en tankning från en bild, text eller diktering i en webbläsare som stöds. Kontrollera fordonet och uppgifterna innan du sparar.",
+
     "Myöhemmin": "Senare",
     "Ohita": "Hoppa över",
 

@@ -66,3 +66,5 @@ html.dark .secretary-card{box-shadow:none}
 .task-controls{display:flex;gap:12px;flex-wrap:wrap}
 .secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
 .task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}
+.secretary-support{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
+.secretary-support a,.secretary-support button{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
