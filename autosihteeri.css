@@ -1,12 +1,46 @@
 /* Existing theme tokens also support the first assistant layout. */
-.secretary-home{display:grid;gap:16px;min-width:0;margin-top:12px}
-.secretary-selector{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
-.secretary-selector button{flex:0 0 auto;max-width:220px;overflow-wrap:anywhere;border:1px solid var(--hairline);border-radius:24px;padding:10px 16px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:13px;min-height:44px}
+.secretary-home{display:grid;gap:12px;min-width:0;margin-top:12px}
+.secretary-picker{min-width:0;border:1px solid var(--hairline);border-radius:14px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
+.secretary-picker>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;list-style:none;font-size:13px;cursor:pointer}
+.secretary-picker>summary::-webkit-details-marker,.secretary-vehicle-details>summary::-webkit-details-marker{display:none}
+.secretary-picker>summary:after{content:'⌄';font-size:20px;line-height:1}
+.secretary-position{margin-left:auto;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.secretary-selector{display:grid;gap:8px;padding:4px 12px 8px}
+.secretary-selector button{min-width:0;overflow-wrap:anywhere;text-align:left;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:13px;min-height:44px}
 .secretary-selector button[aria-pressed=true]{border:2px solid var(--blue);font-weight:700}
+.secretary-picker .secretary-order{display:flex;align-items:center;min-height:44px;margin:0;padding:8px 12px;font-size:13px}
 .secretary-vehicle{min-width:0;touch-action:pan-y}
 .secretary-vehicle .garage-row{margin:0}
-.secretary-vehicle .row-pic{min-height:90px}
-.secretary-swipe{text-align:center;font-size:12px;color:var(--muted);margin:8px 0 0}
+.secretary-home .secretary-hero{display:block;min-width:0;padding:0;border-radius:20px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
+.secretary-hero-media{position:relative;display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;min-height:120px;aspect-ratio:3;background:var(--t-hero,var(--soft-blue));border-radius:19px 19px 0 0}
+.secretary-hero-media :is(.car-stage,.car-photo){position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-items:center;width:100%;height:100%;min-width:0;min-height:0;margin:0;padding:0 8px;aspect-ratio:auto;border:0;border-radius:inherit;background:none;overflow:visible}
+.secretary-hero-media :is(svg,img){display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;object-fit:contain;object-position:center}
+.secretary-home .secretary-hero-meta{display:flex;justify-content:center;gap:0;min-height:44px;padding:2px 12px;color:var(--ink);text-decoration:none}
+.secretary-home .secretary-hero .row-name strong{display:block;overflow:visible;-webkit-line-clamp:unset;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.secretary-home .secretary-hero .row-meta{margin:0;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.secretary-vehicle-details{border-top:1px solid var(--hairline)}
+.secretary-vehicle-details>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;list-style:none;cursor:pointer}
+.secretary-service-line{display:flex;flex:1;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 8px;min-width:0;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.secretary-status-label{font-weight:650}
+.secretary-status-label.status-late{color:var(--alert)}
+.secretary-status-value{color:var(--muted)}
+.secretary-chevron{flex:none;font-size:20px;line-height:1}
+.secretary-picker[open]>summary:after,.secretary-vehicle-details[open]>summary>.secretary-chevron{transform:rotate(180deg)}
+.secretary-vehicle-detail{padding:0 12px 12px}
+.secretary-hero .row-wide{display:block;margin:0}
+.secretary-hero .row-wide .row-status{margin-top:0}
+.secretary-home .secretary-hero .row-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+.secretary-home .secretary-hero .row-btn{height:auto;min-height:44px}
+.secretary-swipe{text-align:center;font-size:12px;color:var(--muted);margin:6px 0 0}
+/* Home uses CSS pixels directly; the legacy demo zoom stays on other views and the dock. */
+.screen-content:has(>.secretary-home){zoom:1}
+.screen-content:has(>.secretary-home)>.app-top{min-height:28px;margin:0;justify-content:flex-start}
+.screen-content:has(>.secretary-home)>.app-top .app-brand{height:22px;width:auto}
+.screen-content:has(>.secretary-home)>.app-top .r-top-right{position:absolute;top:0;right:0;gap:2px;transform:none}
+.screen-content:has(>.secretary-home)>.app-top .r-start{min-height:44px;padding:6px 8px;font-size:11px}
+.screen-content:has(>.secretary-home)>.app-top .demo-label{padding:2px 4px;font-size:11px;line-height:1.1}
+.screen-content:has(>.secretary-home)>.home-heading{min-height:30px;margin:0;padding-right:104px;font-size:26px;line-height:1.15}
+@container(max-width:349px){.secretary-home .secretary-hero-meta,.secretary-vehicle-detail{padding-inline:9px}}
 .secretary-card{border:1px solid var(--hairline);border-radius:24px;padding:20px;background:var(--t-surface,var(--c-ffffff,#ffffff));box-shadow:0 8px 28px -20px var(--ink)}
 .secretary-intro{display:flex;align-items:center;gap:14px}
 .secretary-intro img{flex:0 0 88px;width:88px;height:88px;aspect-ratio:1;object-fit:contain}

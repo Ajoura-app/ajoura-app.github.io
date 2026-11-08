@@ -2,7 +2,7 @@
 import pytest
 
 import tiedot
-from apu import KELLO, avaa
+from apu import KELLO, avaa, avaa_ajoneuvon_tiedot
 
 NIMET = {"fi": ["Koti", "Tankkaus ja lataus", "Raportit", "Valikko"],
          "en": ["Home", "Fuel and charging", "Reports", "Menu"],
@@ -31,6 +31,7 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
     oikeassa reunassa, joten leveyttä verrataan täysleveään tilariviin."""
     s = avaa(browser, base, "home", autot=[tiedot.auto()], leveys=leveys, kello=KELLO)
     try:
+        avaa_ajoneuvon_tiedot(s.page)
         r = s.page.evaluate("""() => {const n = document.querySelector('.main-tabs'), b = n.getBoundingClientRect(),
           g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.garage-row .row-wide').getBoundingClientRect(),
           cs = getComputedStyle(n), alav = g.bottom - b.bottom, a = getComputedStyle(n.querySelector('a[aria-current]')),

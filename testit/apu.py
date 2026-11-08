@@ -119,6 +119,26 @@ def nakyma(sivu):
     return sivu.page.evaluate("(location.hash.slice(1)||'').split('/')[0]")
 
 
+def avaa_ajoneuvovalitsin(page):
+    """Avaa etusivun nykyinen ajoneuvovalitsin tarvittaessa."""
+    valitsin = page.locator('.secretary-picker')
+    if valitsin.count() and valitsin.get_attribute('open') is None:
+        valitsin.locator('summary').click()
+
+
+def valitse_ajoneuvo(page, tunniste):
+    """Valitse etusivun ajoneuvo käyttäjän avaamasta valitsimesta."""
+    avaa_ajoneuvovalitsin(page)
+    page.locator('[data-secretary-car=' + json.dumps(tunniste) + ']').click()
+
+
+def avaa_ajoneuvon_tiedot(page):
+    """Avaa heron huoltotiedot ja nykyiset kirjaustoiminnot."""
+    tiedot = page.locator('.secretary-vehicle-details')
+    if tiedot.count() and tiedot.get_attribute('open') is None:
+        tiedot.locator('summary').click()
+
+
 def ikkuna_valmis(page):
     """Odottaa, että tankkausikkuna on siirtänyt kohdistuksen omaan kenttäänsä (seuraavassa ruudunpäivityksessä).
     Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken

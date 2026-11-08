@@ -6,7 +6,7 @@ muistiinpano."""
 import pytest
 
 import tiedot
-from apu import KELLO, avaa, odota_nakyma
+from apu import KELLO, avaa, odota_nakyma, valitse_ajoneuvo, avaa_ajoneuvovalitsin, avaa_ajoneuvon_tiedot
 from test_lataus import hybridi
 
 M = tiedot.merkinta
@@ -36,7 +36,8 @@ def test_kuvakepainikkeet(browser, base, leveys):
         assert pg.locator(".garage-row").count() == 1
         assert pg.locator("[data-secretary-car]").count() == 5
         for cid, nimi in NIMET.items():
-            pg.click(f"[data-secretary-car={cid}]")
+            valitse_ajoneuvo(pg,cid)
+            avaa_ajoneuvon_tiedot(pg)
             rivi = pg.locator(".garage-row", has=pg.locator(f"[data-quickfuel={cid}]"))
             assert rivi.locator(".row-actions").inner_text().strip() == "", f"{cid}: painikkeissa näkyvää tekstiä"
             assert rivi.locator(".row-btn.fuel").get_attribute("aria-label") == nimi
@@ -73,16 +74,20 @@ def test_painikkeet_ja_kortti_avaavat_oikean_nakyman(browser, base):
     pg = s.page
     try:
         for cid in NIMET:
-            pg.click(f"[data-secretary-car={cid}]")
+            valitse_ajoneuvo(pg,cid)
+            avaa_ajoneuvon_tiedot(pg)
             pg.click(f".garage-row [data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
             pg.keyboard.press("Escape"); pg.wait_for_selector("#quickfuel-form", state="detached")
             pg.click(f".row-btn.note[href='#add/{cid}']"); odota_nakyma(s, f"add/{cid}")
             pg.go_back(); odota_nakyma(s, "home")
+            avaa_ajoneuvon_tiedot(pg)
             pg.click(f".row-btn.memo[href='#notes/{cid}']"); odota_nakyma(s, f"notes/{cid}")
             assert pg.locator("#memo-form").count() == 1
             pg.go_back(); odota_nakyma(s, "home")
+            avaa_ajoneuvon_tiedot(pg)
             pg.click(f".row-info[href='#vehicle/{cid}']"); odota_nakyma(s, f"vehicle/{cid}")
             pg.go_back(); odota_nakyma(s, "home")
+            avaa_ajoneuvon_tiedot(pg)
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -93,7 +98,8 @@ def test_huollon_tilatekstit(browser, base):
     pg = s.page
     try:
         def teksti(cid):
-            pg.click(f"[data-secretary-car={cid}]")
+            valitse_ajoneuvo(pg,cid)
+            avaa_ajoneuvon_tiedot(pg)
             return pg.locator(f".garage-row:has([data-quickfuel={cid}]) .row-status").inner_text()
         # Huolto myöhässä päivän mukaan, kilometrejä vielä jäljellä: ei "Ajettavaa jäljellä".
         t = teksti("a1")
@@ -110,7 +116,8 @@ def test_huollon_tilatekstit(browser, base):
 def test_kaannokset(browser, base, kieli, nimi, tila):
     s = avaa(browser, base, "home", autot=talli(), kieli=kieli, kello=KELLO)
     try:
-        s.page.click("[data-secretary-car=hyb1]")
+        valitse_ajoneuvo(s.page,'hyb1')
+        avaa_ajoneuvon_tiedot(s.page)
         assert s.page.get_attribute(".garage-row [data-quickfuel=hyb1]", "aria-label") == nimi
         assert tila in s.page.locator(".garage-row:has([data-quickfuel=hyb1]) .row-status").inner_text()
     finally:
@@ -123,6 +130,7 @@ def test_painikkeiden_yhtenainen_vari(browser, base, teema):
     joka näytti liian tummalta). Tummassa tilassa ei omaa käänteissuodatinta, joten kaikki kolme näyttävät samalta."""
     s = avaa(browser, base, "home", autot=talli(), teema=teema, kello=KELLO)
     try:
+        avaa_ajoneuvon_tiedot(s.page)
         tyylit = s.page.eval_on_selector_all(".garage-row:first-child .row-btn", """e => e.map(b => {const c = getComputedStyle(b);
           return [c.backgroundColor, c.borderTopColor, c.color, c.filter, c.boxShadow]})""")
         # 0.94 (Niklas): tankkauspainikkeella oma vaaleansininen tausta; huolto ja muistiinpano keskenään samat.
@@ -146,6 +154,7 @@ def keski(pg, cid, osa=".row-info"):
 def test_jarjestys_hiirella(browser, base):
     s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, mobiili=False, kello=KELLO)
     pg = s.page
+    avaa_ajoneuvovalitsin(pg)
     pg.click('a[href="#car-order"]')
     try:
         assert jarjestys(s) == ["tst1", "tst2", "tst3"]
@@ -176,6 +185,7 @@ def test_jarjestys_kosketuksella(browser, base):
     """Puhelin: kosketus pitkään paikallaan, sitten veto alas. Näkymä ei vieritä vedon alla."""
     s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, kello=KELLO)
     pg = s.page
+    avaa_ajoneuvovalitsin(pg)
     pg.click('a[href="#car-order"]')
     try:
         cdp = pg.context.new_cdp_session(pg)
@@ -198,6 +208,7 @@ def test_kuvakkeiden_viiva(browser, base):
     """0.93 (Niklas): painikkeiden kuvakkeet ohuemmalla viivalla (ennen 2, nyt 1,5 kuvakkeen ruudukossa)."""
     s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
     try:
+        avaa_ajoneuvon_tiedot(s.page)
         viivat = s.page.eval_on_selector_all(".row-btn .act-ico > svg", "e => e.map(v => getComputedStyle(v).strokeWidth)")
         assert len(viivat) == 3 and set(viivat) == {"1.5px"}, viivat
     finally:

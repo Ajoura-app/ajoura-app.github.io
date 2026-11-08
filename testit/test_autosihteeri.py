@@ -1,7 +1,7 @@
 """Stage 01: vehicle context, existing write paths, themes and mobile widths."""
 import pytest
 import tiedot
-from apu import avaa, KELLO, ikkuna_valmis
+from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo
 from test_plus import palvelu, PLUS
 
 @pytest.mark.parametrize('width',[320,375,390,430])
@@ -24,7 +24,7 @@ def test_valinta_ja_kasin(browser,base,lang):
     s=avaa(browser,base,'home',autot=cars,kello=KELLO,kieli=lang)
     try:
         before=s.talli()
-        s.page.click('[data-secretary-car="%s"]'%cars[1]['id'])
+        valitse_ajoneuvo(s.page,cars[1]['id'])
         assert cars[1]['plate'] in s.page.inner_text('.secretary-context')
         s.page.click('[data-secretary-mode=manual]')
         ikkuna_valmis(s.page)

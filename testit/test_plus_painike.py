@@ -7,7 +7,7 @@ Lisää muistiinpano). Painike on alavalikon telakassa, pysyy paikallaan vierite
 import pytest
 
 import tiedot
-from apu import KELLO, avaa
+from apu import KELLO, avaa, valitse_ajoneuvo
 
 M = tiedot.merkinta
 
@@ -89,7 +89,7 @@ def test_etusivu(browser, base):
         assert pg.locator('.garage-add, .history-heading, .today-card').count() == 0
         assert pg.get_attribute(".tab-fab", "aria-label") == "Lisää ajoneuvo"
         # Approved AI-first home: choose the second vehicle in the selector.
-        pg.click('[data-secretary-car=a2]')
+        valitse_ajoneuvo(pg,'a2')
         assert pg.locator('.garage-row[data-car=a2]').count() == 1
         assert pg.locator('[data-secretary-car=a2]').get_attribute('aria-pressed') == 'true'
         pg.click(".tab-fab"); pg.wait_for_function("location.hash === '#newcar'"); pg.wait_for_timeout(200)

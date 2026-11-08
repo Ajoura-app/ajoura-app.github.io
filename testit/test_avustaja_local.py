@@ -2,7 +2,7 @@
 import json,subprocess,urllib.request,urllib.error
 from pathlib import Path
 import pytest,tiedot
-from apu import avaa,KELLO
+from apu import avaa,KELLO, valitse_ajoneuvo
 from conftest import JUURI
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def test_local_browser(browser,base,local_api,lang):
         p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         p.wait_for_function("document.querySelector('.assistant-local-result').textContent.includes('l/100 km')")
         assert not p.locator('.assistant-local-result script').count()
-        assert before==s.talli();p.click('[data-secretary-car=tst2]')
+        assert before==s.talli();valitse_ajoneuvo(p,'tst2')
         assert p.locator('.assistant-local-result').inner_text()==''
         p.evaluate('window.__assistantReady=false');p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         assert 'kWh' not in p.locator('.assistant-local-result').inner_text()
@@ -59,7 +59,7 @@ def test_pending_result_isolation(browser,base,local_api,change):
         bind(s,request);p=s.page;p.check('[data-assistant-opt]')
         p.evaluate("()=>{window.AjouraAssistantFixtureTransport.request=b=>b.action==='answer'?new Promise(resolve=>window.__resume=async()=>resolve(await window.assistantRequest(b))):window.assistantRequest(b);}")
         p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]');p.wait_for_function('!!window.__resume')
-        if change=='vehicle':p.click('[data-secretary-car=tst2]')
+        if change=='vehicle':valitse_ajoneuvo(p,'tst2')
         elif change=='session':p.evaluate("document.dispatchEvent(new Event('ajoura-session'))")
         elif change=='local-edit':p.evaluate('AjouraApp.state().cars[0].km++')
         else:p.uncheck('[data-assistant-opt]')
