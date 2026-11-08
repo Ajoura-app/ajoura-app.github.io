@@ -14,6 +14,17 @@
     "Paina ajoneuvoa pitkään ja vedä se haluamaasi kohtaan.": "Press and hold a vehicle, then drag it to the position you want.",
     "Järjestä ajoneuvot": "Reorder vehicles",
 
+    // Inspection estimates are not verified deadlines.
+    "Katsastusarvio": "Inspection estimate",
+    "Arvio": "Estimate",
+    "Virallinen määräpäivä ei ole tiedossa.": "The official deadline is not known.",
+    "Katsastus · arvio": "Inspection · estimate",
+    "Katsastuksen päivä on kirjaushistoriasta laskettu arvio. Virallinen määräpäivä ei ole tiedossa.": "The inspection date is an estimate calculated from recorded history. The official deadline is not known.",
+    "Tarkista määräpäivä Traficomista": "Check the deadline with Traficom",
+    "Tarkista katsastuksen määräpäivä": "Check the official inspection deadline",
+    "Arvio seuraavasta katsastuksesta": "Estimate of the next inspection",
+    "Huoltoarvio perustuu merkintöihisi ja huoltoväliin (Valikko → Asetukset).": "The service estimate is based on your records and service interval (Menu → Settings).",
+
     "Ajoneuvoavustajan paikallinen kokeilu": "Local vehicle assistant trial",
     "Ota ajoneuvoavustaja käyttöön": "Enable vehicle assistant",
     "Kysymys valitusta ajoneuvosta": "Question about the selected vehicle",
@@ -1412,7 +1423,7 @@
     'Kuitit ja kuvat merkintöihin, tankkaukset ja muistiinpanot': 'Receipts and photos on entries, fill-ups and notes',
     'Tulostettava huoltohistoriaraportti': 'Printable service history report',
     'Huoltohistoria linkkinä auton ostajalle': 'Service history as a link for the buyer',
-    'Katsastusarvio Suomen sääntöjen mukaan ja rengaskauden muistutus': 'Inspection estimate under Finnish rules and tyre season reminder',
+    'Katsastushistoriaan perustuva arvio ja rengaskauden muistutus': 'Estimate based on inspection history and tyre season reminder',
     'Muistutukset puhelimen kalenteriin': 'Reminders in your phone’s calendar',
     'Suunnitteilla': 'Planned',
     'Oma tili ja tietojen turvallinen tallennus pilveen': 'Your own account and secure cloud storage',

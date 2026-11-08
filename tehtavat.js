@@ -10,6 +10,8 @@
     const now=Date.parse(today+'T12:00:00Z'),out=[];
     for(const f of c.fuels||[])if(!validKm(f.km))out.push({key:`${c.id}:fuel:${f.id}`,car:c.id,kind:'fuel',source:f.id,state:'open',title:'Täydennä tankkauksen mittarilukema',href:`#fuel/${c.id}`,priority:0});
     for(const d of dates){
+      // No verified statutory deadline is stored. Offer one dismissible verification task, not a due-date alert.
+      if(d.what==='Katsastus'){out.push({key:`${c.id}:inspection-check:${d.from}`,car:c.id,kind:'Katsastus',from:d.from,inspectionEstimate:d.due,state:'open',title:'Tarkista katsastuksen määräpäivä',href:`#vehicle/${c.id}`,priority:2});continue;}
       const days=(Date.parse(d.due+'T12:00:00Z')-now)/864e5;
       const near=days<=31||(d.km!==null&&d.km-c.km<=Math.max(0,d.intervalKm*.15));
       if(!near)continue;

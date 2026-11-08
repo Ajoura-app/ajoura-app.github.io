@@ -7,6 +7,17 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     "Paina ajoneuvoa pitkään ja vedä se haluamaasi kohtaan.": "Tryck länge på ett fordon och dra det till önskad plats.",
     "Järjestä ajoneuvot": "Ändra fordonens ordning",
 
+    // Inspection estimates are not verified deadlines.
+    "Katsastusarvio": "Besiktningsuppskattning",
+    "Arvio": "Uppskattning",
+    "Virallinen määräpäivä ei ole tiedossa.": "Den officiella sista dagen är inte känd.",
+    "Katsastus · arvio": "Besiktning · uppskattning",
+    "Katsastuksen päivä on kirjaushistoriasta laskettu arvio. Virallinen määräpäivä ei ole tiedossa.": "Besiktningsdatumet är en uppskattning beräknad från registrerad historik. Den officiella sista dagen är inte känd.",
+    "Tarkista määräpäivä Traficomista": "Kontrollera sista dagen hos Traficom",
+    "Tarkista katsastuksen määräpäivä": "Kontrollera sista besiktningsdagen",
+    "Arvio seuraavasta katsastuksesta": "Uppskattning av nästa besiktning",
+    "Huoltoarvio perustuu merkintöihisi ja huoltoväliin (Valikko → Asetukset).": "Serviceuppskattningen bygger på dina registreringar och ditt serviceintervall (Meny → Inställningar).",
+
     "Ajoneuvoavustajan paikallinen kokeilu": "Lokalt test av fordonsassistenten",
     "Ota ajoneuvoavustaja käyttöön": "Aktivera fordonsassistenten",
     "Kysymys valitusta ajoneuvosta": "Fråga om det valda fordonet",
@@ -1235,7 +1246,7 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     'Kuitit ja kuvat merkintöihin, tankkaukset ja muistiinpanot': 'Kvitton och bilder till poster, tankningar och anteckningar',
     'Tulostettava huoltohistoriaraportti': 'Utskrivbar servicehistorikrapport',
     'Huoltohistoria linkkinä auton ostajalle': 'Servicehistorik som länk till köparen',
-    'Katsastusarvio Suomen sääntöjen mukaan ja rengaskauden muistutus': 'Besiktningsuppskattning enligt finska regler och påminnelse om däcksäsong',
+    'Katsastushistoriaan perustuva arvio ja rengaskauden muistutus': 'Uppskattning utifrån besiktningshistoriken och påminnelse om däcksäsong',
     'Muistutukset puhelimen kalenteriin': 'Påminnelser i telefonens kalender',
     'Suunnitteilla': 'Planerat',
     'Oma tili ja tietojen turvallinen tallennus pilveen': 'Eget konto och säker lagring i molnet',

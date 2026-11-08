@@ -9,6 +9,7 @@ const isService=e=>serviceKinds.includes(e.type)||(e.type==='Muu huolto'&&(e.ite
   const addMonths=(value,months)=>{const [y,m,d]=value.split('-').map(Number);const t=new Date(Date.UTC(y,m-1+months,1));const last=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();return `${t.getUTCFullYear()}-${String(t.getUTCMonth()+1).padStart(2,'0')}-${String(Math.min(d,last)).padStart(2,'0')}`;};
 
 const newest=(a,b)=>b.date.localeCompare(a.date)||b.km-a.km;
+// Legacy model-year approximation; never an official inspection deadline.
 const inspMonths=(c,last)=>Number(last.date.slice(0,4))-Number(c.year)<8?24:12;
   function fuelStats(c,{hourlyValue=false}={}){const fk=hourlyValue?1:100,f=[...(c.fuels||[])].sort((a,b)=>a.km-b.km||a.date.localeCompare(b.date)),full=f.map((x,i)=>x.full?i:-1).filter(i=>i>=0);
     const sumQty=(a,b)=>f.slice(a+1,b+1).reduce((n,x)=>n+x.qty,0);let avg=null,lastCons=null;
