@@ -387,7 +387,7 @@
     // garage holds own vehicles a card asks to install and to take a backup. It replaces the backup reminder there and
     // cannot be hidden on purpose: the people who lose data are the ones who visit rarely.
     const when=backupWhen(),browserCard=!installed&&cars.some(c=>!c.sample)?`<div class="reminder-card browser-data"><span class="event-symbol" aria-hidden="true">${svg(icons.save)}</span><div><span class="mini-label">TIEDOT TÄSSÄ SELAIMESSA</span><strong>Asenna AJOURA, niin tiedot pysyvät tallessa</strong><small>${ios?'Safari voi poistaa tiedot, jos AJOURAa ei avata viikkoon. Asennettu sovellus aloittaa tyhjänä, joten tallenna ensin varmuuskopio ja palauta se sovelluksessa.':'Selain voi poistaa tiedot, jos AJOURAa ei avata pitkään aikaan. Asennettuna ne ovat paremmin tallessa. Ota myös varmuuskopio.'}</small>${when?`<small class="bk-last">${when}</small>`:''}<div class="bd-actions"><button class="link-button" type="button" data-install-open>Näin asennat →</button><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div></div>`:'';
-    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${window.AjouraSecretary.render({cars,card:c=>garageRow(c,dueInfo(c),year),due:dueInfo,ai:aiScanOn(),speech:!!speechApi(),unit:ku})}${browserCard||backupCard}`;
+    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${window.AjouraSecretary.render({cars,card:c=>garageRow(c,dueInfo(c),year),due:dueInfo,dates:c=>dueDates(c).map(d=>({...d,intervalKm:profile.km})),today:today(),ai:aiScanOn(),speech:!!speechApi(),unit:ku})}${browserCard||backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   // 0.67: every fuel can be picked on every vehicle (a diesel car is sometimes filled with HVO100, a petrol car with E85, a
@@ -452,6 +452,14 @@
   const aiPanel=()=>`<div class="ai-mode" data-ai-mode><p class="ai-lead">${speechApi()?'Kerro tankkaus kuvalla, puheella tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.':'Kerro tankkaus kuvalla tai kirjoittamalla. Tarkistat tiedot ennen tallennusta.'}</p><button type="button" class="sf-ai-btn ai-cam" data-ai-cam><span class="sf-ai-ico" aria-hidden="true">${svg(icons.camera)}</span><span class="sf-ai-txt"><span>Ota tai valitse kuva</span><small>Kuitti, tankkausmittari tai mittaristo</small></span></button><input type="file" accept="image/*" class="sr-only" data-ai-cam-file tabindex="-1" aria-hidden="true"><div class="app-form ai-say"><input type="text" id="ai-say-in" maxlength="300" autocomplete="off" enterkeyhint="send" aria-label="Kirjoita tankkauksen tiedot" placeholder="Esim. 45,6 l dieseliä 84,77 € mittari 218450">${speechApi()?`<button type="button" class="ai-mic" data-ai-mic aria-pressed="false" aria-label="Sanele tankkauksen tiedot">${svg(icons.mic)}</button>`:''}<button type="button" class="ai-send" data-ai-send aria-label="Lähetä">${svg(icons.send)}</button></div><p class="ai-note" role="status" hidden></p><button type="button" class="app-back ai-manual" data-ai-manual>Täytä käsin →</button></div>`;
   // Tekoälyn tulos lomakkeelle (r.kind: receipt, pump, odometer = kuva; text = tekoälytilan teksti; other = ei tunnistettu).
   // Palauttaa [viesti, onnistui, täytettiinkö jotain]. Ristiriitaiset tai epäselvät luvut eivät täytä mitään.
+  function aiTask(f,filled){
+    if(filled)f.dataset.taskAi='1';
+    window.AjouraTasks.ai(f.dataset.car,f.dataset.taskAi?'awaiting_confirmation':'expired');
+    if(f.dataset.taskAi&&!f.querySelector('.task-ai-pending')){
+      const note=document.createElement('p');note.className='task-ai-pending info-note';note.setAttribute('role','status');
+      note.textContent=tl('AI-luonnos odottaa tarkistustasi ja tallennusta.');f.prepend(note);
+    }
+  }
   function applyAi(f,r){const el=f.elements,k=r&&r.kind,car=cars.find(x=>x.id===f.dataset.car)||{},low='Luettu lukema on pienempi kuin edellisessä tankkauksessa. Tarkista se.';
     // Kokonaiskilometrit kilometrikenttään: ei maileja (ei muunneta arvaamalla) eikä tuntimittarille. '' = ei täytetty.
     const km=()=>{if(r.odometer==null||r.odometer_unit==='mi'||hourly(car))return '';const lo=Number(f.dataset.prev)>0&&r.odometer<Number(f.dataset.prev);el.km.value=String(r.odometer);el.km.dispatchEvent(new Event('input',{bubbles:true}));return lo?'low':'ok';};
@@ -475,19 +483,19 @@
   // Lomakkeen Täytä kuvasta (1.19): kuva pienennetään laitteessa (shrink, JPEG) ja lähtee vain AjouraAccess.recognize-reitin kautta.
   async function scanImage(f,l,file){const A=window.AjouraAccess,btn=l.querySelector('[data-ai-scan]'),note=l.querySelector('.sf-ai-note');if(!A||!btn)return;
     const say=(t,ok)=>{note.hidden=false;note.textContent=t;note.classList.toggle('ok',!!ok);};
-    btn.disabled=true;window.AjouraAvatar.react('checking');say('Luetaan kuvaa…');
-    const d=await shrink(file,1568,.85);if(!d){btn.disabled=false;window.AjouraAvatar.react('attention');say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
-    let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;if(f.isConnected)window.AjouraAvatar.react('attention');say(aiMsg[e&&e.reason]||'Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
-    btn.disabled=false;if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);window.AjouraAvatar.react(filled?'neutral':'attention');say(m,ok);if(filled)f.elements.km.focus({preventScroll:true});}
+    btn.disabled=true;window.AjouraAvatar.react('checking');window.AjouraTasks.ai(f.dataset.car,'draft');say('Luetaan kuvaa…');
+    const d=await shrink(file,1568,.85);if(!d){btn.disabled=false;aiTask(f,false);window.AjouraAvatar.react('attention');say('Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
+    let r;try{r=await A.recognize('ai.receipt',dataUrlBlob(d));}catch(e){btn.disabled=false;if(f.isConnected)aiTask(f,false);if(f.isConnected)window.AjouraAvatar.react('attention');say(aiMsg[e&&e.reason]||'Kuvaa ei voitu lukea nyt. Kirjaa tiedot käsin.');return;}
+    btn.disabled=false;if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);aiTask(f,filled);window.AjouraAvatar.react(filled?'neutral':'attention');say(m,ok);if(filled)f.elements.km.focus({preventScroll:true});}
   // Tekoälytilasta lomakkeeseen (tulos tai Täytä käsin).
   function showForm(l,f){stopListen();const p=l.querySelector('[data-ai-mode]');if(p)p.hidden=true;const sa=l.querySelector('.sf-ai');if(sa)sa.hidden=false;f.hidden=false;}
   const panelSay=(l,t)=>{const n=l.querySelector('.ai-note');if(n){n.hidden=false;n.textContent=t;}};
   // Yksi pyyntö tekoälytilasta. Jos mitään ei täytetty (ei tunnistettu, ristiriita, virhe, kiintiö), tila pysyy auki viestin kanssa.
   async function panelAsk(f,l,blob,busy,fail,none){const A=window.AjouraAccess,p=l.querySelector('[data-ai-mode]');if(!A||!p)return;
     stopListen();const parts=[...p.querySelectorAll('[data-ai-cam],[data-ai-send],[data-ai-mic],#ai-say-in')],lock=on=>parts.forEach(x=>{x.disabled=on;});
-    lock(true);window.AjouraAvatar.react('checking');panelSay(l,busy);
-    let r;try{r=await A.recognize('ai.receipt',blob);}catch(e){lock(false);if(l.isConnected)window.AjouraAvatar.react('attention');panelSay(l,aiMsg[e&&e.reason]||fail);return;}
-    lock(false);if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);
+    lock(true);window.AjouraAvatar.react('checking');window.AjouraTasks.ai(f.dataset.car,'draft');panelSay(l,busy);
+    let r;try{r=await A.recognize('ai.receipt',blob);}catch(e){lock(false);if(f.isConnected)aiTask(f,false);if(l.isConnected)window.AjouraAvatar.react('attention');panelSay(l,aiMsg[e&&e.reason]||fail);return;}
+    lock(false);if(!f.isConnected)return;const [m,ok,filled]=applyAi(f,r);aiTask(f,filled);
     window.AjouraAvatar.react(filled?'neutral':'attention');if(!filled){panelSay(l,r&&r.kind==='other'&&none?none:m);return;}
     showForm(l,f);const n=l.querySelector('.sf-ai-note');if(n){n.hidden=false;n.textContent=m;n.classList.toggle('ok',!!ok);}f.elements.km.focus({preventScroll:true});}
   async function panelImage(f,l,file){const d=await shrink(file,1568,.85);if(!d){panelSay(l,'Kuvaa ei voitu lukea. Kokeile toista kuvaa.');return;}
@@ -535,7 +543,7 @@
   // closing it (×, Escape, the backdrop or saving) returns the focus to the button that opened it.
   // After a save the screen is drawn again, so the opener is found again by what it opens (sheetSel).
   let sheetBack=null,sheetSel='';
-  function closeSheet(){stopListen();const l=glass.querySelector('.sheet-layer');if(!l)return;l.remove();window.AjouraAvatar.react('neutral');screen.inert=false;if(sheetBack&&sheetBack.isConnected)sheetBack.focus({preventScroll:true});sheetBack=null;}
+  function closeSheet(){stopListen();const l=glass.querySelector('.sheet-layer');if(!l)return;const taskCar=l.querySelector('#quickfuel-form')?.dataset.car;if(taskCar&&window.AjouraTasks.snapshot().some(x=>x.car===taskCar&&x.kind==='ai'&&x.state!=='done'))window.AjouraTasks.ai(taskCar,'expired');l.remove();window.AjouraAvatar.react('neutral');screen.inert=false;if(sheetBack&&sheetBack.isConnected)sheetBack.focus({preventScroll:true});sheetBack=null;}
   function refocusSheet(){const el=sheetSel&&(screen.querySelector(sheetSel)||screen.querySelector('.fl-add'));sheetSel='';if(el)el.focus({preventScroll:true});}
   const focusables=root=>[...root.querySelectorAll('a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null||x.tagName==='SUMMARY');
   function openSheet(c,from,fill,kind){const kd=fill?fillKind(c,fill):kind||pickKind(c),cv=fcar(c,kd);closeSheet();sheetBack=from||null;sheetSel=!from?'':from.classList.contains('fl-add')?'.fl-add':from.dataset.flEdit?`[data-fl-edit="${from.dataset.flEdit}"]`:from.dataset.quickfuel?`[data-quickfuel="${from.dataset.quickfuel}"]`:'';const l=document.createElement('div');l.className='sheet-layer';l.innerHTML=quickFuel(c,fill,kd);glass.appendChild(l);screen.inert=true;
@@ -800,7 +808,7 @@
     // asks once, like a clashing reading; "Tallenna silti" saves it, and the screens then mark it.
     {const cv=fcar(c,fillKind(c,fill)),had=new Set(fuelStats(cv).sus.map(x=>x.id)),bad=fuelStats({...cv,fuels:[...(cv.fuels||[]).filter(x=>x!==edit),fill]}).sus.find(x=>!had.has(x.id)),sg='c|'+sig+'|'+fill.qty;
       if(bad&&form.dataset.confirmed!==sg){form.dataset.confirmed=sg;err.textContent=`Kulutus olisi ${number(Math.round(bad.v))} ${unitOf(cv)}/100 km edellisestä täydestä ${unitOf(cv)==='kWh'?'latauksesta':'tankkauksesta'}. Tarkista mittarilukema tai tallenna silti.`;const sb=form.querySelector('[type=submit]');if(sb)sb.textContent='Tallenna silti';return;}}if(edit){for(const k of ['country','cur','amt','rate','est','grade','skip','el'])if(!(k in fill))delete edit[k];Object.assign(edit,fill);}else (c.fuels||(c.fuels=[])).push(fill);if(km>c.km)c.km=km;
-    const avatarSaved=persist();notice=kd==='el'?(edit?'✓ Lataus päivitetty.':'✓ Lataus tallennettu.'):(edit?'✓ Tankkaus päivitetty.':'✓ Tankkaus tallennettu.');if(form.id==='quickfuel-form')closeSheet();const y=screen.scrollTop;render();screen.scrollTop=y;refocusSheet();window.AjouraAvatar.react(avatarSaved?'success':'attention');}
+    const avatarSaved=persist();if(avatarSaved&&form.dataset.taskAi)window.AjouraTasks.ai(c.id,'done');notice=kd==='el'?(edit?'✓ Lataus päivitetty.':'✓ Lataus tallennettu.'):(edit?'✓ Tankkaus päivitetty.':'✓ Tankkaus tallennettu.');if(form.id==='quickfuel-form')closeSheet();const y=screen.scrollTop;render();screen.scrollTop=y;refocusSheet();window.AjouraAvatar.react(avatarSaved?'success':'attention');}
   function removeFill(id){const c=cars.find(c=>c.id===route().id);if(!c||!c.fuels)return;if(!confirm('Poistetaanko tämä kirjaus?'))return;c.fuels=c.fuels.filter(x=>x.id!==id);persist();const y=screen.scrollTop;render();screen.scrollTop=y;refocusSheet();}
   // Tankkaus tab (0.40, Niklas 28.10.2026; havainnekuva hyväksytty). One vehicle at a time: consumption by month against the
   // same months a year earlier (winter raises consumption, so the month before would mislead), fuel costs by month and by

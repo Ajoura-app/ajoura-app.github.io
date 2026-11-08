@@ -10,6 +10,21 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Myöhemmin": "Later",
+    "Ohita": "Dismiss",
+
+    "Katsastusarvio perustuu tallennettuun katsastukseen.": "The inspection estimate is based on the recorded inspection.",
+    // Vehicle record tasks.
+    "Täydennä tankkauksen mittarilukema": "Complete the fuel entry odometer",
+    "Täydennä puuttuva tieto tankkauskirjassa.": "Complete the missing detail in the fuel log.",
+    "Tarkista tuleva katsastus": "Check the upcoming inspection",
+    "Tarkista tuleva huolto": "Check the upcoming service",
+    "Ei avoimia tehtäviä näiden tietojen perusteella.": "No open tasks based on these records.",
+    "Myöhemmin piilottaa tehtävän vuorokaudeksi. Ohitukset koskevat vain tätä laitetta.": "Later hides a task for one day. Dismissals apply only on this device.",
+    "Näytä siirretyt ja ohitetut tehtävät": "Show postponed and dismissed tasks",
+    "viime tankkauksesta sisältää mittarilukeman": "recent fill-ups include an odometer reading",
+    "AI-luonnos odottaa tarkistustasi ja tallennusta.": "AI draft awaits your review and saving.",
+
     "01 / Kirjaa": "01 / Log",
     "02 / Seuraa": "02 / Track",
     "03 / Ennakoi": "03 / Plan ahead",

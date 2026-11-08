@@ -3,6 +3,21 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Myöhemmin": "Senare",
+    "Ohita": "Hoppa över",
+
+    "Katsastusarvio perustuu tallennettuun katsastukseen.": "Besiktningsuppskattningen baseras p\u00e5 den registrerade besiktningen.",
+    // Vehicle record tasks.
+    "Täydennä tankkauksen mittarilukema": "Komplettera tankningens mätarställning",
+    "Täydennä puuttuva tieto tankkauskirjassa.": "Komplettera den saknade uppgiften i tankningsboken.",
+    "Tarkista tuleva katsastus": "Kontrollera kommande besiktning",
+    "Tarkista tuleva huolto": "Kontrollera kommande service",
+    "Ei avoimia tehtäviä näiden tietojen perusteella.": "Inga öppna uppgifter utifrån dessa uppgifter.",
+    "Myöhemmin piilottaa tehtävän vuorokaudeksi. Ohitukset koskevat vain tätä laitetta.": "Senare döljer uppgiften i ett dygn. Överhoppningar gäller bara på denna enhet.",
+    "Näytä siirretyt ja ohitetut tehtävät": "Visa uppskjutna och överhoppade uppgifter",
+    "viime tankkauksesta sisältää mittarilukeman": "senaste tankningar har en mätarställning",
+    "AI-luonnos odottaa tarkistustasi ja tallennusta.": "AI-utkastet väntar på din granskning och att sparas.",
+
     "01 / Kirjaa": "01 / Registrera",
     "02 / Seuraa": "02 / Följ",
     "03 / Ennakoi": "03 / Planera",

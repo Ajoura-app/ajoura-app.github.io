@@ -63,3 +63,6 @@ html.dark .secretary-card{box-shadow:none}
 /* Give the two floating controls their own opaque footer area, so neither covers form controls. */
 .tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--paper))}
 .tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
+.task-controls{display:flex;gap:12px;flex-wrap:wrap}
+.secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
+.task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}

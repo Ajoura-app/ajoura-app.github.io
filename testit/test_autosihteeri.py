@@ -68,7 +68,7 @@ def test_turvallinen_sisalto_ja_suunta(browser,base,width,height):
     try:
         assert s.page.locator('.secretary-context img').count()==0
         assert '<img' in s.page.inner_text('.secretary-context')
-        assert s.page.locator('.secretary-task').count()==3
+        assert s.page.locator('.secretary-task').count()==0
         assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet
     finally:s.sulje()

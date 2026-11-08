@@ -122,9 +122,12 @@ def test_reaktiot_todellisesta_polusta(browser,base):
         p.wait_for_selector('#quickfuel-form:not([hidden])')
         assert p.get_attribute('.avatar-sheet [data-avatar]','data-avatar-state')=='neutral','AI output is still only a draft'
         assert s.talli()==before
+        assert p.evaluate("AjouraTasks.snapshot().find(x=>x.kind==='ai').state")== 'awaiting_confirmation'
+        assert p.locator('.task-ai-pending').is_visible()
         p.click('#quickfuel-form [type=submit]')
         p.wait_for_selector('.avatar-shortcut [data-avatar-state=success]')
         assert len(s.talli()['cars'][0]['fuels'])==len(before['cars'][0]['fuels'])+1
+        assert p.evaluate("AjouraTasks.snapshot().find(x=>x.kind==='ai').state")== 'done'
         assert not s.virheet,s.virheet
     finally:s.sulje()
 
