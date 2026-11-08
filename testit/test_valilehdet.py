@@ -57,7 +57,7 @@ LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scroll
   const viim = sis[sis.length - 1].getBoundingClientRect(), dc = d && getComputedStyle(d), nc = getComputedStyle(n);
   const f = document.querySelector('.tab-dock > .tab-fab'), fb = f && f.getBoundingClientRect();
   return {alusta: !!d, rako: b.top - viim.bottom, fabRako: fb ? fb.top - viim.bottom : null, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
-          kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', sticky: dc ? dc.position : '',
+          kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', peittava: dc ? dc.backgroundColor === getComputedStyle(document.querySelector('.device-glass')).backgroundColor && !['transparent','rgba(0, 0, 0, 0)'].includes(dc.backgroundColor) : false, avustaja: !!d.querySelector('.avatar-shortcut'), sticky: dc ? dc.position : '',
           varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
 
 
@@ -73,7 +73,8 @@ def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, 
         r = s.page.evaluate(LOPPU_JS)
         s.page.wait_for_timeout(150)
         r = s.page.evaluate(LOPPU_JS)
-        assert r["alusta"] and r["sticky"] == "sticky" and "gradient" in r["tausta"], r
+        assert r["alusta"] and r["sticky"] == "sticky", r
+        assert r["peittava"] if r["avustaja"] else "gradient" in r["tausta"], r
         assert r["alaReuna"] <= 0.5, r  # alusta ulottuu näytön alareunaan asti: sisältö ei näy kapselin alta
         if r["fabRako"] is None:
             assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää

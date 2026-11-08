@@ -48,7 +48,7 @@ html.dark .secretary-card{box-shadow:none}
 .avatar-shortcut{position:absolute;left:16px;bottom:calc(100% - 4px);display:grid;place-items:center;width:56px;height:56px;border-radius:50%;border:1px solid var(--hairline);background:var(--t-surface,var(--c-ffffff,#ffffff));pointer-events:auto;z-index:2}
 .avatar-shortcut .assistant-avatar{width:48px;height:48px}
 .avatar-shortcut:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-.screen-content:has(+.tab-dock>.avatar-shortcut){padding-bottom:84px}
+.screen-content:has(+.tab-dock>.avatar-shortcut){padding-bottom:20px}
 .avatar-settings p{font-size:13px;line-height:1.6}
 .avatar-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .avatar-choices button{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;min-height:110px;border:1px solid var(--hairline);border-radius:16px;padding:10px 4px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:12px;overflow-wrap:anywhere}
@@ -61,7 +61,7 @@ html.dark .secretary-card{box-shadow:none}
 @media(prefers-reduced-motion:reduce){.assistant-avatar{animation:none!important}}
 @media print{.avatar-shortcut,.avatar-settings,.avatar-sheet{display:none!important}}
 /* Give the two floating controls their own opaque footer area, so neither covers form controls. */
-.tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--paper))}
+.tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
 .tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
 .task-controls{display:flex;gap:12px;flex-wrap:wrap}
 .secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
