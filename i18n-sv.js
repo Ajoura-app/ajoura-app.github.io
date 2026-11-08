@@ -423,6 +423,7 @@ window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
     'Muutos verrataan vertailujaksoon. Ajoneuvolle muutosta ei näytetä, jos sen tiedot alkavat vasta jakson aikana.': 'Förändringen jämförs med jämförelseperioden. För ett fordon vars uppgifter börjar under perioden visas ingen förändring.',
     // Raportit 26.10.2026 (v0.30)
     'Yhteenveto ajoneuvojen kuluista': 'Sammanfattning av fordonens kostnader',
+    'Kokonais\u00adkulut': 'Totala kostnader',
     'Kokonaiskulut': 'Totala kostnader',
     'Keskimäärin': 'Genomsnitt',
     '/ kk': '/ mån',

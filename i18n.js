@@ -428,6 +428,7 @@
     'Muutos verrataan vertailujaksoon. Ajoneuvolle muutosta ei näytetä, jos sen tiedot alkavat vasta jakson aikana.': 'The change is compared with the comparison period. No change is shown for a vehicle whose data starts during the period.',
     // Raportit 26.10.2026 (v0.30)
     'Yhteenveto ajoneuvojen kuluista': 'Summary of vehicle costs',
+    'Kokonais\u00adkulut': 'Total costs',
     'Kokonaiskulut': 'Total costs',
     'Keskimäärin': 'Average',
     '/ kk': '/ month',

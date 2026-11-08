@@ -1488,7 +1488,7 @@
     // The monthly average divides by the months of the period: whole calendar months count 1 and a month going on (or
     // the ends of Mukautettu) its share of days (monthsIn). The divisor is shown under the period.
     const mTxt=v=>{const r=Math.round(v*10)/10;return dec(r,r%1?1:0);};
-    const w={tot:kc('tot',flEuro,'Kokonaiskulut',dd=>eB(dd.sum)),
+    const w={tot:kc('tot',flEuro,'Kokonais\u00adkulut',dd=>eB(dd.sum)),
       mon:kc('mon',rpCal,'Keskimäärin / kk',dd=>eB(dd.sum/dd.months),dd=>`<p class="rp-basis"><span>${mTxt(dd.months)}</span> <span>kk:n ajalta</span></p>`),
       fuel:kc('fuel',fuelTabIcon,'Polttoaine ja lataus',dd=>eB(gsum(dd,['fuel']))),
       svc:kc('svc',icons.wrench,'Huollot ja korjaukset',dd=>eB(gsum(dd,['service','repair'])))};
