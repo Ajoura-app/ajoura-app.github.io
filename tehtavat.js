@@ -6,7 +6,7 @@
   try { const v=JSON.parse(localStorage.getItem(key)||'{}'); if(v&&typeof v==='object'&&!Array.isArray(v))choices=v; } catch(e){}
   const save=()=>{try{localStorage.setItem(key,JSON.stringify(choices));}catch(e){}};
   const validKm=v=>Number.isSafeInteger(v)&&v>=0;
-  function observe(c,dates,today){
+  function observe(c,dates,today,insights={tasks:[],forecasts:{}}){
     const now=Date.parse(today+'T12:00:00Z'),out=[];
     for(const f of c.fuels||[])if(!validKm(f.km))out.push({key:`${c.id}:fuel:${f.id}`,car:c.id,kind:'fuel',source:f.id,state:'open',title:'Täydennä tankkauksen mittarilukema',href:`#fuel/${c.id}`,priority:0});
     for(const d of dates){
@@ -15,6 +15,8 @@
       if(!near)continue;
       out.push({key:`${c.id}:${d.what}:${d.from}:${d.due}:${d.km}`,car:c.id,kind:d.what,from:d.from,state:'open',title:d.what==='Katsastus'?'Tarkista tuleva katsastus':'Tarkista tuleva huolto',href:d.what==='Huolto'?`#add/${c.id}`:`#vehicle/${c.id}`,priority:days<0||(d.km!==null&&c.km>=d.km)?1:2});
     }
+    for(const x of out)if(x.kind==='Huolto')x.forecast=insights.forecasts[x.from];
+    out.push(...insights.tasks);
     const active=new Set(out.map(x=>x.key));
     for(const old of records.values())if(old.car===c.id&&old.kind!=='ai'&&!active.has(old.key)&&!['done','expired'].includes(old.state)){
       const fixed=old.kind==='fuel'?(c.fuels||[]).some(f=>f.id===old.source&&validKm(f.km)):

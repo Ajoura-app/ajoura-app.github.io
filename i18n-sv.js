@@ -3,6 +3,12 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Kulutus kasvoi vertailujaksoon nähden": "Förbrukningen ökade jämfört med jämförelseperioden",
+    "Vertailussa ovat viimeisin ja kolme aiempaa hyväksyttyä tankkausväliä. Ajotapa ja olosuhteet voivat selittää muutoksen.": "Jämförelsen gäller det senaste och tre tidigare godkända tankningsintervall. Körsätt och förhållanden kan förklara förändringen.",
+    "Vertailukulutus": "Jämförelseförbrukning",
+    "Ajomäärään perustuva huoltorajan arvio": "Uppskattat datumintervall för servicens körsträcka",
+    "Arvio perustuu viimeisen 180 päivän kirjauksiin ja ajon jatkumiseen samalla tasolla. Tarkista myös huollon päiväraja.": "Uppskattningen bygger på de senaste 180 dagarnas uppgifter och antar samma körmängd framöver. Kontrollera även servicens datumgräns.",
+
     // Assistant logging guide.
     "Kirjaa huolto käsin": "Registrera service manuellt",
     "Näytä kirjausohje": "Visa registreringsguide",

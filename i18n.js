@@ -10,6 +10,12 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Kulutus kasvoi vertailujaksoon nähden": "Consumption increased compared with the baseline",
+    "Vertailussa ovat viimeisin ja kolme aiempaa hyväksyttyä tankkausväliä. Ajotapa ja olosuhteet voivat selittää muutoksen.": "The comparison uses the latest and three previous accepted fill-up intervals. Driving style and conditions may explain the change.",
+    "Vertailukulutus": "Baseline consumption",
+    "Ajomäärään perustuva huoltorajan arvio": "Estimated service mileage date range",
+    "Arvio perustuu viimeisen 180 päivän kirjauksiin ja ajon jatkumiseen samalla tasolla. Tarkista myös huollon päiväraja.": "The estimate uses records from the last 180 days and assumes driving continues at the same rate. Also check the service calendar deadline.",
+
     // Assistant logging guide.
     "Kirjaa huolto käsin": "Log service manually",
     "Näytä kirjausohje": "Show logging guide",
