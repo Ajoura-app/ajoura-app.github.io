@@ -63,16 +63,34 @@
 .secretary-more>summary::-webkit-details-marker{display:none}
 .secretary-more>summary:after{content:'⌄';font-size:20px;line-height:1}
 .secretary-more[open]>summary:after{transform:rotate(180deg)}
-.secretary-task p{font-size:14px;line-height:1.55;margin:0}
-.secretary-task button{font:inherit;font-size:13px;font-weight:650;min-height:46px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);padding:10px;overflow-wrap:anywhere;cursor:pointer}
-.secretary-tasks h3{font-size:18px;margin:6px 0 12px}
-.secretary-task{padding:16px;border:1px solid var(--hairline);border-radius:16px;margin-top:8px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
-.secretary-task h4{font-size:15px;margin:0 0 6px}
-.secretary-task a{display:inline-block;margin-top:8px;padding:8px 0;color:var(--ink);font-size:14px;font-weight:650}
-.secretary-task button{margin-top:12px}
-.secretary-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border:1px solid var(--hairline);border-radius:16px;font-size:12px}
-.secretary-summary strong{display:block;font-size:18px;margin-top:4px}
-.secretary-summary a{color:var(--ink);font-size:14px;padding:8px 0}
+/* One observation stays visible; full reasons and device choices remain available on demand. */
+.secretary-tasks{min-width:0}
+.secretary-task{min-width:0;padding:12px;border:1px solid var(--hairline);border-radius:16px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
+.task-heading{display:flex;align-items:flex-start;gap:10px;min-width:0}
+.task-heading>div{flex:1;min-width:0}
+.task-icon{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:8px;background:var(--t-hero,var(--soft-blue));color:var(--blue)}
+.secretary-task h4{margin:0;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.secretary-primary h4{font-size:16px}
+.secretary-task p{margin:0;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.secretary-task .task-reason{margin-top:4px;color:var(--muted)}
+.task-footer{display:flex;flex-wrap:wrap;align-items:flex-start;gap:0 12px;margin-top:4px}
+.task-footer>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:6px 0;color:var(--ink);font-size:13px;font-weight:650}
+.task-details{min-width:0;max-width:100%;margin-left:auto}
+.task-details[open]{flex-basis:100%}
+.task-details>summary,.secretary-all-tasks>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 0;list-style:none;color:var(--muted);font-size:13px;cursor:pointer}
+.task-details>summary{justify-content:flex-end}
+.task-details>summary::-webkit-details-marker,.secretary-all-tasks>summary::-webkit-details-marker{display:none}
+.task-details>summary:after,.secretary-all-tasks>summary:after{content:'⌄';font-size:20px;line-height:1}
+.task-details[open]>summary:after,.secretary-all-tasks[open]>summary:after{transform:rotate(180deg)}
+.task-detail-body{padding-top:4px;border-top:1px solid var(--hairline)}
+.task-detail-body>p{margin-top:8px}
+.secretary-task button{font:inherit;font-size:13px;font-weight:650;min-height:44px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);padding:8px 10px;overflow-wrap:anywhere;cursor:pointer}
+.secretary-all-tasks{min-width:0;margin-top:4px}
+.secretary-all-tasks>summary{justify-content:space-between}
+.secretary-all-tasks>summary>span:first-child{flex:1}
+.task-count{font-variant-numeric:tabular-nums}
+.secretary-task-list{display:grid;gap:8px}
+.secretary-tasks .task-empty{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
 .secretary-home :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 html.dark .secretary-card{box-shadow:none}
 @media(max-width:350px){.secretary-intro{gap:10px}.secretary-intro>.assistant-avatar{width:64px;height:64px}}
@@ -112,8 +130,23 @@ html.dark .secretary-card{box-shadow:none}
 /* Give the two floating controls their own opaque footer area, so neither covers form controls. */
 .tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
 .tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
-.task-controls{display:flex;gap:12px;flex-wrap:wrap}
-.secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
+/* Only the home dock shares one row; the other views keep their existing floating controls. */
+@media screen{
+#app-screen:has(.secretary-home){scroll-padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+#app-screen:has(.secretary-home)>.tab-dock{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:6px;margin-top:0;padding:6px 12px calc(8px + env(safe-area-inset-bottom));background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
+#app-screen:has(.secretary-home)>.tab-dock>.tab-bar.main-tabs{grid-column:2;grid-row:1;width:100%;min-width:0;margin:0;zoom:1}
+#app-screen:has(.secretary-home)>.tab-dock>.main-tabs a{min-width:44px;min-height:44px}
+#app-screen:has(.secretary-home)>.tab-dock>:is(.avatar-shortcut,.tab-fab){position:relative;inset:auto;grid-row:1;width:44px;height:44px}
+#app-screen:has(.secretary-home)>.tab-dock>.avatar-shortcut{grid-column:1}
+#app-screen:has(.secretary-home)>.tab-dock>.tab-fab{grid-column:3}
+#app-screen:has(.secretary-home)>.tab-dock .avatar-shortcut .assistant-avatar{width:40px;height:40px}
+}
+/* Retain the home dock's layout while typing: restoring it on blur must not move a button mid-click. */
+@media screen and (pointer:coarse){
+#app-screen:has(.secretary-home):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:grid;visibility:hidden}
+}
+.task-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--muted);margin:8px 0}
 .task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}
 .secretary-support{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
 .secretary-support a,.secretary-support button{display:inline-flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:8px;border:1px solid var(--hairline);border-radius:10px;background:none;color:var(--ink);font:inherit;font-size:13px;line-height:1.4;text-align:center;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere;cursor:pointer}

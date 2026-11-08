@@ -1,7 +1,7 @@
 """04: task observations use real records; decisions never modify garage data."""
 import pytest
 import tiedot
-from apu import avaa,KELLO, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
+from apu import avaa,KELLO, avaa_kirjausvaihtoehdot, kirjaa_avustajasta, avaa_tehtavat, avaa_tehtavan_lisatiedot
 
 
 def test_tietokerros(browser,base):
@@ -33,10 +33,12 @@ def test_tehtavat_ja_valinnat(browser,base,lang,theme):
         p=s.page;before=s.talli();assert p.locator('.secretary-task').count()==2
         keys=p.locator('[data-task-key]').evaluate_all('(es)=>es.map(e=>e.dataset.taskKey)')
         p.evaluate('AjouraApp.refresh()');assert p.locator('[data-task-key]').evaluate_all('(es)=>es.map(e=>e.dataset.taskKey)')==keys
+        avaa_tehtavan_lisatiedot(p,p.locator('.secretary-task').first)
         p.locator('[data-task-later]').first.click();assert p.locator('.secretary-task').count()==1
+        avaa_tehtavan_lisatiedot(p,p.locator('.secretary-task').first)
         p.locator('[data-task-dismiss]').first.click();assert p.locator('.secretary-task').count()==0
         p.reload();p.wait_for_selector('.secretary-tasks');assert p.locator('.secretary-task').count()==0
-        p.click('[data-task-reset]');assert p.locator('.secretary-task').count()==2
+        avaa_tehtavat(p);p.click('[data-task-reset]');assert p.locator('.secretary-task').count()==2
         assert before==s.talli()
         assert p.locator('.task-coverage').inner_text().startswith('1/1')
         assert p.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
@@ -95,6 +97,7 @@ def test_tehtavat_offline(browser):
     try:
         s.asenna();before=s.talli();s.ctx.set_offline(True);s.avaa('home')
         p=s.page;assert p.locator('.secretary-task').count()==2
+        avaa_tehtavan_lisatiedot(p,p.locator('.secretary-task').first)
         p.locator('[data-task-dismiss]').first.click();assert p.locator('.secretary-task').count()==1
         s.avaa('home');assert p.locator('.secretary-task').count()==1
         assert s.talli()==before

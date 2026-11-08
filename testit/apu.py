@@ -126,6 +126,22 @@ def avaa_ajoneuvovalitsin(page):
         valitsin.locator('summary').click()
 
 
+def avaa_tehtavat(page):
+    """Avaa etusivun muut tehtävät ja laitekohtaiset valinnat käyttäjän tavoin."""
+    panel = page.locator('.secretary-all-tasks')
+    if panel.count() and panel.get_attribute('open') is None:
+        panel.locator(':scope > summary').click()
+
+
+def avaa_tehtavan_lisatiedot(page, task):
+    """Tee tehtävä ja sen perustelut/päätökset näkyviksi ennen vuorovaikutusta."""
+    if not task.is_visible():
+        avaa_tehtavat(page)
+    panel = task.locator('.task-details')
+    if panel.get_attribute('open') is None:
+        panel.locator(':scope > summary').click()
+
+
 def valitse_ajoneuvo(page, tunniste):
     """Valitse etusivun ajoneuvo käyttäjän avaamasta valitsimesta."""
     avaa_ajoneuvovalitsin(page)

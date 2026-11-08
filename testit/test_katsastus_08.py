@@ -1,7 +1,7 @@
 """08: estimates never masquerade as a verified inspection deadline."""
 from pathlib import Path
 import pytest,tiedot
-from apu import avaa,KELLO
+from apu import avaa,KELLO,avaa_ajoneuvon_tiedot,avaa_tehtavan_lisatiedot
 
 
 def car(date='2025-11-15'):
@@ -13,12 +13,13 @@ def test_arvio_ei_maaraaika(browser,base,lang,estimate,unknown,theme):
     s=avaa(browser,base,'home',autot=[car()],kello=KELLO,kieli=lang,leveys=320,asennettu=True,extra={'ajoura-ulkoasu':theme})
     try:
         p=s.page;before=s.talli()
+        avaa_ajoneuvon_tiedot(p)
         assert estimate in p.inner_text('.row-status')
         assert unknown in p.inner_text('.row-status')
         task=p.locator('[data-task-key*=inspection-check]');assert task.count()==1
         assert unknown in task.inner_text()
         for _ in range(4):p.evaluate('AjouraApp.refresh()')
-        assert task.count()==1;task.locator('[data-task-dismiss]').click();p.reload();p.wait_for_selector('.secretary-tasks');assert task.count()==0
+        assert task.count()==1;avaa_tehtavan_lisatiedot(p,task);task.locator('[data-task-dismiss]').click();p.reload();p.wait_for_selector('.secretary-tasks');assert task.count()==0
         assert before==s.talli();assert not s.virheet,s.virheet
     finally:s.sulje()
 
@@ -27,6 +28,7 @@ def test_tarkistus_ei_vaita_myohastymista_tai_varausta(browser,base,date):
     s=avaa(browser,base,'home',autot=[car(date)],kello=KELLO)
     try:
         p=s.page
+        avaa_ajoneuvon_tiedot(p)
         assert 'myöhässä' not in p.inner_text('.row-status')
         assert p.locator('.row-status.late,.row-status.soon,.upcoming li.late').count()==0
         assert p.locator('[data-task-key*=inspection-check]').count()==1
@@ -59,6 +61,7 @@ def test_arvion_tekstin_kontrasti(browser,base,theme):
     from test_teemat import KONTRASTI
     s=avaa(browser,base,'home',autot=[car('2023-01-01')],kello=KELLO,leveys=320,asennettu=True,extra={'ajoura-ulkoasu':theme})
     try:
+        avaa_ajoneuvon_tiedot(s.page)
         rows=[x for x in s.page.evaluate(KONTRASTI) if x['t'] in ['Katsastusarvio','Arvio','Virallinen määräpäivä ei ole tiedossa.','Tarkista katsastuksen määräpäivä']]
         assert len(rows)>=4
         assert not [x for x in rows if x['k']<4.5],rows

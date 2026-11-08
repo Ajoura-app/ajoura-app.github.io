@@ -3,6 +3,11 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Compact observations; the existing task decisions and calculations are unchanged.
+    'Muistutus perustuu omaan huoltoväliisi.': 'Påminnelsen utgår från ditt serviceintervall.',
+    'Näytä kaikki tehtävät': 'Visa alla uppgifter',
+    'Tehtävien valinnat': 'Uppgiftsalternativ',
+    'Lisätiedot': 'Detaljer',
     // Compact assistant card; actions keep the existing recording workflows.
     'Puhu': 'Tala',
     'Kirjoita': 'Skriv',

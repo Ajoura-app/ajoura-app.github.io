@@ -26,9 +26,7 @@ def test_valilehdissa_vain_kuvakkeet(browser, base, kieli):
 
 @pytest.mark.parametrize("leveys", [320, 360, 390, 430])
 def test_alavalikko_kelluva_kapseli(browser, base, leveys):
-    """0.72: alavalikko on kelluva kapseli (pyöristetty, keskellä, valittu korostettu). 0.73: sen leveys on sama kuin
-    ajoneuvoikkunan sisällön (Koti-näkymän tilarivi ja napit) ja kuvakkeet ovat tasavälein. 0.88: napit ovat kortin
-    oikeassa reunassa, joten leveyttä verrataan täysleveään tilariviin."""
+    """Kapseli on keskellä, kuvakkeet tasavälein. Etusivulla sen sivuille jää tila hahmolle ja ＋-painikkeelle."""
     s = avaa(browser, base, "home", autot=[tiedot.auto()], leveys=leveys, kello=KELLO)
     try:
         avaa_ajoneuvon_tiedot(s.page)
@@ -39,7 +37,7 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
           return {vasen: b.left - k.left, oikea: b.right - k.right, keski: (b.left + b.right) / 2 - (g.left + g.right) / 2,
                   py: parseFloat(cs.borderTopLeftRadius), alaväli: alav, h: b.height, korostus: a.backgroundColor,
                   valit: xs.slice(1).map((x, i) => x - xs[i])}}""")
-        assert abs(r["vasen"]) <= 2 and abs(r["oikea"]) <= 2 and abs(r["keski"]) <= 1, r
+        assert r["vasen"] >= 0 and r["oikea"] <= 0 and abs(r["keski"]) <= 1, r
         assert r["py"] >= r["h"] / 2 - 1 and r["korostus"] != "rgba(0, 0, 0, 0)", r
         assert r["alaväli"] <= 10, r  # 0.74: kapseli lähellä alareunaa (iPhonessa kotipalkin yläpuolella)
         assert r["korostus"] == "rgb(223, 234, 253)", r  # 0.109 (Niklas): valittu vaaleansiniseksi kortin painikkeiden tapaan (0.74–0.108 täysi sininen)
@@ -59,7 +57,7 @@ LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scroll
   const f = document.querySelector('.tab-dock > .tab-fab'), fb = f && f.getBoundingClientRect();
   return {alusta: !!d, rako: b.top - viim.bottom, fabRako: fb ? fb.top - viim.bottom : null, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
           kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', peittava: dc ? dc.backgroundColor === getComputedStyle(document.querySelector('.device-glass')).backgroundColor && !['transparent','rgba(0, 0, 0, 0)'].includes(dc.backgroundColor) : false, avustaja: !!d.querySelector('.avatar-shortcut'), sticky: dc ? dc.position : '',
-          varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
+          koti: !!document.querySelector('.secretary-home'), varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
 
 
 @pytest.mark.parametrize("teema", [None, "dark"])
@@ -81,7 +79,10 @@ def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, 
             assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
         else:  # 0.107: kelluva ＋ kapselin yläpuolella; viimeinen kortti jää kokonaan myös sen yläpuolelle
             assert 8 <= r["fabRako"] <= 40, r
-        assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r  # 0.74:n paikka säilyy
+        if r['koti']:
+            assert kotipalkki + 6 <= r['kapseliAla'] <= kotipalkki + 10, r
+        else:
+            assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r
         if teema == "dark":
             assert r["varjo"] == "none", r  # käänteisvärisuodatin tekisi varjosta vaalean hehkun
         else:

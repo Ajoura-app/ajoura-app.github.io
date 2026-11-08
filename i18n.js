@@ -10,6 +10,11 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Compact observations; the existing task decisions and calculations are unchanged.
+    'Muistutus perustuu omaan huoltoväliisi.': 'This reminder uses your service interval.',
+    'Näytä kaikki tehtävät': 'Show all tasks',
+    'Tehtävien valinnat': 'Task options',
+    'Lisätiedot': 'Details',
     // Compact assistant card; actions keep the existing recording workflows.
     'Puhu': 'Speak',
     'Kirjoita': 'Type',

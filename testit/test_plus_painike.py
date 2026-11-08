@@ -40,8 +40,13 @@ def test_sijainti_ja_ulkoasu(browser, base, leveys, nakyma, extra):
     try:
         r = pg.evaluate(SIJAINTI_JS)
         assert r["n"] == 1 and r["dockissa"], r  # yksi painike, alavalikon kiinteässä kerroksessa
-        assert 16 <= r["oikea"] <= 20 and 12 <= r["ylos"] <= 16, r
-        assert r["w"] >= 56 and r["h"] >= 56 and r["pyorea"] and not r["peittaa"] and r["naytolla"], r
+        if nakyma == 'home':
+            assert r['oikea'] == 12 and -54 <= r['ylos'] <= -44, r
+            assert r['w'] == 44 and r['h'] == 44, r
+        else:
+            assert 16 <= r["oikea"] <= 20 and 12 <= r["ylos"] <= 16, r
+            assert r["w"] >= 56 and r["h"] >= 56, r
+        assert r["pyorea"] and not r["peittaa"] and r["naytolla"], r
         assert r["tausta"] == "rgb(223, 234, 253)" and r["teksti"] == "" and r["varjo"] != "none", r  # 0.109: vaaleansininen, ei tekstiä
         # Pysyy paikallaan vieritettäessä.
         pg.evaluate("document.querySelector('#app-screen').scrollTop = 400"); pg.wait_for_timeout(100)
@@ -61,7 +66,7 @@ def test_iphone_safe_area_ja_tumma(browser, base, kotipalkki):
             s.context.new_cdp_session(pg).send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 47, "bottom": kotipalkki}})
             pg.wait_for_timeout(200)
         r = pg.evaluate(SIJAINTI_JS)
-        assert 12 <= r["ylos"] <= 16 and not r["peittaa"] and r["naytolla"], r
+        assert -54 <= r["ylos"] <= -44 and not r["peittaa"] and r["naytolla"], r
         # 0.109: tumma tila kääntää näkymän värit suodattimella; painike kääntyy muun näkymän mukana (kuten kortin painikkeet).
         assert r["suodatin"] == "none", r
         assert not s.virheet, s.virheet
