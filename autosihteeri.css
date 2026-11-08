@@ -68,3 +68,5 @@ html.dark .secretary-card{box-shadow:none}
 .task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}
 .secretary-support{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
 .secretary-support a,.secretary-support button{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.assistant-local input[type=text]{display:block;width:100%;min-height:44px;padding:10px;border:1px solid var(--hairline);border-radius:10px;font:inherit;font-size:16px;color:var(--ink);background:var(--t-surface,var(--paper))}
+.assistant-local-result{white-space:pre-wrap;overflow-wrap:anywhere}

@@ -360,6 +360,11 @@
     accessToken: async () => { if (!enabled || !session || !session.user.id) return ''; try { await token(); } catch (e) { return ''; } return session ? session.access_token : ''; },
     account: () => (session && session.user.id ? { email: session.user.email } : null), apiKey: KEY, base: BASE,
     signedIn: () => !!session, forget: () => { signedOut(''); set(baseKey, ''); }, changed: () => schedule(), start: () => schedule(0),
+    // Readiness only; never grants access. Assistant server rechecks snapshot and membership.
+    analysisReady: () => {
+      const b=getJson(baseKey),user=session?.user?.id;
+      return !!(user&&state==='ok'&&!running&&b?.user===user&&(b.owner||user)===(garage?.owner||user)&&!formViews.includes(location.hash.slice(1).split('/')[0])&&!document.querySelector('.sheet-layer')&&same(clean(App().state()),b.data));
+    },
     _merge: merge // for tests
   };
 })();

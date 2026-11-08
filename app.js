@@ -60,9 +60,8 @@
   const oldGroup={'Moottoriöljyn vaihto':'Muu huolto','Jarruhuolto':'Muu huolto','Ilmansuodattimen vaihto':'Muu huolto','Pyyhkijänsulkien vaihto':'Muu huolto','Akun vaihto':'Muu huolto','Polttimon vaihto':'Muu huolto','Korjaus':'Korjaus ja osan vaihto','Osan vaihto':'Korjaus ja osan vaihto','Pesu ja vahaus':'Autohoito'};
   const renamed={'Korjaus':'Korjaus ja osan vaihto','Osan vaihto':'Korjaus ja osan vaihto','Pesu ja vahaus':'Autohoito'};
   // Illustrative reminder interval. Presented as a user's own setting, never as manufacturer guidance.
-  const serviceKinds=['Huolto','Määräaikaishuolto','Vuosihuolto','Moottoriöljyn vaihto','Kausihuolto','Perämoottorin huolto'];
   // Muu huolto counts as a service (resets the service estimate) only when engine oil was changed (decision 26.10.2026).
-  const isService=e=>serviceKinds.includes(e.type)||(e.type==='Muu huolto'&&(e.items||[]).includes('Moottoriöljy'));
+  const isService=window.AjouraAnalytics.isService;
   // Other kinds (v0.31): renamed old types and the job list for each type. Old service-like types use the kind's service list.
   const planOf=c=>kindPlan[c.kind]||kindPlan.other,careOf=c=>c.kind==='boat'?'Venehoito':'Pesu ja hoito';
   const oldKindSvc=['Moottoriöljyn vaihto','Ilmansuodattimen vaihto','Akun vaihto','Jarruhuolto','Ketjun huolto','Variaattorihihnan vaihto','Telamaton vaihto','Liukupalojen vaihto','Siipipyörän vaihto','Perämoottorin huolto','Hydrauliöljyn vaihto','Terien teroitus'];
@@ -141,7 +140,7 @@
   const number=value=>Number(value).toLocaleString('fi-FI',{maximumFractionDigits:2});
   const date=value=>new Intl.DateTimeFormat('fi-FI').format(new Date(value+'T12:00:00'));
   const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
-  const addMonths=(value,months)=>{const [y,m,d]=value.split('-').map(Number);const t=new Date(Date.UTC(y,m-1+months,1));const last=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();return `${t.getUTCFullYear()}-${String(t.getUTCMonth()+1).padStart(2,'0')}-${String(Math.min(d,last)).padStart(2,'0')}`;};
+  const addMonths=window.AjouraAnalytics.addMonths;
   const newest=(a,b)=>b.date.localeCompare(a.date)||b.km-a.km;
   const maxKm=c=>Math.max(0,...c.events.map(e=>e.km).filter(k=>k!==null),...(c.fuels||[]).map(f=>f.km));
   const costOf=events=>events.reduce((sum,e)=>sum+(e.cost!==''&&e.cost!=null&&Number.isFinite(Number(e.cost))?Number(e.cost):0),0);
@@ -400,14 +399,12 @@
   // electric ones electricity only; hybrids and the rest fuel and electricity. fcar gives a copy of the vehicle that holds
   // only one kind (fuel "Sähkö", "Kaasu" or, for fuel, a petrol vehicle), so consumption, costs, charts and the PDF
   // work on one unit at a time without being rewritten.
-  const fillKind=(c,f)=>c.fuel==='Sähkö'||f.el===true?'el':gasGrades.includes(f.grade)||(!f.grade&&c.fuel==='Kaasu')?'gas':'fuel';
-  const chargeKinds=c=>{const k=c.fuel==='Sähkö'?['el']:c.fuel==='Kaasu'?['gas','fuel']:['Bensiini','Diesel'].includes(c.fuel)?['fuel']:['fuel','el'];for(const f of c.fuels||[]){const x=fillKind(c,f);if(!k.includes(x))k.push(x);}return k;};
+  const {fillKind,chargeKinds,fcar}=window.AjouraAnalytics;
   const pickKind=(c,pref)=>{const k=chargeKinds(c);return k.includes(pref)?pref:k[0];};
-  const fcar=(c,k)=>{const all=c.fuels||[],fl=all.filter(f=>fillKind(c,f)===k),fu=k==='el'?'Sähkö':k==='gas'?'Kaasu':c.fuel==='Kaasu'||c.fuel==='Sähkö'?'Bensiini':c.fuel;return fl.length===all.length&&fu===c.fuel?c:{...c,fuels:fl,fuel:fu};};
   const usedKinds=c=>new Set((c.fuels||[]).map(f=>fillKind(c,f)));
   const fillWord=c=>{const k=usedKinds(c);return k.has('el')&&k.size>1?'Tankkaus / lataus':k.has('el')||c.fuel==='Sähkö'?'Lataus':'Tankkaus';};
   const costWord=c=>{const k=usedKinds(c);return k.has('el')&&k.size>1?'Polttoaine ja lataus':k.has('el')||c.fuel==='Sähkö'?'Latauskulut':'Polttoaine';};
-  const fuelParts=c=>chargeKinds(c).map(k=>{const v=fcar(c,k);return {k,v,s:fuelStats(v),u:unitOf(v)};}).filter(x=>x.s.fills.length);
+  const fuelParts=c=>window.AjouraAnalytics.fuelParts(c,{hourlyValue:hourly(c)});
   const bolt='<path d="M13 3 6 13h5l-1 8 7-10h-5z"/>';
   // One fill-up sheet (0.41, AJ-12): the everyday fields first (odometer, price, total, litres, full tank, date, grade);
   // a fill-up abroad and the price estimate are behind Lisävalinnat. The same sheet edits a fill-up (0.40): its values
@@ -634,15 +631,14 @@
   function timeline(c,sorted){let last='';const kinds2=[['all','Kaikki'],['service','Huollot'],['repair','Korjaukset'],['inspect','Katsastukset'],['tyres','Renkaat']].filter(([k])=>k==='all'||sorted.some(e=>kind(e.type)===k));return `${sorted.length>=4&&kinds2.length>2?`<div class="timeline-filter" role="group" aria-label="Suodata historiaa">${kinds2.map(([k,l])=>`<button type="button" data-tl="${k}" aria-pressed="${k==='all'}">${l}</button>`).join('')}</div>`:''}<ol class="timeline">${sorted.map(e=>{const y=e.date.slice(0,4),head=y!==last?`<li class="timeline-year" data-y="${y}">${y}</li>`:'';last=y;return head+`<li class="timeline-item ${kind(e.type)}" data-y="${y}" data-cost="${e.cost&&Number.isFinite(Number(e.cost))?Number(e.cost):0}"><a href="#event/${c.id}/${e.id}"><span class="timeline-dot" aria-hidden="true"></span><span class="timeline-body"><strong>${escape(dispType(c,e.type))}</strong><small>${date(e.date)}${kmPart(e,c)}${e.items?.length?' · '+e.items.length+' toimenpidettä':''}${e.photos?.length?' · '+e.photos.length+' kuva'+(e.photos.length>1?'a':''):''}${e.receipts?.length?' · '+e.receipts.length+' kuitti'+(e.receipts.length>1?'a':''):''}</small></span>${e.cost?`<span class="timeline-cost">${number(e.cost)} €</span>`:''}</a></li>`;}).join('')}</ol><div class="timeline-total"><span>Yhteensä</span><strong id="tl-total">${number(costOf(sorted))} €</strong></div><a class="fab" href="#add/${c.id}" aria-label="Lisää merkintä">＋</a>`;}
   // Finnish periodic inspection for cars and vans (4-2-2-1): first at 4 years, then at 6 and 8 years, then every year.
   // The model year stands in for the first-registration date, so the result is an estimate.
-  const inspMonths=(c,last)=>Number(last.date.slice(0,4))-Number(c.year)<8?24:12;
+  const inspMonths=window.AjouraAnalytics.inspMonths;
   function firstInspection(c){const y=Number(c.year);return y&&y+4>=Number(today().slice(0,4))?y+4:null;}
   function upcoming(c){const ev=[...c.events].sort(newest),svc=ev.find(isService),insp=ev.find(e=>e.type==='Katsastus'),t=today(),first=insp?null:firstInspection(c);
     const row=(label,last,months,km)=>{if(!last&&label==='Katsastus'&&first)return `<li><span class="up-dot"></span><span><strong>${label}</strong><small>Ensimmäinen katsastus arviolta vuonna ${first}, kun auto täyttää 4 vuotta.</small></span></li>`;if(!last)return `<li><span class="up-dot"></span><span><strong>${label}</strong><small>Kirjaa viimeisin, niin AJOURA arvioi seuraavan.</small></span></li>`;const due=addMonths(last.date,months),dueKm=km&&last.km!==null?last.km+km:null,late=due<t||(dueKm!==null&&c.km>=dueKm);return `<li class="${late?'late':''}"><span class="up-dot"></span><span><strong>${label}${late?' · myöhässä':''}</strong><small>Arvio: ${date(due)}${dueKm!==null?' tai '+number(dueKm)+' km':''}</small></span></li>`;};
     return `<div class="upcoming"><h3>Seuraavaksi</h3><ul>${row('Huolto',svc,profile.months,hourly(c)?0:profile.km)}${isCar(c)?row('Katsastus',insp,insp?inspMonths(c,insp):12,0):''}</ul>${isCar(c)?'<p>Huoltoarvio perustuu merkintöihisi ja huoltoväliin (Valikko → Asetukset). Katsastusarvio noudattaa Suomen sääntöä (4, 6 ja 8 vuotta, sitten vuosittain) vuosimallin mukaan. Tarkan päivän näet Traficomin Omat ajoneuvotiedot -palvelusta.</p>':`<p>Huoltoarvio perustuu merkintöihisi ja huoltoväliin${hourly(c)?' kuukausina, koska laitteessa on tuntimittari':''}. Huoltovälin voi vaihtaa kohdassa Valikko → Asetukset.</p>`}${svc||insp?`<button class="app-button secondary cal-button" type="button" data-ics="${c.id}">${svg(icons.bell)} Lisää muistutukset kalenteriin</button>`:''}</div>`;}
   // Calendar reminders: an .ics file with the estimated service and inspection dates, each with an alert a week
   // before. The phone's calendar does the reminding, so it works without a server or notifications permission.
-  function dueDates(c){const ev=[...c.events].sort(newest),svc=ev.find(isService),insp=ev.find(e=>e.type==='Katsastus'),out=[];
-    if(svc)out.push({what:'Huolto',from:svc.date,due:addMonths(svc.date,profile.months),km:svc.km===null||hourly(c)?null:svc.km+profile.km});if(insp&&isCar(c))out.push({what:'Katsastus',from:insp.date,due:addMonths(insp.date,inspMonths(c,insp)),km:null});return out;}
+  const dueDates=c=>window.AjouraAnalytics.dueDates(c,profile,{hourlyValue:hourly(c),isCarValue:isCar(c)});
   function calendar(id){const c=cars.find(c=>c.id===id);if(!c)return;const items=dueDates(c);if(!items.length)return;const stamp=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',esc=v=>String(v).replace(/[\\,;]/g,m=>'\\'+m).replace(/\n/g,'\\n');
     const day=d=>d.replace(/-/g,''),next=d=>{const t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+1);return t.toISOString().slice(0,10).replace(/-/g,'');};
     const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AJOURA//Huoltomuistutus//FI','CALSCALE:GREGORIAN'];
@@ -700,37 +696,11 @@
     persist();notice='✓ Omistajanvaihdos kirjattu historiaan.';go('vehicle/'+c.id);}
   // Fuel log: fills (or charges) per car. Consumption is measured between full-tank fills, so a partial
   // fill in between is added to the next full one, the way a trip computer would.
-  const unitOf=c=>c.fuel==='Sähkö'?'kWh':c.fuel==='Kaasu'?'kg':'l';
+  const unitOf=window.AjouraAnalytics.unitOf;
   const dec=(v,d=1)=>Number(v).toLocaleString('fi-FI',{minimumFractionDigits:d,maximumFractionDigits:d});
   const per=c=>hourly(c)?'h':'100 km';
   const susMax={l:40,kWh:80,kg:30};
-  function fuelStats(c){const fk=hourly(c)?1:100,f=[...(c.fuels||[])].sort((a,b)=>a.km-b.km||a.date.localeCompare(b.date)),full=f.map((x,i)=>x.full?i:-1).filter(i=>i>=0);
-    const sumQty=(a,b)=>f.slice(a+1,b+1).reduce((n,x)=>n+x.qty,0);let avg=null,lastCons=null;
-    
-    const priced=f.filter(x=>x.cost!==null),cost=priced.reduce((n,x)=>n+x.cost,0),qty=priced.reduce((n,x)=>n+x.qty,0);
-    // 0.58: an interval that holds a fill-up marked "Älä huomioi kulutuksessa" (skip: e.g. someone else filled up in between
-    // and the amount is unknown) is left out of consumption; its litres and costs still count everywhere else.
-    // 0.77: an interval that cannot be real (over 40 l, 80 kWh or 30 kg per 100 km; e.g. 50 l over 10 km = 500 l/100 km)
-    // comes from an odometer reading that does not match, typically the reading the fill-up sheet fills in left unchanged.
-    // Its end reading is then left out: the interval is joined to the next one (litres and km added together, as if that
-    // fill-up had been partial), which gives the right consumption when only that one reading is wrong. If the joined
-    // interval is still impossible, or there is no next interval, the interval is left out like skip. Stored data is not
-    // changed; the fill-up is marked "Tarkista mittarilukema" (sus) and the screens and the PDF say what was done.
-    const lim=hourly(c)?Infinity:susMax[unitOf(c)]||Infinity,sus=[];let carry=null;
-    // 0.95: readings that contradict the dates (a larger reading on an earlier day than a smaller one, e.g. 156 850 km on
-    // 28.10. and 156 848 km on 1.11.) cannot both be right, and it is not known which one is wrong. Every interval that
-    // touches such a fill-up is left out of consumption (not joined: a join would hide the error in a plausible number).
-    // Stored data is not changed; the fill-ups are listed in ord and marked "Tarkista mittarilukema" like sus.
-    const bad=new Set();{let mx='';f.forEach((x,i)=>{if(mx&&x.date<mx)bad.add(i);if(x.date>mx)mx=x.date;});let mn='9999';for(let i=f.length-1;i>=0;i--){if(f[i].date>mn)bad.add(i);if(f[i].date<mn)mn=f[i].date;}}
-    const ord=[...bad].sort((a,b)=>a-b).map(i=>({id:f[i].id,date:f[i].date,km:f[i].km}));
-    const series=[];let sq=0,sd=0;for(let k=1;k<full.length;k++){const p=full[k-1],b=full[k],d=f[b].km-f[p].km;
-      if(!(d>0)||f.slice(p+1,b+1).some(x=>x.skip)||(bad.size&&[...bad].some(i=>i>=p&&i<=b))){if(carry){sus.push({...carry.s,how:'drop'});carry=null;}continue;}
-      let q=sumQty(p,b),dd=d;const one={id:f[b].id,date:f[b].date,v:q/d*fk};
-      if(carry){const jv=(q+carry.q)/(dd+carry.d)*fk;if(jv<=lim){q+=carry.q;dd+=carry.d;sus.push({...carry.s,how:'join'});}else sus.push({...carry.s,how:'drop'});carry=null;}
-      if(q/dd*fk>lim){carry={q,d:dd,s:one};continue;}
-      sq+=q;sd+=dd;series.push({date:f[b].date,km:f[b].km,v:q/dd*fk,q,d:dd,id:f[b].id});}
-    if(carry)sus.push({...carry.s,how:'drop'});if(sd>0){avg=sq/sd*fk;lastCons=series[series.length-1].v;}
-    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series,sus,ord};}
+  const fuelStats=c=>window.AjouraAnalytics.fuelStats(c,{hourlyValue:hourly(c)});
   // Small inline SVG line charts (no library). pts: [{x,y,cls?,tip}] in data units; avg draws a dashed level line.
   function lineChart(pts,{yFmt,xLabels,avg,avgLabel,line=true,cls=''}){if(pts.length<2)return '';const W=320,H=150,L=38,R=10,T=12,B=22;
     const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y).concat(avg!=null?[avg]:[]);let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);if(x1===x0)x1=x0+1;const pad=(y1-y0)*.15||Math.abs(y1)*.1||1;y0=Math.max(0,y0-pad);y1+=pad;
