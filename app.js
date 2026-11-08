@@ -66,7 +66,7 @@
   const planOf=c=>kindPlan[c.kind]||kindPlan.other,careOf=c=>c.kind==='boat'?'Venehoito':'Pesu ja hoito';
   const oldKindSvc=['Moottoriöljyn vaihto','Ilmansuodattimen vaihto','Akun vaihto','Jarruhuolto','Ketjun huolto','Variaattorihihnan vaihto','Telamaton vaihto','Liukupalojen vaihto','Siipipyörän vaihto','Perämoottorin huolto','Hydrauliöljyn vaihto','Terien teroitus'];
   const dispType=(c,t)=>isCar(c)?renamed[t]||t:t==='Pesu ja vahaus'?careOf(c):renamed[t]||t;
-  const kindItems=(c,t)=>{const p=planOf(c);return serviceKinds.includes(t)||t==='Muu huolto'||oldKindSvc.includes(t)?p.svc:t==='Korjaus ja osan vaihto'?p.fix:careSets[t]||(t==='Pohjamaalaus'?careSets.Venehoito:itemSets[t]&&/^(Renkaiden vaihto|Katsastus)$/.test(t)?itemSets[t]:[]);};
+  const kindItems=(c,t)=>{const p=planOf(c);return isService({type:t})||t==='Muu huolto'||oldKindSvc.includes(t)?p.svc:t==='Korjaus ja osan vaihto'?p.fix:careSets[t]||(t==='Pohjamaalaus'?careSets.Venehoito:itemSets[t]&&/^(Renkaiden vaihto|Katsastus)$/.test(t)?itemSets[t]:[]);};
   const itemsFor=(c,t)=>!t?[]:!isCar(c)?kindItems(c,dispType(c,t)):itemSets[t]||itemSets[oldGroup[t]]||checkItems;
   // Order of the body-type picker; names come from car-render.js.
   const bodyOrder=['suv','wagon','sedan','hatchback','coupe','cabrio','van','panel','motorhome','pickup'];
