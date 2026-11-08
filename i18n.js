@@ -10,6 +10,14 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    // Compact assistant card; actions keep the existing recording workflows.
+    'Puhu': 'Speak',
+    'Kirjoita': 'Type',
+    'Kuvaa kuitti': 'Scan receipt',
+    'Lisää vaihtoehtoja': 'More options',
+    'Voit kirjata tiedot käsin.': 'You can enter the details manually.',
+    'Autan tankkauksen kirjaamisessa.': 'I can help log a fill-up.',
+    'Tarkistat tiedot ennen tallennusta.': 'You review the details before saving.',
     // Approved privacy clarifications, 8 November 2026.
     "AJOURA tallentaa ajoneuvotiedot, merkinnät ja kuvat laitteellesi. Kirjautuneena ajoneuvot, merkinnät, tankkaukset ja muistiinpanot synkronoidaan myös pilveen; kuvat ja kuitit jäävät laitteelle. Meillä ei ole mainoksia eikä kävijäseurantaa.": "AJOURA stores vehicle records, entries and photos on your device. When you are signed in, vehicles, entries, fill-ups and notes are also synced to the cloud; photos and receipts stay on your device. We have no advertising or visitor tracking.",
     "Sivuston lataaminen aiheuttaa hosting-palvelulle välttämättömiä teknisiä pyyntöjä. Kun olet kirjautunut, sovellus synkronoi tallin tietoja automaattisesti pilveen. Palautteen, jakolinkin, varmuuskopion, kalenteriviennin ja tekoälytunnistuksen käynnistät itse. Seuraavissa kohdissa kuvataan kunkin toiminnon välittämät tiedot.": "Loading the website makes necessary technical requests to the hosting service. While you are signed in, the app automatically syncs garage records to the cloud. You initiate feedback, sharing links, backups, calendar exports and AI recognition yourself. The following sections describe the records transferred by each function.",

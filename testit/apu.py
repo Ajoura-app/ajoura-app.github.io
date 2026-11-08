@@ -139,6 +139,21 @@ def avaa_ajoneuvon_tiedot(page):
         tiedot.locator('summary').click()
 
 
+def avaa_kirjausvaihtoehdot(page):
+    """Avaa avustajakortin muut kirjaustavat ja ohjeet käyttäjän tavoin."""
+    vaihtoehdot = page.locator('.secretary-more')
+    if vaihtoehdot.count() and vaihtoehdot.get_attribute('open') is None:
+        vaihtoehdot.locator('summary').click()
+
+
+def kirjaa_avustajasta(page, tapa):
+    """Avaa nykyinen kirjauspolku, tarvittaessa muiden vaihtoehtojen kautta."""
+    painike = page.locator('[data-secretary-mode=' + json.dumps(tapa) + ']')
+    if not painike.is_visible():
+        avaa_kirjausvaihtoehdot(page)
+    painike.click()
+
+
 def ikkuna_valmis(page):
     """Odottaa, että tankkausikkuna on siirtänyt kohdistuksen omaan kenttäänsä (seuraavassa ruudunpäivityksessä).
     Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken

@@ -3,6 +3,14 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    // Compact assistant card; actions keep the existing recording workflows.
+    'Puhu': 'Tala',
+    'Kirjoita': 'Skriv',
+    'Kuvaa kuitti': 'Fota kvitto',
+    'Lisää vaihtoehtoja': 'Fler alternativ',
+    'Voit kirjata tiedot käsin.': 'Du kan fylla i uppgifterna manuellt.',
+    'Autan tankkauksen kirjaamisessa.': 'Jag kan hjälpa dig att registrera en tankning.',
+    'Tarkistat tiedot ennen tallennusta.': 'Du granskar uppgifterna innan du sparar.',
     // Approved privacy clarifications, 8 November 2026.
     "AJOURA tallentaa ajoneuvotiedot, merkinnät ja kuvat laitteellesi. Kirjautuneena ajoneuvot, merkinnät, tankkaukset ja muistiinpanot synkronoidaan myös pilveen; kuvat ja kuitit jäävät laitteelle. Meillä ei ole mainoksia eikä kävijäseurantaa.": "AJOURA sparar fordonsuppgifter, registreringar och bilder på din enhet. När du är inloggad synkroniseras även fordon, registreringar, tankningar och anteckningar till molnet; bilder och kvitton stannar på enheten. Vi har inga annonser eller besökarspårning.",
     "Sivuston lataaminen aiheuttaa hosting-palvelulle välttämättömiä teknisiä pyyntöjä. Kun olet kirjautunut, sovellus synkronoi tallin tietoja automaattisesti pilveen. Palautteen, jakolinkin, varmuuskopion, kalenteriviennin ja tekoälytunnistuksen käynnistät itse. Seuraavissa kohdissa kuvataan kunkin toiminnon välittämät tiedot.": "När webbplatsen laddas görs nödvändiga tekniska förfrågningar till webbhotellet. När du är inloggad synkroniserar appen garageuppgifter automatiskt till molnet. Du startar själv feedback, delningslänk, säkerhetskopiering, kalenderexport och AI-tolkning. Följande avsnitt beskriver vilka uppgifter varje funktion överför.",

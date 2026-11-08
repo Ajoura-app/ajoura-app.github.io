@@ -1,7 +1,7 @@
 """Stage 01: vehicle context, existing write paths, themes and mobile widths."""
 import pytest
 import tiedot
-from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo
+from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
 from test_plus import palvelu, PLUS
 
 @pytest.mark.parametrize('width',[320,375,390,430])
@@ -26,7 +26,7 @@ def test_valinta_ja_kasin(browser,base,lang):
         before=s.talli()
         valitse_ajoneuvo(s.page,cars[1]['id'])
         assert cars[1]['plate'] in s.page.inner_text('.secretary-context')
-        s.page.click('[data-secretary-mode=manual]')
+        kirjaa_avustajasta(s.page,'manual')
         ikkuna_valmis(s.page)
         assert s.page.get_attribute('#quickfuel-form','data-car')==cars[1]['id']
         assert s.page.locator('#quickfuel-form input[name=km]').is_visible()
@@ -38,11 +38,11 @@ def test_ai_polut(browser,base):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-tekoaly':'1'})
     try:
         palvelu(s,oikeus=PLUS)
-        s.page.wait_for_selector('[data-secretary-mode=text]')
-        s.page.click('[data-secretary-mode=text]')
+        avaa_kirjausvaihtoehdot(s.page);s.page.wait_for_selector('[data-secretary-mode=text]')
+        kirjaa_avustajasta(s.page,'text')
         assert s.page.locator('#ai-say-in').evaluate('(el)=>el===document.activeElement')
         s.page.keyboard.press('Escape')
-        s.page.click('[data-secretary-mode=manual]')
+        kirjaa_avustajasta(s.page,'manual')
         assert s.page.locator('#quickfuel-form input[name=km]').is_visible()
         assert not s.virheet
     finally:s.sulje()

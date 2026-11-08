@@ -1,7 +1,7 @@
 """04: task observations use real records; decisions never modify garage data."""
 import pytest
 import tiedot
-from apu import avaa,KELLO
+from apu import avaa,KELLO, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
 
 
 def test_tietokerros(browser,base):
@@ -118,8 +118,8 @@ def test_ai_peruutus(browser,base):
     s=avaa(browser,base,'home',autot=cars(),kello=KELLO,extra={'ajoura-tekoaly':'1'})
     try:
         cloud=palvelu(s,oikeus=PLUS);cloud['ai_vastaus']=TEKSTI
-        p=s.page;p.wait_for_selector('[data-secretary-mode=text]');before=s.talli()
-        p.click('[data-secretary-mode=text]');p.fill('#ai-say-in','45,6 l dieseliä 84,77 € mittari 153100');p.click('[data-ai-send]')
+        p=s.page;avaa_kirjausvaihtoehdot(p);p.wait_for_selector('[data-secretary-mode=text]');before=s.talli()
+        kirjaa_avustajasta(p,'text');p.fill('#ai-say-in','45,6 l dieseliä 84,77 € mittari 153100');p.click('[data-ai-send]')
         p.wait_for_selector('.task-ai-pending')
         assert p.evaluate("AjouraTasks.snapshot().find(x=>x.kind==='ai').state")=='awaiting_confirmation'
         p.keyboard.press('Escape')

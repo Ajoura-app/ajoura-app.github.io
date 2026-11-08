@@ -41,15 +41,30 @@
 .screen-content:has(>.secretary-home)>.app-top .demo-label{padding:2px 4px;font-size:11px;line-height:1.1}
 .screen-content:has(>.secretary-home)>.home-heading{min-height:30px;margin:0;padding-right:104px;font-size:26px;line-height:1.15}
 @container(max-width:349px){.secretary-home .secretary-hero-meta,.secretary-vehicle-detail{padding-inline:9px}}
-.secretary-card{border:1px solid var(--hairline);border-radius:24px;padding:20px;background:var(--t-surface,var(--c-ffffff,#ffffff));box-shadow:0 8px 28px -20px var(--ink)}
-.secretary-intro{display:flex;align-items:center;gap:14px}
-.secretary-intro img{flex:0 0 88px;width:88px;height:88px;aspect-ratio:1;object-fit:contain}
-.secretary-intro h3{margin:3px 0 8px;font-size:24px;line-height:1.15}
-.secretary-intro p,.secretary-task p{font-size:14px;line-height:1.55;margin:0}
-.secretary-context{font-size:12px;color:var(--muted);margin:16px 0 12px;overflow-wrap:anywhere}
-.secretary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.secretary-actions button,.secretary-task button{font:inherit;font-size:13px;font-weight:650;min-height:46px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);padding:10px;overflow-wrap:anywhere;cursor:pointer}
-.secretary-actions button:first-child{background:transparent;color:var(--ink)}
+.secretary-card{border:1px solid var(--hairline);border-radius:20px;padding:14px;background:var(--t-surface,var(--c-ffffff,#ffffff));box-shadow:0 8px 28px -20px var(--ink)}
+.secretary-intro{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.secretary-copy{flex:1;min-width:0}
+.secretary-intro>.assistant-avatar{width:80px;height:80px}
+.secretary-intro img{width:100%;height:100%;aspect-ratio:1;object-fit:contain}
+.secretary-intro .mini-label{font-size:11px;line-height:1.2}
+.secretary-intro h3{margin:2px 0 0;font-size:21px;line-height:1.15}
+.secretary-intro p{overflow-wrap:anywhere}
+.secretary-intro .secretary-context{font-size:12px;line-height:1.35;color:var(--muted);margin:4px 0 0}
+.secretary-intro .secretary-message{font-size:14px;line-height:1.4;margin:6px 0 0}
+.secretary-intro .secretary-note{font-size:12px;line-height:1.4;color:var(--muted);margin:4px 0 0}
+.secretary-card>.avatar-feedback:not(:empty){margin-top:8px}
+.secretary-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.secretary-actions :is(button,a){display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:46px;padding:8px 9px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:650;line-height:1.3;text-align:center;text-decoration:none;overflow-wrap:anywhere;cursor:pointer}
+.secretary-actions :is(button,a)>span{min-width:0}
+.secretary-action-icon{flex:none;width:18px;height:18px}
+.secretary-actions>button:first-child{background:var(--t-accent,var(--blue));border-color:var(--t-accent,var(--blue));color:var(--t-on-accent,var(--c-ffffff,#ffffff))}
+.secretary-more{min-width:0;margin-top:4px}
+.secretary-more>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:6px 0;list-style:none;color:var(--muted);font-size:13px;cursor:pointer}
+.secretary-more>summary::-webkit-details-marker{display:none}
+.secretary-more>summary:after{content:'⌄';font-size:20px;line-height:1}
+.secretary-more[open]>summary:after{transform:rotate(180deg)}
+.secretary-task p{font-size:14px;line-height:1.55;margin:0}
+.secretary-task button{font:inherit;font-size:13px;font-weight:650;min-height:46px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);padding:10px;overflow-wrap:anywhere;cursor:pointer}
 .secretary-tasks h3{font-size:18px;margin:6px 0 12px}
 .secretary-task{padding:16px;border:1px solid var(--hairline);border-radius:16px;margin-top:8px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
 .secretary-task h4{font-size:15px;margin:0 0 6px}
@@ -60,7 +75,7 @@
 .secretary-summary a{color:var(--ink);font-size:14px;padding:8px 0}
 .secretary-home :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
 html.dark .secretary-card{box-shadow:none}
-@media(max-width:350px){.secretary-card{padding:14px}.secretary-intro{gap:10px}.secretary-intro img{flex-basis:64px;width:64px;height:64px}.secretary-intro p{font-size:13px}}
+@media(max-width:350px){.secretary-intro{gap:10px}.secretary-intro>.assistant-avatar{width:64px;height:64px}}
 @media print{.secretary-home{display:none}}
 
 /* Shared original avatar artwork: no cropping or scaling beyond its safe area. */
@@ -100,7 +115,11 @@ html.dark .secretary-card{box-shadow:none}
 .task-controls{display:flex;gap:12px;flex-wrap:wrap}
 .secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
 .task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}
-.secretary-support{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
-.secretary-support a,.secretary-support button{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.secretary-support{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+.secretary-support a,.secretary-support button{display:inline-flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:8px;border:1px solid var(--hairline);border-radius:10px;background:none;color:var(--ink);font:inherit;font-size:13px;line-height:1.4;text-align:center;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere;cursor:pointer}
+.secretary-support>:only-child{grid-column:1/-1}
+.assistant-local{min-width:0;margin-top:12px;padding-top:12px;border-top:1px solid var(--hairline);font-size:14px}
+.assistant-local h3{margin:0 0 8px;font-size:16px;line-height:1.4}
+.assistant-local>button{min-height:44px;margin-top:8px;padding:8px;border:1px solid var(--hairline);border-radius:10px;background:none;color:var(--ink);font:inherit}
 .assistant-local input[type=text]{display:block;width:100%;min-height:44px;padding:10px;border:1px solid var(--hairline);border-radius:10px;font:inherit;font-size:16px;color:var(--ink);background:var(--t-surface,var(--paper))}
 .assistant-local-result{white-space:pre-wrap;overflow-wrap:anywhere}
