@@ -25,7 +25,7 @@ YKSIKOT = re.compile(r"(l/100 ?km|kWh/100 ?km|€/100 ?km|€/km|€/h|€/l|€
 
 # Näkymä ja toimenpiteet ennen tekstien keruuta (napautukset).
 NAKYMAT = {
-    "home": [], "menu": [], "me": [], "help": [], "settings": [], "tips": [], "feedback": [], "newcar": [],
+    "car-order": [], "home": [], "menu": [], "me": [], "help": [], "settings": [], "tips": [], "feedback": [], "newcar": [],
     "reports": ["[data-rp-kind=fuel]", ".rp-veh>summary"], "reports-lisaa": ["[data-fab-menu]"], "reports-valitse": ["[data-fab-menu]", "[data-fab-act=memo]"], "reports-asetus": ["[data-rp-set=tot]"],
     "reports-auto": [".rp-veh>summary", "[data-rp-car=tst1]"], "vehicle/tst1": [],
     "vehicle/tst3": [], "event/tst1/e1": [], "add/tst1": [], "edit/tst1/e1": [], "report/tst1": [],

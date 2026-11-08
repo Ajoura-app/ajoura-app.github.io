@@ -83,16 +83,15 @@ def test_etusivu(browser, base):
     s = avaa(browser, base, "home", autot=autot(), kello=KELLO)
     pg = s.page
     try:
-        r = pg.evaluate("""() => {const t = document.querySelector('.today-card'), g = t.nextElementSibling;
-          return {seuraava: g.className, id: g.id, vali: g.getBoundingClientRect().top - t.getBoundingClientRect().bottom,
-                  otsikot: [...document.querySelectorAll('.screen-content h2, .screen-content h3')].map(h => h.textContent.trim()),
-                  vanha: document.querySelectorAll('.garage-add, .history-heading').length}}""")
-        assert r["seuraava"] == "garage-rows" and r["id"] == "garage" and r["vanha"] == 0, r
-        assert 12 <= r["vali"] <= 24, r
-        assert "Oma talli" not in r["otsikot"] and "Etusivu" in r["otsikot"], r
+        assert pg.locator('.secretary-home').count() == 1
+        assert pg.locator('[data-secretary-car]').count() == 2
+        assert pg.locator('.garage-row').count() == 1
+        assert pg.locator('.garage-add, .history-heading, .today-card').count() == 0
         assert pg.get_attribute(".tab-fab", "aria-label") == "Lisää ajoneuvo"
-        # Tänään-kortin "ajoneuvoa tallissa" vierittää yhä ajoneuvoihin.
-        pg.click(".today-chip:has-text('tallissa')")
+        # Approved AI-first home: choose the second vehicle in the selector.
+        pg.click('[data-secretary-car=a2]')
+        assert pg.locator('.garage-row[data-car=a2]').count() == 1
+        assert pg.locator('[data-secretary-car=a2]').get_attribute('aria-pressed') == 'true'
         pg.click(".tab-fab"); pg.wait_for_function("location.hash === '#newcar'"); pg.wait_for_timeout(200)
         assert pg.locator(".tab-fab").count() == 0
         assert not s.virheet, s.virheet

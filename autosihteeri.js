@@ -40,7 +40,7 @@
       const tasks=window.AjouraTasks.observe(c,dates(c),today,insights(c));
       const coverage=window.AjouraTasks.coverage(c);
       return `<section class="secretary-home" aria-label="${esc(t('Autosihteeri'))}">
-        <div class="secretary-selector" role="group" aria-label="${esc(t('Valitse ajoneuvo'))}">${cars.map(x=>`<button type="button" data-secretary-car="${esc(x.id)}" aria-pressed="${x.id===c.id}">${esc(x.nick||x.name)}</button>`).join('')}</div>
+        <div class="secretary-selector" role="group" aria-label="${esc(t('Valitse ajoneuvo'))}">${cars.map(x=>`<button type="button" data-secretary-car="${esc(x.id)}" aria-pressed="${x.id===c.id}">${esc(x.nick||x.name)}</button>`).join('')}</div>${cars.length>1?`<a class="secretary-order text-link" href="#car-order">${esc(t('Järjestä ajoneuvot'))}</a>`:''}
         <div class="secretary-vehicle">${card(c)}${cars.length>1?`<p class="secretary-swipe">${esc(t('Vaihda ajoneuvoa pyyhkäisemällä'))}</p>`:''}</div>
         <section class="secretary-card"><div class="secretary-intro">${window.AjouraAvatar.avatar()}<div><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3><p>${esc(t(ai?'Autan tankkauksen kirjaamisessa. Tarkistat tiedot ennen tallennusta.':'Pidetään ajoneuvosi tiedot ajan tasalla. Voit kirjata tiedot käsin.'))}</p></div></div>
         <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p>

@@ -10,6 +10,10 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Ajoneuvojen järjestys": "Vehicle order",
+    "Paina ajoneuvoa pitkään ja vedä se haluamaasi kohtaan.": "Press and hold a vehicle, then drag it to the position you want.",
+    "Järjestä ajoneuvot": "Reorder vehicles",
+
     "Ajoneuvoavustajan paikallinen kokeilu": "Local vehicle assistant trial",
     "Ota ajoneuvoavustaja käyttöön": "Enable vehicle assistant",
     "Kysymys valitusta ajoneuvosta": "Question about the selected vehicle",

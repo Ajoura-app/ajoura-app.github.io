@@ -3,6 +3,10 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Ajoneuvojen järjestys": "Fordonens ordning",
+    "Paina ajoneuvoa pitkään ja vedä se haluamaasi kohtaan.": "Tryck länge på ett fordon och dra det till önskad plats.",
+    "Järjestä ajoneuvot": "Ändra fordonens ordning",
+
     "Ajoneuvoavustajan paikallinen kokeilu": "Lokalt test av fordonsassistenten",
     "Ota ajoneuvoavustaja käyttöön": "Aktivera fordonsassistenten",
     "Kysymys valitusta ajoneuvosta": "Fråga om det valda fordonet",

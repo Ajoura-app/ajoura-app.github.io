@@ -6,7 +6,7 @@ from apu import avaa, nakyma
 
 # Näkymä → osoite täydellä tallilla (tiedot.talli(): tst1 auto, tst2 sähköauto, tst3 vene).
 NAKYMAT = {
-    "home": "home", "menu": "menu", "me": "me", "help": "help", "settings": "settings",
+    "car-order": "car-order", "home": "home", "menu": "menu", "me": "me", "help": "help", "settings": "settings",
     "feedback": "feedback", "tips": "tips", "reports": "reports", "newcar": "newcar",
     "vehicle": "vehicle/tst1", "vehicle-vene": "vehicle/tst3", "event": "event/tst1/e1",
     "edit": "edit/tst1/e1", "add": "add/tst1", "add-vene": "add/tst3", "report": "report/tst1",

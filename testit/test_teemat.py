@@ -23,7 +23,7 @@ TEEMAT = VANHAT_TEEMAT + UUDET_TEEMAT
 TAUSTA = {"auto": "rgb(245, 244, 242)", "eko": "rgb(243, 247, 242)", "blue-track": "rgb(9, 29, 48)",
           "premium": "rgb(243, 236, 230)", "garage": "rgb(7, 17, 16)", "copilot": "rgb(14, 16, 37)",
           "nordic": "rgb(243, 247, 245)", "journey": "rgb(16, 25, 22)"}
-NAKYMAT = ["home", "fuel/tst1", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1", "report/tst1",
+NAKYMAT = ["car-order", "home", "fuel/tst1", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1", "report/tst1",
            "notes/tst1", "menu", "settings", "theme", "tips", "me"]
 
 
