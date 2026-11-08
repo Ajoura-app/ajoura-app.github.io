@@ -71,7 +71,7 @@ def test_tekoalyfunktio():
     node = shutil.which("node")
     if not node:
         pytest.skip("Node puuttuu: tekoälyfunktion testi ohitettiin")
-    r = subprocess.run([node, "--test", str(SB / "testit" / "tekoaly.test.mjs")], capture_output=True, text=True, cwd=JUURI)
+    r = subprocess.run([node, "--test", "--test-reporter=tap", str(SB / "testit" / "tekoaly.test.mjs")], capture_output=True, text=True, cwd=JUURI)
     assert r.returncode == 0, (r.stdout + r.stderr)[-2000:]
     assert re.search(r"^# fail 0$", r.stdout, re.M) and re.search(r"^# pass [1-9]", r.stdout, re.M), r.stdout[-800:]
 

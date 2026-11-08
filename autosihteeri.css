@@ -1,0 +1,72 @@
+/* Existing theme tokens also support the first assistant layout. */
+.secretary-home{display:grid;gap:16px;min-width:0;margin-top:12px}
+.secretary-selector{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
+.secretary-selector button{flex:0 0 auto;max-width:220px;overflow-wrap:anywhere;border:1px solid var(--hairline);border-radius:24px;padding:10px 16px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:13px;min-height:44px}
+.secretary-selector button[aria-pressed=true]{border:2px solid var(--blue);font-weight:700}
+.secretary-vehicle{min-width:0;touch-action:pan-y}
+.secretary-vehicle .garage-row{margin:0}
+.secretary-vehicle .row-pic{min-height:90px}
+.secretary-swipe{text-align:center;font-size:12px;color:var(--muted);margin:8px 0 0}
+.secretary-card{border:1px solid var(--hairline);border-radius:24px;padding:20px;background:var(--t-surface,var(--c-ffffff,#ffffff));box-shadow:0 8px 28px -20px var(--ink)}
+.secretary-intro{display:flex;align-items:center;gap:14px}
+.secretary-intro img{flex:0 0 88px;width:88px;height:88px;aspect-ratio:1;object-fit:contain}
+.secretary-intro h3{margin:3px 0 8px;font-size:24px;line-height:1.15}
+.secretary-intro p,.secretary-task p{font-size:14px;line-height:1.55;margin:0}
+.secretary-context{font-size:12px;color:var(--muted);margin:16px 0 12px;overflow-wrap:anywhere}
+.secretary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.secretary-actions button,.secretary-task button{font:inherit;font-size:13px;font-weight:650;min-height:46px;border:1px solid var(--hairline);border-radius:12px;background:transparent;color:var(--ink);padding:10px;overflow-wrap:anywhere;cursor:pointer}
+.secretary-actions button:first-child{background:transparent;color:var(--ink)}
+.secretary-tasks h3{font-size:18px;margin:6px 0 12px}
+.secretary-task{padding:16px;border:1px solid var(--hairline);border-radius:16px;margin-top:8px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
+.secretary-task h4{font-size:15px;margin:0 0 6px}
+.secretary-task a{display:inline-block;margin-top:8px;padding:8px 0;color:var(--ink);font-size:14px;font-weight:650}
+.secretary-task button{margin-top:12px}
+.secretary-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border:1px solid var(--hairline);border-radius:16px;font-size:12px}
+.secretary-summary strong{display:block;font-size:18px;margin-top:4px}
+.secretary-summary a{color:var(--ink);font-size:14px;padding:8px 0}
+.secretary-home :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+html.dark .secretary-card{box-shadow:none}
+@media(max-width:350px){.secretary-card{padding:14px}.secretary-intro{gap:10px}.secretary-intro img{flex-basis:64px;width:64px;height:64px}.secretary-intro p{font-size:13px}}
+@media print{.secretary-home{display:none}}
+
+/* Shared original avatar artwork: no cropping or scaling beyond its safe area. */
+.assistant-avatar{position:relative;display:inline-grid;place-items:center;flex:none;isolation:isolate;overflow:visible;width:88px;height:88px;aspect-ratio:1;border-radius:50%;color:var(--ink)}
+.assistant-avatar img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;aspect-ratio:1;transform:none}
+.avatar-small{width:56px;height:56px}
+.avatar-choice{width:64px;height:64px}
+.secretary-intro .assistant-avatar img{width:100%;height:100%}
+.avatar-badge{display:none;position:absolute;right:0;bottom:0;min-width:18px;min-height:18px;padding:1px 4px;border:1px solid var(--hairline);border-radius:50%;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font-size:12px;line-height:18px;text-align:center;font-weight:700}
+[data-avatar-state=listening] .avatar-badge:after{content:'…'}
+[data-avatar-state=checking] .avatar-badge:after{content:'…'}
+[data-avatar-state=success] .avatar-badge:after{content:'✓'}
+[data-avatar-state=attention] .avatar-badge:after{content:'!'}
+[data-avatar-state]:not([data-avatar-state=neutral]) .avatar-badge{display:block}
+[data-avatar-motion=on]:not([data-avatar-state=neutral]){animation:avatar-response .45s ease-out 1}
+@keyframes avatar-response{0%{outline:2px solid transparent;outline-offset:6px}50%{outline:2px solid var(--blue);outline-offset:2px}100%{outline:2px solid transparent;outline-offset:0}}
+.avatar-feedback{display:block;font-size:12px;line-height:1.5;color:var(--ink)}
+.avatar-feedback:empty{display:none}
+.avatar-shortcut{position:absolute;left:16px;bottom:calc(100% - 4px);display:grid;place-items:center;width:56px;height:56px;border-radius:50%;border:1px solid var(--hairline);background:var(--t-surface,var(--c-ffffff,#ffffff));pointer-events:auto;z-index:2}
+.avatar-shortcut .assistant-avatar{width:48px;height:48px}
+.avatar-shortcut:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.screen-content:has(+.tab-dock>.avatar-shortcut){padding-bottom:20px}
+.avatar-settings p{font-size:13px;line-height:1.6}
+.avatar-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.avatar-choices button{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;min-height:110px;border:1px solid var(--hairline);border-radius:16px;padding:10px 4px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink);font:inherit;font-size:12px;overflow-wrap:anywhere}
+.avatar-choices button[aria-pressed=true]{outline:2px solid var(--blue);outline-offset:-2px;font-weight:700}
+.avatar-motion{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;color:var(--ink)}
+.avatar-motion input{width:20px;height:20px;accent-color:var(--blue)}
+.avatar-sheet{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:14px;color:var(--ink)}
+.avatar-sheet .avatar-feedback{margin-left:auto}
+@media(max-width:350px){.secretary-intro .assistant-avatar{width:64px;height:64px}.secretary-intro .assistant-avatar img{flex-basis:auto;width:100%;height:100%}}
+@media(prefers-reduced-motion:reduce){.assistant-avatar{animation:none!important}}
+@media print{.avatar-shortcut,.avatar-settings,.avatar-sheet{display:none!important}}
+/* Give the two floating controls their own opaque footer area, so neither covers form controls. */
+.tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
+.tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
+.task-controls{display:flex;gap:12px;flex-wrap:wrap}
+.secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--ink)}
+.task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}
+.secretary-support{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
+.secretary-support a,.secretary-support button{display:inline-flex;align-items:center;min-height:44px;padding:8px 0;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.assistant-local input[type=text]{display:block;width:100%;min-height:44px;padding:10px;border:1px solid var(--hairline);border-radius:10px;font:inherit;font-size:16px;color:var(--ink);background:var(--t-surface,var(--paper))}
+.assistant-local-result{white-space:pre-wrap;overflow-wrap:anywhere}

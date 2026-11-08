@@ -1694,3 +1694,6 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 .sync-members li:first-child{border-top:0}
 .sync-invite{display:block;font-size:12px;margin:0 0 8px}
 .sync-invite input{font-size:16px!important}
+
+/* The unknown official deadline must remain readable in every theme. */
+.row-status.inspection-estimate .row-txt small{color:var(--ink)}

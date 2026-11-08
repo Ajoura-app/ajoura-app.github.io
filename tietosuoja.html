@@ -7,9 +7,9 @@
 <meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-110">
-<script src="i18n-sv.js?v=ak-110" defer></script>
-<script src="i18n.js?v=ak-110" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-124">
+<script src="i18n-sv.js?v=ak-124" defer></script>
+<script src="i18n.js?v=ak-124" defer></script>
 </head>
 <body>
 <main class="legal">
@@ -18,7 +18,7 @@
 <p class="draft"><strong>Luonnos testivaiheeseen.</strong> Tämä seloste kuvaa AJOURAn nykyisen testiversion. Se tarkistetaan ennen virallista julkaisua.</p>
 
 <h2>Lyhyesti</h2>
-<p>AJOURA tallentaa autosi, merkintäsi ja kuvasi vain omaan laitteeseesi. Meillä ei ole mainoksia eikä kävijäseurantaa.</p>
+<p>AJOURA tallentaa ajoneuvotiedot, merkinnät ja kuvat laitteellesi. Kirjautuneena ajoneuvot, merkinnät, tankkaukset ja muistiinpanot synkronoidaan myös pilveen; kuvat ja kuitit jäävät laitteelle. Meillä ei ole mainoksia eikä kävijäseurantaa.</p>
 <p>Jos kirjaudut sisään, autot, merkinnät, tankkaukset ja muistiinpanot tallentuvat myös pilveen (Supabase, EU). Kuvat ja kuitit eivät tallennu pilveen. Kuva tai kirjoittamasi teksti lähtee laitteelta tekoälylle vain, jos itse käytät tekoälyavustajaa.</p>
 
 <h2>Mitä tietoja sovellus käsittelee</h2>
@@ -31,10 +31,10 @@
 <p>Samassa tallennustilassa ovat laitteen asetukset, kuten kieli, teema ja tekoälyavustajan valinta. Jos kirjaudut, istunnon tunniste on siellä, kunnes kirjaudut ulos.</p>
 
 <h2>Milloin tietoja lähtee laitteeltasi</h2>
-<p>Vain silloin, kun itse päätät:</p>
+<p>Sivuston lataaminen aiheuttaa hosting-palvelulle välttämättömiä teknisiä pyyntöjä. Kun olet kirjautunut, sovellus synkronoi tallin tietoja automaattisesti pilveen. Palautteen, jakolinkin, varmuuskopion, kalenteriviennin ja tekoälytunnistuksen käynnistät itse. Seuraavissa kohdissa kuvataan kunkin toiminnon välittämät tiedot.</p>
 <ul>
 <li><strong>Varmuuskopio ja siirtotiedosto</strong> tallentuvat tiedostoon, jonka sijainnin valitset itse. Tiedostoa ei ole salattu, ja siinä ovat myös kuitit, kuvat ja työn tekijöiden yhteystiedot, joten säilytä se huolellisesti ja anna siirtotiedosto vain ostajalle.</li>
-<li><strong>Historia linkkinä</strong>: auton tiedot ja merkinnät, myös merkintöjen muistiinpanot ja työn tekijä (vain yrityksen nimi tai ”Itse”), ovat linkin sisällä. Kuvat, kuitit, yrityksen yhteystiedot ja Muistiinpanot-sivu eivät siirry. Jokainen, jolla on linkki, voi avata sen, eikä jaettua linkkiä voi perua. Linkkiä ei tallenneta palvelimellemme, koska meillä ei ole sellaista.</li>
+<li><strong>Historia linkkinä</strong>: auton tiedot ja merkinnät, myös merkintöjen muistiinpanot ja työn tekijä (vain yrityksen nimi tai ”Itse”), ovat linkin sisällä. Kuvat, kuitit, yrityksen yhteystiedot ja Muistiinpanot-sivu eivät siirry. Jokainen, jolla on linkki, voi avata sen, eikä jaettua linkkiä voi perua. Historialinkin sisältöä ei tallenneta Ajouran pilvitalliin: tiedot sisältyvät jakamaasi linkkiin.</li>
 <li><strong>Palaute</strong> lähetetään AJOURAn tekijöiden Google-taulukkoon (Google Apps Script), josta vain he lukevat sen. Mukana on palautteen teksti, sovelluksen versio, laitetyyppi, avoinna ollut näkymä ja autojen määrä, ei autojesi tietoja. Jos lähetys ei ole käytössä, palaute avautuu puhelimen jakovalikkoon.</li>
 <li><strong>Pilvitallennus</strong> kirjautuneena: autot, merkinnät, tankkaukset ja muistiinpanot tallentuvat tiliisi ja siirtyvät laitteidesi välillä. Katso kohta Kirjautuminen ja pilvitallennus.</li>
 <li><strong>Kalenterimuistutus</strong> tallentuu puhelimesi kalenteriin.</li>
@@ -43,14 +43,15 @@
 
 <h2>Kirjautuminen ja pilvitallennus</h2>
 <p>Kirjautuminen on vapaaehtoista. Kirjaudut Google-tilillä: Google kertoo AJOURAlle sähköpostiosoitteesi, nimesi ja profiilikuvasi osoitteen. Salasanaasi AJOURA ei näe.</p>
-<p>Kirjautuneena Supabase-palveluun (palvelimet EU:ssa, Irlannissa) tallentuvat tilisi tiedot, tallisi (autot, merkinnät, tankkaukset ja muistiinpanot, ei kuvia eikä kuitteja), Ajoura Plus -tilauksen tila ja tekoälytunnistusten määrä kuukaudessa. Pilvessä olevat tietosi näkee vain oma tilisi. Kun kirjaudut ulos, tiedot jäävät laitteeseen ja pilveen.</p>
+<p>Kirjautuneena Supabase-palveluun (palvelimet EU:ssa, Irlannissa) tallentuvat tilisi tiedot, tallisi (autot, merkinnät, tankkaukset ja muistiinpanot, ei kuvia eikä kuitteja), Ajoura Plus -tilauksen tila ja tekoälytunnistusten määrä kuukaudessa. Pilveen tallennetut tiedot näkyvät omalle tilillesi sekä jaetun tallin jäsenille, joille tallin omistaja on antanut käyttöoikeuden. Jäsenyyden päättyminen estää uuden pääsyn yhteiseen pilvitalliin, mutta jäsenen laitteelle jo kopioidut tiedot jäävät sinne. Kun kirjaudut ulos, tiedot jäävät laitteeseen ja pilveen.</p>
 <p>Jaettu talli: voit kutsua talliisi toisen henkilön, esimerkiksi puolisosi, kertakäyttöisellä linkillä. Jäsen kirjautuu omalla Google-tilillään ja näkee ja muokkaa tallin tietoja, ja tallin omistaja ja jäsenet näkevät toistensa sähköpostiosoitteet. Liittyessä jäsenen omat autot ja merkinnät siirtyvät yhteiseen talliin. Omistaja voi poistaa jäsenen ja jäsen voi poistua itse; jäsenen laitteelle jo siirtyneet tiedot jäävät sinne. Kutsukoodista palvelimelle tallentuu vain tiiviste.</p>
 <p>Voit poistaa tilisi ja pilvessä olevat tiedot itse: Valikko → Varmuuskopio ja tiedot → Poista tili ja pilvitiedot. Laitteen tiedot jäävät. Jos et pääse enää tiliisi, pyydä poistoa palautteella: Valikko → Anna palautetta.</p>
 
 <h2>Tekoälyavustaja (Ajoura Plus)</h2>
 <p><span>Tekoälyavustaja toimii vain kirjautuneena (testivaiheessa maksutta, myöhemmin Ajoura Plus -tilauksella) ja kun olet itse kytkenyt sen päälle (Asetukset → Uudet ominaisuudet).</span> Kun valitset tankkausikkunassa Täytä kuvasta, valitsemasi kuva pienennetään laitteessa ja lähetetään AJOURAn palvelimen (Supabase, EU) kautta Anthropicin Claude-tekoälylle (Anthropic PBC, Yhdysvallat). Tekoäly tunnistaa itse, onko kuva kuitti, tankkausmittarin näyttö vai auton mittaristo. Se lukee kuitista päivän, määrän, hinnan ja polttoaineen, tankkausmittarista litrahinnan, määrän ja summan ja mittaristosta kokonaiskilometrit, ja ne täyttävät lomakkeen. Tarkistat ja tallennat tiedot itse.</p>
-<p>Kuvaa ei tallenneta AJOURAn palvelimelle. Anthropic ei sopimusehtojensa mukaan käytä sitä tekoälynsä kouluttamiseen, ja sen ilmoituksen mukaan se poistaa kuvan ja vastauksen järjestelmistään 30 päivän kuluessa. Kuvassa voi näkyä muutakin kuin kuitti tai mittari, esimerkiksi rekisterikilpi tai esineitä auton sisältä, joten ota kuva vain siitä, mitä tarvitaan. Kun tekoälyavustaja on pois päältä, kuvia ei lähetetä minnekään.</p>
+<p>Kuvaa ei tallenneta AJOURAn palvelimelle. Anthropic ei sopimusehtojensa mukaan käytä sitä tekoälynsä kouluttamiseen. Kuvassa voi näkyä muutakin kuin kuitti tai mittari, esimerkiksi rekisterikilpi tai esineitä auton sisältä, joten ota kuva vain siitä, mitä tarvitaan. Kun tekoälyavustaja on pois päältä, kuvia ei lähetetä minnekään.</p>
 <p>Kun kirjoitat tankkauksen tiedot tekoälytilan tekstikenttään, kirjoittamasi teksti ja päivän päivämäärä lähetetään AJOURAn palvelimen (Supabase, EU) kautta Anthropicin Claude-tekoälylle (Anthropic PBC, Yhdysvallat). Tekoäly poimii tekstistä tankkauksen tiedot (päivä, määrä, hinta, summa, polttoaine ja mittarilukema), ja ne täyttävät lomakkeen. Tarkistat ja tallennat tiedot itse. Tekstiä ei tallenneta AJOURAn palvelimelle. Kirjoita kenttään vain tankkauksen tiedot.</p>
+<p>Anthropic ilmoittaa kaupallisen API-palvelunsa oletuskäytännöksi syötteiden ja vastausten poistamisen 30 päivän kuluessa. Käytännössä on toimittajan ilmoittamia poikkeuksia, kuten erikseen sovitut ehdot, väärinkäytösten selvittäminen ja lakisääteiset velvoitteet.</p>
 <p>Mikrofoni: kun painat tekoälytilan mikrofonipainiketta, puheesi muutetaan tekstiksi selaimesi tai puhelimesi omalla puheentunnistuksella. Selaimesta riippuen puhe voidaan käsitellä selaimen valmistajan palvelussa (esimerkiksi Safarissa Applen, Chromessa Googlen) sen omien ehtojen mukaan. AJOURA ei saa eikä tallenna ääntä. Teksti näkyy kentässä, voit korjata sen, ja se lähtee tekoälylle vasta, kun painat Lähetä.</p>
 
 <h2>Palvelut, joiden kautta sivu toimii</h2>
@@ -75,7 +76,7 @@
 <p>AJOURAa kehittävät Hannes ja Niklas yksityishenkilöinä. Yritystä ei ole vielä perustettu. Hannes ja Niklas ovat yhdessä rekisterinpitäjä tässä selosteessa kuvatulle tietojen käsittelylle. Yhteystiedot: info.ajoura@gmail.com. Samaan osoitteeseen voit lähettää pyynnön tietojesi katsomisesta, korjaamisesta tai poistamisesta. Palautteen voi lähettää myös sovelluksesta: Valikko → Anna palautetta.</p>
 
 <p style="margin-top:32px"><a href="./">← Takaisin AJOURAan</a> · <a href="app.html">Avaa sovellus</a></p>
-<p style="font-size:13px;color:var(--muted)">Päivitetty 6.11.2026</p>
+<p style="font-size:13px;color:var(--muted)">Päivitetty 8.11.2026</p>
 </main>
 </body>
 </html>

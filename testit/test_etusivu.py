@@ -33,8 +33,10 @@ def test_kuvakepainikkeet(browser, base, leveys):
     s = avaa(browser, base, "home", autot=talli(), leveys=leveys, kello=KELLO)
     pg = s.page
     try:
-        assert pg.locator(".garage-row").count() == 5
+        assert pg.locator(".garage-row").count() == 1
+        assert pg.locator("[data-secretary-car]").count() == 5
         for cid, nimi in NIMET.items():
+            pg.click(f"[data-secretary-car={cid}]")
             rivi = pg.locator(".garage-row", has=pg.locator(f"[data-quickfuel={cid}]"))
             assert rivi.locator(".row-actions").inner_text().strip() == "", f"{cid}: painikkeissa näkyvää tekstiä"
             assert rivi.locator(".row-btn.fuel").get_attribute("aria-label") == nimi
@@ -71,7 +73,8 @@ def test_painikkeet_ja_kortti_avaavat_oikean_nakyman(browser, base):
     pg = s.page
     try:
         for cid in NIMET:
-            pg.click(f"[data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
+            pg.click(f"[data-secretary-car={cid}]")
+            pg.click(f".garage-row [data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
             pg.keyboard.press("Escape"); pg.wait_for_selector("#quickfuel-form", state="detached")
             pg.click(f".row-btn.note[href='#add/{cid}']"); odota_nakyma(s, f"add/{cid}")
             pg.go_back(); odota_nakyma(s, "home")
@@ -89,7 +92,9 @@ def test_huollon_tilatekstit(browser, base):
     s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
     pg = s.page
     try:
-        teksti = lambda cid: pg.locator(f".garage-row:has([data-quickfuel={cid}]) .row-status").inner_text()
+        def teksti(cid):
+            pg.click(f"[data-secretary-car={cid}]")
+            return pg.locator(f".garage-row:has([data-quickfuel={cid}]) .row-status").inner_text()
         # Huolto myöhässä päivän mukaan, kilometrejä vielä jäljellä: ei "Ajettavaa jäljellä".
         t = teksti("a1")
         assert "Huolto myöhässä" in t and "Kilometrirajaan n." in t and "Ajettavaa jäljellä" not in t, t
@@ -105,7 +110,8 @@ def test_huollon_tilatekstit(browser, base):
 def test_kaannokset(browser, base, kieli, nimi, tila):
     s = avaa(browser, base, "home", autot=talli(), kieli=kieli, kello=KELLO)
     try:
-        assert s.page.get_attribute("[data-quickfuel=hyb1]", "aria-label") == nimi
+        s.page.click("[data-secretary-car=hyb1]")
+        assert s.page.get_attribute(".garage-row [data-quickfuel=hyb1]", "aria-label") == nimi
         assert tila in s.page.locator(".garage-row:has([data-quickfuel=hyb1]) .row-status").inner_text()
     finally:
         s.sulje()
@@ -140,6 +146,7 @@ def keski(pg, cid, osa=".row-info"):
 def test_jarjestys_hiirella(browser, base):
     s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, mobiili=False, kello=KELLO)
     pg = s.page
+    pg.click('a[href="#car-order"]')
     try:
         assert jarjestys(s) == ["tst1", "tst2", "tst3"]
         x, y = keski(pg, "tst3"); _, y1 = keski(pg, "tst1", "")
@@ -149,7 +156,7 @@ def test_jarjestys_hiirella(browser, base):
             pg.mouse.move(x, y + (y1 - 160 - y) * i / 10); pg.wait_for_timeout(20)
         pg.mouse.up(); pg.wait_for_timeout(300)
         assert jarjestys(s) == ["tst3", "tst1", "tst2"]
-        assert pg.evaluate("location.hash") == "#home", "vapautus avasi ajoneuvon"
+        assert pg.evaluate("location.hash") == "#car-order", "vapautus avasi ajoneuvon"
         assert pg.eval_on_selector_all(".garage-row", "e => e.map(x => x.dataset.car)") == ["tst3", "tst1", "tst2"]
         # Lyhyt napautus avaa edelleen ajoneuvon; liike ennen pitkää painallusta ei siirrä korttia.
         x, y = keski(pg, "tst2")
@@ -169,6 +176,7 @@ def test_jarjestys_kosketuksella(browser, base):
     """Puhelin: kosketus pitkään paikallaan, sitten veto alas. Näkymä ei vieritä vedon alla."""
     s = avaa(browser, base, "home", autot=tiedot.talli(), korkeus=2000, kello=KELLO)
     pg = s.page
+    pg.click('a[href="#car-order"]')
     try:
         cdp = pg.context.new_cdp_session(pg)
         kosketa = lambda tyyppi, x, y: cdp.send("Input.dispatchTouchEvent", {
@@ -180,7 +188,7 @@ def test_jarjestys_kosketuksella(browser, base):
             kosketa("touchMove", x, y + (y3 + 80 - y) * i / 12); pg.wait_for_timeout(20)
         kosketa("touchEnd", 0, 0); pg.wait_for_timeout(300)
         assert jarjestys(s) == ["tst2", "tst3", "tst1"]
-        assert pg.evaluate("location.hash") == "#home"
+        assert pg.evaluate("location.hash") == "#car-order"
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -191,6 +199,6 @@ def test_kuvakkeiden_viiva(browser, base):
     s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
     try:
         viivat = s.page.eval_on_selector_all(".row-btn .act-ico > svg", "e => e.map(v => getComputedStyle(v).strokeWidth)")
-        assert len(viivat) == 15 and set(viivat) == {"1.5px"}, viivat
+        assert len(viivat) == 3 and set(viivat) == {"1.5px"}, viivat
     finally:
         s.sulje()

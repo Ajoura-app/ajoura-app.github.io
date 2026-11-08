@@ -65,7 +65,7 @@ def test_kortin_otsikko_ei_katkea_kesken_sanan(browser, base, kieli, leveys, nak
 # 0.108 (Niklas): etusivun AJOURA-logo keskellä; Aloitussivu ja TESTIVERSIO Etusivu-otsikon tasalla (ryhmän
 # pystykeskikohta = otsikon keskikohta), eivät otsikon tai Tänään-kortin päällä. Myös asennettuna, tummana ja kielillä.
 KESKI_JS = """() => {const r = s => document.querySelector(s).getBoundingClientRect();
-  const sc = r('.screen-content'), lg = r('.app-top .app-brand'), g = r('.r-top-right'), h = r('.home-heading'), t = r('.today-card');
+  const sc = r('.screen-content'), lg = r('.app-top .app-brand'), g = r('.r-top-right'), h = r('.home-heading'), t = r('.secretary-selector');
   const txt = document.createRange(); txt.selectNodeContents(document.querySelector('.home-heading')); const tx = txt.getBoundingClientRect();
   return {logoKeski: (lg.left + lg.right) / 2 - (sc.left + sc.right) / 2, ryhmaKeski: (g.top + g.bottom) / 2 - (h.top + h.bottom) / 2,
           tekstiin: g.left - tx.right, korttiin: t.top - g.bottom, oikea: sc.right - g.right};}"""

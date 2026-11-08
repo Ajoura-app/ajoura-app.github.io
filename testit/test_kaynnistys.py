@@ -1,200 +1,107 @@
-"""Käynnistysanimaatio (0.83): vaalea auto, 5–8 paperikuittia lentää auton takaa logoon ja häipyy,
-iskulause "Matka jää muistiin!" (0.85, myös tervetulosivulla; EN/SV käännetty), ei vaakavieritystä, rauhallinen versio ilman kuitteja,
-kun laitteessa on vähennetty liikettä. Animaatio ajetaan pysäytettynä ja kelataan tiettyihin hetkiin."""
+"""03A visual launch; existing routes, data and offline access stay intact."""
 import pytest
+import json
+import tiedot
+from apu import avaa,KELLO
 
-from apu import avaa
-
-ISKULAUSEET = [("fi", "Matka jää muistiin!"), ("en", "Every journey remembered!"), ("sv", "Resan stannar i minnet!")]
-
-KUITIT = """() => [...document.querySelectorAll('.intro-overlay .rc')].map(rc => {
-  const p = rc.querySelector('.rc-p'), r = p.getBoundingClientRect();
-  return {nakyva: getComputedStyle(rc.querySelector(':scope>i>i')).opacity, x: r.left, oikea: r.right,
-          y: r.top + r.height / 2, kuva: !!p.querySelector('use'), nayttö: getComputedStyle(rc).display};
-})"""
-
-
-def avaa_intro(browser, base, leveys=390, kieli="fi", liike="no-preference"):
-    ctx = browser.new_context(viewport={"width": leveys, "height": 760}, is_mobile=True, has_touch=True,
-                              service_workers="block", reduced_motion=liike)
-    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
-    ctx.add_init_script(f"localStorage.setItem('ajoura-lang','{kieli}');")
-    page = ctx.new_page()
-    virheet = []
-    page.on("pageerror", lambda e: virheet.append(str(e)))
-    page.goto(f"{base}/app.html?pwa=1")
-    page.wait_for_selector(".intro-overlay .intro", timeout=5000)
-    page.wait_for_selector(".intro-overlay .intro:not(.intro-wait)", timeout=5000)  # 0.86: alkaa vasta näkyvänä
-    return ctx, page, virheet
-
-
-def kelaa(page, ms):
-    page.evaluate("t => document.getAnimations().forEach(a => { a.pause(); a.currentTime = t; })", ms)
-
-
-@pytest.mark.parametrize("kieli,teksti", ISKULAUSEET)
-def test_iskulause(browser, base, kieli, teksti):
-    ctx, page, virheet = avaa_intro(browser, base, kieli=kieli)
+@pytest.mark.parametrize('theme',['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('character',['emma','mikko','ankka'])
+def test_teema_hahmo_ja_paluu(browser,base,theme,character):
+    from apu import Sivu
+    ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,service_workers='block',reduced_motion='no-preference')
+    ls={'ajoura-app-v2':tiedot.tila(tiedot.talli()),'ajoura-ulkoasu':theme,'ajoura-hahmo':character}
+    ctx.add_init_script("if(!sessionStorage.getItem('test-init')){for(const [k,v] of Object.entries("+json.dumps(ls)+"))localStorage.setItem(k,v);sessionStorage.setItem('test-init','1');}")
+    page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));ctx.route('**/*',lambda r:r.continue_() if r.request.url.startswith(base) else r.abort())
+    page.goto(base+'/app.html?pwa=1#home',wait_until='domcontentloaded')
+    s=Sivu(ctx,page,errors)
+    p=s.page
     try:
-        assert page.inner_text(".intro-overlay .intro-slogan").strip() == teksti
-        kelaa(page, 3700)
-        assert float(page.eval_on_selector(".intro-overlay .intro-slogan", "e => getComputedStyle(e).opacity")) > 0.99, \
-            "iskulause ei ole näkyvissä animaation lopussa"
-        assert not virheet, virheet
-    finally:
-        ctx.close()
+        before=s.talli();p.emulate_media(reduced_motion='no-preference')
+        requests=[];p.on('request',lambda r:requests.append(r.url))
+        p.wait_for_selector('.intro-overlay .ai-intro')
+        assert p.get_attribute('.ai-intro .assistant-avatar img','src')==f'hahmot/{character}.webp'
+        assert p.locator('.intro-road,.intro-receipts').count()==0
+        assert p.evaluate('AjouraLaunch.duration()')==1400
+        p.wait_for_selector('.intro-overlay',state='detached')
+        assert s.talli()==before
+        assert p.url.endswith('#home')
+        assert all(u.startswith(base) for u in requests)
+        p.reload();p.wait_for_selector('.secretary-card')
+        assert p.locator('.intro-overlay').count()==0
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
 
-
-def test_auto_vaalea(browser, base):
-    ctx, page, _ = avaa_intro(browser, base)
+@pytest.mark.parametrize('theme',['nykyinen','auto','eko','blue-track','premium','garage','copilot','nordic','journey'])
+def test_fallback_ja_hiljainen_tila(browser,base,theme):
+    s=avaa(browser,base,'welcome',kello=KELLO,leveys=320,extra={'ajoura-ulkoasu':theme,'ajoura-hahmo-motion':'0'})
     try:
-        # Korin pääväri: car-render.js:n paint-gradientin keskikohta (offset .3)
-        varit = page.eval_on_selector_all(".intro-overlay .intro-car linearGradient[id^=paint] stop[offset='.3']",
-                                          "s => s.map(e => e.getAttribute('stop-color'))")
-        def lum(h):
-            v = int(h[1:7], 16)
-            return (0.299 * (v >> 16 & 255) + 0.587 * (v >> 8 & 255) + 0.114 * (v & 255)) / 255
-        hex_ = [v for v in varit if v and v.startswith("#") and len(v) >= 7]
-        assert hex_ and min(lum(v) for v in hex_) > 0.75, f"auto ei ole vaalea: {hex_[:6]}"
-    finally:
-        ctx.close()
+        p=s.page;p.emulate_media(reduced_motion='no-preference')
+        assert p.evaluate('AjouraLaunch.duration()')==200
+        p.evaluate("document.body.insertAdjacentHTML('beforeend','<div class=\"intro-overlay\">'+AjouraLaunch.html('')+'</div>')")
+        assert p.locator('.ai-intro-content').evaluate('(e)=>getComputedStyle(e).animationName')=='none'
+        assert p.locator('.ai-intro').evaluate('(e)=>e.scrollWidth<=e.clientWidth')
+    finally:s.sulje()
 
-
-@pytest.mark.parametrize("leveys", [320, 390, 430])
-def test_kuitit_lentavat_logoon(browser, base, leveys):
-    ctx, page, virheet = avaa_intro(browser, base, leveys=leveys)
+@pytest.mark.parametrize('lang',['fi','en','sv'])
+@pytest.mark.parametrize('width,height',[(320,568),(390,844),(430,932),(844,390)])
+def test_kieli_rajaukset_ja_vahennetty_liike(browser,base,lang,width,height):
+    s=avaa(browser,base,'welcome',kello=KELLO,kieli=lang,leveys=width,korkeus=height,extra={'ajoura-hahmo':'ankka'})
     try:
-        kuitit = page.evaluate(KUITIT)
-        assert len(kuitit) == 5, f"kuitteja {len(kuitit)} (0.87: viisi)"
-        assert all(k["kuva"] and k["nayttö"] == "block" for k in kuitit), "kuitin SVG-kuva puuttuu tai piilossa"
-        # 0.84: 24 → 21 px, 0.87: 21 → 16 px leveys; mittasuhde 26:38 säilyy
-        koko = page.eval_on_selector(".intro-overlay .rc-p", "e => [parseFloat(getComputedStyle(e).width), parseFloat(getComputedStyle(e).height)]")
-        assert koko[0] <= 16 and abs(koko[1] / koko[0] - 38 / 26) < 0.02, f"kuitin koko {koko}"
-        kelaa(page, 0)
-        assert all(float(k["nakyva"]) < 0.05 for k in page.evaluate(KUITIT)), "kuitit näkyvät ennen auton liikettä"
-        nahty = set()
-        for t in range(500, 3500, 150):
-            kelaa(page, t)
-            for i, k in enumerate(page.evaluate(KUITIT)):
-                if float(k["nakyva"]) > 0.3:
-                    nahty.add(i)
-                    assert k["x"] > -6 and k["oikea"] < leveys + 6, f"kuitti {i + 1} karkaa ruudulta hetkellä {t} ms"
-            leveampi = page.evaluate("document.documentElement.scrollWidth - innerWidth")
-            assert leveampi <= 0, f"vaakavieritys {leveampi} px hetkellä {t} ms"
-        assert len(nahty) == len(kuitit), "kaikki kuitit eivät tulleet näkyviin"
-        # Lopussa kuitit ovat häipyneet logon kohdalle
-        kelaa(page, 3450)
-        logo = page.eval_on_selector(".intro-overlay .intro-logo", "e => { const r = e.getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; }")
-        for i, k in enumerate(page.evaluate(KUITIT)):
-            assert float(k["nakyva"]) < 0.05, f"kuitti {i + 1} näkyy vielä lopussa"
-            assert logo[0] - 10 <= k["x"] and k["oikea"] <= logo[1] + 10 and logo[2] - 10 <= k["y"] <= logo[3] + 10, \
-                f"kuitti {i + 1} ei päättynyt logon kohdalle"
-        assert not virheet, virheet
-    finally:
-        ctx.close()
+        p=s.page
+        assert p.evaluate('AjouraLaunch.duration()')==200
+        p.evaluate("document.body.insertAdjacentHTML('beforeend','<div class=\"intro-overlay\">'+AjouraLaunch.html('')+'</div>')")
+        assert p.locator('.ai-intro').evaluate('(e)=>e.scrollWidth<=e.clientWidth&&e.scrollHeight<=e.clientHeight')
+        assert p.locator('.ai-intro img').last.evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
+        if lang!='fi':assert 'Henkilökohtainen autosihteerisi' not in p.inner_text('.ai-intro')
+    finally:s.sulje()
 
 
-def test_vahennetty_liike(browser, base):
-    ctx, page, _ = avaa_intro(browser, base, liike="reduce")
+def test_ensikaytto_palaa_welcomeen(browser,base):
+    ctx=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,reduced_motion='reduce',service_workers='block')
     try:
-        assert page.eval_on_selector(".intro-overlay .intro-receipts", "e => getComputedStyle(e).display") == "none"
-        assert page.inner_text(".intro-overlay .intro-slogan").strip() == "Matka jää muistiin!"
-        page.wait_for_selector(".intro-overlay", state="detached", timeout=3000)
-    finally:
-        ctx.close()
+        p=ctx.new_page();p.goto(base+'/app.html?pwa=1')
+        p.wait_for_selector('.intro-overlay',state='detached')
+        assert p.locator('[data-start]').is_visible()
+        assert p.locator('a[href="#login"]').count()>0
+    finally:ctx.close()
 
 
-def test_sulkeutuu_itse(browser, base):
-    """Animaatio ei jää ruudulle: peitto poistuu noin 4,4 s kuluttua tai heti napautuksella."""
-    ctx, page, _ = avaa_intro(browser, base)
+def test_kaynnistys_offline(browser):
+    from test_offline import Palvelin,Kayttaja
+    from conftest import JUURI
+    server=Palvelin(JUURI);k=Kayttaja(browser,server,tiedot.talli())
     try:
-        page.wait_for_selector(".intro-overlay", state="detached", timeout=6000)
-    finally:
-        ctx.close()
-    ctx, page, _ = avaa_intro(browser, base)
+        k.asenna();before=k.talli();k.page.emulate_media(reduced_motion='no-preference')
+        k.ctx.add_init_script("sessionStorage.removeItem('ajoura-intro');localStorage.setItem('ajoura-hahmo','mikko');localStorage.setItem('ajoura-ulkoasu','copilot');")
+        k.ctx.set_offline(True);k.avaa()
+        k.page.wait_for_selector('.intro-overlay .ai-intro')
+        assert k.page.get_attribute('.ai-intro .assistant-avatar img','src')=='hahmot/mikko.webp'
+        k.page.wait_for_selector('.intro-overlay',state='detached')
+        assert k.talli()==before
+        assert not k.virheet,k.virheet
+    finally:k.sulje();server.sulje()
+
+@pytest.mark.parametrize('motion',['1','0'])
+def test_demo_launcher(browser,base,motion):
+    s=avaa(browser,base,'launcher',odota=False,mobiili=False,leveys=1200,korkeus=950,kello=KELLO,extra={'ajoura-hahmo-motion':motion,'ajoura-hahmo':'mikko'})
     try:
-        page.click(".intro-overlay")
-        page.wait_for_selector(".intro-overlay", state="detached", timeout=1500)
-    finally:
-        ctx.close()
+        p=s.page;p.wait_for_selector('[data-launch]');p.emulate_media(reduced_motion='no-preference');p.click('[data-launch]')
+        p.wait_for_selector('.ai-intro')
+        assert p.get_attribute('.ai-intro .assistant-avatar img','src')=='hahmot/mikko.webp'
+        p.wait_for_selector('[data-start]')
+        assert p.url.endswith('#welcome')
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
 
 
-@pytest.mark.parametrize("kieli,teksti", ISKULAUSEET)
-def test_tervetulosivun_iskulause(browser, base, kieli, teksti):
-    """0.85: tervetulosivulla sama iskulause kuin käynnistysanimaatiossa (ennen "huolehtii autostasi.")."""
-    sivu = avaa(browser, base, nakyma="welcome", kieli=kieli)
+def test_odottaa_kunnes_nakyvissa(browser,base):
+    """Keep the existing slow-start guarantee for the new visual animation."""
+    ctx=browser.new_context(viewport={'width':390,'height':760},is_mobile=True,reduced_motion='no-preference',service_workers='block')
+    ctx.add_init_script("const original=HTMLImageElement.prototype.decode;HTMLImageElement.prototype.decode=function(){return new Promise(r=>setTimeout(r,800)).then(()=>original.call(this));};")
     try:
-        assert sivu.page.inner_text(".welcome h2 span").strip() == teksti
-        assert not sivu.virheet, sivu.virheet
-    finally:
-        sivu.sulje()
-
-
-AUTO = """() => { const c = document.querySelector('.intro-overlay .intro-car').getBoundingClientRect(),
-  l = document.querySelector('.intro-overlay .intro-road').getBoundingClientRect(),
-  s = getComputedStyle(document.querySelector('.intro-overlay .intro-car svg'));
-  return {vasen: c.left - l.left, oikea: l.right - c.right, nakyva: +s.opacity}; }"""
-
-
-@pytest.mark.parametrize("leveys", [320, 430])
-def test_auto_lahtee_viivan_alusta(browser, base, leveys):
-    """0.86: auto on alussa viivan vasemmassa päässä (ei viivan ulkopuolella eikä keskellä) ja ajaa
-    rauhallisemmin (3,4 s), viivan loppuun."""
-    ctx, page, _ = avaa_intro(browser, base, leveys=leveys)
-    try:
-        kelaa(page, 0)
-        a = page.evaluate(AUTO)
-        assert abs(a["vasen"]) <= 1, f"auto ei ole viivan alussa: {a}"
-        kelaa(page, 400)
-        a = page.evaluate(AUTO)
-        assert a["nakyva"] > 0.99 and 0 <= a["vasen"] < leveys * 0.06, f"auto ei lähde rauhassa viivan alusta: {a}"
-        kesto = page.eval_on_selector(".intro-overlay .intro-car", "e => parseFloat(getComputedStyle(e).animationDuration)")
-        assert kesto >= 3.3, f"auton ajo {kesto} s"
-        kelaa(page, 3800)
-        assert abs(page.evaluate(AUTO)["oikea"]) <= 1, "auto ei päätynyt viivan loppuun"
-    finally:
-        ctx.close()
-
-
-def test_odottaa_kunnes_nakyvissa(browser, base):
-    """0.86: animaatio ei kulu taustalla hitaan käynnistyksen aikana: se on pysäytettynä,
-    kunnes kuvat ovat valmiit ja näkymä on piirretty."""
-    ctx = browser.new_context(viewport={"width": 390, "height": 760}, is_mobile=True, has_touch=True,
-                              service_workers="block")
-    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(base) else r.abort())
-    # Hidas laite: kuvien valmistuminen kestää (decode 0,8 s)
-    ctx.add_init_script("const d = HTMLImageElement.prototype.decode; HTMLImageElement.prototype.decode = function () "
-                        "{ return new Promise(r => setTimeout(r, 800)).then(() => d.call(this)); };")
-    page = ctx.new_page()
-    try:
-        page.goto(f"{base}/app.html?pwa=1", wait_until="commit")
-        page.wait_for_selector(".intro-overlay .intro.intro-wait", timeout=5000)
-        page.wait_for_timeout(300)
-        tila = page.eval_on_selector(".intro-overlay .intro-car", "e => e.getAnimations().map(a => [a.playState, a.currentTime])")
-        assert tila and all(t[0] == "paused" and t[1] == 0 for t in tila), f"animaatio kului odottaessa: {tila}"
-        page.wait_for_selector(".intro-overlay .intro:not(.intro-wait)", timeout=5000)
-    finally:
-        ctx.close()
-
-
-def test_kuitit_pakokaasuna(browser, base):
-    """0.87: kuitti syntyy pakoputken korkeudelta auton takaa pienenä, ja sen mukana tulee savupöllähdys."""
-    ctx, page, _ = avaa_intro(browser, base)
-    try:
-        tiedot = page.evaluate("""() => [...document.querySelectorAll('.intro-overlay .rc')].map(rc => {
-          const s = getComputedStyle(rc);
-          return {t: parseFloat(s.getPropertyValue('--t')) * 1000, savu: getComputedStyle(rc, '::before').animationName,
-                  savu2: getComputedStyle(rc, '::after').animationName}; })""")
-        assert all(k["savu"] == "rc-puff" and k["savu2"] == "rc-puff" for k in tiedot), f"savu puuttuu: {tiedot}"
-        for i, k in enumerate(tiedot):
-            kelaa(page, k["t"] + 30)
-            m = page.evaluate("""i => { const rc = document.querySelectorAll('.intro-overlay .rc')[i],
-              p = rc.querySelector('.rc-p').getBoundingClientRect(),
-              c = document.querySelector('.intro-overlay .intro-car').getBoundingClientRect(),
-              l = document.querySelector('.intro-overlay .intro-line').getBoundingClientRect();
-              return {x: p.left + p.width / 2, y: p.top + p.height / 2, leveys: p.width, auto: c.left, viiva: l.top}; }""", i)
-            assert m["auto"] - 14 <= m["x"] <= m["auto"] + 2, f"kuitti {i + 1} ei synny auton takaa: {m}"
-            assert m["viiva"] - 18 <= m["y"] <= m["viiva"], f"kuitti {i + 1} ei synny pakoputken korkeudelta: {m}"
-            assert m["leveys"] < 9, f"kuitti {i + 1} ei ole syntyessään pieni: {m}"
-    finally:
-        ctx.close()
+        p=ctx.new_page();p.goto(base+'/app.html?pwa=1',wait_until='commit')
+        p.wait_for_selector('.ai-intro.intro-wait')
+        states=p.locator('.ai-intro-content').evaluate('(e)=>e.getAnimations().map(a=>[a.playState,a.currentTime])')
+        assert states and all(s[0]=='paused' and s[1]==0 for s in states)
+        p.wait_for_selector('.ai-intro:not(.intro-wait)')
+    finally:ctx.close()

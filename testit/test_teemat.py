@@ -1,4 +1,4 @@
-"""Teemat (v0.110): Asetukset → Teeman valinta, viisi teemaa (Alkuperäinen + Auto, Eko, Sininen ajoura, Premium).
+"""Teemat: Alkuperäinen, neljä aiempaa teemaa sekä Garage, Copilot, Nordic ja Journey.
 
 - Värit ovat app.css:ssä muodossa var(--c-xxxxxx,#xxxxxx): alkuperäinen väri on varaväri, joten Alkuperäinen-teema
   (oletus) ei muutu eikä riipu teemat.css:stä. tyokalut/teemat.py pitää värit ja teemat.css:n ajan tasalla.
@@ -17,10 +17,13 @@ import tiedot
 from apu import KELLO, avaa, odota_nakyma
 from conftest import JUURI
 
-TEEMAT = ["auto", "eko", "blue-track", "premium"]
+VANHAT_TEEMAT = ["auto", "eko", "blue-track", "premium"]
+UUDET_TEEMAT = ["garage", "copilot", "nordic", "journey"]
+TEEMAT = VANHAT_TEEMAT + UUDET_TEEMAT
 TAUSTA = {"auto": "rgb(245, 244, 242)", "eko": "rgb(243, 247, 242)", "blue-track": "rgb(9, 29, 48)",
-          "premium": "rgb(243, 236, 230)"}
-NAKYMAT = ["home", "fuel/tst1", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1", "report/tst1",
+          "premium": "rgb(243, 236, 230)", "garage": "rgb(7, 17, 16)", "copilot": "rgb(14, 16, 37)",
+          "nordic": "rgb(243, 247, 245)", "journey": "rgb(16, 25, 22)"}
+NAKYMAT = ["car-order", "home", "fuel/tst1", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1", "report/tst1",
            "notes/tst1", "menu", "settings", "theme", "tips", "me"]
 
 
@@ -72,7 +75,7 @@ def test_teeman_vaihto_ja_pysyvyys(browser, base):
     try:
         p.click(".th-row a[href='#theme']")
         odota_nakyma(s, "theme")
-        assert p.locator("[data-th-pick]").count() == 5
+        assert p.locator("[data-th-pick]").count() == 9
         assert p.locator(".th-opt.on [data-th-pick=nykyinen]").count() == 1
         assert p.locator("[data-th-apply]").count() == 0, "Käytössä olevalla teemalla ei Ota käyttöön -painiketta"
         p.click("[data-th-pick=eko]")
@@ -246,3 +249,86 @@ def test_ei_vaakavieritysta_teemoissa(browser, base, teema):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+@pytest.mark.parametrize('teema', UUDET_TEEMAT)
+def test_ai_first_vaihto_pysyvyys_ja_hahmo(browser, base, teema):
+    """A new palette changes immediately, keeps the garage and preserves the avatar."""
+    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':'auto'})
+    p=s.page
+    try:
+        before=s.talli()
+        p.evaluate("window.__themeTestMarker=123")
+        p.click(f'[data-th-pick={teema}]')
+        p.click('.th-opt.on [data-th-apply]')
+        assert p.evaluate('window.__themeTestMarker')==123, 'Theme change reloaded the app'
+        assert p.evaluate("document.documentElement.getAttribute('data-theme')")==teema
+        assert s.talli()==before
+        p.goto(base+'/app.html#home')
+        p.wait_for_selector('.secretary-card')
+        assert p.get_attribute('.secretary-intro img','src')=='hahmot/emma.webp'
+        p.reload();p.wait_for_selector('.secretary-card')
+        assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")==teema
+        assert s.talli()==before
+        # Test the initial HTML before app.js can apply a theme itself.
+        p.route('**/app.js?*',lambda route:route.abort())
+        p.reload(wait_until='domcontentloaded')
+        assert p.evaluate("document.documentElement.getAttribute('data-theme')")==teema
+    finally:s.sulje()
+
+@pytest.mark.parametrize('teema', ['nykyinen']+VANHAT_TEEMAT)
+def test_ai_first_sailyttaa_vanhan_valinnan(browser, base, teema):
+    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':teema})
+    try:
+        assert s.page.locator('[data-th-pick]').count()==9
+        assert s.page.locator(f'.th-opt.on [data-th-pick={teema}]').count()==1
+        s.page.reload();s.page.wait_for_selector('[data-th-pick]')
+        assert s.page.evaluate("localStorage.getItem('ajoura-ulkoasu')")==teema
+    finally:s.sulje()
+
+@pytest.mark.parametrize('teema', UUDET_TEEMAT)
+@pytest.mark.parametrize('width', [320,375,390,430])
+def test_ai_first_mobiili(browser, base, teema, width):
+    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=width,asennettu=True,extra={'ajoura-ulkoasu':teema})
+    try:
+        for view in ['home','theme']:
+            s.page.goto(base+'/app.html#'+view);s.page.wait_for_timeout(200)
+            assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
+
+@pytest.mark.parametrize('teema', UUDET_TEEMAT)
+@pytest.mark.parametrize('kieli', ['fi','en','sv'])
+def test_ai_first_kielet(browser, base, teema, kieli):
+    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,kieli=kieli,leveys=320,extra={'ajoura-ulkoasu':teema})
+    try:
+        assert s.page.locator('[data-th-pick]').count()==9
+        if kieli!='fi':
+            text=s.page.inner_text('#app-screen')
+            assert 'Aiemmat teemat' not in text
+            assert 'Metsänvihreä ja lämmin kulta.' not in text
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
+
+
+def test_ai_first_teemat_offline(browser):
+    """New palettes and previews work without a network; switching keeps garage data."""
+    from test_offline import Palvelin, Kayttaja
+    server=Palvelin(JUURI)
+    k=Kayttaja(browser,server,tiedot.talli())
+    try:
+        k.asenna()
+        before=k.talli()
+        k.ctx.set_offline(True)
+        for theme in UUDET_TEEMAT:
+            k.avaa('theme')
+            k.page.click(f'[data-th-pick={theme}]')
+            k.page.click('.th-opt.on [data-th-apply]')
+            assert k.page.evaluate("document.documentElement.getAttribute('data-theme')")==theme
+            for suffix in ['', '-pieni']:
+                assert k.hae(f'teemakuvat/{theme}{suffix}.webp')[0]
+            k.avaa('home')
+            assert k.page.get_attribute('.secretary-intro img','src')=='hahmot/emma.webp'
+            assert k.talli()==before
+        assert not k.virheet,k.virheet
+    finally:
+        k.sulje();server.sulje()

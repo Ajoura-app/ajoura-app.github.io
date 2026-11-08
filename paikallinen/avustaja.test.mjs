@@ -1,0 +1,63 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createAssistant,MemoryLedger,project} from './avustaja.mjs';
+const now=Date.parse('2026-11-08T12:00:00Z');
+const car={id:'a',name:'PRIVATE NAME',plate:'PRIVATE PLATE',year:2019,km:2000,fuel:'Diesel',notes:'PRIVATE NOTE',events:[{id:'s',type:'Huolto',date:'2026-01-01',km:500,cost:'30'}],fuels:Array.from({length:18},(_,i)=>({id:'f'+i,date:'2026-10-'+String(i+1).padStart(2,'0'),km:100+i*100,qty:8,cost:12,full:i%2===0}))};
+function setup(opts={}){let state={owner:'owner',car:structuredClone(car),profile:{months:12,km:15000}},allow=true,clock=now;const calls=[],ledger=new MemoryLedger(opts);
+ const provider={classify:async x=>{calls.push(x);return 'consumption';},explain:async x=>{calls.push(x);return {code:'summary'};},...opts.provider};
+ const api=createAssistant({enabled:true,secret:'local-test-secret-never-production-12345',authenticate:async h=>h==='Bearer good'?'user':h==='Bearer other'?'other':null,readVehicle:async(u,id)=>u==='user'&&allow&&id===state.car.id?state:null,entitled:async()=>allow,provider,ledger,now:()=>clock,deadlineMs:opts.deadlineMs||1000});
+ const req=async(b,auth='Bearer good')=>{const r=await api(new Request('http://localhost/assistant',{method:'POST',headers:{authorization:auth,'content-type':'application/json'},body:JSON.stringify(b)}));return {status:r.status,body:await r.json(),cache:r.headers.get('cache-control')};};
+ const prepare=async()=>{const r=await req({action:'prepare',vehicleId:'a',lang:'fi'});assert.equal(r.status,200);return {action:'answer',vehicleId:'a',lang:'fi',question:'kulutus',idempotencyKey:'id1',optIn:true,snapshotToken:r.body.snapshotToken};};
+ return {req,prepare,calls,ledger,state,provider,revoke:()=>allow=false,tick:ms=>clock+=ms};}
+
+test('default closed',async()=>{assert.equal((await createAssistant()(new Request('http://localhost'))).status,503);});
+test('auth and ID isolation',async()=>{const s=setup();for(const [auth,id,status] of [['Bearer bad','a',401],['Bearer good','b',403],['Bearer other','a',403]])assert.equal((await s.req({action:'prepare',vehicleId:id,lang:'fi'},auth)).status,status);assert.equal(s.calls.length,0);});
+for(const lang of ['fi','en','sv'])test('summary and replay '+lang,async()=>{const s=setup(),b=await s.prepare();b.lang=lang;const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.cache,'no-store');assert.equal(r.body.vehicleId,'a');assert.equal(s.calls.length,2);assert.ok(!JSON.stringify(s.calls).includes('PRIVATE'));assert.equal(s.calls[1].question,undefined);assert.deepEqual(await s.req(b),r);assert.equal(s.calls.length,2);assert.equal((await s.req({...b,question:'new'})).status,409);});
+test('mutated content same rev rejected before model',async()=>{const s=setup(),b=await s.prepare();s.state.car.km++;assert.equal((await s.req(b)).status,409);assert.equal(s.calls.length,0);});
+test('ownership change rejected',async()=>{const s=setup(),b=await s.prepare();s.state.owner='new-owner';assert.equal((await s.req(b)).status,403);});
+test('revocation mid-provider blocks explanation and answer',async()=>{const s=setup(),b=await s.prepare();s.provider.classify=async()=>{s.revoke();return 'costs';};assert.equal((await s.req(b)).status,403);assert.equal([...s.ledger.rows.values()][0].state,'unknown');});
+test('content changes after explanation are rejected',async()=>{const s=setup(),b=await s.prepare();s.provider.explain=async()=>{s.state.car.km++;return {code:'summary'};};assert.equal((await s.req(b)).status,409);});
+test('unsupported and injected output rejected',async()=>{const s=setup(),b=await s.prepare();s.provider.classify=async()=>'<script>';assert.equal((await s.req(b)).status,422);const t=setup(),c=await t.prepare();t.provider.explain=async()=>({code:'summary',text:'invented fact'});assert.equal((await t.req(c)).status,502);});
+test('opt-in required',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req({...b,optIn:false})).status,400);assert.equal(s.calls.length,0);});
+test('snapshot signature and expiry',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req({...b,snapshotToken:b.snapshotToken+'x'})).status,409);s.tick(120001);assert.equal((await s.req(b)).status,409);});
+test('per-user quota and global budget independent',async()=>{const s=setup({limit:1}),b=await s.prepare();assert.equal((await s.req(b)).status,200);assert.equal((await s.req({...b,idempotencyKey:'id2'})).status,429);const t=setup({budget:655999}),c=await t.prepare();assert.equal((await t.req(c)).status,429);assert.equal(t.calls.length,0);});
+test('parallel duplicate pending and no second provider call',async()=>{const s=setup(),b=await s.prepare();let release,started;const gate=new Promise(r=>started=r);s.provider.classify=()=>{started();return new Promise(r=>release=r);};const first=s.req(b);await gate;assert.equal((await s.req(b)).status,202);release('service');assert.equal((await first).status,200);assert.equal(s.calls.length,1);});
+test('timeout reserves money even if user quota refunded',async()=>{const s=setup({deadlineMs:10}),b=await s.prepare();s.provider.classify=()=>new Promise(()=>{});assert.equal((await s.req(b)).status,502);const row=[...s.ledger.rows.values()][0];assert.equal(row.state,'unknown');assert.equal([...s.ledger.spent.values()][0],656000);assert.equal([...s.ledger.usage.values()][0],0);assert.equal((await s.req(b)).status,409);});
+test('invalid data and unsupported vehicle',()=>{assert.throws(()=>project({...car,kind:'boat'},{months:12,km:15000}));assert.throws(()=>project({...car,fuels:[{...car.fuels[0],km:-1}]},{months:12,km:15000}));assert.throws(()=>project({...car,fuels:Array(2001).fill(car.fuels[0])},{months:12,km:15000}));});
+test('prototype language is rejected before provider',async()=>{const s=setup();assert.equal((await s.req({action:'prepare',vehicleId:'a',lang:'__proto__'})).status,400);});
+test('parallel distinct keys cannot exceed quota',async()=>{const s=setup({limit:1}),b=await s.prepare();let release,started;const gate=new Promise(r=>started=r);s.provider.classify=()=>{started();return new Promise(r=>release=r);};const first=s.req(b);await gate;assert.equal((await s.req({...b,idempotencyKey:'id2'})).status,429);release('service');assert.equal((await first).status,200);});
+test('daily and minute limits retained after provider error',async()=>{const s=setup({minuteLimit:1}),b=await s.prepare();s.provider.classify=async()=>{throw Error('simulated');};assert.equal((await s.req(b)).status,502);assert.equal((await s.req({...b,idempotencyKey:'id2'})).status,429);});
+test('cached answer blocked by revocation',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req(b)).status,200);s.revoke();assert.equal((await s.req(b)).status,403);});
+test('private cache purge without changing charged quota',async()=>{const s=setup(),b=await s.prepare();assert.equal((await s.req(b)).status,200);s.ledger.purge(now+300001);assert.equal([...s.ledger.rows.values()][0].answer,null);assert.equal([...s.ledger.usage.values()][0],1);});
+test('cost and service summaries are deterministic',async()=>{for(const intent of ['service','costs']){const s=setup(),b=await s.prepare();s.provider.classify=async()=>intent;const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.intent,intent);if(intent==='costs')assert.equal(r.body.result.eur,216);else assert.deepEqual(r.body.result.dates,[{due:'2027-01-01',km:15500}]);}});
+
+test('missing cost records do not claim a known zero cost',async()=>{
+  const s=setup();s.state.car.events=[];for(const f of s.state.car.fuels)f.cost=null;
+  const b=await s.prepare();s.provider.classify=async()=> 'costs';
+  const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.eur,null);assert.match(r.body.text,/Tietoja ei ole riittävästi/);
+});
+test('explicit recorded zero cost is retained',async()=>{
+  const s=setup();s.state.car.events=[];for(const f of s.state.car.fuels)f.cost=null;s.state.car.fuels[0].cost=0;
+  const b=await s.prepare();s.provider.classify=async()=> 'costs';
+  const r=await s.req(b);assert.equal(r.status,200);assert.equal(r.body.result.eur,0);assert.match(r.body.text,/0.00 EUR/);
+});
+for(const field of ['fuels','events'])test('null '+field+' entry is a data error before any provider call',async()=>{
+  const s=setup();s.state.car[field]=[null];
+  assert.equal((await s.req({action:'prepare',vehicleId:'a',lang:'fi'})).status,422);assert.equal(s.calls.length,0);
+});
+for(const cost of [false,[],{},' ','0x10'])test('invalid event cost '+JSON.stringify(cost)+' is not a zero amount',async()=>{
+  const s=setup();s.state.car.events[0].cost=cost;
+  assert.equal((await s.req({action:'prepare',vehicleId:'a',lang:'fi'})).status,422);
+});
+test('dependency errors cannot forge a success status or disclose private codes',async()=>{
+  const s=setup(),b=await s.prepare();s.provider.classify=async()=>{throw Object.assign(new Error('PRIVATE'),{status:200,code:'PRIVATE_CODE'});};
+  const r=await s.req(b);assert.equal(r.status,502);assert.deepEqual(r.body,{error:'provider'});
+});
+test('terminal ledger transitions cannot refund successful usage',()=>{
+  const ledger=new MemoryLedger();const {row}=ledger.reserve('u','k','h',now);ledger.start(row);ledger.complete(row,{text:'ok'},now);
+  ledger.reject(row);assert.equal(row.state,'completed');assert.equal([...ledger.usage.values()][0],1);assert.equal([...ledger.spent.values()][0],656000);
+});
+test('reserved ledger rejection releases its money once and stays failed',()=>{
+  const ledger=new MemoryLedger();const {row}=ledger.reserve('u','k','h',now);ledger.reject(row);ledger.reject(row);
+  assert.equal(row.state,'failed');assert.equal([...ledger.usage.values()][0],0);assert.equal([...ledger.spent.values()][0],0);
+});

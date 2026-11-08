@@ -102,3 +102,23 @@ def test_tulevaisuuden_paiva_hylataan(browser, base):
         assert len(s.talli()["cars"][0]["events"]) == 1
     finally:
         s.sulje()
+
+
+def test_veneen_huoltotyypin_toimenpiteet_ja_tallennus(browser, base):
+    """Shared service calculation must also leave other vehicles' actual forms working."""
+    s = avaa(browser, base, 'add/tst3', autot=tiedot.talli(), kello=KELLO)
+    try:
+        before = s.talli()
+        tayta(s.page, tyyppi='Kausihuolto', km='321', hinta='0',
+              toimenpiteet=('Siipipyörä',), lisatieto='Testiveneen huolto')
+        s.page.click('#event-form [type=submit]')
+        odota_nakyma(s, 'vehicle/tst3')
+        after = s.talli()
+        assert after['cars'][:2] == before['cars'][:2]
+        events = after['cars'][2]['events']
+        e = next(e for e in events if e['id'] != 'e6')
+        assert len(events) == 2 and e['type'] == 'Kausihuolto'
+        assert e['items'] == ['Siipipyörä'] and e['km'] == 321
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

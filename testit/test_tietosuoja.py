@@ -42,3 +42,21 @@ def test_tietosuoja_vastaa_nykyista_sovellusta(browser, base, kieli):
             assert fi not in teksti, f"{kieli}: kääntämättä '{fi}'"
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize('kieli,automatic,shared,standard,exception', [
+    ('fi','automaattisesti pilveen','jäsenen laitteelle jo kopioidut','oletuskäytännöksi','poikkeuksia'),
+    ('en','automatically syncs','already copied to the member','by default','exceptions'),
+    ('sv','automatiskt till molnet','redan kopierats till medlemmens','som standard','undantag'),
+])
+def test_tietosuoja_selittaa_pilven_ja_sailytyksen(browser,base,kieli,automatic,shared,standard,exception):
+    """Readers must see automatic sync, shared access and the retention exceptions."""
+    s=avaa(browser,base,None,polku='tietosuoja.html',kieli=kieli,leveys=320,odota=False)
+    try:
+        p=s.page;p.wait_for_load_state('load');p.wait_for_timeout(300)
+        text=p.inner_text('main')
+        for marker in (automatic,shared,standard,exception):assert marker in text,(kieli,marker)
+        assert not any(marker in text for marker in ['vain omaan laitteeseesi','meillä ei ole sellaista','näkee vain oma tilisi','Vain silloin, kun itse päätät:'])
+        assert p.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        assert not s.virheet,s.virheet
+    finally:s.sulje()

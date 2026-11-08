@@ -39,6 +39,14 @@ TEEMAT = {
                        chart=["#43cada", "#5fd39a", "#c7a2ff", "#9fb3c8"]),
     "premium": dict(bg="#f3ece6", surface="#fff9f5", text="#282422", accent="#9a583f", neutral_h=55, neutral_k=0.9, deco="#ebe1d8",
                     nav="#fff9f5", hero="#fff9f5", chart=["#4f6f8f", "#5d8a5e", "#9a583f", "#8f857d"]),
+    "garage": dict(bg="#071110", surface="#142423", text="#f1f8f6", accent="#48dbc5", neutral_h=180, neutral_k=0.8,
+                   dark=True, nav="#081412", hero="#112725", chart=["#48dbc5", "#a6d99c", "#e8bd78", "#9eafc0"]),
+    "copilot": dict(bg="#0e1025", surface="#202440", text="#f7f6ff", accent="#a399ff", neutral_h=285, neutral_k=0.9,
+                    dark=True, nav="#11142b", hero="#202440", chart=["#a399ff", "#75d4ce", "#e6b586", "#aab4da"]),
+    "nordic": dict(bg="#f3f7f5", surface="#ffffff", text="#163832", accent="#176a5a", neutral_h=160, neutral_k=0.5,
+                   nav="#ffffff", hero="#ffffff", chart=["#176a5a", "#467bb1", "#a16d2e", "#758b87"]),
+    "journey": dict(bg="#101916", surface="#1a2b25", text="#faf8ec", accent="#d7c376", neutral_h=150, neutral_k=0.6,
+                    dark=True, nav="#111e18", hero="#1a2b25", chart=["#d7c376", "#86c6a5", "#95b9d5", "#d1a0b4"]),
 }
 # Teeman muuttujat koskevat vain sovellusta: puhelinkehyksen sisäosaa ja sen ulkopuolelle avautuvia ikkunoita,
 # sekä puhelimessa (selain tai asennettu sovellus) koko sivua. Tietokoneen esittelysivu pysyy ennallaan.

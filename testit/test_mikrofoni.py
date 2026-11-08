@@ -19,10 +19,10 @@ KEKSITTY_PUHE = """(() => {
   window.__puhe = { lang: null, interim: null, started: 0, stopped: 0, aborted: 0, tulos: 'Tankkasin 45,6 litraa dieseliä 84,77 euroa mittari 153100', virhe: null, viive: 60 };
   class Puhe {
     start() {
-      const p = window.__puhe; p.started++; p.lang = this.lang; p.interim = this.interimResults;
+      const p = window.__puhe; p.current = this; p.started++; p.lang = this.lang; p.interim = this.interimResults;
       if (p.tila === 'jumissa') return;
       if (p.tila === 'stopilla' || p.tila === 'ei_loppua') { setTimeout(() => this.onaudiostart && this.onaudiostart(), 20); return; }
-      this._t = setTimeout(() => {
+      this._finish = () => {
         if (p.virhe) { this.onerror && this.onerror({ error: p.virhe }); this.onend && this.onend(); return; }
         const tulos = (t, valmis) => { const r = [{ transcript: t, confidence: 0.9 }]; r.isFinal = valmis; return r; };
         if (p.tulos) {
@@ -30,7 +30,8 @@ KEKSITTY_PUHE = """(() => {
           this.onresult && this.onresult({ resultIndex: 0, results: [tulos(p.tulos, true)] });
         }
         this.onend && this.onend();
-      }, p.viive);
+      };
+      this._t = setTimeout(this._finish, p.viive);
     }
     stop() {
       const p = window.__puhe; p.stopped++; clearTimeout(this._t);
@@ -61,7 +62,7 @@ def avaa_plus(browser, base, puhe=KEKSITTY_PUHE, **k):
 
 
 def puhe(pg):
-    return pg.evaluate("window.__puhe")
+    return pg.evaluate("() => {const {current, ...p} = window.__puhe; return p;}")
 
 
 def viesti(pg, teksti):
@@ -73,8 +74,10 @@ def test_puhe_tekstikenttaan_ei_lahetetä_itsestaan(browser, base):
     try:
         pg = s.page
         assert "puheella" in pg.inner_text(".ai-lead")
+        pg.evaluate("window.__puhe.viive = 60000")
         pg.click("[data-ai-mic]")
         assert pg.get_attribute("[data-ai-mic]", "aria-pressed") == "true"
+        pg.evaluate("clearTimeout(window.__puhe.current._t); window.__puhe.current._finish()")
         viesti(pg, "Tarkista teksti ja paina Lähetä")
         assert pg.input_value("#ai-say-in") == "Tankkasin 45,6 litraa dieseliä 84,77 euroa mittari 153100"
         assert pg.get_attribute("[data-ai-mic]", "aria-pressed") == "false"
