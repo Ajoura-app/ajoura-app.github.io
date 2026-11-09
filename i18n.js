@@ -10,6 +10,11 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    'Huomiot': 'Notices',
+    'Puhu Emmalle': 'Talk to Emma',
+    'Puhu Mikolle': 'Talk to Mikko',
+    'Puhu Ankalle': 'Talk to Duck',
+
     // Compact observations; the existing task decisions and calculations are unchanged.
     'Muistutus perustuu omaan huoltoväliisi.': 'This reminder uses your service interval.',
     'Näytä kaikki tehtävät': 'Show all tasks',

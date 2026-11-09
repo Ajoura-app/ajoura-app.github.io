@@ -3,6 +3,11 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    'Huomiot': 'Notiser',
+    'Puhu Emmalle': 'Prata med Emma',
+    'Puhu Mikolle': 'Prata med Mikko',
+    'Puhu Ankalle': 'Prata med Ankan',
+
     // Compact observations; the existing task decisions and calculations are unchanged.
     'Muistutus perustuu omaan huoltoväliisi.': 'Påminnelsen utgår från ditt serviceintervall.',
     'Näytä kaikki tehtävät': 'Visa alla uppgifter',

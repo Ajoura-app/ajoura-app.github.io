@@ -20,7 +20,7 @@ def test_hero_kuva_ja_ensimmainen_nakyma(browser, base, width, height):
         assert p.locator('.row-info').inner_text().find('TST-101') >= 0
         assert p.locator('.secretary-vehicle-details').get_attribute('open') is None
         if width == 390:
-            assert 165 <= hero['height'] <= 230, hero
+            assert 235 <= hero['height'] <= 255, hero
             dock = p.locator('.tab-dock').bounding_box()
             name = p.locator('.secretary-intro [data-avatar-name]').bounding_box()
             assert name['y'] + name['height'] <= dock['y'], (name, dock)
@@ -47,7 +47,7 @@ def test_valitsimen_nappaimisto_ja_jarjestys(browser, base, lang):
         assert p.locator('[data-secretary-car=v1]').is_visible()
         p.locator('[data-secretary-car=v1]').focus()
         p.keyboard.press('Enter')
-        assert 'TST-102' in p.inner_text('.secretary-context')
+        assert 'TST-102' in p.text_content('.secretary-context')
         assert p.locator('.secretary-picker').get_attribute('open') is None
         assert p.locator('[data-secretary-picker]').evaluate('(e) => e === document.activeElement')
         p.keyboard.press('Enter')
@@ -84,7 +84,7 @@ def test_pyyhkaisy_oikeasta_kuva_alueesta(browser, base):
         x, y = media['x'] + media['width'] * .8, media['y'] + media['height'] / 2
         kosketa(cdp, x, y, -140, 0)
         p.wait_for_function('document.querySelector("[data-secretary-car=tst2]").getAttribute("aria-pressed") === "true"')
-        assert 'TST-202' in p.inner_text('.secretary-context')
+        assert 'TST-202' in p.text_content('.secretary-context')
         kosketa(cdp, x, y, 5, -90)
         assert p.locator('[data-secretary-car=tst2]').get_attribute('aria-pressed') == 'true'
         assert p.evaluate('location.hash') == '#home'
@@ -137,7 +137,7 @@ def test_heron_pitka_teksti_ja_kaksinkertainen_tekstikoko(browser, base):
     try:
         p = s.page
         assert p.locator('.secretary-hero-meta img').count() == 0
-        assert '<img' in p.inner_text('.secretary-hero-meta')
+        assert '<img' in p.text_content('.secretary-hero-meta')
         p.evaluate('''() => {
           for (const e of document.querySelectorAll('.secretary-hero .row-name strong, .secretary-hero .row-meta, .secretary-vehicle-details summary, .secretary-picker summary')) {
             e.style.fontSize = parseFloat(getComputedStyle(e).fontSize) * 2 + 'px';

@@ -1,4 +1,4 @@
-"""Visual-first 03: one real observation, accessible task details and a compact home dock."""
+"""Visual-first 03: two real observations, accessible task details and a compact home dock."""
 import pytest
 
 import tiedot
@@ -22,7 +22,7 @@ def test_yksi_tarkein_ja_nappaimistolla_avattavat_tehtavat(browser, base, lang, 
         before = s.talli()
         tasks = p.locator('[data-task-key]')
         assert tasks.count() == 3
-        assert p.locator('[data-task-key]:visible').count() == 1
+        assert p.locator('[data-task-key]:visible').count() == 2
         assert ':Huolto:' in p.locator('.secretary-primary').get_attribute('data-task-key')
         assert p.locator('.secretary-primary .task-reason').is_visible()
         assert p.locator('.secretary-summary').count() == 0
@@ -135,9 +135,10 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
             s.context.new_cdp_session(p).send('Emulation.setSafeAreaInsetsOverride',
                                             {'insets': {'top': 47, 'bottom': safe}})
         dock = p.locator('.tab-dock').bounding_box()
-        assert dock['height'] <= 76 + safe, dock
-        controls = p.locator('.avatar-shortcut, .main-tabs a, .tab-fab')
-        assert controls.count() == 6
+        # Four labelled navigation controls require 80 px before the device safe area.
+        assert dock['height'] <= 80 + safe, dock
+        controls = p.locator('.main-tabs a:visible')
+        assert controls.count() == 4
         boxes = [x.bounding_box() for x in controls.all()]
         for i, a in enumerate(boxes):
             assert min(a['width'], a['height']) >= 44, a
@@ -150,7 +151,7 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
         gap = p.locator('.tab-dock').bounding_box()['y'] - p.locator('.secretary-home').bounding_box()['y'] - p.locator('.secretary-home').bounding_box()['height']
         assert 0 <= gap <= 32, gap
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth <= document.querySelector("#app-screen").clientWidth')
-        p.locator('.tab-fab').click()
+        p.locator('.cinematic-brand a[href="#newcar"]').click()
         p.wait_for_function('location.hash === "#newcar"')
         assert not s.virheet, s.virheet
     finally:
@@ -190,9 +191,10 @@ def test_pitkat_perustelut_ja_kaksinkertainen_teksti(browser, base, lang):
 
 
 @pytest.mark.parametrize('lang', ['fi', 'en', 'sv'])
-def test_kirjoitus_ei_siirra_painiketta_kesken_napautuksen(browser, base, lang):
+@pytest.mark.parametrize('theme', ['garage','copilot','nordic','journey'])
+def test_kirjoitus_ei_siirra_painiketta_kesken_napautuksen(browser, base, lang, theme):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO, kieli=lang,
-             leveys=320, asennettu=True, ios=True, extra={'ajoura-ulkoasu': 'nordic'})
+             leveys=320, asennettu=True, ios=True, extra={'ajoura-ulkoasu': theme})
     try:
         p = s.page
         p.add_init_script('window.__calls=0;window.AjouraAssistantFixtureTransport={fixture:true,ready:()=>true,request:async()=>{window.__calls++;return {status:503}}}')

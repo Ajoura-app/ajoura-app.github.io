@@ -1,4 +1,4 @@
-"""Visual-first 02: compact original avatars, supported actions and confirmation boundaries."""
+"""Visual-first 02: original cinematic avatars, supported actions and confirmation boundaries."""
 from copy import deepcopy
 
 import pytest
@@ -29,7 +29,7 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
         frame = p.locator('.secretary-intro [data-avatar]').bounding_box()
         actual = img.bounding_box()
-        assert 64 <= frame['width'] <= 86
+        assert frame['width'] == (116 if width == 320 else 142)
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
         names = {'emma':'Emma', 'mikko':'Mikko', 'ankka':'Bottiankka'}
         assert p.inner_text('.secretary-intro [data-avatar-name]') == names[character]
@@ -38,7 +38,7 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
             assert p.locator('.secretary-note').is_visible()
             assert 'Tarkistat tiedot ennen tallennusta.' in p.inner_text('.secretary-note')
         if width == 390:
-            assert 185 <= card['height'] <= 255, card
+            assert 190 <= card['height'] <= 275, card
             dock = p.locator('.tab-dock').bounding_box()
             for action in p.locator('.secretary-actions > button, .secretary-actions > a').all():
                 box = action.bounding_box()

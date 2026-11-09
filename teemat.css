@@ -63,20 +63,145 @@ html[data-theme=premium] .garage-row .row-btn.fuel{--btnbg:var(--t-accent);borde
 html[data-theme=premium] .garage-row .row-btn.note{--btnbg:#4a4643;border-color:#4a4643;color:#fff}
 }
 
-/* Vaihe 02: AI-first-presets. Theme selection never changes the avatar. */
+/* Shared AI-first surfaces. Theme selection never changes the avatar. */
 @media screen{
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-card{border-color:var(--t-border);box-shadow:none}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-card{border-color:var(--t-border)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-intro .mini-label{color:var(--t-accent)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-actions button:first-child{background:var(--t-accent);border-color:var(--t-accent);color:var(--t-on-accent)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .tab-bar.main-tabs{background:var(--t-nav)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-selector button[aria-pressed=true]{border-color:var(--t-accent)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=journey]) img[src="logo.svg"]{filter:brightness(0) invert(1)}
-html[data-theme=garage] .secretary-card{border-radius:20px}
-html[data-theme=copilot] .secretary-card{border:2px solid var(--t-accent)}
-html[data-theme=nordic] .secretary-card,html[data-theme=nordic] .secretary-task{border-radius:14px}
-html[data-theme=journey] .secretary-card,html[data-theme=journey] .secretary-task{border-radius:28px}
-}
-@media screen{
 /* The chosen theme name must meet normal-text contrast as well as its label. */
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .th-row span{color:var(--ink)}
+}
+
+/* Phase 04: static home artwork and materials. These tokens add no new theme selection or content. */
+@media screen{
+html[data-theme=garage]{
+  --t-home-page:radial-gradient(ellipse 90% 280px at 18% 0,#52736a16,transparent 80%);
+  --t-home-hero:linear-gradient(180deg,#233333 0,#122322 66%,#0b1514 67%,#1a2925 100%);
+  --t-home-detail:linear-gradient(90deg,transparent 14%,#020d0c66 14% 15%,transparent 15% 84%,#020d0c66 84% 85%,transparent 85%),linear-gradient(180deg,#effff21c,transparent 70%);
+  --t-home-light:linear-gradient(90deg,transparent 10%,#d3efe333 20%,#d3efe3a0 50%,#d3efe333 80%,transparent 90%) center 9px/76% 2px no-repeat,radial-gradient(ellipse 48% 10% at 50% 90%,#00000080,transparent 90%);
+  --t-home-surface:linear-gradient(135deg,#ffffff03,transparent 65%);
+  --t-home-shadow:0 8px 22px -18px #000000c0,inset 0 1px 0 #ffffff07;
+  --t-home-radius:20px;
+}
+html[data-theme=copilot]{
+  --t-home-page:radial-gradient(ellipse 80% 350px at 100% 0,#6e61be24,transparent 75%),radial-gradient(ellipse 55% 180px at 0 500px,#28758a14,transparent 75%);
+  --t-home-hero:radial-gradient(ellipse 100% 160% at 80% 0,#35497888,transparent 70%),linear-gradient(145deg,#242442,#132036);
+  --t-home-detail:radial-gradient(#a2b6e830 .7px,transparent 1px) center/18px 18px;
+  --t-home-light:radial-gradient(ellipse 78% 135% at 55% 110%,transparent 66%,#aaa0ff70 67%,transparent 68%),radial-gradient(ellipse 95% 115% at 45% 112%,transparent 74%,#6eced83d 75%,transparent 76%);
+  --t-home-surface:linear-gradient(135deg,#afbfff0a,transparent 72%);
+  --t-home-shadow:0 10px 26px -18px #03091bcc,inset 0 1px 0 #e3e9ff14;
+  --t-home-radius:20px;
+}
+html[data-theme=nordic]{
+  --t-home-page:linear-gradient(135deg,#ffffffb0,transparent 42%);
+  --t-home-hero:linear-gradient(145deg,#ffffff,#e7eee8 78%);
+  --t-home-detail:linear-gradient(132deg,#ffffffc0 2% 22%,#d8e6db66 23%,#ffffff66 55%,#dce9df70 56%,transparent 74%);
+  --t-home-light:linear-gradient(170deg,transparent 65%,#acbeb12b 66% 77%,transparent 78%),radial-gradient(ellipse 75% 20% at 50% 95%,#748d7e30,transparent 75%);
+  --t-home-surface:linear-gradient(130deg,#ffffff,#f6f9f6);
+  --t-home-shadow:0 2px 4px #193d290a,0 12px 24px -20px #17392b55;
+  --t-home-radius:14px;
+}
+html[data-theme=journey]{
+  --t-home-page:radial-gradient(ellipse 100% 260px at 75% 0,#c9b46716,transparent 78%);
+  --t-home-hero:linear-gradient(180deg,#36423b,#2e4037 57%,#1c3029 58%,#1b2d26);
+  --t-home-detail:radial-gradient(ellipse 70% 62% at 78% 18%,#e4c67d40,transparent 75%);
+  --t-home-light:linear-gradient(168deg,transparent 48%,#70765a50 49% 63%,transparent 64%),linear-gradient(190deg,transparent 44%,#203d3380 45% 66%,transparent 67%),linear-gradient(180deg,transparent 70%,#12251e60 71%,transparent 95%);
+  --t-home-surface:linear-gradient(145deg,#d9bc6e07,transparent 72%);
+  --t-home-shadow:0 12px 28px -20px #000000cc,inset 0 1px 0 #f8dba212;
+  --t-home-radius:22px;
+}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-home){background-image:var(--t-home-page)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-home) .demo-label{color:var(--ink)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-home :is(.secretary-hero,.secretary-card,.secretary-task){background-color:var(--t-surface);background-image:var(--t-home-surface);border-color:var(--t-border);border-radius:var(--t-home-radius);box-shadow:var(--t-home-shadow)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media{isolation:isolate;background-color:var(--t-hero);background-image:var(--t-home-hero);border-radius:calc(var(--t-home-radius) - 1px) calc(var(--t-home-radius) - 1px) 0 0}
+/* Empty pseudo-elements are decorative and absent from the accessibility tree. Only the artwork is clipped. */
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media::before,
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media::after{content:'';position:absolute;inset:0;z-index:0;border-radius:inherit;pointer-events:none}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media::before{background:var(--t-home-detail)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media::after{background:var(--t-home-light)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-hero-media :is(.car-stage,.car-photo){z-index:1}
+html[data-theme=copilot] .secretary-home .secretary-card{border-color:#7873a3}
+html[data-theme=copilot] .secretary-primary{box-shadow:var(--t-home-shadow),inset 2px 0 0 var(--t-accent)}
+}
+@media screen and (hover:hover){
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-actions>:is(button:not(:disabled),a):hover{box-shadow:inset 0 0 0 1px var(--t-accent)}
+}
+/* Local, optimized decorative assets; user photos remain intact above these backgrounds. */
+html[data-theme=garage]{--t-home-art:url('ui-art/garage-room.webp');--t-home-plate:#071110ed;--t-home-bubble-border:#41665e;--t-home-bubble:linear-gradient(145deg,#183a36,#132321);--t-home-notices:linear-gradient(145deg,#1a2b29,#101b1a);--t-home-action:linear-gradient(160deg,#45e7d2,#159e8d);--t-home-action-ink:#031b17}
+html[data-theme=copilot]{--t-home-art:url('ui-art/copilot-room.webp');--t-home-plate:#111527ed;--t-home-bubble-border:#7873a3;--t-home-bubble:linear-gradient(145deg,#303759,#1b223d);--t-home-notices:linear-gradient(145deg,#252d48,#171f35);--t-home-action:linear-gradient(155deg,#c7bcff,#a4b8f4);--t-home-action-ink:#151831}
+html[data-theme=nordic]{--t-home-art:url('ui-art/nordic-room.webp');--t-home-plate:#fbfaf5f5;--t-home-bubble-border:#9ab2a1;--t-home-bubble:linear-gradient(145deg,#fffef9,#eef4ec);--t-home-notices:linear-gradient(145deg,#fffef9,#f0f5ed);--t-home-action:linear-gradient(155deg,#226347,#164e38);--t-home-action-ink:#ffffff}
+html[data-theme=journey]{--t-home-art:url('ui-art/journey-room.webp');--t-home-plate:#142820ed;--t-home-bubble-border:#6b7356;--t-home-bubble:linear-gradient(145deg,#34483a,#1f352d);--t-home-notices:linear-gradient(145deg,#283d31,#192e26);--t-home-action:linear-gradient(155deg,#ebd698,#c7ab65);--t-home-action-ink:#202719}
+/* Visual-first 04: common cinematic layout; only environment, light and materials vary. */
+@media screen{
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .screen-content:has(>.secretary-cinematic){padding:8px 14px 16px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .screen-content:has(>.secretary-cinematic)>:is(.app-top,.home-heading){display:none}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic{position:relative;gap:8px;margin-top:0}
+.secretary-cinematic .secretary-vehicle{position:relative}
+.cinematic-brand{display:flex;align-items:center;gap:9px;min-height:44px;color:var(--ink);font-size:23px;font-weight:650}
+.cinematic-brand>img{width:32px;height:32px}
+.cinematic-brand>svg{color:var(--t-accent);filter:drop-shadow(0 0 6px #48dbc54d)}
+.cinematic-brand>a{display:grid;place-items:center;min-width:44px;min-height:44px;border:1px solid var(--hairline);border-radius:50%;font-size:22px;text-decoration:none;color:var(--ink)}
+.cinematic-brand-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.cinematic-options-space{flex:0 0 44px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-picker{position:absolute;right:10px;top:12px;z-index:2;max-width:calc(100% - 20px);background:var(--t-bg)}
+.secretary-cinematic .secretary-picker:not([open])>summary>span:first-child{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+.secretary-cinematic .secretary-picker[open]{left:10px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr);border-radius:22px;box-shadow:0 0 22px #48dbc51a}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-media{grid-area:1/1;min-height:196px;height:auto;aspect-ratio:auto;background:var(--t-hero) var(--t-home-art) center/cover;border-radius:21px 21px 0 0}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-media:has(.car-photo){min-height:200px;height:auto;aspect-ratio:auto}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-media::before,html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-media::after{content:none}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-media :is(.car-photo,.car-stage){padding:0}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-meta{position:relative;padding:8px 14px;background:linear-gradient(180deg,#101d1b,#071110);border-top:1px solid var(--hairline)}
+.secretary-cinematic .secretary-hero .row-name strong{font-size:16px}
+.secretary-cinematic .secretary-hero-meta .row-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;position:relative;left:auto;bottom:auto;width:max-content;min-width:140px;max-width:100%;min-height:60px;border:0;border-radius:0 16px 0 0;background:var(--t-home-plate)}
+.secretary-cinematic .secretary-hero-meta .row-meta{font-size:12px}
+.secretary-cinematic .secretary-hero-meta .row-meta>span:first-child{display:block;font-size:23px;font-weight:700;line-height:1.2}
+.secretary-cinematic .secretary-hero-meta .row-meta>span:first-child{color:var(--ink)}
+.secretary-cinematic .secretary-vehicle-details{grid-area:2/1}
+.secretary-cinematic .secretary-service-line>span{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.secretary-cinematic .secretary-swipe{margin:6px 0 0;font-size:11px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-card{position:relative;padding:0;border:0;background:none;box-shadow:none}
+.secretary-cinematic .secretary-intro{align-items:center;gap:8px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-intro>.assistant-avatar{width:142px;height:142px;margin-left:-5px}
+.secretary-cinematic .secretary-copy{padding:12px;border:1px solid var(--t-home-bubble-border);border-radius:22px;background:var(--t-home-bubble);box-shadow:var(--t-home-shadow)}
+.secretary-cinematic .secretary-copy .mini-label,.secretary-cinematic .secretary-context{display:none}
+.secretary-cinematic .secretary-copy h3{font-size:19px;color:var(--t-accent);overflow-wrap:anywhere}
+.secretary-cinematic .secretary-copy h3:after{content:':'}
+.secretary-cinematic .secretary-message{font-size:17px;line-height:1.25;margin-top:6px}
+.secretary-cinematic .secretary-note{font-size:11px;line-height:1.3;color:var(--ink)}
+.secretary-cinematic .secretary-actions{grid-template-columns:1.4fr 1fr;margin-top:8px}
+.secretary-cinematic .secretary-actions>:is(button,a){min-height:52px;border-radius:22px;font-size:15px}
+.secretary-cinematic .secretary-actions>button:first-child{background:var(--t-home-action);color:var(--t-home-action-ink);box-shadow:inset 0 1px 2px #c5fff0aa,0 0 16px #30d7bd3b}
+.secretary-cinematic .secretary-more>summary{font-size:12px;min-height:44px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-card{position:static}
+.secretary-cinematic .secretary-more{position:absolute;top:0;right:106px;width:44px;margin:0;z-index:5}
+.secretary-cinematic .secretary-more:not([open])>summary{font-size:0;justify-content:center}
+.secretary-cinematic .secretary-more:not([open])>summary:after{content:'⋯';font-size:26px}
+.secretary-cinematic .secretary-more[open]{top:48px;left:0;right:0;width:auto;padding:12px;border:1px solid var(--hairline);border-radius:18px;background:var(--t-surface)}
+.secretary-cinematic .secretary-tasks{padding:0 12px;border:1px solid var(--hairline);border-radius:20px;background:var(--t-home-notices)}
+.secretary-cinematic .secretary-tasks>h3{margin:12px 0 4px;font-size:18px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-task{padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.secretary-cinematic .cinematic-task{width:100%;margin:0;border-bottom:1px solid var(--hairline)}
+.secretary-cinematic .cinematic-task>summary{display:grid;grid-template-columns:26px minmax(0,1fr) 72px;grid-template-rows:auto auto;gap:2px 8px;min-height:72px;padding:10px 0;color:var(--ink)}
+.secretary-cinematic .cinematic-task>summary:after{content:none}
+.secretary-cinematic .cinematic-task .task-icon{grid-row:1/3;grid-column:1}
+.secretary-cinematic .cinematic-task h4{grid-column:2;grid-row:1;font-size:14px}
+.secretary-cinematic .cinematic-task .task-reason{grid-column:2;grid-row:2;font-size:12px;margin:0;line-height:1.35;color:var(--muted)}
+.secretary-cinematic .cinematic-inspect{grid-column:3;grid-row:1/3;padding:7px 5px;border:1px solid var(--t-accent);border-radius:18px;font-size:11px;text-align:center;color:var(--t-accent);overflow-wrap:anywhere}
+.secretary-cinematic .cinematic-task .task-detail-body{padding:0 0 12px}
+.secretary-cinematic .cinematic-task .task-detail-body>a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock{display:block;padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>.tab-bar.main-tabs{width:100%;border-radius:20px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a{display:flex;flex-direction:column;gap:4px;min-height:56px;border-radius:14px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a:after{content:attr(aria-label);font-size:11px;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+@media(max-width:350px){html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-intro>.assistant-avatar{width:116px;height:116px}.secretary-cinematic .secretary-copy{padding:10px}.secretary-cinematic .secretary-message{font-size:15px}}
+}
+/* Keep the same labelled dock layout while the existing mobile typing rule hides it. */
+@media screen and (pointer:coarse){
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:block}
 }
