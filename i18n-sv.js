@@ -3,6 +3,21 @@
 // plus the website texts. Machine-quality first draft: a native Swedish speaker should check it before launch.
 window.AjouraSV = ({ re, N, DATE, plural, lower, t, tr }) => {
   const D = {
+    "Ajoneuvosi merkinnät, kulut ja muistutukset yhdessä näkymässä.": "Ditt fordons uppgifter, kostnader och påminnelser i en vy.",
+    "Esitäytä tankkaus kuitin tai mittarin kuvasta. Tarkistat tiedot ennen tallennusta.": "Förifyll en tankning från en bild av kvittot eller mätaren. Kontrollera uppgifterna innan du sparar.",
+    "Kirjaa tankkaus tekstinä tai puheella tuetussa selaimessa. Voit myös täyttää tiedot käsin.": "Registrera tankningen med text eller röst i en webbläsare som stöds. Du kan också fylla i uppgifterna manuellt.",
+    "Näe kulut, huoltohistoria ja omiin huoltoväleihisi perustuvat muistutukset yhdessä paikassa.": "Se kostnader, servicehistorik och påminnelser utifrån dina serviceintervall på samma ställe.",
+    // Visual-first 05: launch, welcome and public hero.
+    "Tervetuloa Ajouraan": "Välkommen till Ajoura",
+    "Autan sinua pitämään ajoneuvosi tiedot ajan tasalla.": "Jag hjälper dig att hålla fordonets uppgifter uppdaterade.",
+    "Täytä tankkaus kuitin tai mittarin kuvasta.": "Fyll i en tankning från en bild av kvittot eller mätaren.",
+    "Kirjoita tai sanele": "Skriv eller diktera",
+    "Kirjaa tankkaus tekstinä tai puheella tuetussa selaimessa.": "Registrera tankningen med text eller röst i en webbläsare som stöds.",
+    "Seuraa ajoneuvoasi": "Följ ditt fordon",
+    "Kulut, huoltohistoria ja muistutukset samassa paikassa.": "Kostnader, servicehistorik och påminnelser på samma ställe.",
+    "Ajoura on henkilökohtainen": "Ajoura är din personliga",
+    "autosihteerisi": "bilassistent",
+
     'Huomiot': 'Notiser',
     'Puhu Emmalle': 'Prata med Emma',
     'Puhu Mikolle': 'Prata med Mikko',

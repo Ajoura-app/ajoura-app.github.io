@@ -9,4 +9,8 @@ OpenAI ImageGenillä käyttäjän erillisellä luvalla 9.11.2026 luodut tyhjät 
 | nordic-room.webp | exec-fcb2d0d4-0e22-4731-8258-d327df4483f2.png | Vaalea pohjoismainen tila ja päivänvalo |
 | journey-room.webp | exec-193da19d-4dbb-4659-aab0-9648596b0fd0.png | Metsämaisema ja kultainen horisontti |
 
-Hyväksytyt hahmoassetit ovat ennallaan. Erillinen generoitu esittelyauton valokuva on vain paikallisessa fiktiivisessä testitallissa, eikä kuulu sovellusassetteihin. Taustat eivät muuta käyttäjän valokuvia.
+Hyväksytyt hahmoassetit ovat ennallaan. Autotallissa kuvattu erillinen esittelyvalokuva on vain paikallisessa fiktiivisessä testitallissa. Julkisen etusivun läpinäkyvä esimerkkiauto kuvataan alla erikseen. Taustat eivät muuta käyttäjän valokuvia.
+
+## Julkisen etusivun esimerkkiauto
+
+`landing-car.webp`: käyttäjän luvalla 9.11.2026 OpenAI ImageGenillä aiemmin luotu fiktiivinen Audi A6 Avant, läpinäkyvä tausta. Alkuperäinen `exec-5703a8c8-6e65-4984-ac6d-b9127b0ca986.png`; optimoitu 1200 × 600 WebP. Käyttö: julkisen etusivun selvästi merkitty fiktiivinen esimerkki. Se ei korvaa sovelluksessa käyttäjän omaa ajoneuvoa tai sen kuvaa. Ei hahmoja tai käyttöliittymää kuvan sisällä.

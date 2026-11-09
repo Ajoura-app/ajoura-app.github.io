@@ -10,6 +10,21 @@
 
   // Exact matches, Finnish -> English (looked up on trimmed text).
   const D = {
+    "Ajoneuvosi merkinnät, kulut ja muistutukset yhdessä näkymässä.": "Your vehicle records, costs and reminders in one place.",
+    "Esitäytä tankkaus kuitin tai mittarin kuvasta. Tarkistat tiedot ennen tallennusta.": "Prefill a fuel entry from a receipt or meter photo. Review the details before saving.",
+    "Kirjaa tankkaus tekstinä tai puheella tuetussa selaimessa. Voit myös täyttää tiedot käsin.": "Enter fuel details by text or voice in a supported browser. You can also fill them in by hand.",
+    "Näe kulut, huoltohistoria ja omiin huoltoväleihisi perustuvat muistutukset yhdessä paikassa.": "See costs, service history and reminders based on your service intervals in one place.",
+    // Visual-first 05: launch, welcome and public hero.
+    "Tervetuloa Ajouraan": "Welcome to Ajoura",
+    "Autan sinua pitämään ajoneuvosi tiedot ajan tasalla.": "I help you keep your vehicle records up to date.",
+    "Täytä tankkaus kuitin tai mittarin kuvasta.": "Fill in a fuel entry from a receipt or meter photo.",
+    "Kirjoita tai sanele": "Type or dictate",
+    "Kirjaa tankkaus tekstinä tai puheella tuetussa selaimessa.": "Enter fuel details by text or voice in a supported browser.",
+    "Seuraa ajoneuvoasi": "Keep track of your vehicle",
+    "Kulut, huoltohistoria ja muistutukset samassa paikassa.": "Costs, service history and reminders in one place.",
+    "Ajoura on henkilökohtainen": "Ajoura is your personal",
+    "autosihteerisi": "vehicle assistant",
+
     'Huomiot': 'Notices',
     'Puhu Emmalle': 'Talk to Emma',
     'Puhu Mikolle': 'Talk to Mikko',

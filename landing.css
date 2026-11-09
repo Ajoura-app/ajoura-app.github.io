@@ -99,3 +99,51 @@
  .ai-landing .landing-themes figcaption{color:#17283d}
  .ai-landing .button,.ai-landing .nav-app,.ai-landing .small-tag{background:white!important;color:#17283d!important;border:1px solid #344b51!important}
 }
+/* Visual-first 05: a real scene and live HTML, independent of app preferences. */
+@media screen{
+.ai-landing .product-header{min-height:78px;padding-block:12px;gap:16px}
+.ai-landing .logo-mark{display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;width:170px;padding:0;background:none;border-radius:0;color:#edf6f4}
+.ai-landing .logo-mark svg{color:#47e1ce;flex:0 0 34px}
+.ai-landing .logo-mark strong{font-size:28px;line-height:1.15;letter-spacing:-.035em}
+.ai-landing .logo-mark small{flex-basis:100%;font-size:11px;line-height:1.2;letter-spacing:.06em;margin-left:42px;color:#b0c5c4}
+.ai-landing .hero{position:relative;isolation:isolate;grid-template-columns:.95fr 1.05fr;gap:24px;min-height:600px;padding-block:40px 50px;align-items:center}
+.ai-landing .hero:before{content:'';position:absolute;inset:0 -28px;z-index:-2;background:linear-gradient(90deg,#0b171a 25%,#0b171a44 65%,#0b171acc),url('ui-art/garage-room.webp') center/cover;border-radius:30px;pointer-events:none}
+.ai-landing .hero-copy{position:relative;z-index:2;max-width:530px}
+.ai-landing h1{font-size:clamp(40px,4.2vw,62px);line-height:1.08;letter-spacing:-.045em;margin-top:18px}
+.ai-landing .hero-emphasis{color:#47e1ce}
+.ai-landing .hero-lead{font-size:21px;margin-top:20px}
+.ai-landing .hero-description{max-width:440px;font-size:16px;line-height:1.65}
+.ai-landing .hero .eyebrow{display:inline-block;border:1px solid #5a9c9d;border-radius:24px;padding:7px 11px;letter-spacing:.05em;color:#bcece4;background:#0c2829}
+.ai-landing .hero .actions{gap:12px;margin-top:26px}
+.ai-landing .hero .button.primary{background:linear-gradient(135deg,#54ead5,#29c9b6);color:#06231d;border-radius:24px;padding:12px 22px;min-height:48px}
+.ai-landing .hero-video{display:inline-flex;align-items:center;gap:10px;min-height:48px;border:1px solid #78968f;border-radius:24px;padding:10px 18px;background:#122a2bd9;color:#edf6f4}
+.landing-scene{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:clip}
+.landing-scene img{position:absolute;width:76%;max-width:none;height:auto;object-fit:contain;left:30%;bottom:75px;filter:drop-shadow(0 18px 18px #0008)}
+.ai-landing .secretary-preview{justify-self:end;align-self:center;width:300px;min-width:0;max-width:100%;border:2px solid #6c9193;border-radius:34px;padding:18px;background:linear-gradient(155deg,#10272cf5,#131c2bf7);box-shadow:0 0 0 5px #080e14,0 0 30px #76a7e83b,0 24px 45px #0007;transform:rotate(3deg);color:#edf6f4}
+.ai-landing .preview-top{font-size:11px;letter-spacing:.06em}
+.ai-landing .secretary-greeting{gap:6px;margin:18px 0 8px}
+.ai-landing .secretary-greeting>img{width:88px;height:88px}
+.ai-landing .secretary-greeting h2{font-size:17px;line-height:1.35;margin-top:4px}
+.ai-landing .landing-car{background:linear-gradient(180deg,#0d242466,#08171bcc),url('ui-art/garage-room.webp') center/cover;border:1px solid #42635f;border-radius:18px;padding:6px 10px 12px;margin-top:14px}
+.ai-landing .landing-car .car-visual{height:120px;padding:0;display:grid;place-items:center}
+.ai-landing .landing-car .car-visual img{width:100%;height:100%;max-height:120px;object-fit:contain}
+.ai-landing .landing-car h3{font-size:17px}.ai-landing .vehicle-line p{font-size:12px}
+.ai-landing .vehicle-line{display:block}.ai-landing .vehicle-line .small-tag{display:none}
+.ai-landing .preview-reminder{padding:12px;gap:8px;margin-top:12px;border-radius:15px}
+.ai-landing .preview-reminder strong{font-size:13px}.ai-landing .preview-reminder p{font-size:12px;line-height:1.4}
+.ai-landing .preview-foot{font-size:11px;margin-top:12px;line-height:1.4}
+.ai-landing .principles-strip{background:none;border-block:1px solid #294240}
+.ai-landing #idea{padding-block:16px 40px}
+.ai-landing #idea .section-heading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.ai-landing #idea .feature-grid{gap:16px;margin-top:0}
+.ai-landing #idea .feature-number{margin-bottom:10px}
+.ai-landing #idea .feature-grid p{font-size:14px;line-height:1.55}
+.ai-landing #idea .feature-grid article{background:linear-gradient(145deg,#173b39,#14252d);padding:22px;border-color:#46736f}
+.ai-landing #idea .feature-grid article:nth-child(2){background:linear-gradient(145deg,#1d3548,#172630);border-color:#4e7388}
+.ai-landing #idea .feature-grid article:nth-child(3){background:linear-gradient(145deg,#30304c,#1c2436);border-color:#6d668e}
+.ai-landing #idea .feature-grid h3{font-size:21px}
+@media(max-width:1100px){.ai-landing .hero{gap:20px}.landing-scene img{left:25%;width:80%}.ai-landing .secretary-preview{width:280px}}
+@media(max-width:900px){.ai-landing .hero{grid-template-columns:1fr;padding-block:30px 34px;min-height:0;gap:30px}.ai-landing .hero-copy{max-width:570px}.ai-landing .hero:before{inset:0 -10px;background:linear-gradient(180deg,#0b171a 25%,#0b171a88 65%,#0b171acc),url('ui-art/garage-room.webp') center/cover}.ai-landing .hero h1{font-size:clamp(38px,8vw,55px)}.ai-landing .hero .secretary-preview{width:280px;justify-self:end;margin-right:8px;transform:none}.landing-scene img{left:-14%;bottom:110px;width:110%;max-width:700px}.ai-landing .hero-description{max-width:550px}.ai-landing .hero .micro{margin-bottom:0}}
+@media(max-width:450px){.ai-landing .hero{gap:22px;padding-top:20px}.ai-landing .product-header{min-height:76px}.ai-landing .hero h1{font-size:40px;margin-top:14px}.ai-landing .hero-lead{font-size:19px;margin-top:14px}.ai-landing .hero-description{font-size:15px}.ai-landing .hero .actions{gap:8px;margin-top:20px}.ai-landing .hero-video{font-size:12px;padding:10px 12px}.ai-landing .hero .button.primary{font-size:14px;padding:12px 16px}.ai-landing .hero .secretary-preview{width:250px;margin-right:2px;padding:16px}.landing-scene img{left:-30%;bottom:100px;width:145%}.ai-landing #idea .feature-grid article{padding:20px}}
+@media(max-width:350px){.ai-landing .hero h1{font-size:35px}.ai-landing .hero .actions{align-items:stretch;flex-direction:column}.ai-landing .hero .secretary-preview{width:240px}.landing-scene img{left:-38%;width:160%}}
+}

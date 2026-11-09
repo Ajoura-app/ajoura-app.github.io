@@ -67,7 +67,7 @@ def test_kaikki_kielet(browser,base,lang):
         script=KERUU.replace("['#app-screen', '.sheet-layer', '#install-dialog']","['body']")
         fi=set(p.evaluate(script));p.click(f'[data-set-lang={lang}]');other=set(p.evaluate(script))
         common=fi&other
-        allowed={'AJOURA','Volvo XC60','Idea','by DRONEX','FI','SV','EN','iPhone','Android','Emma','info.ajoura@gmail.com','Some','2020 · 184 320 km','01','02','03','1','2','3','▶','↓','⋮','.'}
+        allowed={'AJOURA','Ajoura','Audi A6 Avant','Idea','by DRONEX','FI','SV','EN','iPhone','Android','Emma','info.ajoura@gmail.com','Some','TST-123 · 72 430 km','01','02','03','1','2','3','▶','↓','⋮','.'}
         assert not (common-allowed),common-allowed
         assert p.title()!= 'AJOURA — Henkilökohtainen autosihteerisi'
         assert 'Kirjaa tankkaukset' not in p.locator('meta[name=description]').get_attribute('content')
