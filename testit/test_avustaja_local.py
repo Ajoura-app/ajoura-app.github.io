@@ -2,7 +2,7 @@
 import json,subprocess,urllib.request,urllib.error
 from pathlib import Path
 import pytest,tiedot
-from apu import avaa,KELLO
+from apu import avaa,KELLO, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
 from conftest import JUURI
 
 @pytest.fixture
@@ -23,7 +23,30 @@ def local_api(tmp_path):
 def bind(s,api):
     s.page.expose_binding('assistantRequest',lambda source,body:api(body))
     s.page.add_init_script("window.__assistantReady=true;window.AjouraAssistantFixtureTransport={fixture:true,request:b=>window.assistantRequest(b),ready:()=>window.__assistantReady};")
-    s.page.reload();s.page.wait_for_selector('.assistant-local')
+    s.page.reload();s.page.wait_for_selector('.secretary-card');avaa_kirjausvaihtoehdot(s.page);s.page.wait_for_selector('.assistant-local')
+
+
+def test_pitka_vastaus_pysyy_lisavaihtoehdoissa(browser,base,local_api):
+    request,url=local_api
+    def pitka_vastaus(body):
+        response=request(body)
+        if body.get('action')=='answer' and response['status']==200:
+            response['body']['text']='Fiktiivinen pitkä paikallinen testivastaus. '*100
+        return response
+    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':'garage'})
+    try:
+        bind(s,pitka_vastaus);p=s.page;before=s.talli()
+        p.check('[data-assistant-opt]')
+        p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
+        p.wait_for_function("document.querySelector('.assistant-local-result').textContent.length>1000")
+        p.click('.secretary-more>summary')
+        assert p.locator('.secretary-more').get_attribute('open') is None
+        assert not p.locator('.assistant-local-result').is_visible()
+        assert p.locator('.secretary-card').bounding_box()['height']<=255
+        assert p.locator('.secretary-task.assistant-local').count()==0
+        assert before==s.talli()
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
 
 @pytest.mark.parametrize('lang',['fi','en','sv'])
 def test_local_browser(browser,base,local_api,lang):
@@ -35,7 +58,11 @@ def test_local_browser(browser,base,local_api,lang):
         p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         p.wait_for_function("document.querySelector('.assistant-local-result').textContent.includes('l/100 km')")
         assert not p.locator('.assistant-local-result script').count()
-        assert before==s.talli();p.click('[data-secretary-car=tst2]')
+        assert before==s.talli()
+        # The cinematic more-options menu overlays the hero: close it before choosing another car.
+        p.keyboard.press('Escape')
+        assert p.locator('.secretary-more').get_attribute('open') is None
+        valitse_ajoneuvo(p,'tst2');avaa_kirjausvaihtoehdot(p)
         assert p.locator('.assistant-local-result').inner_text()==''
         p.evaluate('window.__assistantReady=false');p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         assert 'kWh' not in p.locator('.assistant-local-result').inner_text()
@@ -59,7 +86,7 @@ def test_pending_result_isolation(browser,base,local_api,change):
         bind(s,request);p=s.page;p.check('[data-assistant-opt]')
         p.evaluate("()=>{window.AjouraAssistantFixtureTransport.request=b=>b.action==='answer'?new Promise(resolve=>window.__resume=async()=>resolve(await window.assistantRequest(b))):window.assistantRequest(b);}")
         p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]');p.wait_for_function('!!window.__resume')
-        if change=='vehicle':p.click('[data-secretary-car=tst2]')
+        if change=='vehicle':valitse_ajoneuvo(p,'tst2')
         elif change=='session':p.evaluate("document.dispatchEvent(new Event('ajoura-session'))")
         elif change=='local-edit':p.evaluate('AjouraApp.state().cars[0].km++')
         else:p.uncheck('[data-assistant-opt]')
@@ -92,7 +119,7 @@ def test_sync_readiness_tracks_real_local_data(browser,base):
         p=s.page;palvelu(s,oikeus=PLUS);p.wait_for_function('AjouraSync.analysisReady()')
         p.evaluate('AjouraApp.state().cars[0].km++');assert not p.evaluate('AjouraSync.analysisReady()')
         p.evaluate('AjouraApp.state().cars[0].km--');assert p.evaluate('AjouraSync.analysisReady()')
-        p.click('[data-secretary-mode=manual]');assert not p.evaluate('AjouraSync.analysisReady()')
+        kirjaa_avustajasta(p,'manual');assert not p.evaluate('AjouraSync.analysisReady()')
         p.keyboard.press('Escape');assert p.evaluate('AjouraSync.analysisReady()')
         p.evaluate('AjouraSync.forget()');assert not p.evaluate('AjouraSync.analysisReady()')
     finally:s.sulje()

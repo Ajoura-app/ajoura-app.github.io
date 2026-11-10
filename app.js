@@ -364,10 +364,20 @@
   // pump-and-bolt icon as the Tankkaus tab; its name says what it opens. 0.89 (Niklas): the buttons are back under the
   // service status, three side by side: fill-up/charge, service entry (wrench) and a note (the notes page, form on top).
   const actIcon=paths=>`<span class="act-ico" aria-hidden="true">${svg(paths)}<span class="act-plus"><svg viewBox="0 0 12 12" focusable="false"><path d="M6 3.4v5.2M3.4 6h5.2"/></svg></span></span>`;
-  function garageRow(c,d,year){const ev=unitOf(c)==='kWh',cost=Math.round(carCost(c,year)),kinds=chargeKinds(c);
-    const pic=c.photo?`<span class="car-photo"><img src="${c.photo}" alt=""></span>`:`<span class="car-stage">${art(c,'')}</span>`;
+  function garageActions(c){const ev=unitOf(c)==='kWh',kinds=chargeKinds(c);
     const fillName=kinds.length>1&&kinds.includes('el')?'Lisää tankkaus tai lataus':ev?'Lisää lataus':'Lisää tankkaus';
-    return `<div class="garage-row" data-car="${c.id}"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong></span><small class="row-meta">${plateTxt(c)} · <span class="nw">${number(c.km)} ${ku(c)}</span></small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a><div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}" aria-label="${fillName}" title="${fillName}">${actIcon(fuelTabIcon)}</button><a class="row-btn note" href="#add/${c.id}" aria-label="Lisää huoltomerkintä" title="Lisää huoltomerkintä">${actIcon(icons.wrench)}</a><a class="row-btn memo" href="#notes/${c.id}" aria-label="Lisää muistiinpano" title="Lisää muistiinpano">${actIcon(icons.note)}</a></div></div>`;}
+    return `<div class="row-actions"><button class="row-btn fuel" type="button" data-quickfuel="${c.id}" aria-label="${fillName}" title="${fillName}">${actIcon(fuelTabIcon)}</button><a class="row-btn note" href="#add/${c.id}" aria-label="Lisää huoltomerkintä" title="Lisää huoltomerkintä">${actIcon(icons.wrench)}</a><a class="row-btn memo" href="#notes/${c.id}" aria-label="Lisää muistiinpano" title="Lisää muistiinpano">${actIcon(icons.note)}</a></div>`;
+  }
+  function garageRow(c,d,year){const cost=Math.round(carCost(c,year));
+    const pic=c.photo?`<span class="car-photo"><img src="${c.photo}" alt=""></span>`:`<span class="car-stage">${art(c,'')}</span>`;
+    return `<div class="garage-row" data-car="${c.id}"><a class="row-pic" href="#vehicle/${c.id}" tabindex="-1" aria-hidden="true">${pic}</a><a class="row-info" href="#vehicle/${c.id}"><span class="row-name"><strong>${escape(carName(c))}</strong></span><small class="row-meta">${plateTxt(c)} · <span class="nw">${number(c.km)} ${ku(c)}</span></small>${cost?`<small class="row-cost fuel-cost-row"><span>Kulut</span> <span>${year}</span> <b>${number(cost)} €</b></small>`:''}</a><a class="row-wide" href="#vehicle/${c.id}">${rowStatus(c,d)}</a>${garageActions(c)}</div>`;}
+  // Home presentation reuses the same images, status calculation and write-path hooks as garageRow.
+  function homeVehicle(c,year){const d=dueInfo(c),cost=Math.round(carCost(c,year));
+    return {image:vehicleImage(c),name:carName(c),plate:c.plate||typeOf(c),meter:`${number(c.km)} ${ku(c)}`,year,cost:cost?number(cost):'',
+      statusLabel:d?.what==='Katsastus'?'Katsastusarvio':d?statusHead[d.tone][d.what]:c.events.length?'Ei huoltomuistutuksia':'Huoltohistoria puuttuu',
+      statusValue:d?date(d.due):'Kirjaa viimeisin huolto',estimated:d?.what==='Katsastus',tone:d?.tone||'none',
+      status:rowStatus(c,d),actions:garageActions(c)};
+  }
   // Decorative scene for the "today" card: mountains, pines and a road. Snowy from October to March, green otherwise.
   const scene=()=>{const m=Number(today().slice(5,7)),w=m>=10||m<=3;return `<svg class="today-scene${w?' winter':''}" viewBox="0 0 220 110" aria-hidden="true" focusable="false"><circle class="sun" cx="176" cy="26" r="13"/><path class="far" d="M40 92 92 34l22 22 26-36 40 44 40 28z"/><path class="snow" d="m92 34 10 12-6-2-6 7-6-5zm48-14 12 14-7-3-5 6-6-6z"/><path class="near" d="M0 110 54 66l26 20 34-30 50 40 56-14v28z"/><g class="pines"><path d="m150 92 7-20 7 20zM166 96l6-17 6 17zM180 90l8-24 8 24zM198 98l6-18 6 18zM120 98l5-14 5 14z"/></g><path class="road" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/><path class="road-line" d="M210 110c-40-6-66-14-60-24s40-12 52-20"/></svg>`;};
   function todayCard(rows){const due=rows.filter(r=>r.d&&(r.d.tone==='late'||r.d.tone==='soon')),late=due.filter(r=>r.d.tone==='late'),lateFirst=late.length?late:due,tyre=tyreInfo(),noData=rows.every(r=>!r.d),n=lateFirst.length;
@@ -390,7 +400,7 @@
     // garage holds own vehicles a card asks to install and to take a backup. It replaces the backup reminder there and
     // cannot be hidden on purpose: the people who lose data are the ones who visit rarely.
     const when=backupWhen(),browserCard=!installed&&cars.some(c=>!c.sample)?`<div class="reminder-card browser-data"><span class="event-symbol" aria-hidden="true">${svg(icons.save)}</span><div><span class="mini-label">TIEDOT TÄSSÄ SELAIMESSA</span><strong>Asenna AJOURA, niin tiedot pysyvät tallessa</strong><small>${ios?'Safari voi poistaa tiedot, jos AJOURAa ei avata viikkoon. Asennettu sovellus aloittaa tyhjänä, joten tallenna ensin varmuuskopio ja palauta se sovelluksessa.':'Selain voi poistaa tiedot, jos AJOURAa ei avata pitkään aikaan. Asennettuna ne ovat paremmin tallessa. Ota myös varmuuskopio.'}</small>${when?`<small class="bk-last">${when}</small>`:''}<div class="bd-actions"><button class="link-button" type="button" data-install-open>Näin asennat →</button><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div></div>`:'';
-    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${window.AjouraSecretary.render({cars,card:c=>garageRow(c,dueInfo(c),year),due:dueInfo,dates:c=>dueDates(c).map(d=>({...d,intervalKm:profile.km})),insights:c=>window.AjouraInsights.analyze(c,dueDates(c),fuelParts(c),today()),today:today(),ai:aiScanOn(),speech:!!speechApi(),unit:ku})}${browserCard||backupCard}`;
+    return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${window.AjouraSecretary.render({cars,card:c=>garageRow(c,dueInfo(c),year),vehicle:c=>homeVehicle(c,year),due:dueInfo,dates:c=>dueDates(c).map(d=>({...d,intervalKm:profile.km})),insights:c=>window.AjouraInsights.analyze(c,dueDates(c),fuelParts(c),today()),today:today(),ai:aiScanOn(),speech:!!speechApi(),unit:ku})}${browserCard||backupCard}`;
   }
   // Quick fill-up from the home screen (Niklas 17.10.2026): a sheet from the bottom with only what a fill-up needs.
   // 0.67: every fuel can be picked on every vehicle (a diesel car is sometimes filled with HVO100, a petrol car with E85, a
@@ -656,7 +666,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.0 (testiversio)';
+  const appVersion='2.01 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

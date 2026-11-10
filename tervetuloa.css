@@ -1,21 +1,40 @@
-.ai-welcome{padding-top:24px;max-width:520px;margin:0 auto}
-.ai-welcome .prefs.compact{position:static;justify-content:flex-end;margin:0 0 18px;gap:8px}
-.ai-welcome .prefs.compact .seg button{font-size:12px;min-height:36px;min-width:36px}
-.ai-welcome-hero{display:flex;align-items:center;flex-direction:column;text-align:center;gap:12px;padding:20px 16px;border:1px solid var(--hairline);border-radius:24px;background:var(--t-surface,var(--c-ffffff,#ffffff))}
-.ai-welcome-logo{width:155px;height:auto;margin-bottom:8px}
-.ai-welcome-hero .assistant-avatar{width:120px;height:120px}
-.ai-welcome-name{margin:0;color:var(--t-accent,var(--blue));font-size:18px;font-weight:650}
-.ai-welcome h1{font-size:28px;line-height:1.15;letter-spacing:-.03em;margin:0;color:var(--ink)}
-.ai-welcome-hero p:not(.ai-welcome-name){font-size:14px;line-height:1.6;margin:0;color:var(--ink)}
-.ai-welcome .welcome-choices{margin:18px 0 10px;gap:10px}
-.ai-welcome .app-button{min-height:44px;font-size:14px}
-.ai-welcome-personal,.ai-welcome-tools,.ai-welcome-video{margin-top:18px;padding:16px;border:1px solid var(--hairline);border-radius:18px;background:var(--t-surface,var(--c-ffffff,#ffffff));color:var(--ink)}
-.ai-welcome summary{font-size:14px;font-weight:650;cursor:pointer;min-height:36px;line-height:1.6}
-.ai-welcome-tools h2{font-size:19px;margin:0 0 8px;line-height:1.3;letter-spacing:normal}
-.ai-welcome-tools p,.ai-welcome-personal p{font-size:13px;line-height:1.6;color:var(--ink)}
-.ai-welcome .app-fineprint{font-size:12px;line-height:1.6;color:var(--ink)}
+/* Visual-first welcome: original controls and independent device preferences. */
+.screen-content:has(>.ai-welcome){padding:12px 16px 24px}
+.screen-content:has(>.ai-welcome)>.app-top{display:none}
+.ai-welcome{display:grid;gap:12px;max-width:560px;margin:0 auto;padding:0;color:var(--ink)}
+.ai-welcome .prefs.compact{position:static;justify-content:flex-end;margin:0;gap:8px}
+.ai-welcome .prefs.compact .seg{padding:0}
+.ai-welcome .prefs.compact .seg button{font-size:12px;min-height:44px;min-width:44px;color:var(--ink)}
+.ai-welcome-heading h1{margin:0;font-size:clamp(26px,7vw,32px);line-height:1.15;letter-spacing:-.035em;color:var(--ink);overflow-wrap:anywhere}
+.ai-welcome-heading>p{font-size:15px;line-height:1.4;margin:5px 0 0;color:var(--muted)}
+.ai-welcome-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:144px minmax(0,1fr);align-items:center;gap:4px;min-height:176px;padding:12px 8px;border:1px solid var(--hairline);border-radius:24px;background:var(--t-surface,var(--paper));box-shadow:var(--t-home-shadow,none)}
+.ai-welcome-hero::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;background:var(--t-home-art,none) center/cover;opacity:.3;pointer-events:none}
+.ai-welcome-hero .assistant-avatar{width:144px;height:144px}
+.ai-welcome-hero .assistant-avatar img{object-fit:contain;transform:none}
+.ai-welcome-copy{min-width:0;padding:10px;border:1px solid var(--hairline);border-radius:16px;background:var(--t-home-bubble,var(--t-surface,var(--paper)));color:var(--ink)}
+.ai-welcome-name{margin:0;font-size:23px;line-height:1.2;font-weight:650;overflow-wrap:anywhere;color:var(--ink)}
+.ai-welcome-copy .mini-label{display:block;font-size:11px;line-height:1.4;color:var(--t-accent,var(--blue));margin-top:4px;overflow-wrap:anywhere}
+.ai-welcome-copy>p:last-child{font-size:13px;line-height:1.45;margin:8px 0 0;overflow-wrap:anywhere;color:var(--ink)}
+.ai-welcome-capabilities{list-style:none;display:grid;gap:8px;padding:0;margin:0}
+.ai-welcome-capabilities li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;align-items:center;padding:12px;border:1px solid var(--hairline);border-radius:17px;background:var(--t-home-notices,var(--t-surface,var(--paper)));box-shadow:var(--t-home-shadow,none)}
+.welcome-feature-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--t-soft,var(--soft-blue));color:var(--t-accent,var(--blue))}
+.welcome-feature-icon svg{width:24px;height:24px}
+.ai-welcome-capabilities h2{margin:0;font-size:15px;line-height:1.3;letter-spacing:0;color:var(--ink);overflow-wrap:anywhere}
+.ai-welcome-capabilities p{font-size:12px;line-height:1.4;color:var(--muted);margin:3px 0 0;overflow-wrap:anywhere}
+.ai-welcome .welcome-choices{display:grid;gap:8px;margin:2px 0 0}
+.ai-welcome .app-button{display:flex;align-items:center;justify-content:center;min-height:48px;font-size:15px;line-height:1.35;border-radius:18px;white-space:normal;overflow-wrap:anywhere;text-align:center;padding:10px 14px}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .ai-welcome .welcome-choices>.app-button:not(.secondary){background:var(--t-home-action,var(--blue));color:var(--t-home-action-ink,#fff)}
+.ai-welcome-personal,.ai-welcome-tools,.ai-welcome-video{margin:0;padding:12px;border:1px solid var(--hairline);border-radius:18px;background:var(--t-surface,var(--paper));color:var(--ink)}
+.ai-welcome-personal:not([open]),.ai-welcome-video:not([open]){padding-block:0}
+.ai-welcome summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:14px;font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+.ai-welcome-tools p,.ai-welcome-personal p{font-size:12px;line-height:1.5;color:var(--ink);margin:0 0 10px;overflow-wrap:anywhere}
+.ai-welcome .app-fineprint{font-size:11px;line-height:1.5;color:var(--muted);margin:0}
 .ai-welcome .welcome-video{width:min(100%,200px);margin:12px auto}
 .ai-welcome .avatar-settings{margin-top:12px}
+.ai-welcome :focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+@media(max-width:350px){.ai-welcome-hero{grid-template-columns:116px minmax(0,1fr)}.ai-welcome-hero .assistant-avatar{width:116px;height:116px}.ai-welcome-copy{padding:8px}.ai-welcome-name{font-size:20px}.ai-welcome-capabilities li{gap:8px;padding:10px}}
+html[data-theme=nordic] .ai-welcome-hero::before{opacity:.16}
+
 .ai-guide{background:var(--t-bg,var(--paper));color:var(--ink);animation:none;overflow:auto;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));gap:16px}
 .ai-guide-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .ai-guide-top button,.ai-guide-actions button{font:inherit;min-height:44px;font-size:14px;padding:10px 14px;border:1px solid var(--hairline);border-radius:12px;color:var(--ink);background:var(--t-surface,var(--c-ffffff,#ffffff))}
@@ -26,5 +45,3 @@
 .ai-guide-actions{display:flex;justify-content:space-between;gap:12px}
 .ai-guide :focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 @media print{.ai-guide{display:none!important}}
-
-.ai-welcome .prefs.compact .seg button{color:var(--ink)}

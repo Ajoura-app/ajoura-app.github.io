@@ -119,6 +119,57 @@ def nakyma(sivu):
     return sivu.page.evaluate("(location.hash.slice(1)||'').split('/')[0]")
 
 
+def avaa_ajoneuvovalitsin(page):
+    """Avaa etusivun nykyinen ajoneuvovalitsin tarvittaessa."""
+    valitsin = page.locator('.secretary-picker')
+    if valitsin.count() and valitsin.get_attribute('open') is None:
+        valitsin.locator('summary').click()
+
+
+def avaa_tehtavat(page):
+    """Avaa etusivun muut tehtävät ja laitekohtaiset valinnat käyttäjän tavoin."""
+    panel = page.locator('.secretary-all-tasks')
+    if panel.count() and panel.get_attribute('open') is None:
+        panel.locator(':scope > summary').click()
+
+
+def avaa_tehtavan_lisatiedot(page, task):
+    """Tee tehtävä ja sen perustelut/päätökset näkyviksi ennen vuorovaikutusta."""
+    if not task.is_visible():
+        avaa_tehtavat(page)
+    panel = task.locator('.task-details')
+    if panel.get_attribute('open') is None:
+        panel.locator(':scope > summary').click()
+
+
+def valitse_ajoneuvo(page, tunniste):
+    """Valitse etusivun ajoneuvo käyttäjän avaamasta valitsimesta."""
+    avaa_ajoneuvovalitsin(page)
+    page.locator('[data-secretary-car=' + json.dumps(tunniste) + ']').click()
+
+
+def avaa_ajoneuvon_tiedot(page):
+    """Avaa heron huoltotiedot ja nykyiset kirjaustoiminnot."""
+    tiedot = page.locator('.secretary-vehicle-details')
+    if tiedot.count() and tiedot.get_attribute('open') is None:
+        tiedot.locator('summary').click()
+
+
+def avaa_kirjausvaihtoehdot(page):
+    """Avaa avustajakortin muut kirjaustavat ja ohjeet käyttäjän tavoin."""
+    vaihtoehdot = page.locator('.secretary-more')
+    if vaihtoehdot.count() and vaihtoehdot.get_attribute('open') is None:
+        vaihtoehdot.locator('summary').click()
+
+
+def kirjaa_avustajasta(page, tapa):
+    """Avaa nykyinen kirjauspolku, tarvittaessa muiden vaihtoehtojen kautta."""
+    painike = page.locator('[data-secretary-mode=' + json.dumps(tapa) + ']')
+    if not painike.is_visible():
+        avaa_kirjausvaihtoehdot(page)
+    painike.click()
+
+
 def ikkuna_valmis(page):
     """Odottaa, että tankkausikkuna on siirtänyt kohdistuksen omaan kenttäänsä (seuraavassa ruudunpäivityksessä).
     Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken

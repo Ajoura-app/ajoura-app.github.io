@@ -3,7 +3,7 @@ pystynäkymän kokoisina, mitään ei leikkaudu ja Tallenna-nappi on tavoitettav
 import pytest
 
 import tiedot
-from apu import KELLO, avaa
+from apu import KELLO, avaa, avaa_ajoneuvon_tiedot
 
 KOOT = [(844, 390), (667, 375)]
 NAKYMAT = ["home", "fuel/tst1", "reports", "add/tst1", "menu", "vehicle/tst1"]
@@ -43,8 +43,10 @@ def test_vaakanakymat(browser, base, tila, kieli, koko):
             m = s.page.evaluate(MITTAUS)
             if m["yli"] > 0:
                 virheet.append(f"#{v}: {m['yli']} px sivuttain yli")
-            if abs(m["zoom"] - 1.12) > 0.001 or (m["tabZoom"] is not None and abs(m["tabZoom"] - 1.12) > 0.001):
-                virheet.append(f"#{v}: suurennus {m['zoom']}/{m['tabZoom']}, pitäisi olla 1,12")
+            # The approved home and dock use CSS pixels; other views retain the legacy zoom.
+            zoom = 1 if v == "home" else 1.12
+            if abs(m["zoom"] - zoom) > 0.001 or (m["tabZoom"] is not None and abs(m["tabZoom"] - zoom) > 0.001):
+                virheet.append(f"#{v}: suurennus {m['zoom']}/{m['tabZoom']}, pitäisi olla {zoom}")
             if m["tabAla"] is not None and (m["tabAla"] > m["ikkuna"] + 0.5 or m["tabYla"] < 0):
                 virheet.append(f"#{v}: alavalikko ruudun ulkopuolella ({m['tabYla']:.0f}–{m['tabAla']:.0f} / {m['ikkuna']})")
             if tila == "safari" and "fullscreen" not in m["luokka"].split():
@@ -63,7 +65,8 @@ def test_tankkausikkunan_tallenna_on_tavoitettavissa(browser, base, tila, koko):
     s = avaa(browser, base, "home", autot=tiedot.talli(), leveys=koko[0], korkeus=koko[1], kello=KELLO,
              **TILAT[tila])
     try:
-        s.page.click("[data-quickfuel]")
+        avaa_ajoneuvon_tiedot(s.page)
+        s.page.locator(".secretary-vehicle-details [data-quickfuel]").click()
         s.page.wait_for_selector("#quickfuel-form")
         s.page.wait_for_timeout(500)
         # Ikkuna vierittyy; vieritetään loppuun ja katsotaan, että painike on silloin kokonaan ruudulla.
@@ -80,20 +83,23 @@ def test_tankkausikkunan_tallenna_on_tavoitettavissa(browser, base, tila, koko):
 
 
 def test_pystynakyma_ja_leva_pysty_eivat_muutu(browser, base):
-    """Suurennus vaihtuu vain matalassa vaakanäkymässä: puhelin pystyssä 1,12 ja leveä tabletti pystyssä 1,3."""
-    for (l, k, odotettu) in [(390, 844, 1.12), (700, 1000, 1.3)]:
-        s = avaa(browser, base, "home", autot=tiedot.talli(), leveys=l, korkeus=k, kello=KELLO,
-                 asennettu=True, ios=True)
-        try:
-            m = s.page.evaluate(MITTAUS)
-            assert abs(m["zoom"] - odotettu) < 0.001, (l, k, m["zoom"])
-        finally:
-            s.sulje()
+    """Home stays at CSS scale 1; the fuel view retains the legacy portrait/tablet scale."""
+    for (l, k, legacy) in [(390, 844, 1.12), (700, 1000, 1.3)]:
+        for view in ["home", "fuel/tst1"]:
+            s = avaa(browser, base, view, autot=tiedot.talli(), leveys=l, korkeus=k, kello=KELLO,
+                     asennettu=True, ios=True)
+            try:
+                m = s.page.evaluate(MITTAUS)
+                _kunnossa(m, 1 if view == "home" else legacy)
+                assert not s.virheet, s.virheet
+            finally:
+                s.sulje()
 
 
 def _kunnossa(m, odotettu_zoom):
     assert m["yli"] <= 0, m
     assert abs(m["zoom"] - odotettu_zoom) < 0.001, m
+    assert abs(m["tabZoom"] - odotettu_zoom) < 0.001, m
     assert m["tabAla"] <= m["ikkuna"] + 0.5 and m["tabYla"] >= 0, m
 
 
@@ -107,7 +113,7 @@ def test_kaantaminen_kesken_kaiken_safarissa(browser, base, alku):
             s.page.wait_for_timeout(400)
             m = s.page.evaluate(MITTAUS)
             assert "fullscreen" in m["luokka"].split(), (l, k, m)
-            _kunnossa(m, 1.12)
+            _kunnossa(m, 1)
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

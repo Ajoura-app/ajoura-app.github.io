@@ -18,7 +18,7 @@ JS = """() => {const q = s => document.querySelector(s), r = s => q(s)?.getBound
 
 @pytest.mark.parametrize("leveys", [320, 390, 430])
 @pytest.mark.parametrize("nakyma,logo,otsikko", [("home", 1, "Etusivu"), ("fuel/tst1", 0, "Tankkaus"), ("reports", 0, "Raportit"),
-                                                 ("menu", 0, "Valikko"), ("fuel/tst1/ajoneuvo", 0, "Tankkaus"), ("welcome", 0, None)])
+                                                 ("menu", 0, "Valikko"), ("fuel/tst1/ajoneuvo", 0, "Tankkaus")])
 def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
     s = avaa(browser, base, nakyma, autot=tiedot.talli(), leveys=leveys, kello=KELLO)
     try:
@@ -31,6 +31,33 @@ def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# The approved welcome has its own header; the old .app-top remains hidden there.
+# Check the actual welcome controls instead of measuring a hidden start link.
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+def test_tervetulon_oma_ylaosa_ja_paluu(browser, base, leveys):
+    s = avaa(browser, base, "welcome", autot=tiedot.talli(), leveys=leveys, kello=KELLO)
+    try:
+        p=s.page;before=s.talli()
+        assert p.locator(".app-top").is_hidden()
+        assert p.locator(".ai-welcome-heading h1").is_visible()
+        r=p.evaluate("""() => {const q=s=>document.querySelector(s),b=e=>e.getBoundingClientRect();
+          const prefs=b(q('.ai-welcome .prefs')),heading=b(q('.ai-welcome-heading')),screen=q('#app-screen');
+          const buttons=[...q('.ai-welcome .prefs').querySelectorAll('[data-pref=Kieli]')].map(b);
+          return {count:buttons.length,above:prefs.bottom<=heading.top,
+            touch:buttons.every(r=>r.width>=44&&r.height>=44),
+            inside:buttons.every(r=>r.left>=0&&r.right<=screen.clientWidth),
+            overflow:screen.scrollWidth-screen.clientWidth};}""")
+        assert r=={'count':3,'above':True,'touch':True,'inside':True,'overflow':0},r
+        p.locator('.ai-welcome [data-pref="Kieli"][data-value="en"]').click()
+        assert p.locator('.ai-welcome [data-value="en"]').get_attribute('aria-pressed')=='true'
+        assert p.evaluate("localStorage.getItem('ajoura-lang')")=='en'
+        p.locator('.welcome-choices a[href="#home"]').click()
+        p.wait_for_selector('.secretary-home')
+        assert p.url.endswith('#home') and s.talli()==before
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
 
 
 @pytest.mark.parametrize("kieli,otsikko", [("en", "Fuel"), ("sv", "Tankning")])
@@ -62,23 +89,22 @@ def test_kortin_otsikko_ei_katkea_kesken_sanan(browser, base, kieli, leveys, nak
         s.sulje()
 
 
-# 0.108 (Niklas): etusivun AJOURA-logo keskellä; Aloitussivu ja TESTIVERSIO Etusivu-otsikon tasalla (ryhmän
-# pystykeskikohta = otsikon keskikohta), eivät otsikon tai Tänään-kortin päällä. Myös asennettuna, tummana ja kielillä.
-KESKI_JS = """() => {const r = s => document.querySelector(s).getBoundingClientRect();
-  const sc = r('.screen-content'), lg = r('.app-top .app-brand'), g = r('.r-top-right'), h = r('.home-heading'), t = r('.secretary-selector');
+# Visual-first 01: one compact header, with the logo aligned to the title and accessible start controls.
+KOMPAKTI_JS = """() => {const r = s => document.querySelector(s).getBoundingClientRect();
+  const sc = r('.screen-content'), lg = r('.app-top .app-brand'), g = r('.r-top-right'), h = r('.home-heading'), t = r('[data-secretary-picker]');
   const txt = document.createRange(); txt.selectNodeContents(document.querySelector('.home-heading')); const tx = txt.getBoundingClientRect();
-  return {logoKeski: (lg.left + lg.right) / 2 - (sc.left + sc.right) / 2, ryhmaKeski: (g.top + g.bottom) / 2 - (h.top + h.bottom) / 2,
-          tekstiin: g.left - tx.right, korttiin: t.top - g.bottom, oikea: sc.right - g.right};}"""
+  return {logoVasen: lg.left - h.left, korkeus: Math.max(h.bottom,g.bottom) - sc.top,
+          kosketus: r('.r-start').height, tekstiin: g.left - tx.right, korttiin: t.top - g.bottom, oikea: sc.right - g.right};}"""
 
 
 @pytest.mark.parametrize("leveys,kieli,teema,asennettu", [(320, "fi", None, True), (390, "fi", None, True), (430, "fi", "dark", True),
                                                           (390, "en", None, False), (320, "sv", None, False)])
-def test_etusivun_logo_keskella(browser, base, leveys, kieli, teema, asennettu):
+def test_etusivun_kompakti_ylaosa(browser, base, leveys, kieli, teema, asennettu):
     s = avaa(browser, base, "home", autot=tiedot.talli(), leveys=leveys, kieli=kieli, teema=teema, asennettu=asennettu, ios=True, kello=KELLO)
     try:
-        r = s.page.evaluate(KESKI_JS)
-        assert abs(r["logoKeski"]) <= 1, r
-        assert abs(r["ryhmaKeski"]) <= 1.5 and r["tekstiin"] >= 8 and r["korttiin"] >= 4 and r["oikea"] <= 24, r
+        r = s.page.evaluate(KOMPAKTI_JS)
+        assert abs(r["logoVasen"]) <= 1 and 52 <= r["korkeus"] <= 76, r
+        assert r["kosketus"] >= 44 and r["tekstiin"] >= 8 and r["korttiin"] >= 4 and r["oikea"] <= 24, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

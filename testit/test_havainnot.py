@@ -1,7 +1,7 @@
 """06: conservative observations from the existing validated fuel intervals."""
 import pytest
 import tiedot
-from apu import avaa,KELLO
+from apu import avaa,KELLO, valitse_ajoneuvo, avaa_tehtavat, avaa_tehtavan_lisatiedot
 
 
 def car():
@@ -13,13 +13,15 @@ def test_huomiot_ja_hiljennys(browser,base,lang,theme):
     c=car();other=tiedot.auto(id='other');s=avaa(browser,base,'home',autot=[c,other],kello=KELLO,kieli=lang,leveys=320,asennettu=True,ios=True,extra={'ajoura-ulkoasu':theme})
     try:
         p=s.page;before=s.talli();note=p.locator('[data-task-key*="consumption"]');assert note.count()==1
+        avaa_tehtavan_lisatiedot(p,note)
+        avaa_tehtavan_lisatiedot(p,p.locator('[data-task-key*="Huolto"]'))
         assert '10.0 → 14.0 l/100 km' in note.inner_text()
         assert '2026-' in p.locator('[data-task-key*="Huolto"]').inner_text()
         p.evaluate('AjouraApp.refresh()');assert note.count()==1
-        note.locator('[data-task-dismiss]').click();assert note.count()==0
+        avaa_tehtavan_lisatiedot(p,note);note.locator('[data-task-dismiss]').click();assert note.count()==0
         p.reload();p.wait_for_selector('.secretary-home');assert note.count()==0
-        p.click('[data-secretary-car=other]');assert p.locator('.secretary-task').count()==0
-        p.click('[data-secretary-car=tst1]');p.click('[data-task-reset]');assert note.count()==1
+        valitse_ajoneuvo(p,'other');assert p.locator('.secretary-task').count()==0
+        valitse_ajoneuvo(p,'tst1');avaa_tehtavat(p);p.click('[data-task-reset]');assert note.count()==1
         assert before==s.talli();assert not s.virheet,s.virheet
     finally:s.sulje()
 
@@ -42,7 +44,9 @@ def test_laatu(browser,base,case):
 def test_osatankkaus_kelvollisessa_valissa(browser,base):
     c=car();c['fuels'][2]['qty']=25;c['fuels'].insert(2,tiedot.tankkaus('part','2026-09-25',100750,25,37.5,taysi=False))
     s=avaa(browser,base,'home',autot=[c],kello=KELLO)
-    try:assert '10.0 → 14.0' in s.page.locator('[data-task-key*="consumption"]').inner_text()
+    try:
+        avaa_tehtavan_lisatiedot(s.page,s.page.locator('[data-task-key*="consumption"]'))
+        assert '10.0 → 14.0' in s.page.locator('[data-task-key*="consumption"]').inner_text()
     finally:s.sulje()
 
 @pytest.mark.parametrize('case',['few','short-span','contradiction','same-day','stale','future','boat','jump'])
@@ -85,6 +89,7 @@ def test_havainnot_offline(browser):
     try:
         s.asenna();before=s.talli();s.ctx.set_offline(True);s.avaa('home')
         assert s.page.locator('[data-task-key*="consumption"]').count()==1
+        avaa_tehtavan_lisatiedot(s.page,s.page.locator('[data-task-key*="consumption"]'))
         s.page.locator('[data-task-key*="consumption"] [data-task-dismiss]').click()
         s.avaa('home');assert s.page.locator('[data-task-key*="consumption"]').count()==0
         assert before==s.talli()

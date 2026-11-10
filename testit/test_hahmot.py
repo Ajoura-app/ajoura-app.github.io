@@ -44,9 +44,19 @@ def test_hahmot_ja_safe_area(browser,base,theme):
             p.goto(base+'/app.html#home');p.wait_for_selector('.secretary-card')
             assert p.get_attribute('.secretary-intro img','src')==f'hahmot/{character}.webp'
             assert p.locator('.secretary-intro .assistant-avatar img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
-            bounds=p.locator('.avatar-shortcut').bounding_box();plus=p.locator('.tab-fab').bounding_box();nav=p.locator('.main-tabs').bounding_box()
-            assert bounds['x']+bounds['width']<=plus['x']
-            assert bounds['y']+bounds['height']<=nav['y']
+            if theme in ['garage','copilot','nordic','journey']:
+                assert not p.locator('.avatar-shortcut').is_visible()
+                assert not p.locator('.tab-fab').is_visible()
+                for control in p.locator('.cinematic-brand a,.main-tabs a').all():
+                    box=control.bounding_box()
+                    assert min(box['width'],box['height'])>=44
+                assert p.locator('.cinematic-brand a[href="#settings"]').is_visible()
+            else:
+                bounds=p.locator('.avatar-shortcut').bounding_box();plus=p.locator('.tab-fab').bounding_box();nav=p.locator('.main-tabs').bounding_box()
+                assert bounds['x']+bounds['width']<=plus['x']
+                assert bounds['x']+bounds['width']<=nav['x']
+                assert nav['x']+nav['width']<=plus['x']
+                assert bounds['y']>=nav['y'] and bounds['y']+bounds['height']<=nav['y']+nav['height']
             assert p.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet,s.virheet
     finally:s.sulje()

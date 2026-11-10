@@ -12,27 +12,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AJOURA">
 <script>if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)location.replace('app.html?pwa=1');</script>
-<link rel="stylesheet" href="ajoura.css?v=ak-124">
-<script src="car-render.js?v=ak-124" defer>
+<link rel="stylesheet" href="ajoura.css?v=ak-125">
+<script src="car-render.js?v=ak-125" defer>
 </script>
-<script src="video.js?v=ak-124" defer>
+<script src="video.js?v=ak-125" defer>
 </script>
-<script src="share.js?v=ak-124" defer>
+<script src="share.js?v=ak-125" defer>
 </script>
-<script src="i18n-sv.js?v=ak-124" defer>
+<script src="i18n-sv.js?v=ak-125" defer>
 </script>
-<script src="i18n.js?v=ak-124" defer>
+<script src="i18n.js?v=ak-125" defer>
 </script>
-<link rel="stylesheet" href="landing.css?v=ak-124">
-<script src="landing.js?v=ak-124" defer>
+<link rel="stylesheet" href="landing.css?v=ak-125">
+<script src="landing.js?v=ak-125" defer>
 </script>
 </head>
 <body class="ai-landing">
 <a class="skip-link" href="#main">Siirry sisältöön</a>
 <header class="product-header wrap">
 <a class="wordmark logo-mark" href="./" aria-label="Ajouran etusivu">
-<img src="logo.svg" width="640" height="198" alt="AJOURA">
-<span>by DRONEX</span>
+<svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 25 14 7q2-4 4 0l9 18q1 2-2 2h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><strong translate="no">Ajoura</strong><small translate="no">by DRONEX</small>
 </a>
 <button class="site-menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Valikko</button>
 <nav id="site-nav" aria-label="Ajouran navigaatio">
@@ -54,17 +53,17 @@
 <section class="hero wrap" aria-labelledby="hero-title">
 <div class="hero-copy">
 <p class="eyebrow">AUTOSI ARKI, SELKEÄMPÄNÄ</p>
-<h1 id="hero-title">Ajoura on henkilökohtainen autosihteerisi</h1>
-<p class="hero-lead">Kirjaa. Seuraa. Ennakoi.</p>
-<p class="hero-description">Tankkauksesta seuraavaan huoltoon. Ajoneuvosi merkinnät, kulut ja muistutukset yhdessä rauhallisessa näkymässä.</p>
+<h1 id="hero-title">Ajoura on henkilökohtainen <span class="hero-emphasis">autosihteerisi</span></h1>
+<p class="hero-description">Ajoneuvosi merkinnät, kulut ja muistutukset yhdessä näkymässä.</p>
 <div class="actions">
 <a class="button primary" href="app.html">Aloita maksutta <svg class="link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg>
 </a>
-<a class="text-link" href="#toiminta">Näin se toimii <span aria-hidden="true">↓</span>
+<a class="text-link hero-video" href="#esittely">Katso esittelyvideo <svg class="link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 5 11 7-11 7z"/></svg>
 </a>
 </div>
 <p class="micro">Perustoiminnot ilman tiliä. Tekoäly käytettävissä hyväksytyille testaajille.</p>
 </div>
+<div class="landing-scene" aria-hidden="true"><img src="ui-art/landing-car.webp" width="1200" height="600" alt=""></div>
 <div class="secretary-preview">
 <div class="preview-top">
 <span translate="no">AJOURA / GARAGE</span>
@@ -78,12 +77,12 @@
 </div>
 </div>
 <div class="landing-car">
-<div class="car-visual car-stage" data-car-render="suv" data-color="#eef1f4" data-label="Volvo XC60" data-img="autokuvat/hf_20261012_115346_738cdd8e-8e30-41d5-9f50-e2154aac6af5.webp" data-d="4.69,2.87,0.92,0.74">
+<div class="car-visual"><img src="ui-art/landing-car.webp" width="1200" height="600" alt="Audi A6 Avant">
 </div>
 <div class="vehicle-line">
 <div>
-<h3 translate="no">Volvo XC60</h3>
-<p>2020 · 184 320 km</p>
+<h3 translate="no">Audi A6 Avant</h3>
+<p translate="no">TST-123 · 72 430 km</p>
 </div>
 <span class="small-tag">Oma talli</span>
 </div>
@@ -95,16 +94,9 @@
 <p>Oman huoltovälin mukaan: noin 1 800 km</p>
 </div>
 </div>
-<p class="preview-foot">Kuvitteellinen esimerkki · Tyylitelty malli</p>
+<p class="preview-foot">Kuvitteellinen esimerkki</p>
 </div>
 </section>
-<div class="principles-strip">
-<div class="wrap">
-<span>01 / Kirjaa</span>
-<span>02 / Seuraa</span>
-<span>03 / Ennakoi</span>
-</div>
-</div>
 <section id="idea" class="section wrap">
 <div class="section-heading">
 <p class="eyebrow">VÄHEMMÄN MUISTETTAVAA</p>
@@ -112,19 +104,19 @@
 </div>
 <div class="feature-grid">
 <article>
-<span class="feature-number">01 / KIRJAA</span>
-<h3>Kuva, teksti tai oma merkintä.</h3>
-<p>Täytä tankkaus kuitin, pumpun näytön tai matkamittarin kuvasta. Kirjoita tiedot tekstinä tai sanele tuetussa selaimessa. Käsin kirjaaminen on aina vaihtoehto.</p>
+<span class="feature-number" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
+<h3>Kuvaa kuitti</h3>
+<p>Esitäytä tankkaus kuitin tai mittarin kuvasta. Tarkistat tiedot ennen tallennusta.</p>
 </article>
 <article>
-<span class="feature-number">02 / SEURAA</span>
-<h3>Tunne autosi kulut.</h3>
-<p>Tankkaukset, huollot ja korjaukset muodostavat ajoneuvosi historian. Tarkastele kuluja ja tulosta huoltohistoriaraportti auton myyntiä varten.</p>
+<span class="feature-number" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></span>
+<h3>Kirjoita tai sanele</h3>
+<p>Kirjaa tankkaus tekstinä tai puheella tuetussa selaimessa. Voit myös täyttää tiedot käsin.</p>
 </article>
 <article>
-<span class="feature-number">03 / ENNAKOI</span>
-<h3>Muista seuraava huolto.</h3>
-<p>Seuraa omiin huoltoväleihisi perustuvia muistutuksia, katsastusarviota ja rengaskautta. Voit viedä muistutuksen puhelimesi kalenteriin.</p>
+<span class="feature-number" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-6M12 20V9M19 20V4"/></svg></span>
+<h3>Seuraa ajoneuvoasi</h3>
+<p>Näe kulut, huoltohistoria ja omiin huoltoväleihisi perustuvat muistutukset yhdessä paikassa.</p>
 </article>
 </div>
 <p class="ai-terms">Tekoälyn esitäyttö edellyttää kirjautumista, käyttöoikeutta ja jäljellä olevaa kiintiötä. Tarkistat tiedot ennen tallentamista. Sanelu käyttää selaimen Web Speech -puheentunnistusta, eikä toimi kaikissa selaimissa.</p>
@@ -282,7 +274,7 @@
 <h3>Testivaihe on alkanut.</h3>
 <p>AJOURAa voi jo käyttää omalla autolla: tiedot tallentuvat omaan puhelimeesi. Etsimme ensimmäisiä testaajia.</p>
 <p>Kerro kokemuksesi sovelluksessa kohdasta Valikko → Anna palautetta.</p>
-<span class="mini-label">TESTIVERSIO 2.0 / 2026</span>
+<span class="mini-label">TESTIVERSIO 2.01 / 2026</span>
 </div>
 </section>
 <section id="lataa" class="section wrap download" aria-labelledby="download-title">
