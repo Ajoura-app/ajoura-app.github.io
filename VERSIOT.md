@@ -6,6 +6,16 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
+## Valmisteltu ehdokas 2.01 — ei julkaistu
+
+Visual-first-uudistus: oma ajoneuvo näkyy etusivun herossa, alkuperäinen avustajahahmo ja kaksi päätoimintoa nousevat esiin ja huomiot avautuvat tiiviistä korteista. Garage-, Copilot-, Nordic- ja Journey-teemat, käynnistys, tervetuloa ja julkinen etusivu noudattavat hyväksyttyä ilmettä. Oma ajoneuvokuva, hahmomasterit, nykyiset reitit, lomakkeet ja sivuttaispyyhkäisy säilyvät.
+
+Viisi uutta ympäristökuvaa ennakkotallennetaan myös kylmässä offline-asennuksessa. Versionäyttö 2.01 (testiversio), välimuisti ak-125 / ajoura-pwa-175. Tietomuotoa, kirjautumista, kiintiöitä, tietosuojasisältöä tai Supabase-koodia ei muuteta. Puhetunnistuksen toteutus säilyy ennallaan.
+
+Testaus: koko perussarja 1129 läpäistyä / 1 epäonnistunut vanhan lataustestin avauspolun vuoksi. Polun korjauksen jälkeen kaikki muutetut testit 109 läpäistyä; laaja regressio julkaistua 2.0:aa vastaan 17 läpäistyä; Node-sarja 61 läpäistyä. Yhden ajon 1130 läpäistyä -tulosta ei väitetä. FI/EN/SV-näkymävertailussa 23/25 näkymää säilyi ennallaan; erot ovat etusivu ja valikon versionumero.
+
+Ehdokasta ei ole julkaistu. Julkaisuhyväksyntä ja paketin edellyttämä iPhone/Safari-PWA-varmennus käsitellään ennen tuotantoon vientiä. Alla oleva 2.0 on edelleen julkaistu versio.
+
 ## Julkaistu versio 2.0
 
 8.11.2026, [PR #14](https://github.com/Ajoura-app/ajoura-app.github.io/pull/14), julkaisucommit `2e1eb1e`: hyväksytty AI-first-kokonaisuus (vaiheet 01–08), Garage/Copilot/Nordic/Journey-teemat, alkuperäiset Emma/Mikko/Bottiankka-kuvat, uusi käynnistys ja vapaaehtoinen aloitusopastus, uudistettu julkinen etusivu, ajoneuvokohtaiset tehtävät, kirjauspolku ja paikalliset havainnot. Katsastusarviot erotetaan virallisista määräpäivistä. Ajoneuvojen järjestäminen säilyy erillisessä näkymässä. Tietosuojaseloste täsmentää pilvisynkronoinnin, jaetun tallin ja Anthropic-API:n säilytyksen poikkeukset FI/EN/SV. Välimuisti ak-124 / ajoura-pwa-174. Versiota 1.23 ei julkaistu.
