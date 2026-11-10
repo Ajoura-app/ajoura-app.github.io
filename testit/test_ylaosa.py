@@ -18,7 +18,7 @@ JS = """() => {const q = s => document.querySelector(s), r = s => q(s)?.getBound
 
 @pytest.mark.parametrize("leveys", [320, 390, 430])
 @pytest.mark.parametrize("nakyma,logo,otsikko", [("home", 1, "Etusivu"), ("fuel/tst1", 0, "Tankkaus"), ("reports", 0, "Raportit"),
-                                                 ("menu", 0, "Valikko"), ("fuel/tst1/ajoneuvo", 0, "Tankkaus"), ("welcome", 0, None)])
+                                                 ("menu", 0, "Valikko"), ("fuel/tst1/ajoneuvo", 0, "Tankkaus")])
 def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
     s = avaa(browser, base, nakyma, autot=tiedot.talli(), leveys=leveys, kello=KELLO)
     try:
@@ -31,6 +31,33 @@ def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+# The approved welcome has its own header; the old .app-top remains hidden there.
+# Check the actual welcome controls instead of measuring a hidden start link.
+@pytest.mark.parametrize("leveys", [320, 390, 430])
+def test_tervetulon_oma_ylaosa_ja_paluu(browser, base, leveys):
+    s = avaa(browser, base, "welcome", autot=tiedot.talli(), leveys=leveys, kello=KELLO)
+    try:
+        p=s.page;before=s.talli()
+        assert p.locator(".app-top").is_hidden()
+        assert p.locator(".ai-welcome-heading h1").is_visible()
+        r=p.evaluate("""() => {const q=s=>document.querySelector(s),b=e=>e.getBoundingClientRect();
+          const prefs=b(q('.ai-welcome .prefs')),heading=b(q('.ai-welcome-heading')),screen=q('#app-screen');
+          const buttons=[...q('.ai-welcome .prefs').querySelectorAll('[data-pref=Kieli]')].map(b);
+          return {count:buttons.length,above:prefs.bottom<=heading.top,
+            touch:buttons.every(r=>r.width>=44&&r.height>=44),
+            inside:buttons.every(r=>r.left>=0&&r.right<=screen.clientWidth),
+            overflow:screen.scrollWidth-screen.clientWidth};}""")
+        assert r=={'count':3,'above':True,'touch':True,'inside':True,'overflow':0},r
+        p.locator('.ai-welcome [data-pref="Kieli"][data-value="en"]').click()
+        assert p.locator('.ai-welcome [data-value="en"]').get_attribute('aria-pressed')=='true'
+        assert p.evaluate("localStorage.getItem('ajoura-lang')")=='en'
+        p.locator('.welcome-choices a[href="#home"]').click()
+        p.wait_for_selector('.secretary-home')
+        assert p.url.endswith('#home') and s.talli()==before
+        assert not s.virheet,s.virheet
+    finally:s.sulje()
 
 
 @pytest.mark.parametrize("kieli,otsikko", [("en", "Fuel"), ("sv", "Tankning")])

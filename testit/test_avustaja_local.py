@@ -58,7 +58,11 @@ def test_local_browser(browser,base,local_api,lang):
         p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         p.wait_for_function("document.querySelector('.assistant-local-result').textContent.includes('l/100 km')")
         assert not p.locator('.assistant-local-result script').count()
-        assert before==s.talli();valitse_ajoneuvo(p,'tst2')
+        assert before==s.talli()
+        # The cinematic more-options menu overlays the hero: close it before choosing another car.
+        p.keyboard.press('Escape')
+        assert p.locator('.secretary-more').get_attribute('open') is None
+        valitse_ajoneuvo(p,'tst2');avaa_kirjausvaihtoehdot(p)
         assert p.locator('.assistant-local-result').inner_text()==''
         p.evaluate('window.__assistantReady=false');p.fill('.assistant-local input[type=text]','kulutus');p.click('[data-assistant-send]')
         assert 'kWh' not in p.locator('.assistant-local-result').inner_text()

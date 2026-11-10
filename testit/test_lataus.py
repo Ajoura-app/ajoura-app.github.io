@@ -8,7 +8,7 @@ import json
 import pytest
 
 import tiedot
-from apu import KELLO, avaa, ikkuna_valmis
+from apu import KELLO, avaa, ikkuna_valmis, avaa_ajoneuvon_tiedot
 from test_tankkaus import fi, keskikulutus
 from test_varmuuskopio import kanoninen, palauta, tallenna_ladaten
 
@@ -137,7 +137,8 @@ def test_kirjausikkunan_valitsin_ja_muokkaus(browser, base):
     pg = s.page
     try:
         assert pg.get_attribute(".row-btn.fuel", "aria-label") == "Lisää tankkaus tai lataus"
-        pg.click("[data-quickfuel=hyb1]"); pg.wait_for_selector(F); ikkuna_valmis(pg)
+        avaa_ajoneuvon_tiedot(pg)
+        pg.locator(".secretary-vehicle-details [data-quickfuel=hyb1]").click(); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert pg.get_attribute("[data-sheet-kind=fuel]", "aria-pressed") == "true"
         pg.click("[data-sheet-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-sheet-kind=el]').getAttribute('aria-pressed')==='true'")
         ikkuna_valmis(pg)  # lajin vaihto avaa ikkunan uudelleen; kirjoitetaan vasta, kun kohdistus on siirtynyt siihen
