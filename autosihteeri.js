@@ -31,13 +31,13 @@
   function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local}) {
     const action=(label,mode,aria=label,icon=false)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(aria))}">${icon?actionIcon(mode):''}<span>${esc(t(label))}</span></button>`;
     const service=primary=>`<a href="#add/${esc(c.id)}" data-secretary-service aria-label="${esc(t('Kirjaa huolto käsin'))}">${primary?actionIcon('service'):''}<span>${esc(t(primary?'Lisää huolto':'Kirjaa huolto käsin'))}</span></a>`;
-    const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(available?'Autan tankkauksen kirjaamisessa.':'Voit kirjata tiedot käsin.');
-    const speechLabel=isCinematic()?({'Emma':'Puhu Emmalle','Mikko':'Puhu Mikolle','Bottiankka':'Puhu Ankalle'}[window.AjouraAvatar.name()]||'Puhu'):'Puhu';
-    const primary=available?`${speech?action(speechLabel,'speech','Puhu tankkauksesta',true):action('Kirjoita','text','Kirjoita tankkauksen tiedot',true)}${action('Kuvaa kuitti','photo','Kuvaa kuitti tai mittari',true)}`:`${action('Lisää käsin','manual','Lisää käsin',true)}${service(true)}`;
+    const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(available?'Hei! Mitä kirjataan tänään?':'Hei! Kirjataan ajoneuvosi tiedot.');
+    const primary=`${action('Lisää käsin','manual','Lisää käsin',true)}${service(true)}`;
+    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}">${actionIcon('speech')}<span>Kirjaa<br>puhumalla</span></button>`;
     return `<section class="secretary-card"><div class="secretary-intro">${window.AjouraAvatar.avatar()}<div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
-      <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div></div>
+      <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div>${mic}</div>
       ${window.AjouraAvatar.feedback()}<div class="secretary-actions">${primary}</div>
-      <details class="secretary-more"${moreOpen?' open':''}><summary>${esc(t('Lisää vaihtoehtoja'))}</summary><div class="secretary-support">${available?`${speech?action('Kirjoita tankkauksen tiedot','text'):''}${action('Lisää käsin','manual')}${service(false)}`:''}<button type="button" data-tutorial>${esc(t('Näytä kirjausohje'))}</button></div>${local}</details>
+      <details class="secretary-more"${moreOpen?' open':''}><summary>${esc(t('Lisää vaihtoehtoja'))}</summary><div class="secretary-support">${available?`${action('Kirjoita tankkauksen tiedot','text')}${action('Kuvaa kuitti','photo')}`:''}<button type="button" data-tutorial>${esc(t('Näytä kirjausohje'))}</button></div>${local}</details>
     </section>`;
   }
   function renderTaskDetails(x) {
@@ -63,6 +63,7 @@
     window.AjouraApp.refresh();
   }
   document.addEventListener('click', e => {
+    const mic=e.target.closest('[data-home-mic]');if(mic){const available=window.AjouraAccess?.check('ai.receipt').ok;const supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition);if(available&&supported){return;}else{window.AjouraApp.notify(available?'Puheentunnistus ei ole käytettävissä tässä selaimessa. Käytä näppäimistön sanelua tai kirjaa käsin.':'Puhekirjaus tarvitsee kirjautumisen ja käytössä olevan tekoälyavustajan. Voit kirjata tiedot käsin.');window.AjouraApp.refresh();}return;}
     const decision=e.target.closest('[data-task-later],[data-task-dismiss],[data-task-reset]');
     if(decision){
       if(decision.dataset.taskReset)window.AjouraTasks.reset(decision.dataset.taskReset);

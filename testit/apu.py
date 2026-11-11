@@ -111,6 +111,10 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
             ctx.close()
             raise AssertionError(f"#{nakyma}: näkymä ei piirtynyt. " + "; ".join(virheet)) from None
         page.wait_for_timeout(300)
+    # Unit/UI suites block the network. The real on-device model is verified separately;
+    # persistence and failure handling tests supply their own processing result.
+    if polku == 'app.html':
+        page.evaluate("if(window.AjouraCarPhoto)AjouraCarPhoto.process=async data=>data")
     return Sivu(ctx, page, virheet)
 
 

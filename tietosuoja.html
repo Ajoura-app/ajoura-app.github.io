@@ -7,13 +7,13 @@
 <meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-125">
-<script src="i18n-sv.js?v=ak-125" defer></script>
-<script src="i18n.js?v=ak-125" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-126">
+<script src="i18n-sv.js?v=ak-126" defer></script>
+<script src="i18n.js?v=ak-126" defer></script>
 </head>
 <body>
 <main class="legal">
-<div class="legal-top"><a href="./" aria-label="AJOURA etusivu"><img src="logo.svg" alt="AJOURA" width="160" height="50"></a><div class="lang-switch" role="group" aria-label="Kieli"><button type="button" data-set-lang="fi" lang="fi">FI</button><button type="button" data-set-lang="sv" lang="sv">SV</button><button type="button" data-set-lang="en" lang="en">EN</button></div></div>
+<div class="legal-top"><a href="./" aria-label="AJOURA etusivu"><img src="logo.svg" alt="AJOURA" width="160" height="50"></a></div>
 <h1>Tietosuoja</h1>
 <p class="draft"><strong>Luonnos testivaiheeseen.</strong> Tämä seloste kuvaa AJOURAn nykyisen testiversion. Se tarkistetaan ennen virallista julkaisua.</p>
 
@@ -21,6 +21,8 @@
 <p>AJOURA tallentaa ajoneuvotiedot, merkinnät ja kuvat laitteellesi. Kirjautuneena ajoneuvot, merkinnät, tankkaukset ja muistiinpanot synkronoidaan myös pilveen; kuvat ja kuitit jäävät laitteelle. Meillä ei ole mainoksia eikä kävijäseurantaa.</p>
 <p>Jos kirjaudut sisään, autot, merkinnät, tankkaukset ja muistiinpanot tallentuvat myös pilveen (Supabase, EU). Kuvat ja kuitit eivät tallennu pilveen. Kuva tai kirjoittamasi teksti lähtee laitteelta tekoälylle vain, jos itse käytät tekoälyavustajaa.</p>
 
+<h2>Ajoneuvokuvan taustanpoisto</h2>
+<p>Kun lisäät ajoneuvokuvan, taustanpoisto tehdään automaattisesti omassa selaimessasi U2Netp-kuvamallilla. Ajoneuvokuvaa ei lähetetä tekoälypalveluun. Ensimmäinen käsittely lataa mallin ja laskentaohjelmiston AJOURAn omalta sivustolta (noin 17 Mt), jolloin hosting-palvelu saa tavallisen latauspyynnön tekniset tiedot mutta ei kuvaasi. Käsittelystä ei peritä palvelumaksua; lataus käyttää verkkoyhteyttäsi. Alkuperäinen JPEG-kuva säilyy ajoneuvon tiedoissa ja varmuuskopioissa. Läpinäkyvä versio tallentuu erilliseen paikalliseen kuvavälimuistiin; sitä ei sisällytetä varmuuskopioon ja sen voi luoda uudelleen alkuperäisestä kuvasta. Jos käsittely epäonnistuu, alkuperäinen kuva säilytetään ja siitä ilmoitetaan.</p>
 <h2>Mitä tietoja sovellus käsittelee</h2>
 <ul>
 <li>Autojesi tiedot: rekisteritunnus, merkki ja malli, vuosimalli, mittarilukema ja ulkonäkö.</li>

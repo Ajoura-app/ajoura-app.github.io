@@ -260,7 +260,7 @@ class Kayttaja:
         assert set(tila["css"].values()) == {kirjain}, f"tyylit eri versioita (odotettiin {kirjain}): {tila['css']}"
         assert tila["html"] == f"app.js?v={sw_tiedot(juuri)[0]}", f"sivu eri versiota (odotettiin {kirjain}): {tila['html']}"
         assert tila["app"] == f"{numero} (testiversio)", tila
-        assert tila["valikko"] == f"AJOURA {numero} (test version)", f"Valikko: {tila['valikko']!r}"
+        assert tila["valikko"] == f"AJOURA {numero} (testiversio)", f"Valikko: {tila['valikko']!r}"
         assert not self.virheet, self.virheet
 
     def talli(self):

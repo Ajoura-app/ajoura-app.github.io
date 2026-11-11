@@ -42,17 +42,9 @@ def test_tervetulon_oma_ylaosa_ja_paluu(browser, base, leveys):
         p=s.page;before=s.talli()
         assert p.locator(".app-top").is_hidden()
         assert p.locator(".ai-welcome-heading h1").is_visible()
-        r=p.evaluate("""() => {const q=s=>document.querySelector(s),b=e=>e.getBoundingClientRect();
-          const prefs=b(q('.ai-welcome .prefs')),heading=b(q('.ai-welcome-heading')),screen=q('#app-screen');
-          const buttons=[...q('.ai-welcome .prefs').querySelectorAll('[data-pref=Kieli]')].map(b);
-          return {count:buttons.length,above:prefs.bottom<=heading.top,
-            touch:buttons.every(r=>r.width>=44&&r.height>=44),
-            inside:buttons.every(r=>r.left>=0&&r.right<=screen.clientWidth),
-            overflow:screen.scrollWidth-screen.clientWidth};}""")
-        assert r=={'count':3,'above':True,'touch':True,'inside':True,'overflow':0},r
-        p.locator('.ai-welcome [data-pref="Kieli"][data-value="en"]').click()
-        assert p.locator('.ai-welcome [data-value="en"]').get_attribute('aria-pressed')=='true'
-        assert p.evaluate("localStorage.getItem('ajoura-lang')")=='en'
+        assert p.locator('[data-pref=Kieli]').count()==0
+        assert p.evaluate("localStorage.getItem('ajoura-lang')")=='fi'
+        assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         p.locator('.welcome-choices a[href="#home"]').click()
         p.wait_for_selector('.secretary-home')
         assert p.url.endswith('#home') and s.talli()==before

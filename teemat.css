@@ -205,3 +205,23 @@ html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme
 @media screen and (pointer:coarse){
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:block}
 }
+
+/* 2.02: compact writing shortcut and proportional transparent vehicle cutouts. */
+html .secretary-home .secretary-intro{display:grid;grid-template-columns:48px minmax(0,1fr) 72px;gap:8px;align-items:center}
+html .secretary-home .secretary-intro>.assistant-avatar{width:48px!important;height:48px!important;margin:0!important}
+html .secretary-home .secretary-copy{padding:6px 0;border:0;border-radius:0;background:none;box-shadow:none;min-width:0}
+html .secretary-home .secretary-copy h3{font-size:14px;margin:0}
+html .secretary-home .secretary-message{font-size:13px;line-height:1.35;margin:3px 0;overflow-wrap:anywhere}
+html .secretary-home .secretary-context,html .secretary-home .secretary-note{display:none}
+.secretary-mic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:64px;min-height:64px;padding:6px;border:1px solid var(--t-accent,var(--blue));border-radius:16px;background:var(--t-surface,var(--surface));color:var(--ink);font:inherit;font-size:11px;line-height:1.2;cursor:pointer}
+.secretary-mic svg{width:24px;height:24px}
+html .secretary-home .secretary-actions{margin-top:4px}
+html .secretary-home .secretary-hero-media{overflow:hidden}
+html .secretary-home .secretary-hero-media .car-photo img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 9px 7px #00000055)}
+.photo-processing{position:fixed;bottom:24px;left:5%;width:90%;box-sizing:border-box;padding:16px;border:1px solid var(--hairline);border-radius:16px;background:var(--surface);color:var(--ink);font-size:14px;z-index:9999;box-shadow:0 4px 24px #00000055}
+html .car-photo>img,html img.own-ph{object-fit:contain;object-position:center}
+html .vehicle-hero>.car-photo{background-image:var(--t-home-art,none);background-size:cover;background-position:center}
+.secretary-mic span{max-width:100%;overflow-wrap:anywhere}
+/* Reserve a separate lane for the plate so it cannot cover an uploaded vehicle. */
+html .secretary-home.secretary-cinematic .secretary-hero-media:has(.car-photo){height:210px;min-height:210px;aspect-ratio:auto}
+html .secretary-home.secretary-cinematic .secretary-hero-media .car-photo{box-sizing:border-box;padding:22px 12px 64px}
