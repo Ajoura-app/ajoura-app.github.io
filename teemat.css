@@ -342,3 +342,7 @@ html .secretary-home.secretary-refined .vehicle-toggle{display:block;width:100%;
 
 .vehicle-toggle-indicator{position:absolute;right:10px;top:10px;z-index:2;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--hairline);border-radius:50%;background:var(--t-bg,var(--paper));font-size:24px}
 .vehicle-toggle[aria-expanded=true] .vehicle-toggle-indicator{transform:rotate(180deg)}
+
+.home-order{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;margin-top:8px}
+
+.tab-dock:has(>.assistant-widget)>.fab-menu{left:12px;right:auto;bottom:calc(100% + 72px)}

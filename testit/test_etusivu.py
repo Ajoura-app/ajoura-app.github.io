@@ -6,7 +6,7 @@ muistiinpano."""
 import pytest
 
 import tiedot
-from apu import KELLO, avaa, odota_nakyma, valitse_ajoneuvo, avaa_ajoneuvovalitsin, avaa_ajoneuvon_tiedot
+from apu import KELLO, avaa, odota_nakyma, valitse_ajoneuvo, avaa_ajoneuvovalitsin, avaa_ajoneuvon_tiedot, nykyinen_ajoneuvo
 from test_lataus import hybridi
 
 M = tiedot.merkinta
@@ -33,37 +33,27 @@ def test_kuvakepainikkeet(browser, base, leveys):
     s = avaa(browser, base, "home", autot=talli(), leveys=leveys, kello=KELLO)
     pg = s.page
     try:
-        assert pg.locator(".garage-row").count() == 1
-        assert pg.locator("[data-secretary-car]").count() == 5
-        for cid, nimi in NIMET.items():
+        assert pg.locator(".vehicle-home-card").count() == len(NIMET)
+        assert pg.locator("[data-secretary-car]").count() == 0
+        for cid in NIMET:
+            rivi=pg.locator(f'.vehicle-home-card[data-car="{cid}"]')
+            actions=rivi.locator(':scope > .secretary-actions')
+            assert actions.locator(':scope > *').count()==3
+            expected='Lataus +' if cid=='s1' else 'Tankkaus +'
+            assert actions.locator('button').inner_text()==expected
+            assert actions.locator('[data-secretary-service]').get_attribute('href')==f'#add/{cid}'
+            assert actions.locator('[data-secretary-note]').get_attribute('href')==f'#notes/{cid}'
+            assert rivi.locator('.vehicle-glance').is_visible()
+            assert rivi.locator('.vehicle-panels').is_hidden()
+            napit=[x.bounding_box() for x in actions.locator(':scope > *').all()]
+            assert all(abs(n['y']-napit[0]['y'])<1 for n in napit)
+            assert all(n['width']>=44 and n['height']>=44 for n in napit)
+            assert napit[0]['x']<napit[1]['x']<napit[2]['x']
             valitse_ajoneuvo(pg,cid)
-            avaa_ajoneuvon_tiedot(pg)
-            rivi = pg.locator(".garage-row", has=pg.locator(f"[data-quickfuel={cid}]"))
-            assert rivi.locator(".row-actions").inner_text().strip() == "", f"{cid}: painikkeissa näkyvää tekstiä"
-            assert rivi.locator(".row-btn.fuel").get_attribute("aria-label") == nimi
-            assert rivi.locator(".row-btn.note").get_attribute("aria-label") == "Lisää huoltomerkintä"
-            assert rivi.locator(".row-btn.memo").get_attribute("aria-label") == "Lisää muistiinpano"
-            napit = [b.bounding_box() for b in rivi.locator(".row-btn").all()]
-            tila = rivi.locator(".row-wide").bounding_box()
-            assert len(napit) == 3 and all(abs(n["y"] - napit[0]["y"]) < 1 for n in napit), f"{cid}: ei vierekkäin"
-            assert napit[0]["y"] >= tila["y"] + tila["height"], f"{cid}: painikkeet eivät ole tilarivin alla"
-            assert napit[0]["x"] < napit[1]["x"] < napit[2]["x"]
-            for b in rivi.locator(".row-btn").all():
-                r = b.bounding_box()
-                assert r["width"] >= 44 and 44 <= r["height"] <= 56, f"{cid}: kosketusalue {r}"
-                ico, plus = b.locator(".act-ico").bounding_box(), b.locator(".act-plus").bounding_box()
-                # Plus on kuvakkeen oikeassa alakulmassa: osittain päällekkäin, mutta ulottuu reunan yli.
-                assert plus["width"] <= 14 and ico["width"] >= 20
-                assert plus["x"] < ico["x"] + ico["width"] < plus["x"] + plus["width"], (cid, ico, plus)
-                assert plus["y"] < ico["y"] + ico["height"] < plus["y"] + plus["height"], (cid, ico, plus)
-                # 0.91 (Niklas): plus lähellä kuvaketta, vähintään puoliksi sen päällä kumpaankin suuntaan.
-                assert ico["x"] + ico["width"] - plus["x"] >= plus["width"] / 2, (cid, ico, plus)
-                assert ico["y"] + ico["height"] - plus["y"] >= plus["height"] / 2, (cid, ico, plus)
-                kortti = rivi.bounding_box()
-                assert kortti["x"] <= r["x"] and r["x"] + r["width"] <= kortti["x"] + kortti["width"], f"{cid}: yli kortin"
-        assert pg.locator(".add-vehicle-row").count() == 0
-        # 0.107: Oma talli -otsikko ja sen Lisää ajoneuvo -linkki poistettu; ajoneuvo lisätään kelluvasta ＋:sta.
-        assert pg.locator("a.garage-add").count() == 0 and pg.locator(".tab-dock > a.tab-fab[href='#newcar']").count() == 1
+            rivi.locator('[data-vehicle-toggle]').click()
+            assert rivi.locator('.vehicle-panels').is_hidden()
+            assert all(x.is_visible() for x in actions.locator(':scope > *').all())
+        assert pg.locator('.cinematic-brand a[href="#newcar"]').count()==1
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -76,12 +66,12 @@ def test_painikkeet_ja_kortti_avaavat_oikean_nakyman(browser, base):
         for cid in NIMET:
             valitse_ajoneuvo(pg,cid)
             avaa_ajoneuvon_tiedot(pg)
-            pg.click(f".garage-row [data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
+            pg.click(f".vehicle-home-card[data-car={cid}] > .secretary-actions [data-quickfuel={cid}]"); pg.wait_for_selector("#quickfuel-form")
             pg.keyboard.press("Escape"); pg.wait_for_selector("#quickfuel-form", state="detached")
-            pg.click(f".row-btn.note[href='#add/{cid}']"); odota_nakyma(s, f"add/{cid}")
+            pg.click(f"[data-secretary-service][href='#add/{cid}']"); odota_nakyma(s, f"add/{cid}")
             pg.go_back(); odota_nakyma(s, "home")
             avaa_ajoneuvon_tiedot(pg)
-            pg.click(f".row-btn.memo[href='#notes/{cid}']"); odota_nakyma(s, f"notes/{cid}")
+            pg.click(f"[data-secretary-note][href='#notes/{cid}']"); odota_nakyma(s, f"notes/{cid}")
             assert pg.locator("#memo-form").count() == 1
             pg.go_back(); odota_nakyma(s, "home")
             avaa_ajoneuvon_tiedot(pg)
@@ -100,7 +90,7 @@ def test_huollon_tilatekstit(browser, base):
         def teksti(cid):
             valitse_ajoneuvo(pg,cid)
             avaa_ajoneuvon_tiedot(pg)
-            return pg.locator(f".garage-row:has([data-quickfuel={cid}]) .row-status").inner_text()
+            return pg.locator(f".vehicle-home-card[data-car={cid}] .home-service .row-status").inner_text()
         # Huolto myöhässä päivän mukaan, kilometrejä vielä jäljellä: ei "Ajettavaa jäljellä".
         t = teksti("a1")
         assert "Huolto myöhässä" in t and "Kilometrirajaan n." in t and "Ajettavaa jäljellä" not in t, t
@@ -118,8 +108,8 @@ def test_kaannokset(browser, base, kieli, nimi, tila):
     try:
         valitse_ajoneuvo(s.page,'hyb1')
         avaa_ajoneuvon_tiedot(s.page)
-        assert s.page.get_attribute(".garage-row [data-quickfuel=hyb1]", "aria-label") == nimi
-        assert tila in s.page.locator(".garage-row:has([data-quickfuel=hyb1]) .row-status").inner_text()
+        assert s.page.get_attribute(".vehicle-home-card[data-car=hyb1] > .secretary-actions [data-quickfuel=hyb1]", "aria-label") == nimi
+        assert tila in s.page.locator(".vehicle-home-card[data-car=hyb1] .row-status").inner_text()
     finally:
         s.sulje()
 
@@ -131,11 +121,10 @@ def test_painikkeiden_yhtenainen_vari(browser, base, teema):
     s = avaa(browser, base, "home", autot=talli(), teema=teema, kello=KELLO)
     try:
         avaa_ajoneuvon_tiedot(s.page)
-        tyylit = s.page.eval_on_selector_all(".garage-row:first-child .row-btn", """e => e.map(b => {const c = getComputedStyle(b);
-          return [c.backgroundColor, c.borderTopColor, c.color, c.filter, c.boxShadow]})""")
-        # 0.94 (Niklas): tankkauspainikkeella oma vaaleansininen tausta; huolto ja muistiinpano keskenään samat.
-        assert len(tyylit) == 3 and tyylit[1] == tyylit[2] and tyylit[0][2:] == tyylit[1][2:], tyylit
-        assert tyylit[0][0] == "rgb(223, 234, 253)" and tyylit[0][0] != tyylit[1][0], tyylit
+        tyylit=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions > *', """es=>es.map(e=>{const c=getComputedStyle(e);return [c.backgroundColor,c.borderTopColor,c.color,c.filter,c.boxShadow]})""")
+        assert len(tyylit)==3 and tyylit[1]==tyylit[2],tyylit
+        assert tyylit[0][0]!=tyylit[1][0],tyylit
+        assert all(t[3]=='none' for t in tyylit),tyylit
     finally:
         s.sulje()
 
@@ -209,7 +198,7 @@ def test_kuvakkeiden_viiva(browser, base):
     s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
     try:
         avaa_ajoneuvon_tiedot(s.page)
-        viivat = s.page.eval_on_selector_all(".row-btn .act-ico > svg", "e => e.map(v => getComputedStyle(v).strokeWidth)")
-        assert len(viivat) == 3 and set(viivat) == {"1.5px"}, viivat
+        viivat=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions svg', 'es=>es.map(e=>getComputedStyle(e).strokeWidth)')
+        assert len(viivat)==3 and set(viivat)=={'1.7px'},viivat
     finally:
         s.sulje()

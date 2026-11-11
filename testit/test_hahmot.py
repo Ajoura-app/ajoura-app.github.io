@@ -21,12 +21,12 @@ def test_valinta_pysyvyys_ja_teema(browser,base,character):
         p.fill('#me-form input[name=months]','9')
         p.click(f'[data-avatar-choice={character}]')
         assert p.input_value('#me-form input[name=months]')=='9','Hahmon vaihto tyhjensi keskeneräisen lomakkeen'
-        p.goto(base+'/app.html#home');p.wait_for_selector('.secretary-card')
+        p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
         assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
         assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")=='copilot'
         p.goto(base+'/app.html#theme');p.wait_for_selector('[data-th-pick=nordic]')
         p.click('[data-th-pick=nordic]');p.click('.th-opt.on [data-th-apply]')
-        p.goto(base+'/app.html#home');p.wait_for_selector('.secretary-card');p.reload();p.wait_for_selector('.secretary-card')
+        p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card');p.reload();p.wait_for_selector('.vehicle-home-card')
         assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
         assert s.talli()==before
         assert not s.virheet,s.virheet
@@ -41,7 +41,7 @@ def test_hahmot_ja_safe_area(browser,base,theme):
         for character in CHARACTERS:
             p.goto(base+'/app.html#settings');p.wait_for_selector('[data-avatar-choice]')
             p.click(f'[data-avatar-choice={character}]')
-            p.goto(base+'/app.html#home');p.wait_for_selector('.secretary-card')
+            p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
             assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
             assert p.locator('.assistant-widget .assistant-avatar img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
             assert not p.locator('.avatar-shortcut').is_visible()

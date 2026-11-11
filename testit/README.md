@@ -25,6 +25,12 @@ Vaatimukset: Python 3, `pytest`, `playwright` ja Chromium (valmiina Clauden ymp�
 `pip install pytest playwright pillow` ja `python3 -m playwright install chromium`). PDF-testit tarvitsevat
 lisäksi ohjelmat `qpdf`, `pdfinfo` ja `pdftotext` (poppler-utils).
 
+## Etusivun ajoneuvolistan testaaminen (2.08)
+
+Etusivu näyttää kaikki ajoneuvot ja niiden pysyvät pikatoiminnot. Lisätietopaneelit ovat aluksi suljettuina. Listan oletustilan testeissä tarkista tämä suoraan; älä avaa kortteja yhteisessä `avaa`-valmistelussa.
+
+Kun testaat paneelin toimintoa, avaa ajoneuvo käyttäjän tavoin `valitse_ajoneuvo(page, id)`- tai `avaa_ensimmainen_kortti(page)`-avulla. Kohdista yksittäisen ajoneuvon tarkistukset `nykyinen_ajoneuvo(page).locator(...)`-haulla. `avaa_ajoneuvon_tiedot` avaa lisäksi huollon tehtäväosan. Kirjautumisen testipalvelu (`palvelu`) lataa sivun uudelleen, joten avaa paneeli vasta sen jälkeen. Sivulatauksen onnistumista odotetaan näkyvästä `.vehicle-home-card`-listasta eikä sen sisällä piilossa olevasta `.secretary-card`-paneelista.
+
 ## Laajennettu sarja
 
 Ajetaan, kun muutos koskee tallennusta, varmuuskopiota, PDF:ää tai ulkoasua. Se vertaa uutta versiota

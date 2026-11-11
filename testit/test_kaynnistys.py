@@ -26,7 +26,7 @@ def test_teema_hahmo_ja_paluu(browser,base,theme,character):
         assert s.talli()==before
         assert p.url.endswith('#home')
         assert all(u.startswith(base) for u in requests)
-        p.reload();p.wait_for_selector('.secretary-card')
+        p.reload();p.wait_for_selector('.vehicle-home-card')
         assert p.locator('.intro-overlay').count()==0
         assert not s.virheet,s.virheet
     finally:s.sulje()

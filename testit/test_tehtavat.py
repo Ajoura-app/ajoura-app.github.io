@@ -37,7 +37,7 @@ def test_tehtavat_ja_valinnat(browser,base,lang,theme):
         p.locator('[data-task-later]').first.click();assert p.locator('.secretary-task').count()==1
         avaa_tehtavan_lisatiedot(p,p.locator('.secretary-task').first)
         p.locator('[data-task-dismiss]').first.click();assert p.locator('.secretary-task').count()==0
-        p.reload();p.wait_for_selector('.secretary-tasks');assert p.locator('.secretary-task').count()==0
+        p.reload();p.wait_for_selector('.vehicle-home-card');assert p.locator('.secretary-task').count()==0
         avaa_tehtavat(p);p.click('[data-task-reset]');assert p.locator('.secretary-task').count()==2
         assert before==s.talli()
         assert p.locator('.task-coverage').inner_text().startswith('1/1')
@@ -82,7 +82,7 @@ def test_tallennettu_korjaus(browser,base):
         p.fill('#event-form [name=date]','2026-10-20')
         p.fill('#event-form [name=km]','152400')
         p.click('#event-form [type=submit]');p.wait_for_selector('.screen-content')
-        p.goto(base+'/app.html#home');p.wait_for_selector('.secretary-tasks')
+        p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
         assert p.locator('.secretary-task').count()==1
         assert p.evaluate("AjouraTasks.snapshot().some(x=>x.kind==='Huolto'&&x.state==='done')")
         assert s.talli()['cars'][0]['events'][0]['date']=='2026-10-20'

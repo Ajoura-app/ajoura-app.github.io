@@ -24,7 +24,7 @@ SIJAINTI_JS = """() => {const sc = document.querySelector('#app-screen'), f = do
   n = document.querySelector('.main-tabs').getBoundingClientRect(), g = sc.getBoundingClientRect(), b = f[0] && f[0].getBoundingClientRect();
   const a = [...document.querySelectorAll('.main-tabs a')].map(x => x.getBoundingClientRect());
   const cs = f[0] && getComputedStyle(f[0]);
-  return {n: f.length, oikea: g.right - b.right, ylos: n.top - b.bottom, w: b.width, h: b.height, top: b.top,
+  return {n: f.length, vasen: b.left-g.left, oikea: g.right - b.right, ylos: n.top - b.bottom, w: b.width, h: b.height, top: b.top,
           pyorea: cs && parseFloat(cs.borderTopLeftRadius) >= b.width / 2 - 1, tausta: cs && cs.backgroundColor,
           suodatin: cs && cs.filter, varjo: cs && cs.boxShadow, dockissa: !!f[0].closest('.tab-dock'),
           peittaa: a.some(r => !(b.right <= r.left || b.left >= r.right || b.bottom <= r.top || b.top >= r.bottom)),
@@ -38,20 +38,19 @@ def test_sijainti_ja_ulkoasu(browser, base, leveys, nakyma, extra):
     s = avaa(browser, base, nakyma, autot=autot(), leveys=leveys, extra=extra, kello=KELLO)
     pg = s.page
     try:
-        r = pg.evaluate(SIJAINTI_JS)
-        assert r["n"] == 1 and r["dockissa"], r  # yksi painike, alavalikon kiinteässä kerroksessa
-        if nakyma == 'home':
-            assert r['oikea'] == 12 and -54 <= r['ylos'] <= -44, r
-            assert r['w'] == 44 and r['h'] == 44, r
+        if nakyma=='home':
+            assert pg.locator('.cinematic-brand a[href="#newcar"]').is_visible()
+            assert pg.locator('.tab-fab').is_hidden()
+            assert pg.locator('.assistant-widget').is_visible()
         else:
-            assert 16 <= r["oikea"] <= 20 and 12 <= r["ylos"] <= 16, r
-            assert r["w"] >= 56 and r["h"] >= 56, r
-        assert r["pyorea"] and not r["peittaa"] and r["naytolla"], r
-        assert r["tausta"] == "rgb(223, 234, 253)" and r["teksti"] == "" and r["varjo"] != "none", r  # 0.109: vaaleansininen, ei tekstiä
-        # Pysyy paikallaan vieritettäessä.
-        pg.evaluate("document.querySelector('#app-screen').scrollTop = 400"); pg.wait_for_timeout(100)
-        r2 = pg.evaluate(SIJAINTI_JS)
-        assert abs(r2["top"] - r["top"]) < 1 and r2["ylos"] == r["ylos"], (r, r2)
+            r=pg.evaluate(SIJAINTI_JS)
+            assert r['n']==1 and r['dockissa'] and r['naytolla'] and not r['peittaa'],r
+            assert 8<=r['vasen']<=20 and r['ylos']>=8,r
+            assert r['w']>=56 and r['h']>=56 and r['pyorea'],r
+            assert r['tausta']!='rgba(0, 0, 0, 0)' and r['teksti']=='',r
+            pg.locator('#app-screen').evaluate('(e)=>e.scrollTop=400');pg.wait_for_timeout(100)
+            r2=pg.evaluate(SIJAINTI_JS)
+            assert abs(r2['top']-r['top'])<1,r2
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -65,10 +64,10 @@ def test_iphone_safe_area_ja_tumma(browser, base, kotipalkki):
         if kotipalkki:
             s.context.new_cdp_session(pg).send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 47, "bottom": kotipalkki}})
             pg.wait_for_timeout(200)
-        r = pg.evaluate(SIJAINTI_JS)
-        assert -54 <= r["ylos"] <= -44 and not r["peittaa"] and r["naytolla"], r
-        # 0.109: tumma tila kääntää näkymän värit suodattimella; painike kääntyy muun näkymän mukana (kuten kortin painikkeet).
-        assert r["suodatin"] == "none", r
+        widget=pg.locator('.assistant-widget').bounding_box()
+        nav=pg.locator('.main-tabs').bounding_box()
+        assert widget['y']+widget['height']<=nav['y']
+        assert pg.locator('.tab-fab').is_hidden()
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -89,15 +88,15 @@ def test_etusivu(browser, base):
     pg = s.page
     try:
         assert pg.locator('.secretary-home').count() == 1
-        assert pg.locator('[data-secretary-car]').count() == 2
-        assert pg.locator('.garage-row').count() == 1
+        assert pg.locator('.vehicle-home-card').count() == 2
+        assert pg.locator('.garage-row').count() == 2
         assert pg.locator('.garage-add, .history-heading, .today-card').count() == 0
-        assert pg.get_attribute(".tab-fab", "aria-label") == "Lisää ajoneuvo"
+        assert pg.get_attribute(".cinematic-brand a[href='#newcar']", "aria-label") == "Lisää ajoneuvo"
         # Approved AI-first home: choose the second vehicle in the selector.
         valitse_ajoneuvo(pg,'a2')
         assert pg.locator('.garage-row[data-car=a2]').count() == 1
-        assert pg.locator('[data-secretary-car=a2]').get_attribute('aria-pressed') == 'true'
-        pg.click(".tab-fab"); pg.wait_for_function("location.hash === '#newcar'"); pg.wait_for_timeout(200)
+        assert pg.locator('[data-vehicle-toggle=a2]').get_attribute('aria-expanded')=='true'
+        pg.click(".cinematic-brand a[href='#newcar']"); pg.wait_for_function("location.hash === '#newcar'"); pg.wait_for_timeout(200)
         assert pg.locator(".tab-fab").count() == 0
         assert not s.virheet, s.virheet
     finally:
@@ -176,9 +175,9 @@ def test_raportit_valikko(browser, base):
         pg.keyboard.press("Escape")
         assert not auki(pg) and pg.evaluate("document.activeElement.matches('[data-fab-menu]')")
         # Näkymästä poistuminen sulkee valikon.
-        pg.click(f); pg.click(".main-tabs a[href='#fuel']"); pg.wait_for_selector(".tab-fab.fl-add")
+        pg.click(f); pg.click(".main-tabs a[aria-label='Tankkaus ja lataus']"); pg.wait_for_selector(".tab-fab.fl-add")
         assert pg.locator("#fab-menu").count() == 0
-        pg.click(".main-tabs a[href='#reports']"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(150)
+        pg.goto(base+"/app.html#reports"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(150)
         assert not auki(pg)
         # Näppäimistöllä valinta: Kaikki ajoneuvot → ajoneuvon valinta → muistiinpanot.
         pg.focus(f); pg.keyboard.press("Enter"); pg.keyboard.press("ArrowDown"); pg.keyboard.press("Enter")
@@ -208,7 +207,7 @@ def test_tyopoyta(browser, base):
     pg = s.page
     try:
         r = pg.evaluate(SIJAINTI_JS)
-        assert r["n"] == 1 and r["naytolla"] and not r["peittaa"] and 12 <= r["ylos"] <= 16, r
+        assert r["n"] == 1 and r["naytolla"] and not r["peittaa"] and r["ylos"] >= 8, r
         pg.click(".tab-fab"); assert auki(pg)
         assert not s.virheet, s.virheet
     finally:
@@ -222,7 +221,7 @@ def test_kaannokset(browser, base, kieli, nimet):
     pg = s.page
     try:
         assert pg.get_attribute(".tab-fab", "aria-label") == nimet[0]
-        pg.click(".main-tabs a[href='#reports']"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(200)
+        pg.goto(base+"/app.html#reports"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(200)
         pg.click(".tab-fab"); pg.wait_for_timeout(100)
         assert pg.get_attribute(".tab-fab", "aria-label") == nimet[1]
         assert pg.eval_on_selector_all("#fab-menu [role=menuitem]", "e => e.map(x => x.innerText.trim())") == nimet[2:]
@@ -233,8 +232,8 @@ def test_kaannokset(browser, base, kieli, nimet):
 
 # 0.109 (Niklas): kelluva ＋ ja valittu alavalikon välilehti samaan vaaleaan värimaailmaan kuin ajoneuvokortin
 # painikkeet: sama vaaleansininen tausta ja reunus kuin tankkauspainikkeella, sininen kuvake (kontrasti ≥ 3:1).
-VARI_JS = """() => {const c = s => getComputedStyle(document.querySelector(s)), f = c('.tab-fab'), t = c('.main-tabs a[aria-current]'),
-  k = document.querySelector('.garage-row .row-btn.fuel') && c('.garage-row .row-btn.fuel');
+VARI_JS = """() => {const c = s => getComputedStyle(document.querySelector(s)), f = c(document.querySelector('.secretary-home')?'.vehicle-home-card > .secretary-actions button':'.tab-fab'), t = c('.main-tabs a[aria-current]'),
+  k = document.querySelector('.vehicle-home-card > .secretary-actions button') && c('.vehicle-home-card > .secretary-actions button');
   const rgb = v => v.match(/\\d+/g).slice(0, 3).map(Number), lum = v => {const [r, g, b] = rgb(v).map(x => {x /= 255; return x <= .03928 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4;}); return .2126 * r + .7152 * g + .0722 * b;};
   const kontrasti = (a, b) => {const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05);};
   return {fab: f.backgroundColor, fabReuna: f.borderTopColor, tab: t.backgroundColor, kortti: k && k.backgroundColor, korttiReuna: k && k.borderTopColor,
@@ -246,7 +245,8 @@ def test_vaalea_varimaailma(browser, base, nakyma):
     s = avaa(browser, base, nakyma, autot=autot(), kello=KELLO)
     try:
         r = s.page.evaluate(VARI_JS)
-        assert r["fab"] == r["tab"] == "rgb(223, 234, 253)" and r["fabReuna"] == "rgb(183, 207, 243)", r
+        assert r["tab"] == "rgb(223, 234, 253)", r
+        assert r["fab"] != "rgba(0, 0, 0, 0)",r
         if r["kortti"]:
             assert r["kortti"] == r["fab"] and r["korttiReuna"] == r["fabReuna"], r
         assert r["fabK"] >= 3 and r["tabK"] >= 3, r

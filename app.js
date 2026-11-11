@@ -672,7 +672,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.07 (testiversio)';
+  const appVersion='2.08 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -2092,7 +2092,7 @@
   // Small bridge for roles.js (workshop and team views): read the garage and add a service sent by a workshop.
   // 0.76: the shared period and distance rules for the tests (testit/test_laskenta.py); they only read.
   window.AjouraCalc={kmIn,monthsIn,rpRange,rpPrev,covers};
-  window.AjouraApp={version:appVersion,cars:()=>cars,refresh:()=>render(),notify:msg=>{notice=msg;},
+  window.AjouraApp={version:appVersion,cars:()=>cars,refresh:()=>render(),refreshNavigation:()=>{const dock=screen.querySelector('.tab-dock');if(dock){dock.outerHTML=tabBar(route().view);window.AjouraSecretary?.mountWidget();}},notify:msg=>{notice=msg;},
     // For sync.js: the whole garage, and a merged garage coming back from the account (checked before it is used).
     state:()=>({cars,sequence,profile}),
     apply(next){const list=tidy(next&&next.cars);if(!Array.isArray(list)||!list.every(validCar)||!Number.isSafeInteger(next.sequence)||!validProfile(next.profile))return false;

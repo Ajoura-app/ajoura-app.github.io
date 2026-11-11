@@ -14,11 +14,13 @@
     </article>`;
   }
   function renderService(c,view,tasks,coverage) {
-    const opened=document.querySelector(`.home-service[data-car="${c.id}"] .secretary-vehicle-details`)?.open;
+    const previous=[...document.querySelectorAll('.home-service')].find(el=>el.dataset.car===c.id);
+    const opened=previous?.querySelector('.secretary-vehicle-details')?.open;
+    const tasksOpen=!!previous?.querySelector('.secretary-all-tasks')?.open;
     return `<section class="home-service home-summary" data-car="${esc(c.id)}" aria-label="Huoltotilanne">
       <a class="row-wide home-service-original" href="#vehicle/${esc(c.id)}">${view.status}</a>
       ${tasks.some(x=>x.kind==='Katsastus')?'<p class="home-inspection-note">Katsastuksen määräpäivä tarkistettava.</p>':''}
-      <details class="secretary-vehicle-details"${opened?' open':''}><summary aria-label="Huollon lisätiedot"><span class="sr-only">Huollon lisätiedot</span><span class="secretary-chevron" aria-hidden="true">⌄</span></summary><div class="secretary-vehicle-detail"><a href="#vehicle/${esc(c.id)}">Avaa huoltohistoria →</a>${renderTasks(c,tasks,coverage,false)}</div></details></section>`;
+      <details class="secretary-vehicle-details"${opened?' open':''}><summary aria-label="Huollon lisätiedot"><span class="sr-only">Huollon lisätiedot</span><span class="secretary-chevron" aria-hidden="true">⌄</span></summary><div class="secretary-vehicle-detail"><a href="#vehicle/${esc(c.id)}">Avaa huoltohistoria →</a>${renderTasks(c,tasks,coverage,tasksOpen)}</div></details></section>`;
   }
 
   function renderExpenses(c,view,tasks){const fuel=tasks.find(x=>x.kind==='fuel'||x.kind==='consumption');
@@ -160,9 +162,12 @@
       if(feedback){feedback.textContent=voiceNotice;feedback.hidden=false;positionWidget();}return;}
     const decision=e.target.closest('[data-task-later],[data-task-dismiss],[data-task-reset]');
     if(decision){
+      const car=decision.closest('.vehicle-home-card')?.dataset.car;
       if(decision.dataset.taskReset)window.AjouraTasks.reset(decision.dataset.taskReset);
       else window.AjouraTasks.decide(decision.dataset.taskLater||decision.dataset.taskDismiss,decision.dataset.taskLater?'later':'dismiss');
-      window.AjouraApp.refresh();document.querySelector('[data-task-focus]')?.focus({preventScroll:true});return;
+      window.AjouraApp.refresh();
+      const card=[...document.querySelectorAll('.vehicle-home-card')].find(el=>el.dataset.car===car);
+      card?.querySelector('[data-task-focus]')?.focus({preventScroll:true});return;
     }
   });
   document.addEventListener('keydown',e=>{
@@ -171,8 +176,10 @@
     if(panel?.open){e.preventDefault();panel.open=false;panel.querySelector('summary').focus({preventScroll:true});}
   });
   document.addEventListener('click',e=>{
-    const card=e.target.closest('.vehicle-home-card');if(card)selected=card.dataset.car;
-    const button=e.target.closest('[data-vehicle-toggle]');if(!button)return;
+    const card=e.target.closest('.vehicle-home-card'),changed=card&&selected!==card.dataset.car;
+    if(card)selected=card.dataset.car;
+    const button=e.target.closest('[data-vehicle-toggle]');
+    if(!button){if(changed)window.AjouraApp.refreshNavigation();return;}
     const id=button.dataset.vehicleToggle;
     if(expandedVehicles.has(id))expandedVehicles.delete(id);else expandedVehicles.add(id);
     window.AjouraApp.refresh();
@@ -201,6 +208,7 @@
       return `<section class="secretary-home${isCinematic()?' secretary-cinematic':''} secretary-refined" aria-label="${esc(t('Autosihteeri'))}">
         <header class="cinematic-brand"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 25 14 7q2-4 4 0l9 18q1 2-2 2h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="cinematic-brand-name">Ajoura</span><a href="#newcar" aria-label="${esc(t('Lisää ajoneuvo'))}">+</a><a href="#me/tili" aria-label="Profiili ja tili"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3z"/></svg></a></header>
         ${cards}
+        <a class="home-order text-link" href="#car-order">${esc(t('Järjestä ajoneuvot'))}</a>
       </section>`;
     }
   };

@@ -68,7 +68,7 @@ def test_turvallinen_sisalto_ja_suunta(browser,base,width,height):
     s=avaa(browser,base,'home',autot=cars,kello=KELLO,leveys=width,korkeus=height,asennettu=True)
     try:
         assert s.page.locator('.secretary-context img').count()==0
-        assert '<img' in nykyinen_ajoneuvo(s.page).locator('.secretary-context').inner_text()
+        assert '<img' in nykyinen_ajoneuvo(s.page).locator('.secretary-context').text_content()
         assert s.page.locator('.secretary-task').count()==0
         assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet

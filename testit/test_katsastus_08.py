@@ -14,12 +14,12 @@ def test_arvio_ei_maaraaika(browser,base,lang,estimate,unknown,theme):
     try:
         p=s.page;before=s.talli()
         avaa_ajoneuvon_tiedot(p)
-        assert estimate in p.inner_text('.row-status')
-        assert unknown in p.inner_text('.row-status')
+        assert 'tarkistettava' in p.inner_text('.home-inspection-note')
+        assert p.locator('.row-status.late,.row-status.soon').count()==0
         task=p.locator('[data-task-key*=inspection-check]');assert task.count()==1
         assert unknown in task.inner_text()
         for _ in range(4):p.evaluate('AjouraApp.refresh()')
-        assert task.count()==1;avaa_tehtavan_lisatiedot(p,task);task.locator('[data-task-dismiss]').click();p.reload();p.wait_for_selector('.secretary-tasks');assert task.count()==0
+        assert task.count()==1;avaa_tehtavan_lisatiedot(p,task);task.locator('[data-task-dismiss]').click();p.reload();p.wait_for_selector('.vehicle-home-card');assert task.count()==0
         assert before==s.talli();assert not s.virheet,s.virheet
     finally:s.sulje()
 
@@ -32,6 +32,7 @@ def test_tarkistus_ei_vaita_myohastymista_tai_varausta(browser,base,date):
         assert 'myöhässä' not in p.inner_text('.row-status')
         assert p.locator('.row-status.late,.row-status.soon,.upcoming li.late').count()==0
         assert p.locator('[data-task-key*=inspection-check]').count()==1
+        avaa_tehtavan_lisatiedot(p,p.locator('[data-task-key*=inspection-check]'))
         p.locator('[data-task-key*=inspection-check] a').click();p.wait_for_selector('.upcoming')
         assert 'Virallinen määräpäivä ei ole tiedossa.' in p.inner_text('.upcoming')
         link=p.locator('.upcoming a[href^="https://www.traficom.fi/"]')
@@ -62,6 +63,7 @@ def test_arvion_tekstin_kontrasti(browser,base,theme):
     s=avaa(browser,base,'home',autot=[car('2023-01-01')],kello=KELLO,leveys=320,asennettu=True,extra={'ajoura-ulkoasu':theme})
     try:
         avaa_ajoneuvon_tiedot(s.page)
+        avaa_tehtavan_lisatiedot(s.page,s.page.locator('[data-task-key*=inspection-check]'))
         rows=[x for x in s.page.evaluate(KONTRASTI) if x['t'] in ['Katsastusarvio','Arvio','Virallinen määräpäivä ei ole tiedossa.','Tarkista katsastuksen määräpäivä']]
         assert len(rows)>=4
         assert not [x for x in rows if x['k']<4.5],rows

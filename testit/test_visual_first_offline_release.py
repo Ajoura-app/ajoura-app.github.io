@@ -25,7 +25,7 @@ def test_kaikki_teemakuvat_kylmassa_offline_asennuksessa(browser):
             user.avaa('home')
             assert p.locator('.secretary-cinematic').is_visible()
             assert p.locator('.assistant-widget img').evaluate('(e)=>e.complete&&e.naturalWidth===512')
-            assert f'{theme}-room.webp' in p.locator('.secretary-hero-media').evaluate('(e)=>getComputedStyle(e).backgroundImage')
+            assert f'{theme}-room.webp' in p.locator('.secretary-hero').first.evaluate('(e)=>getComputedStyle(e).backgroundImage')
         assert user.talli()==before and user.indexeddb()==idb
         assert not user.virheet,user.virheet
     finally:

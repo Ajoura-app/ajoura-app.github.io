@@ -95,6 +95,7 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
     }})();""")
 
     page = ctx.new_page()
+    page.set_default_navigation_timeout(30_000)  # allow local assets to load under parallel browser-test CPU load
     page.set_default_timeout(8_000)  # nopea epäonnistuminen, jos painiketta tai kenttää ei löydy
     virheet = []
     page.on("pageerror", lambda e: virheet.append(f"JS-virhe: {e}"))
@@ -180,3 +181,9 @@ def ikkuna_valmis(page):
     Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken
     kirjoituksen (ihmiskäyttäjälle ei tapahdu: kohdistus siirtyy ennen kuin ehtii kirjoittaa)."""
     page.wait_for_function("() => !!document.activeElement && !!document.activeElement.closest('.sheet')")
+
+
+def avaa_ensimmainen_kortti(page):
+    """Open the first vehicle image to arrange checks of expanded widgets."""
+    button=page.locator('[data-vehicle-toggle]').first
+    if button.count() and button.get_attribute('aria-expanded')!='true':button.click()

@@ -68,8 +68,8 @@ def test_palaava_ja_kirjautuminen(browser,base,logged):
         before=s.talli()
         assert p.locator('a[href="#home"]',has_text='Jatka omaan talliin').count()==1
         assert p.locator('a[href="#login"]').count()==(0 if logged else 1)
-        p.click('.welcome-choices a[href="#home"]');p.wait_for_selector('.secretary-card')
-        p.goto(base+'/app.html');p.wait_for_selector('.secretary-card')
+        p.click('.welcome-choices a[href="#home"]');p.wait_for_selector('.vehicle-home-card')
+        p.goto(base+'/app.html');p.wait_for_selector('.vehicle-home-card')
         assert s.talli()==before
         assert p.locator('.ai-welcome').count()==0
         assert not s.virheet,s.virheet
@@ -92,7 +92,7 @@ def test_welcome_ja_opastus_offline(browser):
         k.asenna();before=k.talli();k.ctx.set_offline(True);k.avaa('welcome')
         k.page.click('[data-tutorial]');k.page.wait_for_selector('.ai-guide')
         k.page.click('[data-guide-close]')
-        k.page.click('.welcome-choices a[href="#home"]');k.page.wait_for_selector('.secretary-card')
+        k.page.click('.welcome-choices a[href="#home"]');k.page.wait_for_selector('.vehicle-home-card')
         assert k.talli()==before
         assert not k.virheet,k.virheet
     finally:k.sulje();server.sulje()
