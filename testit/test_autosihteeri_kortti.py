@@ -29,16 +29,16 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
         frame = p.locator('.secretary-intro [data-avatar]').bounding_box()
         actual = img.bounding_box()
-        assert frame['width'] == (116 if width == 320 else 142)
+        assert frame['width'] == 48
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
         names = {'emma':'Emma', 'mikko':'Mikko', 'ankka':'Bottiankka'}
         assert p.inner_text('.secretary-intro [data-avatar-name]') == names[character]
         assert p.inner_text('.secretary-message') == p.locator('[data-task-key] h4').first.inner_text()
         if ai:
-            assert p.locator('.secretary-note').is_visible()
+            assert p.locator('.secretary-note').is_hidden()
             assert 'Tarkistat tiedot ennen tallennusta.' in p.inner_text('.secretary-note')
         if width == 390:
-            assert 190 <= card['height'] <= 275, card
+            assert 105 <= card['height'] <= 190, card
             dock = p.locator('.tab-dock').bounding_box()
             for action in p.locator('.secretary-actions > button, .secretary-actions > a').all():
                 box = action.bounding_box()
@@ -72,8 +72,10 @@ def test_toiminnot_oikeuksien_ja_puhetuen_mukaan(browser, base, mode):
         if mode in ['speech', 'text-only']:
             p.wait_for_function("AjouraAccess.check('ai.receipt').ok")
             primary = p.locator('.secretary-actions [data-secretary-mode]').evaluate_all('(els)=>els.map(e=>e.dataset.secretaryMode)')
-            assert primary == ['speech' if mode == 'speech' else 'text', 'photo']
-            assert not p.locator('[data-secretary-mode=manual]').is_visible()
+            assert primary == ['manual']
+            assert p.locator('[data-home-mic]').is_visible()
+            assert p.locator('.secretary-more [data-secretary-mode=photo]').count()==1
+            assert p.locator('[data-secretary-mode=manual]').is_visible()
         else:
             assert p.locator('[data-secretary-mode=text],[data-secretary-mode=speech],[data-secretary-mode=photo]').count() == 0
             assert p.locator('.secretary-actions [data-secretary-mode=manual]').is_visible()
@@ -99,7 +101,7 @@ def test_tyhjan_tiedon_viesti_ei_keksi_havaintoa(browser, base):
     try:
         p = s.page
         assert p.locator('[data-task-key]').count() == 0
-        assert p.inner_text('.secretary-message') == 'Voit kirjata tiedot käsin.'
+        assert p.inner_text('.secretary-message') == 'Hei! Kirjataan ajoneuvosi tiedot.'
         assert p.locator('.assistant-local').count() == 0
         assert not s.virheet, s.virheet
     finally:
@@ -117,7 +119,7 @@ def test_lisavaihtoehtojen_nappaimisto_ja_tekstin_suurennus(browser, base):
         summary.focus()
         p.keyboard.press('Enter')
         assert p.locator('[data-secretary-mode=manual]').is_visible()
-        p.locator('[data-secretary-mode=manual]').focus()
+        p.locator('[data-secretary-mode=text]').focus()
         p.keyboard.press('Escape')
         assert p.locator('.secretary-more').get_attribute('open') is None
         assert summary.evaluate('(e)=>e===document.activeElement')

@@ -20,9 +20,9 @@ def test_teemat_erottuvat_myos_pintoina_ja_taustana(browser, base):
             before = s.talli()
             appearance = p.evaluate('''() => {
               const css=s=>getComputedStyle(document.querySelector(s));
-              const hero=css('.secretary-hero-media'),card=css('.secretary-copy');
+              const hero=css('.secretary-hero-media'),card=css('.secretary-mic');
               return {page:css('#app-screen').backgroundImage,hero:hero.backgroundImage,
-                      card:[card.backgroundImage,card.boxShadow,card.borderRadius]};
+                      card:[card.backgroundColor,card.borderColor,card.borderRadius]};
             }''')
             assert appearance['hero'] != 'none', (theme,appearance)
             assert appearance['page'] != 'none', (theme,appearance)

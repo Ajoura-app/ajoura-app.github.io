@@ -26,11 +26,8 @@ def test_landing(browser,base,width,lang):
         for target in ['idea','toiminta','lataa','ukk','yhteys']:
             assert page.locator(f'#site-nav a[href="#{target}"]').is_visible()
             assert page.locator('#'+target).count()==1
-        for switch in ['en','sv','fi']:
-            page.click(f'[data-set-lang={switch}]')
-            assert page.get_attribute('html','lang')==switch
-            assert page.locator(f'[data-set-lang={switch}]').get_attribute('aria-pressed')=='true'
-            assert page.locator('meta[name=description]').get_attribute('content')
+        assert page.locator('[data-set-lang]').count()==0
+        assert page.evaluate('AjouraI18n.lang')=='fi'
         assert 'autosihteerisi' in page.title()
         if width<=900:
             page.keyboard.press('Escape');assert not page.locator('#site-nav').is_visible()
@@ -77,7 +74,7 @@ def test_kaikki_kielet(browser,base,lang):
 def test_video(browser,base,lang):
     p=browser.new_page(viewport={'width':1440,'height':900})
     try:
-        p.goto(base);p.wait_for_function('!!window.AjouraI18n');p.click(f'[data-set-lang={lang}]')
+        p.goto(base);p.wait_for_function('!!window.AjouraI18n');p.evaluate('AjouraI18n.set("fi")')
         player=p.locator('[data-video]');player.focus();p.keyboard.press('Enter')
         video=player.locator('video');video.wait_for()
         suffix='' if lang=='fi' else '-'+lang

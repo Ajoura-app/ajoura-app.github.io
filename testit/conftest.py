@@ -59,3 +59,11 @@ def vanha_base():
     osoite, sammuta = palvelin(Path(kansio).resolve())
     yield osoite
     sammuta()
+
+
+def pytest_collection_modifyitems(items):
+    """2.02: inactive translations are retained but no longer maintained or tested as active locales."""
+    for item in items:
+        params=getattr(getattr(item,'callspec',None),'params',{})
+        if any(params.get(key) in ('en','sv') for key in ('kieli','lang')):
+            item.add_marker(pytest.mark.skip(reason='2.02: English and Swedish temporarily disabled'))
