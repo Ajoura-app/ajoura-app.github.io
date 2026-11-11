@@ -309,3 +309,14 @@ html[data-theme=nordic] .secretary-refined .home-service-heading .status-late{co
 .service-dot.soon{background:var(--warn)}
 html[data-theme=journey] .secretary-refined .home-service-heading .status-late{color:#ffb3ad}
 .home-voice-feedback{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hairline);border-radius:14px;background:var(--t-surface,var(--paper));color:var(--ink);font-size:13px;line-height:1.5}
+
+/* 2.04: one continuous scene, with the plate layered over its lower edge. */
+@media screen{
+html .secretary-home.secretary-refined .secretary-hero{background-image:var(--t-home-art,url('ui-art/garage-room.webp'));background-position:center 58%}
+html .secretary-home.secretary-refined .secretary-hero-media,html .secretary-home.secretary-refined .secretary-hero-media:has(.car-photo){height:auto;min-height:210px;aspect-ratio:2.35;border-radius:19px;background:none}
+html .secretary-home.secretary-refined .secretary-hero-media :is(.car-photo,.car-stage){padding:10px 8px 20px}
+html .secretary-home.secretary-refined .secretary-hero-media .car-photo img{object-position:center bottom;filter:drop-shadow(0 6px 4px #00000066)}
+html .secretary-home.secretary-refined .secretary-hero-meta{grid-area:1/1;z-index:2;min-width:0;min-height:54px;padding:8px 12px;border-radius:0 16px 0 0;color:#ffffff;background:linear-gradient(90deg,#061310f5,#061310d9 75%,#06131000)}
+html .secretary-home.secretary-refined .secretary-hero-meta .row-meta{color:#e2eeeb;text-shadow:0 1px 3px #000000}
+html .secretary-home.secretary-refined .secretary-hero-meta .row-meta>span:first-child{color:#ffffff}
+}
