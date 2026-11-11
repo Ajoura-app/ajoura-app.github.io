@@ -19,13 +19,13 @@
     </article>`;
   }
   function renderService(c,view,tasks,coverage) {
-    const d=view.service,pct=d?Math.round(d.left*100):null;
     const opened=document.querySelector(`.home-service[data-car="${c.id}"] .secretary-vehicle-details`)?.open;
-    return `<section class="home-service home-summary" data-car="${esc(c.id)}" aria-label="Huoltotilanne"><div class="home-service-heading"><span class="service-dot ${esc(view.tone)}" aria-hidden="true"></span><h3 class="secretary-status-label status-${esc(view.tone)}">${esc(view.statusLabel)}</h3></div>
-      ${d?`<p class="home-service-next">${view.tone==='late'?'Huollon määräpäivä':'Seuraava huolto'} <strong>${esc(view.statusValue)}</strong></p><p class="home-service-remaining">${esc(view.remaining)}${view.tone==='late'?'':' jäljellä'}</p><div class="home-service-progress"><div class="service-track" role="progressbar" aria-label="Huoltovälistä jäljellä" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div><span>${pct} % jäljellä</span></div>`:`<a class="home-service-next" href="#add/${esc(c.id)}">Kirjaa viimeisin huolto</a>`}
+    return `<section class="home-service home-summary" data-car="${esc(c.id)}" aria-label="Huoltotilanne">
+      <a class="row-wide home-service-original" href="#vehicle/${esc(c.id)}">${view.status}</a>
       ${tasks.some(x=>x.kind==='Katsastus')?'<p class="home-inspection-note">Katsastuksen määräpäivä tarkistettava.</p>':''}
-      <details class="secretary-vehicle-details"${opened?' open':''}><summary aria-label="Huollon lisätiedot"><span class="sr-only">Huollon lisätiedot</span><span class="secretary-chevron" aria-hidden="true">⌄</span></summary><div class="secretary-vehicle-detail"><a href="#vehicle/${esc(c.id)}">Avaa huoltohistoria →</a>${view.status}${renderTasks(c,tasks,coverage,false)}</div></details></section>`;
+      <details class="secretary-vehicle-details"${opened?' open':''}><summary aria-label="Huollon lisätiedot"><span class="sr-only">Huollon lisätiedot</span><span class="secretary-chevron" aria-hidden="true">⌄</span></summary><div class="secretary-vehicle-detail"><a href="#vehicle/${esc(c.id)}">Avaa huoltohistoria →</a>${renderTasks(c,tasks,coverage,false)}</div></details></section>`;
   }
+
   function renderExpenses(c,view,tasks){const fuel=tasks.find(x=>x.kind==='fuel'||x.kind==='consumption');
     return `<section class="home-expenses home-summary" aria-label="Kulut"><div class="home-cost-heading"><h3>Kulut</h3><span>Tänä vuonna · ${esc(view.year)}</span></div><dl><div><dt>${actionIcon('fuel')}<a href="#fuel/${esc(c.id)}">Tankkaukset ja lataukset</a></dt><dd>${esc(view.expenses.fuel)}</dd></div><div><dt>${actionIcon('service')}<a href="#vehicle/${esc(c.id)}">Huollot</a></dt><dd>${esc(view.expenses.service)}</dd></div><div class="home-cost-total"><dt>Yhteensä</dt><dd><a href="#reports" data-home-costs="${esc(c.id)}" aria-label="Avaa tämän ajoneuvon kuluraportti">${esc(view.expenses.total)}</a></dd></div></dl>${fuel?`<a class="home-cost-notice" href="${esc(fuel.href)}">${esc(fuel.title)}</a>`:''}</section>`;
   }

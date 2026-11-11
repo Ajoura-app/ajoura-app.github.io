@@ -22,17 +22,17 @@ def test_approved_layout_and_values(browser,base,theme,width):
         p=s.page;before=s.talli()
         order=p.locator('.secretary-refined').evaluate('e=>[...e.children].map(x=>x.classList[0])')
         assert order==['cinematic-brand','secretary-vehicle','home-service','home-expenses','secretary-card']
-        assert p.locator('.home-service-progress [role=progressbar]').get_attribute('aria-valuenow')=='55'
-        assert '282 pv' in p.locator('.home-service-remaining').inner_text()
+        assert p.locator('.home-service-original .row-pct').inner_text()=='55 % jäljellä'
+        assert 'Ajettavaa jäljellä n. 8 200 km' in ' '.join(p.locator('.home-service-original').inner_text().split())
         costs=' '.join(p.locator('.home-expenses').inner_text().split())
         assert all(value in costs for value in ['1 284,60','486,00','1 770,60','2026'])
         assert '900,00' not in costs
         assert p.locator('.secretary-actions>*').count()==3
         assert p.locator('.secretary-mic .assistant-avatar').bounding_box()['width']==64
         pic=p.locator('.secretary-hero-media img').bounding_box();plate=p.locator('.secretary-hero-meta').bounding_box()
-        assert pic['y']+pic['height']<=plate['y']+1
+        assert pic['y']<=plate['y']<pic['y']+pic['height']
         assert p.locator('.secretary-vehicle-details').get_attribute('open') is None
-        assert p.locator('.secretary-status-label').is_visible()
+        assert p.locator('.home-service-original .row-txt b').is_visible()
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         assert p.locator('.cinematic-brand a[aria-label="Profiili ja tili"]').get_attribute('href')=='#me/tili'
         assert s.talli()==before
@@ -93,9 +93,9 @@ def test_swipe_missing_service_and_overdue(browser,base):
         assert 'TST-202' in p.locator('.secretary-hero-meta').inner_text()
         assert p.url.endswith('#home')
         p.evaluate('AjouraApp.cars()[1].km=200000;AjouraApp.refresh()')
-        assert p.locator('[role=progressbar]').get_attribute('aria-valuenow')=='0'
-        assert 'myöhässä' in p.locator('.secretary-status-label').inner_text()
-        assert 'jäljellä' not in p.locator('.home-service-remaining').inner_text()
+        assert p.locator('.home-service-original .row-status.late').count()==1
+        assert 'myöhässä' in p.locator('.home-service-original .row-txt b').inner_text()
+        assert 'Kilometriraja ylitetty' in p.locator('.home-service-original').inner_text()
         assert not s.virheet,s.virheet
     finally:s.sulje()
 
@@ -107,8 +107,8 @@ def test_inspection_and_fuel_observations_remain_accessible(browser,base):
         p=s.page;before=s.talli()
         # Exercise an incomplete in-memory observation without weakening backup validation.
         p.evaluate('AjouraApp.cars()[0].fuels[0].km=null;AjouraApp.refresh()')
-        assert p.locator('.secretary-status-label').inner_text()=='Huolto kunnossa'
-        assert '20.8.2027' in p.locator('.home-service-next').inner_text()
+        assert p.locator('.home-service-original .row-txt b').inner_text()=='Huolto kunnossa'
+        assert '20.8.2027' in p.locator('.home-service-original .row-txt strong').inner_text()
         assert 'tarkistettava' in p.locator('.home-inspection-note').inner_text()
         assert 'mittarilukema' in p.locator('.home-cost-notice').inner_text()
         p.locator('.home-service>.secretary-vehicle-details>summary').click()

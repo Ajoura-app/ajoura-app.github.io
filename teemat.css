@@ -249,17 +249,6 @@ html .secretary-home.secretary-refined .secretary-picker>summary:after{content:n
 .secretary-switch .secretary-position{margin:0}
 .home-summary{position:relative;min-width:0;padding:13px 15px;border:1px solid var(--hairline);border-radius:19px;background:var(--t-home-notices,var(--t-surface,var(--paper)));color:var(--ink)}
 .home-summary h3{margin:0;font-size:20px;line-height:1.25;font-weight:700}
-.home-service-heading{display:flex;gap:10px;align-items:center;padding-right:32px}
-.service-dot{flex:none;width:13px;height:13px;border-radius:50%;background:var(--t-accent,var(--blue))}
-.service-dot.late{background:var(--alert)}
-.home-service-heading .status-late{color:var(--alert)}
-.home-service-next{display:block;margin:6px 0;font-size:14px;line-height:1.4;color:var(--ink)}
-.home-service-next strong{font-weight:500}
-.home-service-remaining{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.4}
-.home-service-progress{display:flex;align-items:center;gap:12px;font-size:12px;line-height:1.4}
-.home-service-progress>span{white-space:nowrap}
-.service-track{flex:1;height:9px;min-width:20px;border-radius:9px;background:var(--hairline);overflow:hidden}
-.service-track>span{display:block;height:100%;border-radius:inherit;background:var(--t-accent,var(--blue))}
 .home-inspection-note,.home-cost-notice{display:block;margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--ink)}
 html .secretary-home.secretary-refined .home-service .secretary-vehicle-details{position:static;border:0}
 html .secretary-home.secretary-refined .home-service .secretary-vehicle-details>summary{position:absolute;right:4px;top:1px;min-height:44px;width:44px;padding:0;justify-content:center;font-size:22px}
@@ -305,9 +294,6 @@ html .secretary-home.secretary-refined .secretary-more>summary:after{content:'âŒ
 html .secretary-home.secretary-refined .secretary-hero{display:grid;grid-template-columns:minmax(0,1fr)}
 html .secretary-home.secretary-refined .secretary-hero-media{grid-area:1/1}
 
-html[data-theme=nordic] .secretary-refined .home-service-heading .status-late{color:#b42b2b}
-.service-dot.soon{background:var(--warn)}
-html[data-theme=journey] .secretary-refined .home-service-heading .status-late{color:#ffb3ad}
 .home-voice-feedback{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hairline);border-radius:14px;background:var(--t-surface,var(--paper));color:var(--ink);font-size:13px;line-height:1.5}
 
 /* 2.04: one continuous scene, with the plate layered over its lower edge. */
@@ -320,3 +306,9 @@ html .secretary-home.secretary-refined .secretary-hero-meta{grid-area:1/1;z-inde
 html .secretary-home.secretary-refined .secretary-hero-meta .row-meta{color:#e2eeeb;text-shadow:0 1px 3px #000000}
 html .secretary-home.secretary-refined .secretary-hero-meta .row-meta>span:first-child{color:#ffffff}
 }
+
+/* 2.05: keep the original service renderer visible once, above optional details. */
+.home-service-original{display:block;margin:0;padding:0 32px 0 0;color:inherit;text-decoration:none}
+.home-service-original .row-status{margin:0}
+.home-service-original .row-txt{grid-column:2/-1}
+.home-service-original:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:11px}
