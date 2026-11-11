@@ -1,7 +1,7 @@
 'use strict';
 // On-device cutout. No image or image-derived data leaves this browser.
 (() => {
-  const workerUrl=new URL('car-photo-worker.js?v=ak-126',document.currentScript?.src||document.baseURI);
+  const workerUrl=new URL('car-photo-worker.js?v=ak-127',document.currentScript?.src||document.baseURI);
   let worker=null, next=0, idle=0;
   const pending=new Map();
   function stop(){worker?.terminate();worker=null;}

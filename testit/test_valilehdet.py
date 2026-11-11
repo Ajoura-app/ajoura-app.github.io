@@ -4,7 +4,7 @@ import pytest
 import tiedot
 from apu import KELLO, avaa, avaa_ajoneuvon_tiedot
 
-NIMET = {"fi": ["Koti", "Tankkaus ja lataus", "Raportit", "Valikko"],
+NIMET = {"fi": ["Koti", "Tankkaus ja lataus", "Huolto", "Valikko"],
          "en": ["Home", "Fuel and charging", "Reports", "Menu"],
          "sv": ["Hem", "Tankning och laddning", "Rapporter", "Meny"]}
 
@@ -31,7 +31,7 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
     try:
         avaa_ajoneuvon_tiedot(s.page)
         r = s.page.evaluate("""() => {const n = document.querySelector('.main-tabs'), b = n.getBoundingClientRect(),
-          g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.garage-row .row-wide').getBoundingClientRect(),
+          g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.home-service .row-wide').getBoundingClientRect(),
           cs = getComputedStyle(n), alav = g.bottom - b.bottom, a = getComputedStyle(n.querySelector('a[aria-current]')),
           xs = [...n.querySelectorAll('a svg')].map(v => {const q = v.getBoundingClientRect(); return q.left + q.width / 2});
           return {vasen: b.left - k.left, oikea: b.right - k.right, keski: (b.left + b.right) / 2 - (g.left + g.right) / 2,

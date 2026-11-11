@@ -20,9 +20,9 @@ def test_teemat_erottuvat_myos_pintoina_ja_taustana(browser, base):
             before = s.talli()
             appearance = p.evaluate('''() => {
               const css=s=>getComputedStyle(document.querySelector(s));
-              const hero=css('.secretary-hero-media'),card=css('.secretary-mic');
+              const hero=css('.secretary-hero'),card=css('.home-service');
               return {page:css('#app-screen').backgroundImage,hero:hero.backgroundImage,
-                      card:[card.backgroundColor,card.borderColor,card.borderRadius]};
+                      card:[card.backgroundImage,card.borderColor,card.borderRadius]};
             }''')
             assert appearance['hero'] != 'none', (theme,appearance)
             assert appearance['page'] != 'none', (theme,appearance)
@@ -127,6 +127,7 @@ def test_luettavuus_fokus_ja_suurennettu_teksti(browser, base, theme, lang):
     try:
         p = s.page
         before = s.talli()
+        p.locator('.home-service>.secretary-vehicle-details>summary').click()
         p.locator('.secretary-primary .task-details > summary').click()
         avaa_tehtavat(p)
         rows = p.evaluate(KONTRASTI)

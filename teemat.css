@@ -158,7 +158,7 @@ html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme
 .secretary-cinematic .secretary-hero .row-name strong{font-size:16px}
 .secretary-cinematic .secretary-hero-meta .row-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;position:relative;left:auto;bottom:auto;width:max-content;min-width:140px;max-width:100%;min-height:60px;border:0;border-radius:0 16px 0 0;background:var(--t-home-plate)}
-.secretary-cinematic .secretary-hero-meta .row-meta{font-size:12px}
+.secretary-cinematic .secretary-hero-meta .row-meta{font-size:12px;line-height:1.25}
 .secretary-cinematic .secretary-hero-meta .row-meta>span:first-child{display:block;font-size:23px;font-weight:700;line-height:1.2}
 .secretary-cinematic .secretary-hero-meta .row-meta>span:first-child{color:var(--ink)}
 .secretary-cinematic .secretary-vehicle-details{grid-area:2/1}
@@ -225,3 +225,87 @@ html .vehicle-hero>.car-photo{background-image:var(--t-home-art,none);background
 /* Reserve a separate lane for the plate so it cannot cover an uploaded vehicle. */
 html .secretary-home.secretary-cinematic .secretary-hero-media:has(.car-photo){height:210px;min-height:210px;aspect-ratio:auto}
 html .secretary-home.secretary-cinematic .secretary-hero-media .car-photo{box-sizing:border-box;padding:22px 12px 64px}
+
+/* 2.03: approved home composition: vehicle, service, costs, three actions, assistant. */
+.screen-content:has(>.secretary-refined)>:is(.app-top,.home-heading){display:none}
+html .secretary-home.secretary-refined{position:relative;gap:10px;margin:0;min-width:0}
+html .secretary-home.secretary-refined .cinematic-brand{gap:10px;min-height:44px;font-size:25px}
+html .secretary-home.secretary-refined .cinematic-brand>svg{color:var(--t-accent,var(--blue))}
+html .secretary-home.secretary-refined .secretary-hero{overflow:hidden;border:1px solid var(--hairline);border-radius:20px;background-image:var(--t-home-art,none);background-size:cover;background-position:center}
+html .secretary-home.secretary-refined .secretary-hero-media,html .secretary-home.secretary-refined .secretary-hero-media:has(.car-photo){height:160px;min-height:160px;aspect-ratio:auto;border-radius:19px 19px 0 0;background:none}
+html .secretary-home.secretary-refined .secretary-hero-media :is(.car-photo,.car-stage){box-sizing:border-box;padding:14px 10px 0}
+html .secretary-home.secretary-refined .secretary-hero-meta{grid-area:2/1;align-self:end;justify-self:start;justify-content:flex-start;min-width:126px;min-height:54px;padding:7px 12px;border-radius:0 18px 0 0;border:0;background:var(--t-home-plate,var(--t-surface,var(--paper)));max-width:100%;text-decoration:none}
+html .secretary-home.secretary-refined .secretary-hero-meta .row-name{display:none}
+html .secretary-home.secretary-refined .secretary-hero-meta .row-meta{font-size:12px;line-height:1.25}
+html .secretary-home.secretary-refined .secretary-hero-meta .row-meta>span:first-child{display:block;font-size:23px;line-height:1.2;font-weight:750;color:var(--ink)}
+html .secretary-home.secretary-refined .secretary-vehicle{position:relative}
+.secretary-switch{position:absolute;right:9px;top:9px;z-index:3;display:flex;align-items:center;border:1px solid var(--hairline);border-radius:22px;background:var(--t-bg,var(--paper));max-width:calc(100% - 18px)}
+html .secretary-home.secretary-refined .secretary-picker{position:static;border:0;background:none;border-radius:22px;max-width:100%}
+html .secretary-home.secretary-refined .secretary-picker>summary{padding:5px 9px;min-height:44px;font-size:12px}
+html .secretary-home.secretary-refined .secretary-picker>summary:after{content:none}
+.secretary-switch>button{min-width:44px;min-height:44px;border:0;border-radius:50%;background:none;color:var(--ink);font-size:22px;cursor:pointer}
+.secretary-switch:has(.secretary-picker[open]){left:9px;align-items:flex-start}
+.secretary-switch:has(.secretary-picker[open]) .secretary-picker{flex:1}
+.secretary-switch .secretary-position{margin:0}
+.home-summary{position:relative;min-width:0;padding:13px 15px;border:1px solid var(--hairline);border-radius:19px;background:var(--t-home-notices,var(--t-surface,var(--paper)));color:var(--ink)}
+.home-summary h3{margin:0;font-size:20px;line-height:1.25;font-weight:700}
+.home-service-heading{display:flex;gap:10px;align-items:center;padding-right:32px}
+.service-dot{flex:none;width:13px;height:13px;border-radius:50%;background:var(--t-accent,var(--blue))}
+.service-dot.late{background:var(--alert)}
+.home-service-heading .status-late{color:var(--alert)}
+.home-service-next{display:block;margin:6px 0;font-size:14px;line-height:1.4;color:var(--ink)}
+.home-service-next strong{font-weight:500}
+.home-service-remaining{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.4}
+.home-service-progress{display:flex;align-items:center;gap:12px;font-size:12px;line-height:1.4}
+.home-service-progress>span{white-space:nowrap}
+.service-track{flex:1;height:9px;min-width:20px;border-radius:9px;background:var(--hairline);overflow:hidden}
+.service-track>span{display:block;height:100%;border-radius:inherit;background:var(--t-accent,var(--blue))}
+.home-inspection-note,.home-cost-notice{display:block;margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--ink)}
+html .secretary-home.secretary-refined .home-service .secretary-vehicle-details{position:static;border:0}
+html .secretary-home.secretary-refined .home-service .secretary-vehicle-details>summary{position:absolute;right:4px;top:1px;min-height:44px;width:44px;padding:0;justify-content:center;font-size:22px}
+html .secretary-home.secretary-refined .home-service .secretary-vehicle-detail{padding:12px 0 0}
+html .secretary-home.secretary-refined .secretary-tasks{padding:0;border:0;background:none;border-radius:0}
+.home-cost-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:9px}
+.home-cost-heading>span{color:var(--muted);font-size:11px;text-align:right}
+.home-expenses dl{margin:0;font-size:13px;line-height:1.4}
+.home-expenses dl>div{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;margin-top:6px}
+.home-expenses dt{flex:1;overflow-wrap:anywhere;display:flex;gap:8px;align-items:center;min-width:0}
+.home-expenses dd{flex:none;font-variant-numeric:tabular-nums;font-weight:650;margin:0;text-align:right;white-space:nowrap}
+.home-expenses dt a{min-width:0;overflow-wrap:anywhere}
+.home-expenses a{color:var(--ink);text-decoration:none}
+.home-expenses a:hover{text-decoration:underline}
+.home-expenses dt svg{color:var(--t-accent,var(--blue));width:22px;height:22px}
+.home-expenses .home-cost-total{border-top:1px solid var(--hairline);padding-top:9px;margin-top:9px;font-size:16px;font-weight:650}
+html .secretary-home.secretary-refined .secretary-card{position:relative;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+html .secretary-home.secretary-refined .secretary-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 15px}
+html .secretary-home.secretary-refined .secretary-actions>:is(button,a){flex-direction:column;gap:5px;min-height:62px;padding:7px 4px;font-size:12px;border-radius:17px}
+html .secretary-home.secretary-refined .secretary-actions .secretary-action-icon{width:24px;height:24px}
+html .secretary-home.secretary-refined .secretary-intro{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:10px}
+html .secretary-home.secretary-refined .secretary-mic{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:76px;border:0;padding:0 0 14px;background:none;box-shadow:none;border-radius:50%;color:var(--ink)}
+html .secretary-home.secretary-refined .secretary-mic .assistant-avatar{width:64px!important;height:64px!important;margin:0!important}
+.home-mic-badge{position:absolute;right:2px;top:43px;display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--hairline);border-radius:50%;background:var(--t-accent,var(--blue));color:var(--t-on-accent,var(--paper))}
+.home-mic-badge svg{width:16px;height:16px}
+.home-mic-label{position:absolute;bottom:0;left:0;right:0;font-size:11px;line-height:1.2;text-align:center;white-space:nowrap}
+html .secretary-home.secretary-refined .secretary-copy{padding:10px 12px;border:1px solid var(--t-home-bubble-border,var(--hairline));border-radius:18px;background:var(--t-home-bubble,var(--t-surface,var(--paper)));box-shadow:none}
+html .secretary-home.secretary-refined .secretary-copy h3{margin:0;font-size:14px;color:var(--t-accent,var(--blue))}
+html .secretary-home.secretary-refined .secretary-copy h3:after{content:none}
+html .secretary-home.secretary-refined .secretary-message{font-size:13px;line-height:1.4;margin:3px 0 0}
+html .secretary-home.secretary-refined .secretary-more{position:static;width:auto;max-width:100%;margin:3px 0 0;padding:0;border:0;background:none}
+html .secretary-home.secretary-refined .secretary-more>summary{font-size:11px;min-height:44px;padding:3px 0;justify-content:flex-end;gap:8px}
+html .secretary-home.secretary-refined .secretary-more>summary:after{content:'⌄';font-size:16px}
+#app-screen:has(.secretary-refined)>.tab-dock{display:block;padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
+#app-screen:has(.secretary-refined)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
+#app-screen:has(.secretary-refined)>.tab-dock>.main-tabs{width:100%;zoom:1}
+#app-screen:has(.secretary-refined) .main-tabs a{display:flex;flex-direction:column;gap:3px;min-height:53px}
+#app-screen:has(.secretary-refined) .main-tabs a:after{content:attr(aria-label);font-size:11px;line-height:1.2;overflow-wrap:anywhere;text-align:center}
+@media(max-height:760px){html .secretary-home.secretary-refined .secretary-hero-media,html .secretary-home.secretary-refined .secretary-hero-media:has(.car-photo){height:140px;min-height:140px}}
+@media(min-width:600px){html .secretary-home.secretary-refined{max-width:620px;margin-inline:auto}}
+@media print{.home-summary,.secretary-card{display:none}}
+
+html .secretary-home.secretary-refined .secretary-hero{display:grid;grid-template-columns:minmax(0,1fr)}
+html .secretary-home.secretary-refined .secretary-hero-media{grid-area:1/1}
+
+html[data-theme=nordic] .secretary-refined .home-service-heading .status-late{color:#b42b2b}
+.service-dot.soon{background:var(--warn)}
+html[data-theme=journey] .secretary-refined .home-service-heading .status-late{color:#ffb3ad}
+.home-voice-feedback{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hairline);border-radius:14px;background:var(--t-surface,var(--paper));color:var(--ink);font-size:13px;line-height:1.5}
