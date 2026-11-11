@@ -6,6 +6,12 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
+## Valmisteltu versio 2.05 (ei julkaistu)
+
+11.11.2026: poistettu etusivun päällekkäinen huoltoyhteenveto. Alkuperäinen huoltonäkymä (tila, seuraava huolto, jäljellä oleva aika tai ajomäärä ja alkuperäinen värillinen palkki) näkyy heti ajoneuvon alla. Sama tieto ei toistu lisätietoja avattaessa. Nuolesta avautuvat edelleen huoltohistorian linkki, huomiot ja tehtävien valinnat. Huoltokortin alkuperäinen yhteenveto avaa ajoneuvon huoltohistorian. Laskenta ja käyttäjätiedot säilyvät ennallaan. Sisältää myös valmistellun 2.04:n ajoneuvokortin sommittelun. Versionäyttö 2.05, välimuisti ak-129 / ajoura-pwa-179.
+
+Varmennus: 35 kohdennettua testiä läpäisi (9 alkuperäisen huoltonäkymän tilaa/teemaa, 23 etusivun arvoja ja toimintoja, 3 etusivun kontrastia ja offline-tunnuksia). Uusi testi havaitsee virheen edellisessä toteutuksessa. Ennen/jälkeen-kuvat 320/390/430 px, Garage ja Sininen ajoura; avattu kortti tarkistettu erikseen kuvasta. JavaScriptin syntaksi ja git diff --check kunnossa. Koko julkaisusarjaa ei ajettu. Fyysisellä iPhonella tarkistettava kortin luettavuus, lisätietonuoli ja huoltohistoria.
+
 ## Valmisteltu versio 2.04 (ei julkaistu)
 
 11.11.2026: ajoneuvokortin kuva ja rekisteritiedot samassa yhtenäisessä sommittelussa. Ajoneuvolle varataan suurempi kuva-alue ilman venytystä tai rajautumista. Rekisteritunnus ja mittarilukema ovat kuvan alareunan päällä tummennetulla taustalla. Olemassa oleva autotallitausta toimii myös niissä ulkoasuissa, joilla ei ole omaa tilataustaa, kuten Sininen ajoura. Teemojen omat taustakuvat säilyvät. Kuvankäsittely, ajoneuvon valinta ja tallennetut tiedot säilyvät ennallaan. Versionäyttö 2.04, välimuisti ak-128 / ajoura-pwa-178.
