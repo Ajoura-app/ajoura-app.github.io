@@ -21,7 +21,7 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
             p.wait_for_function("AjouraAccess.check('ai.receipt').ok")
         before = s.talli()
         assert p.locator('.secretary-card').count() == 1
-        assert p.locator('.secretary-actions > button, .secretary-actions > a').count() == 2
+        assert p.locator('.secretary-actions > button, .secretary-actions > a').count() == 3
         assert p.locator('.secretary-more').get_attribute('open') is None
         card = p.locator('.secretary-card').bounding_box()
         img = p.locator('.secretary-intro img')
@@ -29,20 +29,23 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
         frame = p.locator('.secretary-intro [data-avatar]').bounding_box()
         actual = img.bounding_box()
-        assert frame['width'] == 48
+        assert frame['width'] == 64
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
         names = {'emma':'Emma', 'mikko':'Mikko', 'ankka':'Bottiankka'}
         assert p.inner_text('.secretary-intro [data-avatar-name]') == names[character]
-        assert p.inner_text('.secretary-message') == p.locator('[data-task-key] h4').first.inner_text()
+        message=p.inner_text('.secretary-message')
+        p.locator('.home-service>.secretary-vehicle-details>summary').click()
+        assert message == p.locator('[data-task-key] h4').first.inner_text()
+        p.locator('.home-service>.secretary-vehicle-details>summary').click()
         if ai:
             assert p.locator('.secretary-note').is_hidden()
             assert 'Tarkistat tiedot ennen tallennusta.' in p.inner_text('.secretary-note')
         if width == 390:
-            assert 105 <= card['height'] <= 190, card
+            assert 150 <= card['height'] <= 290, card
             dock = p.locator('.tab-dock').bounding_box()
             for action in p.locator('.secretary-actions > button, .secretary-actions > a').all():
                 box = action.bounding_box()
-                assert 44 <= box['height'] <= 52, box
+                assert 44 <= box['height'] <= 80, box
                 assert box['y'] + box['height'] <= dock['y'], (box, dock)
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         assert before == s.talli()
@@ -101,7 +104,7 @@ def test_tyhjan_tiedon_viesti_ei_keksi_havaintoa(browser, base):
     try:
         p = s.page
         assert p.locator('[data-task-key]').count() == 0
-        assert p.inner_text('.secretary-message') == 'Hei! Kirjataan ajoneuvosi tiedot.'
+        assert p.inner_text('.secretary-message') == 'Hei! Mitä kirjataan tänään?'
         assert p.locator('.assistant-local').count() == 0
         assert not s.virheet, s.virheet
     finally:

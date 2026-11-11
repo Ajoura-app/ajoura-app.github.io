@@ -13,9 +13,11 @@ def test_cinematic_rakenne_ja_sailyvat_polut(browser,base,width,height,lang,them
     try:
         p=s.page;before=s.talli()
         assert p.locator('.secretary-cinematic').count()==1
-        assert p.locator('.secretary-intro .assistant-avatar').bounding_box()['width']==48
+        assert p.locator('.secretary-intro .assistant-avatar').bounding_box()['width']==64
         assert p.locator('.car-photo img').get_attribute('src')==cars[0]['photo']
         assert p.locator('.car-photo img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
+        if not p.locator('.home-service>.secretary-vehicle-details').evaluate('(e)=>e.open'):
+            p.locator('.home-service>.secretary-vehicle-details>summary').click()
         assert p.locator('.cinematic-task').count()==2
         assert p.locator('.cinematic-task').first.is_visible()
         p.locator('.cinematic-task>summary').first.click()

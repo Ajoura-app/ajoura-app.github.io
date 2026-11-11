@@ -132,6 +132,7 @@ def avaa_ajoneuvovalitsin(page):
 
 def avaa_tehtavat(page):
     """Avaa etusivun muut tehtävät ja laitekohtaiset valinnat käyttäjän tavoin."""
+    avaa_ajoneuvon_tiedot(page)
     panel = page.locator('.secretary-all-tasks')
     if panel.count() and panel.get_attribute('open') is None:
         panel.locator(':scope > summary').click()
