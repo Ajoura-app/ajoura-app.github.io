@@ -14,14 +14,14 @@ def test_yhtenainen_ajoneuvokuva(browser, base, theme, leveys):
     try:
         p = s.page
         before = s.talli()
-        hero = p.locator('.secretary-hero')
-        media = p.locator('.secretary-hero-media')
-        plate = p.locator('.secretary-hero-meta')
+        hero = p.locator('.vehicle-home-card').first.locator('.secretary-hero')
+        media = p.locator('.vehicle-home-card').first.locator('.secretary-hero-media')
+        plate = p.locator('.vehicle-home-card').first.locator('.secretary-hero-meta')
         h, m, a = hero.bounding_box(), media.bounding_box(), plate.bounding_box()
         assert 'ui-art/' in hero.evaluate('(e)=>getComputedStyle(e).backgroundImage')
         assert abs(h['height'] - m['height']) < 4, 'Plate must not create a separate row'
         assert a['y'] >= m['y'] and a['y'] + a['height'] <= m['y'] + m['height'] + 1
-        image = p.locator('.secretary-hero-media img')
+        image = p.locator('.vehicle-home-card').first.locator('.secretary-hero-media img')
         assert image.evaluate('(e)=>getComputedStyle(e).objectFit') == 'contain'
         assert image.bounding_box()['height'] >= 140
         assert p.evaluate('document.documentElement.scrollWidth<=innerWidth')

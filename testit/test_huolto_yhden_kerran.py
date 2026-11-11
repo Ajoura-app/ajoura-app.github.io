@@ -17,7 +17,8 @@ def test_alkuperainen_huoltonakyma_vain_kerran(browser, base, state, theme):
     try:
         p = s.page
         before = s.talli()
-        card = p.locator('.home-service')
+        p.locator('[data-vehicle-toggle]').first.click()
+        card = p.locator('.vehicle-home-card').first.locator('.home-service')
         original = card.locator('.home-service-original .row-status')
         assert original.is_visible()
         assert card.locator('.home-service-heading,.home-service-progress').count() == 0

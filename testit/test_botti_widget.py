@@ -82,7 +82,7 @@ def test_widget_seuraa_ajoneuvoa_ja_tyhja_talli(browser,base):
     try:
         p=s.page
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst1'
-        p.locator('[data-secretary-next]').click()
+        p.locator('[data-vehicle-toggle]').nth(1).click()
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst2'
         p.locator('.main-tabs a[aria-label="Huolto"]').click()
         p.wait_for_function('location.hash==="#vehicle/tst2"')
