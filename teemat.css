@@ -312,3 +312,20 @@ html .secretary-home.secretary-refined .secretary-hero-meta .row-meta>span:first
 .home-service-original .row-status{margin:0}
 .home-service-original .row-txt{grid-column:2/-1}
 .home-service-original:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:11px}
+
+/* 2.06: draggable assistant shares the sticky navigation layer. */
+@media screen{
+.tab-dock:has(>.assistant-widget)>.avatar-shortcut{display:none!important}
+#app-screen>.tab-dock:has(>.assistant-widget){padding-top:6px}
+.tab-dock:has(>.assistant-widget)>.tab-fab{left:12px;right:auto;bottom:calc(100% + 8px)}
+.assistant-widget{position:absolute;left:0;top:0;width:76px;height:84px;z-index:6;pointer-events:auto}
+.assistant-widget .secretary-mic{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:76px;height:84px;min-width:0;min-height:0;padding:0 0 16px;border:0;border-radius:36px;background:var(--t-bg,var(--paper));color:var(--ink);box-shadow:0 3px 14px #00000033;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.assistant-widget.is-dragging .secretary-mic{cursor:grabbing}
+.assistant-widget .secretary-mic .assistant-avatar{width:64px!important;height:64px!important;margin:0!important}
+.assistant-widget img{-webkit-user-drag:none}
+.assistant-widget .secretary-mic:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.assistant-widget .home-voice-feedback{position:absolute;box-sizing:border-box;max-height:180px;overflow:auto;margin:0;box-shadow:0 3px 14px #00000033}
+html .secretary-home.secretary-refined .secretary-intro{grid-template-columns:minmax(0,1fr)}
+#app-screen:has(>.tab-dock>.assistant-widget)>.screen-content{padding-bottom:110px}
+}
+@media print{.assistant-widget{display:none}}

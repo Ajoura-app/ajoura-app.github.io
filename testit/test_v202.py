@@ -26,7 +26,7 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
     s=avaa(browser,base,'home',autot=cars,leveys=width,kello=KELLO,extra={'ajoura-ulkoasu':theme})
     try:
         p=s.page
-        assert p.locator('.secretary-intro .assistant-avatar').bounding_box()['width']==64
+        assert p.locator('.assistant-widget .assistant-avatar').bounding_box()['width']==64
         assert p.locator('[data-home-mic]').is_visible()
         image=p.locator('.secretary-hero-media .car-photo img').bounding_box()
         plate=p.locator('.secretary-hero-meta').bounding_box()

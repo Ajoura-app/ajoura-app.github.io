@@ -13,7 +13,7 @@ def test_cinematic_rakenne_ja_sailyvat_polut(browser,base,width,height,lang,them
     try:
         p=s.page;before=s.talli()
         assert p.locator('.secretary-cinematic').count()==1
-        assert p.locator('.secretary-intro .assistant-avatar').bounding_box()['width']==64
+        assert p.locator('.assistant-widget .assistant-avatar').bounding_box()['width']==64
         assert p.locator('.car-photo img').get_attribute('src')==cars[0]['photo']
         assert p.locator('.car-photo img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
         if not p.locator('.home-service>.secretary-vehicle-details').evaluate('(e)=>e.open'):
@@ -52,7 +52,7 @@ def test_hahmon_nimi_ja_puhepainike_kaksinkertaisella_tekstilla(browser,base,cha
         before=s.talli()
         p.evaluate('''()=>{const w=document.createTreeWalker(document.querySelector('.secretary-home'),NodeFilter.SHOW_TEXT),set=new Set();let n;while(n=w.nextNode()){const e=n.parentElement;if(n.textContent.trim()&&e.checkVisibility()&&!e.closest('svg,.sr-only,.row-name'))set.add(e)}const es=[...set],sizes=es.map(e=>parseFloat(getComputedStyle(e).fontSize));es.forEach((e,i)=>e.style.fontSize=sizes[i]*2+'px')}''')
         p.add_style_tag(content='.secretary-cinematic~.main-tabs a:after,html .main-tabs a:after{font-size:22px!important}')
-        assert p.locator('.secretary-intro img').get_attribute('src')==f'hahmot/{character}.webp'
+        assert p.locator('.assistant-widget img').get_attribute('src')==f'hahmot/{character}.webp'
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         assert p.locator('.secretary-copy').evaluate('(e)=>e.scrollWidth<=e.clientWidth')
         assert before==s.talli()

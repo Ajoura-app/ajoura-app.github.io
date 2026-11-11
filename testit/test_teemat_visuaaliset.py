@@ -51,7 +51,7 @@ def test_taide_ei_peita_ajoneuvoa_tai_paatoimintoja(browser, base, theme, width,
         for pseudo in ['::before','::after']:
             assert media.evaluate('(e,p)=>getComputedStyle(e,p).pointerEvents',pseudo) == 'none'
         assert p.locator('.secretary-hero-media :is(svg,img)').first.evaluate('(e)=>getComputedStyle(e).objectFit') == 'contain'
-        assert p.locator('.secretary-intro img').get_attribute('src') == 'hahmot/emma.webp'
+        assert p.locator('.assistant-widget img').get_attribute('src') == 'hahmot/emma.webp'
         if width == 390:
             dock = p.locator('.tab-dock').bounding_box()
             for action in p.locator('.secretary-actions > button,.secretary-actions > a').all():

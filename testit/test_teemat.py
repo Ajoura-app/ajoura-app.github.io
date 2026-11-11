@@ -265,7 +265,7 @@ def test_ai_first_vaihto_pysyvyys_ja_hahmo(browser, base, teema):
         assert s.talli()==before
         p.goto(base+'/app.html#home')
         p.wait_for_selector('.secretary-card')
-        assert p.get_attribute('.secretary-intro img','src')=='hahmot/emma.webp'
+        assert p.get_attribute('.assistant-widget img','src')=='hahmot/emma.webp'
         p.reload();p.wait_for_selector('.secretary-card')
         assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")==teema
         assert s.talli()==before
@@ -327,7 +327,7 @@ def test_ai_first_teemat_offline(browser):
             for suffix in ['', '-pieni']:
                 assert k.hae(f'teemakuvat/{theme}{suffix}.webp')[0]
             k.avaa('home')
-            assert k.page.get_attribute('.secretary-intro img','src')=='hahmot/emma.webp'
+            assert k.page.get_attribute('.assistant-widget img','src')=='hahmot/emma.webp'
             assert k.talli()==before
         assert not k.virheet,k.virheet
     finally:

@@ -24,10 +24,10 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert p.locator('.secretary-actions > button, .secretary-actions > a').count() == 3
         assert p.locator('.secretary-more').get_attribute('open') is None
         card = p.locator('.secretary-card').bounding_box()
-        img = p.locator('.secretary-intro img')
+        img = p.locator('.assistant-widget img')
         assert img.get_attribute('src') == f'hahmot/{character}.webp'
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
-        frame = p.locator('.secretary-intro [data-avatar]').bounding_box()
+        frame = p.locator('.assistant-widget [data-avatar]').bounding_box()
         actual = img.bounding_box()
         assert frame['width'] == 64
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
