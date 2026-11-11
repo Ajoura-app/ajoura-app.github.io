@@ -6,6 +6,12 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
+## Valmisteltu versio 2.04 (ei julkaistu)
+
+11.11.2026: ajoneuvokortin kuva ja rekisteritiedot samassa yhtenäisessä sommittelussa. Ajoneuvolle varataan suurempi kuva-alue ilman venytystä tai rajautumista. Rekisteritunnus ja mittarilukema ovat kuvan alareunan päällä tummennetulla taustalla. Olemassa oleva autotallitausta toimii myös niissä ulkoasuissa, joilla ei ole omaa tilataustaa, kuten Sininen ajoura. Teemojen omat taustakuvat säilyvät. Kuvankäsittely, ajoneuvon valinta ja tallennetut tiedot säilyvät ennallaan. Versionäyttö 2.04, välimuisti ak-128 / ajoura-pwa-178.
+
+Mobiilin ennen/jälkeen-kuvat: 320, 390 ja 430 px, Garage ja Sininen ajoura. Kohdennettu selainvarmennus kattaa kuvan kokonaisena näyttämisen, yhtenäisen kortin, rekisterilinkin ja tietojen säilymisen. Uusi sommittelutesti tarkistetaan myös vanhaa toteutusta vastaan. Lopullinen kohdennettu ajo: 36 läpäistyä (9 sommittelu, 24 nykyiset kuvat ja ajoneuvon vaihto, 3 etusivun kontrasti ja offline-tunnukset). JavaScriptin syntaksi ja git diff --check kunnossa. Koko julkaisusarjaa ei ajettu. Fyysisen iPhonen tarkistus jää käyttäjälle, ja tuotantojulkaisu odottaa erillistä hyväksyntää.
+
 ## Julkaistu versio 2.03
 
 11.11.2026: käyttäjän hyväksymän havainnekuvan mukainen etusivun hienosäätö. Ajoneuvon kuva näkyy kokonaisena teeman taustalla ja rekisteritunnus sekä mittarilukema omalla rivillään. Ajoneuvon valinta toimii nuolesta, luettelosta ja sivuttaispyyhkäisyllä. Huoltotilanne, seuraava huolto, jäljellä olevat päivät/kilometrit ja todellinen huoltovälin prosentti näkyvät omassa kortissaan; puuttuvasta historiasta ei muodosteta laskennallista prosenttia. Katsastushuomio säilyy erillisenä, ja aiemmat tehtävät löytyvät huollon avattavista lisätiedoista.
