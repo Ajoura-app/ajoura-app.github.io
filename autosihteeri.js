@@ -1,20 +1,15 @@
 'use strict';
 // Presentation only: selected vehicle stays in memory. All writes use the existing app forms.
 (() => {
-  let selected = '', ids = [], start = null, voiceNotice = '';
+  let selected = '', ids = [], voiceNotice = '';
+  const expandedVehicles=new Set();
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const isCinematic = () => ['garage','copilot','nordic','journey'].includes(document.documentElement.dataset.theme);
   const t = s => window.AjouraI18n ? window.AjouraI18n.t(s) : s;
-  function renderVehiclePicker(c,cars) {
-    if(cars.length<2)return '';
-    return `<div class="secretary-switch"><details class="secretary-picker"><summary data-secretary-picker><span class="sr-only">${esc(t('Valitse ajoneuvo'))}</span><span class="secretary-position">${cars.indexOf(c)+1} / ${cars.length}</span></summary>
-      <div class="secretary-selector" role="group" aria-label="${esc(t('Valitse ajoneuvo'))}">${cars.map(x=>`<button type="button" data-secretary-car="${esc(x.id)}" aria-pressed="${x.id===c.id}">${esc(x.nick||x.name)}</button>`).join('')}</div>
-      <a class="secretary-order text-link" href="#car-order">${esc(t('Järjestä ajoneuvot'))}</a></details><button type="button" data-secretary-next aria-label="Seuraava ajoneuvo">→</button></div>`;
-  }
   function renderVehicleHero(c,view) {
     // Only markup from app.js renderers is inserted as HTML; vehicle text is escaped here.
     return `<article class="garage-row secretary-hero" data-car="${esc(c.id)}">
-      <div class="secretary-hero-media">${view.image}</div>
+      <button type="button" class="secretary-hero-media vehicle-toggle" data-vehicle-toggle="${esc(c.id)}" aria-expanded="${expandedVehicles.has(c.id)}" aria-controls="vehicle-panels-${esc(c.id)}" aria-label="${esc(view.name)}">${view.image}<span class="vehicle-toggle-indicator" aria-hidden="true">⌄</span></button>
       <a class="row-info secretary-hero-meta" href="#vehicle/${esc(c.id)}"><span class="row-name"><strong>${esc(view.name)}</strong></span><small class="row-meta"><span>${esc(view.plate)}</span> <span class="nw">${esc(view.meter)}</span></small></a>
     </article>`;
   }
@@ -39,12 +34,13 @@
     service:'<path d="M14 6a6 6 0 0 0-7 7l-5 5 4 4 5-5a6 6 0 0 0 7-7l-4 4-4-4z"/>'
   };
   const actionIcon=mode=>`<svg class="secretary-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${actionPaths[mode]}</svg>`;
-  function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local,view}) {
+  function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local,view,actionsOnly=false,hideActions=false}) {
     const action=(label,mode,aria=label,icon=false)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(aria))}">${icon?actionIcon(typeof icon==='string'?icon:mode):''}<span>${esc(t(label))}</span></button>`;
     const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(view.tone==='ok'?'Hei! Autosi huolto on kunnossa. Mitä kirjataan?':'Hei! Mitä kirjataan tänään?');
     const fuelLabel=c.fuel==='Sähkö'?'Lataus +':'Tankkaus +';
     const primary=`${action(fuelLabel,'manual',fuelLabel+', kirjaa käsin','fuel')}<a href="#add/${esc(c.id)}" data-secretary-service aria-label="Huolto +, kirjaa huolto käsin">${actionIcon('service')}<span>Huolto +</span></a><a href="#notes/${esc(c.id)}" data-secretary-note>${actionIcon('note')}<span>Muistiinpano +</span></a>`;
-    return `<section class="secretary-card"><div class="secretary-actions">${primary}</div><div class="secretary-intro"><div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
+    if(actionsOnly)return `<div class="secretary-actions">${primary}</div>`;
+    return `<section class="secretary-card">${hideActions?'':`<div class="secretary-actions">${primary}</div>`}<div class="secretary-intro"><div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
       <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div></div>
       ${window.AjouraAvatar.feedback()}
       <details class="secretary-more"${moreOpen?' open':''}><summary>${esc(t('Lisää vaihtoehtoja'))}</summary><div class="secretary-support">${available?`${action('Kirjoita tankkauksen tiedot','text')}${action('Kuvaa kuitti','photo')}`:''}<button type="button" data-tutorial>${esc(t('Näytä kirjausohje'))}</button></div>${local}</details>
@@ -154,13 +150,8 @@
   }
   function renderTasks(c,tasks,coverage,open) {
     const cinematic=isCinematic(), featured=cinematic?2:1;
-    return `<section class="secretary-tasks" aria-labelledby="secretary-tasks-title"><h3 id="secretary-tasks-title" class="${cinematic?'':'sr-only'}">${esc(t(cinematic?'Huomiot':'Tämän ajoneuvon tehtävät'))}</h3>${tasks.length?tasks.slice(0,featured).map((x,i)=>renderTask(x,i===0)).join(''):`<p class="task-empty" tabindex="-1" data-task-focus>${esc(t('Ei avoimia tehtäviä näiden tietojen perusteella.'))}</p>`}
+    return `<section class="secretary-tasks" aria-labelledby="secretary-tasks-${esc(c.id)}"><h3 id="secretary-tasks-${esc(c.id)}" class="${cinematic?'':'sr-only'}">${esc(t(cinematic?'Huomiot':'Tämän ajoneuvon tehtävät'))}</h3>${tasks.length?tasks.slice(0,featured).map((x,i)=>renderTask(x,i===0)).join(''):`<p class="task-empty" tabindex="-1" data-task-focus>${esc(t('Ei avoimia tehtäviä näiden tietojen perusteella.'))}</p>`}
       <details class="secretary-all-tasks" data-task-car="${esc(c.id)}"${open?' open':''}><summary><span>${esc(t(tasks.length?'Näytä kaikki tehtävät':'Tehtävien valinnat'))}</span>${tasks.length?`<span class="task-count">${tasks.length}</span>`:''}</summary><div class="secretary-task-list">${tasks.slice(featured).map(x=>renderTask(x)).join('')}</div><p class="task-help">${esc(t('Myöhemmin piilottaa tehtävän vuorokaudeksi. Ohitukset koskevat vain tätä laitetta.'))}</p><button type="button" class="task-reset" data-task-reset="${esc(c.id)}">${esc(t('Näytä siirretyt ja ohitetut tehtävät'))}</button>${coverage.total?`<p class="task-coverage">${coverage.complete}/${coverage.total} ${esc(t('viime tankkauksesta sisältää mittarilukeman'))}</p>`:''}</details></section>`;
-  }
-  function choose(id) {
-    if (!ids.includes(id)) return;
-    selected = id;voiceNotice='';
-    window.AjouraApp.refresh();
   }
   document.addEventListener('click', e => {
     const mic=e.target.closest('[data-home-mic]');if(mic){const access=window.AjouraAccess?.check('ai.receipt'),available=access?.ok,supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition),feedback=document.querySelector('.home-voice-feedback');
@@ -173,47 +164,43 @@
       else window.AjouraTasks.decide(decision.dataset.taskLater||decision.dataset.taskDismiss,decision.dataset.taskLater?'later':'dismiss');
       window.AjouraApp.refresh();document.querySelector('[data-task-focus]')?.focus({preventScroll:true});return;
     }
-    if(e.target.closest('[data-secretary-next]')){choose(ids[(ids.indexOf(selected)+1)%ids.length]);document.querySelector('[data-secretary-next]')?.focus({preventScroll:true});return;}
-    const b = e.target.closest('[data-secretary-car]');
-    if (b) { choose(b.dataset.secretaryCar); document.querySelector('[data-secretary-picker]')?.focus({preventScroll:true}); }
   });
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape')return;
     const panel=e.target.closest?.('.secretary-picker[open],.secretary-more[open],.task-details[open],.secretary-all-tasks[open]');
     if(panel?.open){e.preventDefault();panel.open=false;panel.querySelector('summary').focus({preventScroll:true});}
   });
-  document.addEventListener('touchstart', e => {
-    start = e.target.closest('.secretary-vehicle') && !e.target.closest('button,a,input,select,textarea,summary') && e.touches.length === 1
-      ? {x:e.touches[0].clientX,y:e.touches[0].clientY} : null;
-  }, {passive:true});
-  document.addEventListener('touchend', e => {
-    if (!start) return;
-    const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y; start=null;
-    if (Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5) {
-      const i=ids.indexOf(selected), next=i+(dx<0?1:-1);
-      if (ids[next]) choose(ids[next]);
-    }
-  }, {passive:true});
-  document.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+  document.addEventListener('click',e=>{
+    const card=e.target.closest('.vehicle-home-card');if(card)selected=card.dataset.car;
+    const button=e.target.closest('[data-vehicle-toggle]');if(!button)return;
+    const id=button.dataset.vehicleToggle;
+    if(expandedVehicles.has(id))expandedVehicles.delete(id);else expandedVehicles.add(id);
+    window.AjouraApp.refresh();
+    [...document.querySelectorAll('[data-vehicle-toggle]')].find(b=>b.dataset.vehicleToggle===id)?.focus({preventScroll:true});
+  },true);
   window.AjouraSecretary = {
     widget, mountWidget,
     selected:()=>selected,
     render({cars, card, vehicle, dates, insights, today, ai, speech, unit}) {
       ids=cars.map(c=>c.id);
       if (!ids.includes(selected)) selected=ids[0];
-      const c=cars.find(c=>c.id===selected);
-      const tasks=window.AjouraTasks.observe(c,dates(c),today,insights(c));
-      const coverage=window.AjouraTasks.coverage(c);
       const access=window.AjouraAccess?.check('ai.receipt');
-      const moreOpen=!!document.querySelector('.secretary-more')?.open;
-      const previousTasks=document.querySelector('.secretary-all-tasks');
-      const tasksOpen=previousTasks?.dataset.taskCar===c.id&&previousTasks.open;
-      const local=window.AjouraAssistant?.card(c)||'',view=vehicle(c);
+      const cards=cars.map(c=>{
+        const tasks=window.AjouraTasks.observe(c,dates(c),today,insights(c));
+        const coverage=window.AjouraTasks.coverage(c),view=vehicle(c);
+        const old=[...document.querySelectorAll('.vehicle-home-card')].find(el=>el.dataset.car===c.id);
+        const options={available:!!(ai&&access?.ok),quotaBlocked:!!(ai&&access?.reason==='quota'),speech,tasks,moreOpen:!!old?.querySelector('.secretary-more')?.open,local:window.AjouraAssistant?.card(c)||'',view};
+        return `<article class="vehicle-home-card" data-car="${esc(c.id)}">
+          <div class="secretary-vehicle">${renderVehicleHero(c,view)}</div>
+          <p class="vehicle-glance status-${esc(view.tone)}">${esc(view.statusLabel)}${tasks.some(x=>x.kind==='Katsastus')?' · Katsastuksen määräpäivä tarkistettava.':''}</p>
+          ${renderAssistant(c,{...options,actionsOnly:true})}
+          <div class="vehicle-panels" id="vehicle-panels-${esc(c.id)}"${expandedVehicles.has(c.id)?'':' hidden'}>
+            ${renderService(c,view,tasks,coverage)}${renderExpenses(c,view,tasks)}${renderAssistant(c,{...options,hideActions:true})}
+          </div></article>`;
+      }).join('');
       return `<section class="secretary-home${isCinematic()?' secretary-cinematic':''} secretary-refined" aria-label="${esc(t('Autosihteeri'))}">
         <header class="cinematic-brand"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 25 14 7q2-4 4 0l9 18q1 2-2 2h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="cinematic-brand-name">Ajoura</span><a href="#newcar" aria-label="${esc(t('Lisää ajoneuvo'))}">+</a><a href="#me/tili" aria-label="Profiili ja tili"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3z"/></svg></a></header>
-        <div class="secretary-vehicle">${renderVehiclePicker(c,cars)}${renderVehicleHero(c,view)}</div>
-        ${renderService(c,view,tasks,coverage)}${renderExpenses(c,view,tasks)}
-        ${renderAssistant(c,{available:!!(ai&&access?.ok),quotaBlocked:!!(ai&&access?.reason==='quota'),speech,tasks,moreOpen,local,view})}
+        ${cards}
       </section>`;
     }
   };

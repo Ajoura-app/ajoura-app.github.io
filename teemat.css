@@ -329,3 +329,16 @@ html .secretary-home.secretary-refined .secretary-intro{grid-template-columns:mi
 #app-screen:has(>.tab-dock>.assistant-widget)>.screen-content{padding-bottom:110px}
 }
 @media print{.assistant-widget{display:none}}
+
+/* 2.07: all vehicles on home; details open from each image. */
+.vehicle-home-card,.vehicle-panels{display:grid;gap:10px;min-width:0}
+.vehicle-home-card+.vehicle-home-card{margin-top:12px;padding-top:18px;border-top:1px solid var(--hairline)}
+.vehicle-panels[hidden]{display:none}
+html .secretary-home.secretary-refined .vehicle-toggle{display:block;width:100%;padding:0;border:0;cursor:pointer;color:inherit;font:inherit;text-align:inherit}
+.vehicle-toggle:focus-visible{outline:3px solid var(--blue);outline-offset:-4px}
+.vehicle-glance{margin:0;padding:0 6px;font-size:14px;font-weight:650;color:var(--ink)}
+.vehicle-glance.status-late{color:var(--alert)}
+.vehicle-home-card>.secretary-actions{margin-bottom:0!important}
+
+.vehicle-toggle-indicator{position:absolute;right:10px;top:10px;z-index:2;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--hairline);border-radius:50%;background:var(--t-bg,var(--paper));font-size:24px}
+.vehicle-toggle[aria-expanded=true] .vehicle-toggle-indicator{transform:rotate(180deg)}
