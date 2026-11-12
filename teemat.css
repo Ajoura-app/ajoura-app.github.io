@@ -198,7 +198,7 @@ html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>.tab-bar.main-tabs{width:100%;border-radius:20px}
 html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a{display:flex;flex-direction:column;gap:4px;min-height:56px;border-radius:14px}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a:after{content:attr(aria-label);font-size:11px;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a:after{content:none}
 @media(max-width:350px){html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-intro>.assistant-avatar{width:116px;height:116px}.secretary-cinematic .secretary-copy{padding:10px}.secretary-cinematic .secretary-message{font-size:15px}}
 }
 /* Keep the same labelled dock layout while the existing mobile typing rule hides it. */
@@ -286,7 +286,7 @@ html .secretary-home.secretary-refined .secretary-more>summary:after{content:'âŒ
 #app-screen:has(.secretary-refined)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
 #app-screen:has(.secretary-refined)>.tab-dock>.main-tabs{width:100%;zoom:1}
 #app-screen:has(.secretary-refined) .main-tabs a{display:flex;flex-direction:column;gap:3px;min-height:53px}
-#app-screen:has(.secretary-refined) .main-tabs a:after{content:attr(aria-label);font-size:11px;line-height:1.2;overflow-wrap:anywhere;text-align:center}
+#app-screen:has(.secretary-refined) .main-tabs a:after{content:none}
 @media(max-height:760px){html .secretary-home.secretary-refined .secretary-hero-media,html .secretary-home.secretary-refined .secretary-hero-media:has(.car-photo){height:140px;min-height:140px}}
 @media(min-width:600px){html .secretary-home.secretary-refined{max-width:620px;margin-inline:auto}}
 @media print{.home-summary,.secretary-card{display:none}}
@@ -346,3 +346,22 @@ html .secretary-home.secretary-refined .vehicle-toggle{display:block;width:100%;
 .home-order{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;margin-top:8px}
 
 .tab-dock:has(>.assistant-widget)>.fab-menu{left:12px;right:auto;bottom:calc(100% + 72px)}
+
+/* 2.09: floating capsule, icon shortcuts in one shared panel, and beige studio. */
+@media screen{
+html #app-screen>.tab-dock,html #app-screen:has(.secretary-home)>.tab-dock{background:none}
+html #app-screen .main-tabs a:after,html #app-screen:has(.secretary-refined) .main-tabs a:after{content:none}
+html #app-screen:has(.secretary-refined) .main-tabs a{min-height:48px}
+.assistant-widget{height:72px}
+.assistant-widget .secretary-mic{height:72px;padding:0;background:none;box-shadow:none}
+.assistant-widget .assistant-avatar{filter:drop-shadow(0 3px 5px #00000033)}
+html .secretary-home.secretary-refined .secretary-actions{padding:10px;gap:9px;border:1px solid var(--hairline);border-radius:23px;background:var(--t-home-notices,var(--t-surface,var(--paper)));box-shadow:0 2px 8px #0000000a}
+html .secretary-home.secretary-refined .secretary-actions>:is(button,a){position:relative;min-height:62px;padding:12px 4px;background:var(--t-surface,var(--paper));color:var(--ink);border:1px solid var(--hairline);box-shadow:0 2px 4px #00000014}
+html .secretary-home.secretary-refined .secretary-actions>:first-child{background:color-mix(in srgb,var(--t-accent,var(--blue)) 14%,var(--t-surface,var(--paper)));border-color:color-mix(in srgb,var(--t-accent,var(--blue)) 40%,var(--hairline))}
+.home-add-icon{position:relative;display:inline-flex;padding:4px 7px 0 0}
+html .secretary-home.secretary-refined .home-add-icon>.secretary-action-icon{width:28px;height:28px}
+.home-add-badge{position:absolute;right:-3px;top:-3px;width:19px;height:19px;overflow:visible}
+.home-add-badge circle{fill:var(--t-accent,var(--blue));stroke:var(--t-surface,var(--paper));stroke-width:1.5}
+.home-add-badge path{fill:none;stroke:var(--t-on-accent,#ffffff);stroke-width:2;stroke-linecap:round}
+html:not([data-theme]):not(.dark) .secretary-home.secretary-refined .secretary-hero{background-color:#e9dece;background-image:radial-gradient(ellipse at 50% 22%,#f7efe3 0%,#e9dece 65%,#d5c4af 100%)}
+}
