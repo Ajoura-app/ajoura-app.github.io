@@ -237,3 +237,44 @@ def test_katsastushuomio_nakyy_kortissa(browser, base):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def _luminanssi(c):
+    f = lambda v: (v / 255) / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2])
+
+
+@pytest.mark.parametrize('teema', ['nykyinen', 'dark'])
+@pytest.mark.parametrize('kuva', ['piirros', 'valkoinen-kuva'])
+def test_kuvan_paalla_olevat_tekstit_luettavia(browser, base, teema, kuva):
+    """Rekisteritunnus, kilometrit ja huoltomittari ovat valkoista tekstiä kuvan päällä. Kontrasti mitataan
+    pikseleistä tekstin takaa (teksti piilotettuna), koska kuvan sävy ei näy tyylitiedoista. Vaalein 5 %
+    tekstialueen pikseleistä ratkaisee: suuri teksti vähintään 3:1, muu teksti vähintään 4,5:1."""
+    import io
+    from PIL import Image
+    autot = talli()
+    if kuva == 'valkoinen-kuva':
+        autot[0]['photo'] = tiedot.jpeg((250, 250, 245), koko=(800, 420))
+    s = avaa(browser, base, 'home', autot=autot, kello=KELLO, leveys=320, **teema_avaimet(teema))
+    try:
+        p = s.page
+        alueet = p.evaluate('''() => [...document.querySelectorAll('.vehicle-home-card .secretary-hero-meta .row-meta>span,'
+          + ' .vehicle-home-card .ring-text>*')].map(e => {const r = e.getBoundingClientRect(), c = getComputedStyle(e);
+          return {t: e.textContent.trim(), x: r.x, y: r.y, w: r.width, h: r.height,
+                  iso: parseFloat(c.fontSize) >= 18.66 || (parseFloat(c.fontSize) >= 14 && +c.fontWeight >= 700)};})''')
+        assert len(alueet) >= 6
+        p.add_style_tag(content='.secretary-hero-meta,.secretary-hero-meta *,.ring-text,.ring-text *'
+                                '{color:transparent!important;text-shadow:none!important}')
+        p.wait_for_timeout(100)
+        kuvakaappaus = Image.open(io.BytesIO(p.screenshot())).convert('RGB')
+        virheet = []
+        for a in alueet:
+            osa = kuvakaappaus.crop((int(a['x'] * 2), int(a['y'] * 2), int((a['x'] + a['w']) * 2), int((a['y'] + a['h']) * 2)))
+            arvot = sorted(_luminanssi(c) for c in (osa.get_flattened_data() if hasattr(osa, 'get_flattened_data') else osa.getdata()))
+            kontrasti = 1.05 / (arvot[int(len(arvot) * 0.95)] + 0.05)
+            if kontrasti < (3 if a['iso'] else 4.5):
+                virheet.append((a['t'], round(kontrasti, 2)))
+        assert not virheet, virheet
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

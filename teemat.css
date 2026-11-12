@@ -355,10 +355,10 @@ html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{positi
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero:after{content:'';grid-area:1/1;align-self:end;z-index:1;height:58%;border-radius:0 0 20px 20px;background:linear-gradient(to top,#140c069e 0%,#140c0647 42%,#140c0600 100%);pointer-events:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media:has(.car-photo){grid-area:1/1;position:relative;height:auto;min-height:0;aspect-ratio:1.8;border-radius:20px}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:6px 4px 12px}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 112px);min-height:0;margin:0;padding:0 0 12px 14px;border-radius:0;background:none;color:#ffffff;text-decoration:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 124px);min-height:0;margin:0 0 12px 10px;padding:6px 12px 7px;border-radius:14px;background:#1c130cad;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#ffffff;text-decoration:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-name{display:none}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta{display:grid;gap:1px;margin:0;color:#f4ece4;font-size:15px;line-height:1.25;text-shadow:0 1px 4px #000000a6}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{color:#ffffff;font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.01em;overflow-wrap:anywhere}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta{display:grid;gap:1px;margin:0;color:#fbf6f0;font-size:15px;line-height:1.25;text-shadow:0 1px 4px #000000a6}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{color:#ffffff;font-size:28px;font-weight:800;line-height:1.05;letter-spacing:.01em;overflow-wrap:anywhere}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta:focus-visible{outline:3px solid #ffffff;outline-offset:-3px;border-radius:12px}
 html .secretary-home.secretary-refined .vehicle-home-card .vehicle-toggle-indicator{position:absolute;top:10px;right:10px;z-index:2;display:flex;align-items:center;justify-content:center;gap:4px;width:42px;height:42px;border:0;border-radius:50%;background:#fffaf4e6;color:#1f1a16;box-shadow:0 2px 8px #00000026;transform:none;font-size:0}
 html .secretary-home.secretary-refined .vehicle-home-card .vehicle-toggle-indicator i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor}
@@ -417,11 +417,11 @@ html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions>:is
 .secretary-home .vehicle-home-card .home-service-ring{width:86px;height:86px}
 .home-service-ring .ring-text{max-width:62px;font-size:11px}
 .home-service-ring .ring-text b{font-size:19px}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{max-width:calc(100% - 100px)}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{max-width:calc(100% - 110px)}
 html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses{grid-template-columns:auto minmax(0,1fr) auto;row-gap:8px}
 .home-expenses .cost-split{grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;gap:4px 18px;padding:8px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
 .home-expenses .cost-split>div{justify-content:flex-start}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{font-size:26px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{font-size:24px}
 }
 /* Light warm themes without their own scene art use the same beige studio as the default theme. */
 @media screen{
