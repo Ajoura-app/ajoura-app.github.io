@@ -49,11 +49,12 @@ def test_varavari_on_alkuperainen():
 
 
 def test_alkuperainen_oletuksena(browser, base):
+    """2.09: the default light theme keeps its page colour and uses a beige vehicle scene."""
     s = avaa(browser, base, "home", autot=tiedot.talli(), kello=KELLO)
     try:
         h = s.page.evaluate("[document.documentElement.getAttribute('data-theme'), getComputedStyle(document.querySelector('.garage-row')).backgroundColor,"
                             "getComputedStyle(document.querySelector('.device-glass')).backgroundColor]")
-        assert h == [None, "rgb(255, 255, 255)", "rgb(245, 248, 252)"], h
+        assert h == [None, "rgb(233, 222, 206)", "rgb(245, 248, 252)"], h
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
