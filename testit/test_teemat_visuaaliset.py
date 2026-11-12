@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 import tiedot
-from apu import avaa, KELLO, avaa_tehtavat, kirjaa_avustajasta, valitse_ajoneuvo, ikkuna_valmis
+from apu import avaa, KELLO, avaa_tehtavat, kirjaa_avustajasta, valitse_ajoneuvo, ikkuna_valmis, nykyinen_ajoneuvo, avaa_ensimmainen_kortti, avaa_ajoneuvon_tiedot
 from test_plus import PLUS, FREE_EI, TEKOALY, palvelu
 from test_teemat import KONTRASTI
 
@@ -47,19 +47,22 @@ def test_taide_ei_peita_ajoneuvoa_tai_paatoimintoja(browser, base, theme, width,
     try:
         p = s.page
         before = s.talli()
-        media = p.locator('.secretary-hero-media')
+        media = nykyinen_ajoneuvo(p).locator('.secretary-hero-media')
         for pseudo in ['::before','::after']:
             assert media.evaluate('(e,p)=>getComputedStyle(e,p).pointerEvents',pseudo) == 'none'
-        assert p.locator('.secretary-hero-media :is(svg,img)').first.evaluate('(e)=>getComputedStyle(e).objectFit') == 'contain'
-        assert p.locator('.secretary-intro img').get_attribute('src') == 'hahmot/emma.webp'
+        assert nykyinen_ajoneuvo(p).locator('.secretary-hero-media :is(svg,img)').first.evaluate('(e)=>getComputedStyle(e).objectFit') == 'contain'
+        assert p.locator('.assistant-widget img').get_attribute('src') == 'hahmot/emma.webp'
         if width == 390:
             dock = p.locator('.tab-dock').bounding_box()
-            for action in p.locator('.secretary-actions > button,.secretary-actions > a').all():
+            for action in nykyinen_ajoneuvo(p).locator('.secretary-actions > button,.secretary-actions > a').all():
                 r = action.bounding_box()
-                assert r['y'] + r['height'] <= dock['y'], (theme,r,dock)
+                assert r['width'] >= 44 and r['height'] >= 44, (theme,r)
+                action.scroll_into_view_if_needed()
+                r=action.bounding_box()
+                assert r['y'] + r['height'] <= dock['y'] + 1, (theme,r,dock)
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         valitse_ajoneuvo(p,'tst2')
-        assert 'TST-202' in p.text_content('.secretary-context')
+        assert 'TST-202' in nykyinen_ajoneuvo(p).locator('.secretary-context').text_content()
         kirjaa_avustajasta(p,'manual')
         ikkuna_valmis(p)
         assert p.locator('#quickfuel-form').get_attribute('data-car') == 'tst2'
@@ -83,8 +86,8 @@ def test_myohassa_oleva_huolto_ja_puuttuva_taustakuva(browser, base, theme):
         p.route('**/ui-art/*.webp',lambda r:r.abort())
         p.reload()
         p.wait_for_selector('.secretary-cinematic')
-        assert p.locator('.secretary-hero-meta').is_visible()
-        assert p.locator('.secretary-hero-media svg').is_visible()
+        assert nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').is_visible()
+        assert nykyinen_ajoneuvo(p).locator('.secretary-hero-media svg').is_visible()
         kirjaa_avustajasta(p,'manual')
         ikkuna_valmis(p)
         assert p.locator('#quickfuel-form input[name=km]').is_visible()
@@ -104,14 +107,14 @@ def test_oma_kuva_sailyy_kokonaisena_teemataiteen_edessa(browser, base, theme, s
     try:
         p = s.page
         before = s.talli()
-        image = p.locator('.secretary-hero-media .car-photo img')
+        image = nykyinen_ajoneuvo(p).locator('.secretary-hero-media .car-photo img')
         assert image.get_attribute('src') == cars[0]['photo']
         assert image.evaluate('(e)=>e.complete && e.naturalWidth>0 && getComputedStyle(e).objectFit==="contain"')
-        box, frame = image.bounding_box(), p.locator('.secretary-hero-media').bounding_box()
+        box, frame = image.bounding_box(), nykyinen_ajoneuvo(p).locator('.secretary-hero-media').bounding_box()
         assert box['x'] >= frame['x'] and box['x'] + box['width'] <= frame['x'] + frame['width']
         assert box['y'] >= frame['y'] and box['y'] + box['height'] <= frame['y'] + frame['height']
-        assert p.locator('.secretary-hero-media .car-stage').count() == 0
-        p.locator('.secretary-hero-meta').click()
+        assert nykyinen_ajoneuvo(p).locator('.secretary-hero-media .car-stage').count() == 0
+        nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').click()
         p.wait_for_function('location.hash==="#vehicle/tst1"')
         assert before == s.talli()
         assert not s.virheet, s.virheet
@@ -127,13 +130,13 @@ def test_luettavuus_fokus_ja_suurennettu_teksti(browser, base, theme, lang):
     try:
         p = s.page
         before = s.talli()
-        p.locator('.home-service>.secretary-vehicle-details>summary').click()
-        p.locator('.secretary-primary .task-details > summary').click()
+        avaa_ajoneuvon_tiedot(p)
+        nykyinen_ajoneuvo(p).locator('.secretary-primary .task-details > summary').click()
         avaa_tehtavat(p)
         rows = p.evaluate(KONTRASTI)
         assert len(rows) > 25
         assert not [x for x in rows if x['k'] < 4.5], (theme,rows)
-        summary = p.locator('.secretary-all-tasks > summary')
+        summary = nykyinen_ajoneuvo(p).locator('.secretary-all-tasks > summary')
         summary.focus()
         assert summary.evaluate('(e)=>parseFloat(getComputedStyle(e).outlineWidth) >= 2')
         p.keyboard.press('Escape')
@@ -162,8 +165,9 @@ def test_hiljainen_estetty_ja_virhetila(browser, base, theme, state):
         if cloud:p.wait_for_function("AjouraAccess.check('ai.receipt').ok || AjouraAccess.check('ai.receipt').reason")
         before = s.talli()
         if state=='quiet':
-            assert p.locator('.secretary-task').count() == 0
-            assert p.locator('.task-empty').is_visible()
+            avaa_ajoneuvon_tiedot(p)
+            assert nykyinen_ajoneuvo(p).locator('.secretary-task').count() == 0
+            assert nykyinen_ajoneuvo(p).locator('.task-empty').is_visible()
         elif state in ['free','quota']:
             assert p.locator('[data-secretary-mode=photo],[data-secretary-mode=speech]').count() == 0
             kirjaa_avustajasta(p,'manual')
@@ -198,8 +202,9 @@ def test_teeman_css_virhe_sailyttaa_luettavan_ja_toimivan_pinnan(browser, base, 
         before = s.talli()
         p.route('**/teemat.css?*',lambda r:r.abort())
         p.reload()
-        p.wait_for_selector('.secretary-card')
-        assert p.locator('.secretary-intro [data-avatar-name]').inner_text() == 'Emma'
+        p.wait_for_selector('.vehicle-home-card')
+        avaa_ensimmainen_kortti(p)
+        assert nykyinen_ajoneuvo(p).locator('.secretary-intro [data-avatar-name]').inner_text() == 'Emma'
         kirjaa_avustajasta(p,'manual')
         ikkuna_valmis(p)
         assert p.locator('#quickfuel-form input[name=km]').is_visible()

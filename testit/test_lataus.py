@@ -136,9 +136,9 @@ def test_kirjausikkunan_valitsin_ja_muokkaus(browser, base):
     s = avaa(browser, base, "home", autot=[hybridi()], kello=KELLO)
     pg = s.page
     try:
-        assert pg.get_attribute(".row-btn.fuel", "aria-label") == "Lisää tankkaus tai lataus"
+        assert pg.get_attribute(".secretary-actions [data-quickfuel=hyb1]", "aria-label") == "Tankkaus +, kirjaa käsin"
         avaa_ajoneuvon_tiedot(pg)
-        pg.locator(".secretary-vehicle-details [data-quickfuel=hyb1]").click(); pg.wait_for_selector(F); ikkuna_valmis(pg)
+        pg.locator(".secretary-actions [data-quickfuel=hyb1]").click(); pg.wait_for_selector(F); ikkuna_valmis(pg)
         assert pg.get_attribute("[data-sheet-kind=fuel]", "aria-pressed") == "true"
         pg.click("[data-sheet-kind=el]"); pg.wait_for_function("() => document.querySelector('[data-sheet-kind=el]').getAttribute('aria-pressed')==='true'")
         ikkuna_valmis(pg)  # lajin vaihto avaa ikkunan uudelleen; kirjoitetaan vasta, kun kohdistus on siirtynyt siihen

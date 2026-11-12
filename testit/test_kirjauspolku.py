@@ -2,7 +2,7 @@
 import json
 import pytest
 import tiedot
-from apu import avaa,KELLO,ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
+from apu import avaa,KELLO,ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta, nykyinen_ajoneuvo, avaa_tehtavan_lisatiedot
 from test_plus import PLUS,FREE_AI,FREE_EI,palvelu,TEKOALY
 from test_tekoalytila import TEKSTI
 
@@ -15,7 +15,7 @@ def test_valittu_ajoneuvo_ja_vahvistus(browser,base,lang,rights):
     s=avaa(browser,base,'home',autot=cars(),kello=KELLO,kieli=lang,asennettu=True,ios=True,extra={'ajoura-tekoaly':'1'})
     try:
         p=s.page;cloud=palvelu(s,oikeus=rights);cloud['ai_vastaus']=TEKSTI
-        avaa_kirjausvaihtoehdot(p);p.wait_for_selector('[data-secretary-mode=text]');valitse_ajoneuvo(p,'b');before=s.talli()
+        avaa_kirjausvaihtoehdot(p);nykyinen_ajoneuvo(p).locator('[data-secretary-mode=text]').wait_for();valitse_ajoneuvo(p,'b');before=s.talli()
         kirjaa_avustajasta(p,'text');p.fill('#ai-say-in','45,6 l dieseliä 84,77 € mittari 153100');p.click('[data-ai-send]')
         p.wait_for_selector('.task-ai-pending');assert p.get_attribute('#quickfuel-form','data-car')=='b'
         assert p.input_value('#quickfuel-form [name=qty]')=='45,60'
@@ -29,7 +29,7 @@ def test_valittu_ajoneuvo_ja_vahvistus(browser,base,lang,rights):
 def test_viivastynyt_vastaus_ei_siirry(browser,base):
     s=avaa(browser,base,'home',autot=cars(),kello=KELLO,extra={'ajoura-tekoaly':'1'})
     try:
-        p=s.page;palvelu(s,oikeus=PLUS);avaa_kirjausvaihtoehdot(p);p.wait_for_selector('[data-secretary-mode=text]');before=s.talli();requests=[]
+        p=s.page;palvelu(s,oikeus=PLUS);avaa_kirjausvaihtoehdot(p);nykyinen_ajoneuvo(p).locator('[data-secretary-mode=text]').wait_for();before=s.talli();requests=[]
         p.route(TEKOALY,lambda r:requests.append(r));kirjaa_avustajasta(p,'text');p.fill('#ai-say-in','45 l')
         with p.expect_request(TEKOALY):p.click('[data-ai-send]')
         p.keyboard.press('Escape');valitse_ajoneuvo(p,'b');kirjaa_avustajasta(p,'manual');ikkuna_valmis(p)
@@ -47,9 +47,9 @@ def test_kasin_ja_opas(browser,base,lang,mode):
         p=s.page;cloud=palvelu(s,oikeus=FREE_EI if mode=='free' else PLUS)
         valitse_ajoneuvo(p,'b');before=s.talli()
         assert p.locator('[data-secretary-mode=text]').count()==0
-        avaa_kirjausvaihtoehdot(p);p.click('.secretary-support [data-tutorial]');p.click('[data-guide-next]')
+        avaa_kirjausvaihtoehdot(p);nykyinen_ajoneuvo(p).locator('.secretary-support [data-tutorial]').click();p.click('[data-guide-next]')
         assert p.locator('.ai-guide').is_visible();assert before==s.talli();p.keyboard.press('Escape')
-        p.click('[data-secretary-service]');p.wait_for_selector('#event-form');assert p.url.endswith('#add/b')
+        nykyinen_ajoneuvo(p).locator('[data-secretary-service]').click();p.wait_for_selector('#event-form');assert p.url.endswith('#add/b')
         assert p.locator('[data-ai-send]').count()==0;assert before==s.talli();assert cloud['ai']==[]
         assert not s.virheet,s.virheet
     finally:s.sulje()
@@ -61,8 +61,8 @@ def test_offline_opastus_ja_huolto(browser):
     server=Palvelin(JUURI);s=Kayttaja(browser,server,cars())
     try:
         s.asenna();before=s.talli();s.ctx.set_offline(True);s.avaa('home');p=s.page
-        valitse_ajoneuvo(p,'b');avaa_kirjausvaihtoehdot(p);p.click('.secretary-support [data-tutorial]');p.click('[data-guide-next]');p.keyboard.press('Escape')
-        p.click('[data-secretary-service]');p.wait_for_selector('#event-form');assert p.url.endswith('#add/b')
+        valitse_ajoneuvo(p,'b');avaa_kirjausvaihtoehdot(p);nykyinen_ajoneuvo(p).locator('.secretary-support [data-tutorial]').click();p.click('[data-guide-next]');p.keyboard.press('Escape')
+        nykyinen_ajoneuvo(p).locator('[data-secretary-service]').click();p.wait_for_selector('#event-form');assert p.url.endswith('#add/b')
         assert before==s.talli()
     finally:s.sulje();server.sulje()
 
@@ -71,7 +71,7 @@ def test_suljetun_kuvan_kasittely_ei_laheta(browser,base,mode):
     import base64
     s=avaa(browser,base,'home',autot=cars(),kello=KELLO,extra={'ajoura-tekoaly':'1'})
     try:
-        p=s.page;cloud=palvelu(s,oikeus=PLUS);avaa_kirjausvaihtoehdot(p);p.wait_for_selector('[data-secretary-mode=text]');before=s.talli()
+        p=s.page;cloud=palvelu(s,oikeus=PLUS);avaa_kirjausvaihtoehdot(p);nykyinen_ajoneuvo(p).locator('[data-secretary-mode=text]').wait_for();before=s.talli()
         kirjaa_avustajasta(p,'text' if mode=='photo' else 'manual')
         p.evaluate('''()=>{const Original=window.Image;window.Image=function(){const img=new Original();Object.defineProperty(img,'onload',{set(fn){img.addEventListener('load',()=>{window.__resumeImage=()=>fn.call(img)},{once:true});}});return img;};}''')
         selector='[data-ai-cam-file]' if mode=='photo' else '[data-ai-file]'
@@ -89,7 +89,7 @@ def test_huoltokortti_avaa_manuaalisen_lomakkeen(browser,base):
     from test_tehtavat import cars as due_cars
     s=avaa(browser,base,'home',autot=due_cars(),kello=KELLO)
     try:
-        p=s.page;before=s.talli();p.locator('[data-task-key*="Huolto"] a').click()
+        p=s.page;before=s.talli();task=p.locator('[data-task-key*="Huolto"]');avaa_tehtavan_lisatiedot(p,task);task.locator('a').click()
         p.wait_for_selector('#event-form');assert p.url.endswith('#add/tst1');assert before==s.talli()
     finally:s.sulje()
 

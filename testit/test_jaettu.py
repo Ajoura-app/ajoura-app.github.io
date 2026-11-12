@@ -152,7 +152,7 @@ def test_virheelliset_kutsut(browser, base):
         p.sulje()
 
 
-def test_jakaminen_kaannetty_ja_kapea(browser, base):
+def test_vanha_kielivalinta_jakaminen_ja_kapea(browser, base):
     tila = uusi_tila()
     o = avaa(browser, base, "me", autot=tiedot.talli(), kello=KELLO, kieli="sv", leveys=320)
     try:
@@ -160,9 +160,10 @@ def test_jakaminen_kaannetty_ja_kapea(browser, base):
         o.page.wait_for_selector("[data-sync-invite]")
         o.page.click("[data-sync-invite]")
         o.page.wait_for_selector("[data-sync-link]")
+        assert o.page.evaluate("AjouraI18n.lang")=="fi"
         teksti = o.page.inner_text(".sync-share")
         for fi in ("Jaettu talli", "Kutsu esimerkiksi", "Kutsulinkki", "Jaa linkki"):
-            assert fi not in teksti, f"kääntämättä '{fi}': {teksti}"
+            assert fi in teksti, f"suomenkielinen siirtymä puuttuu '{fi}': {teksti}"
         assert o.page.evaluate("document.querySelector('#app-screen .screen-content').scrollWidth <= 320")
         assert not o.virheet, o.virheet
     finally:

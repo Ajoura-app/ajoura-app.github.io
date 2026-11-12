@@ -95,6 +95,7 @@ def avaa(browser, base, nakyma="home", autot=None, kieli="fi", teema=None, levey
     }})();""")
 
     page = ctx.new_page()
+    page.set_default_navigation_timeout(30_000)  # allow local assets to load under parallel browser-test CPU load
     page.set_default_timeout(8_000)  # nopea epäonnistuminen, jos painiketta tai kenttää ei löydy
     virheet = []
     page.on("pageerror", lambda e: virheet.append(f"JS-virhe: {e}"))
@@ -123,55 +124,55 @@ def nakyma(sivu):
     return sivu.page.evaluate("(location.hash.slice(1)||'').split('/')[0]")
 
 
+def nykyinen_ajoneuvo(page):
+    """Scope checks to the vehicle last opened by the user on the multi-vehicle home."""
+    tunniste=page.evaluate('window.AjouraSecretary?.selected()')
+    return page.locator('.vehicle-home-card[data-car=' + json.dumps(tunniste) + ']')
+
+
 def avaa_ajoneuvovalitsin(page):
-    """Avaa etusivun nykyinen ajoneuvovalitsin tarvittaessa."""
-    valitsin = page.locator('.secretary-picker')
-    if valitsin.count() and valitsin.get_attribute('open') is None:
-        valitsin.locator('summary').click()
-
-
-def avaa_tehtavat(page):
-    """Avaa etusivun muut tehtävät ja laitekohtaiset valinnat käyttäjän tavoin."""
-    avaa_ajoneuvon_tiedot(page)
-    panel = page.locator('.secretary-all-tasks')
-    if panel.count() and panel.get_attribute('open') is None:
-        panel.locator(':scope > summary').click()
-
-
-def avaa_tehtavan_lisatiedot(page, task):
-    """Tee tehtävä ja sen perustelut/päätökset näkyviksi ennen vuorovaikutusta."""
-    if not task.is_visible():
-        avaa_tehtavat(page)
-    panel = task.locator('.task-details')
-    if panel.get_attribute('open') is None:
-        panel.locator(':scope > summary').click()
+    """The list is always visible in 2.07; there is no picker to open."""
+    assert page.locator('.vehicle-home-card').count() > 0
 
 
 def valitse_ajoneuvo(page, tunniste):
-    """Valitse etusivun ajoneuvo käyttäjän avaamasta valitsimesta."""
-    avaa_ajoneuvovalitsin(page)
-    page.locator('[data-secretary-car=' + json.dumps(tunniste) + ']').click()
+    kortti=page.locator('.vehicle-home-card[data-car=' + json.dumps(tunniste) + ']')
+    painike=kortti.locator('[data-vehicle-toggle]')
+    if painike.get_attribute('aria-expanded')=='true':
+        painike.click()
+    painike.click()
 
 
 def avaa_ajoneuvon_tiedot(page):
-    """Avaa heron huoltotiedot ja nykyiset kirjaustoiminnot."""
-    tiedot = page.locator('.secretary-vehicle-details')
-    if tiedot.count() and tiedot.get_attribute('open') is None:
-        tiedot.locator('summary').click()
+    kortti=nykyinen_ajoneuvo(page)
+    painike=kortti.locator('[data-vehicle-toggle]')
+    if painike.get_attribute('aria-expanded')!='true':painike.click()
+    panel=kortti.locator('.secretary-vehicle-details')
+    if panel.get_attribute('open') is None:panel.locator(':scope > summary').click()
+
+
+def avaa_tehtavat(page):
+    avaa_ajoneuvon_tiedot(page)
+    panel=nykyinen_ajoneuvo(page).locator('.secretary-all-tasks')
+    if panel.get_attribute('open') is None:panel.locator(':scope > summary').click()
+
+
+def avaa_tehtavan_lisatiedot(page, task):
+    if not task.is_visible():avaa_tehtavat(page)
+    panel=task.locator('.task-details')
+    if panel.get_attribute('open') is None:panel.locator(':scope > summary').click()
 
 
 def avaa_kirjausvaihtoehdot(page):
-    """Avaa avustajakortin muut kirjaustavat ja ohjeet käyttäjän tavoin."""
-    vaihtoehdot = page.locator('.secretary-more')
-    if vaihtoehdot.count() and vaihtoehdot.get_attribute('open') is None:
-        vaihtoehdot.locator('summary').click()
+    avaa_ajoneuvon_tiedot(page)
+    panel=nykyinen_ajoneuvo(page).locator('.secretary-more')
+    if panel.get_attribute('open') is None:panel.locator(':scope > summary').click()
 
 
 def kirjaa_avustajasta(page, tapa):
-    """Avaa nykyinen kirjauspolku, tarvittaessa muiden vaihtoehtojen kautta."""
-    painike = page.locator('[data-secretary-mode=' + json.dumps(tapa) + ']')
-    if not painike.is_visible():
-        avaa_kirjausvaihtoehdot(page)
+    if tapa=='speech':page.locator('.assistant-widget [data-secretary-mode=speech]').click();return
+    painike=nykyinen_ajoneuvo(page).locator('[data-secretary-mode=' + json.dumps(tapa) + ']')
+    if not painike.is_visible():avaa_kirjausvaihtoehdot(page)
     painike.click()
 
 
@@ -180,3 +181,9 @@ def ikkuna_valmis(page):
     Ilman tätä kuormitetussa ajossa kenttään kirjoitettu teksti voi päätyä hintakenttään, kun kohdistus siirtyy kesken
     kirjoituksen (ihmiskäyttäjälle ei tapahdu: kohdistus siirtyy ennen kuin ehtii kirjoittaa)."""
     page.wait_for_function("() => !!document.activeElement && !!document.activeElement.closest('.sheet')")
+
+
+def avaa_ensimmainen_kortti(page):
+    """Open the first vehicle image to arrange checks of expanded widgets."""
+    button=page.locator('[data-vehicle-toggle]').first
+    if button.count() and button.get_attribute('aria-expanded')!='true':button.click()

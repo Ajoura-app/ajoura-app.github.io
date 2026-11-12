@@ -66,7 +66,7 @@ def test_tankkausikkunan_tallenna_on_tavoitettavissa(browser, base, tila, koko):
              **TILAT[tila])
     try:
         avaa_ajoneuvon_tiedot(s.page)
-        s.page.locator(".secretary-vehicle-details [data-quickfuel]").click()
+        s.page.locator(".vehicle-home-card").first.locator(".secretary-actions [data-quickfuel]").click()
         s.page.wait_for_selector("#quickfuel-form")
         s.page.wait_for_timeout(500)
         # Ikkuna vierittyy; vieritetään loppuun ja katsotaan, että painike on silloin kokonaan ruudulla.

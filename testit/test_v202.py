@@ -1,5 +1,6 @@
 """2.02: Finnish migration, compact mic shortcut and transparent image persistence."""
 import pytest
+from apu import nykyinen_ajoneuvo, avaa_ensimmainen_kortti
 import tiedot
 from apu import avaa,KELLO
 from test_plus import PLUS,palvelu
@@ -10,6 +11,7 @@ def test_vanha_kielivalinta_siirtyy_suomeen(browser,base,saved):
     s=avaa(browser,base,'settings',autot=tiedot.talli(),extra={'ajoura-lang':saved})
     try:
         p=s.page
+        avaa_ensimmainen_kortti(p)
         assert p.evaluate('AjouraI18n.lang')=='fi'
         assert p.evaluate('AjouraI18n.langs')==['fi']
         assert p.evaluate("localStorage.getItem('ajoura-lang')")=='fi'
@@ -26,13 +28,14 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
     s=avaa(browser,base,'home',autot=cars,leveys=width,kello=KELLO,extra={'ajoura-ulkoasu':theme})
     try:
         p=s.page
-        assert p.locator('.secretary-intro .assistant-avatar').bounding_box()['width']==64
+        avaa_ensimmainen_kortti(p)
+        assert p.locator('.assistant-widget .assistant-avatar').bounding_box()['width']==64
         assert p.locator('[data-home-mic]').is_visible()
-        image=p.locator('.secretary-hero-media .car-photo img').bounding_box()
-        plate=p.locator('.secretary-hero-meta').bounding_box()
-        assert image['y']+image['height']<=plate['y']+1
-        assert p.locator('.secretary-intro').bounding_box()['height']<110
-        assert p.locator('.secretary-copy').evaluate('e=>e.scrollWidth<=e.clientWidth')
+        image=nykyinen_ajoneuvo(p).locator('.secretary-hero-media .car-photo img').bounding_box()
+        plate=nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').bounding_box()
+        assert image['y']<=plate['y']<image['y']+image['height']
+        assert nykyinen_ajoneuvo(p).locator('.secretary-intro').bounding_box()['height']<110
+        assert nykyinen_ajoneuvo(p).locator('.secretary-copy').evaluate('e=>e.scrollWidth<=e.clientWidth')
         p.locator('[data-home-mic]').click()
         assert 'Puhekirjaus tarvitsee' in p.locator('.home-voice-feedback').inner_text()
         assert not s.virheet
@@ -41,7 +44,7 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
 def test_uusi_mikrofoni_kaynnistaa_nykyisen_puhepolun(browser,base):
     s=avaa(browser,base,'home',autot=tiedot.talli(),extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'1'})
     try:
-        p=s.page;cloud=palvelu(s,oikeus=PLUS);p.evaluate(KEKSITTY_PUHE);p.evaluate('AjouraApp.refresh()')
+        p=s.page;avaa_ensimmainen_kortti(p);cloud=palvelu(s,oikeus=PLUS);avaa_ensimmainen_kortti(p);p.evaluate(KEKSITTY_PUHE);p.evaluate('AjouraApp.refresh()')
         p.locator('[data-home-mic]').click()
         p.wait_for_function('window.__puhe.started===1')
         p.wait_for_function("document.querySelector('#ai-say-in').value.includes('45,6')")
@@ -54,6 +57,7 @@ def test_kuvan_kasittely_tallennus_ja_virhepolku(browser,base,fail):
     s=avaa(browser,base,'vehicle/tst1',autot=tiedot.talli(),extra={'ajoura-ulkoasu':'garage'})
     try:
         p=s.page
+        avaa_ensimmainen_kortti(p)
         import io,base64
         from PIL import Image
         image=Image.new('RGBA',(30,15),(255,255,255,0));image.paste((20,80,140,255),(3,3,27,12));buf=io.BytesIO();image.save(buf,format='PNG')

@@ -1,7 +1,7 @@
 """06: conservative observations from the existing validated fuel intervals."""
 import pytest
 import tiedot
-from apu import avaa,KELLO, valitse_ajoneuvo, avaa_tehtavat, avaa_tehtavan_lisatiedot
+from apu import avaa,KELLO, valitse_ajoneuvo, avaa_tehtavat, avaa_tehtavan_lisatiedot, nykyinen_ajoneuvo
 
 
 def car():
@@ -20,8 +20,8 @@ def test_huomiot_ja_hiljennys(browser,base,lang,theme):
         p.evaluate('AjouraApp.refresh()');assert note.count()==1
         avaa_tehtavan_lisatiedot(p,note);note.locator('[data-task-dismiss]').click();assert note.count()==0
         p.reload();p.wait_for_selector('.secretary-home');assert note.count()==0
-        valitse_ajoneuvo(p,'other');assert p.locator('.secretary-task').count()==0
-        valitse_ajoneuvo(p,'tst1');avaa_tehtavat(p);p.click('[data-task-reset]');assert note.count()==1
+        valitse_ajoneuvo(p,'other');assert nykyinen_ajoneuvo(p).locator('.secretary-task').count()==0
+        valitse_ajoneuvo(p,'tst1');avaa_tehtavat(p);nykyinen_ajoneuvo(p).locator('[data-task-reset]').click();assert note.count()==1
         assert before==s.talli();assert not s.virheet,s.virheet
     finally:s.sulje()
 

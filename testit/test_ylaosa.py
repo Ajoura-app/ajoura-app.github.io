@@ -22,6 +22,15 @@ JS = """() => {const q = s => document.querySelector(s), r = s => q(s)?.getBound
 def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
     s = avaa(browser, base, nakyma, autot=tiedot.talli(), leveys=leveys, kello=KELLO)
     try:
+        if nakyma=='home':
+            p=s.page
+            assert p.locator('.cinematic-brand').is_visible()
+            assert p.locator('.cinematic-brand a[href="#newcar"]').is_visible()
+            assert p.locator('.cinematic-brand a[href="#me/tili"]').is_visible()
+            assert p.locator('.app-top').is_hidden()
+            assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
+            assert not s.virheet,s.virheet
+            return
         r = s.page.evaluate(JS)
         assert r["logo"] == logo and r["oikealla"] and r["alla"] and r["paalle"] == 0 and r["sivu"] <= 0, r
         if otsikko:
@@ -82,11 +91,9 @@ def test_kortin_otsikko_ei_katkea_kesken_sanan(browser, base, kieli, leveys, nak
 
 
 # Visual-first 01: one compact header, with the logo aligned to the title and accessible start controls.
-KOMPAKTI_JS = """() => {const r = s => document.querySelector(s).getBoundingClientRect();
-  const sc = r('.screen-content'), lg = r('.app-top .app-brand'), g = r('.r-top-right'), h = r('.home-heading'), t = r('[data-secretary-picker]');
-  const txt = document.createRange(); txt.selectNodeContents(document.querySelector('.home-heading')); const tx = txt.getBoundingClientRect();
-  return {logoVasen: lg.left - h.left, korkeus: Math.max(h.bottom,g.bottom) - sc.top,
-          kosketus: r('.r-start').height, tekstiin: g.left - tx.right, korttiin: t.top - g.bottom, oikea: sc.right - g.right};}"""
+KOMPAKTI_JS = """() => {const q=s=>document.querySelector(s),r=s=>q(s).getBoundingClientRect();
+ const sc=r('.screen-content'),h=r('.cinematic-brand'),a=[...q('.cinematic-brand').querySelectorAll('a')].map(e=>e.getBoundingClientRect()),v=r('.vehicle-home-card');
+ return {korkeus:h.height,kosketus:Math.min(...a.map(x=>Math.min(x.width,x.height))),korttiin:v.top-h.bottom,oikea:sc.right-h.right,vasen:h.left-sc.left};}"""
 
 
 @pytest.mark.parametrize("leveys,kieli,teema,asennettu", [(320, "fi", None, True), (390, "fi", None, True), (430, "fi", "dark", True),
@@ -95,8 +102,8 @@ def test_etusivun_kompakti_ylaosa(browser, base, leveys, kieli, teema, asennettu
     s = avaa(browser, base, "home", autot=tiedot.talli(), leveys=leveys, kieli=kieli, teema=teema, asennettu=asennettu, ios=True, kello=KELLO)
     try:
         r = s.page.evaluate(KOMPAKTI_JS)
-        assert abs(r["logoVasen"]) <= 1 and 52 <= r["korkeus"] <= 76, r
-        assert r["kosketus"] >= 44 and r["tekstiin"] >= 8 and r["korttiin"] >= 4 and r["oikea"] <= 24, r
+        assert 0 <= r["vasen"] <= 24 and 44 <= r["korkeus"] <= 76, r
+        assert r["kosketus"] >= 44 and r["korttiin"] >= 4 and r["oikea"] <= 24, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

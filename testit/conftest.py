@@ -25,10 +25,15 @@ class _Hiljainen(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class PaikallinenHTTPServer(http.server.ThreadingHTTPServer):
+    # Chromium loads many local scripts concurrently; the stdlib backlog of five can drop connections.
+    request_queue_size = 128
+
+
 def palvelin(juuri):
     """Käynnistää palvelimen vapaaseen porttiin; palauttaa (osoite, sammutusfunktio)."""
     h = functools.partial(_Hiljainen, directory=str(juuri))
-    s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), h)
+    s = PaikallinenHTTPServer(("127.0.0.1", 0), h)
     threading.Thread(target=s.serve_forever, daemon=True).start()
     return f"http://127.0.0.1:{s.server_address[1]}", s.shutdown
 

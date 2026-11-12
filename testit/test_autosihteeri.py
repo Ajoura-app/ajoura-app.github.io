@@ -1,7 +1,7 @@
 """Stage 01: vehicle context, existing write paths, themes and mobile widths."""
 import pytest
 import tiedot
-from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta
+from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihtoehdot, kirjaa_avustajasta, nykyinen_ajoneuvo
 from test_plus import palvelu, PLUS
 
 @pytest.mark.parametrize('width',[320,375,390,430])
@@ -11,9 +11,10 @@ def test_asettelu(browser,base,width,theme):
            teema='dark' if theme=='dark' else None,
            extra={'ajoura-ulkoasu':theme if theme!='dark' else 'nykyinen'})
     try:
-        assert s.page.locator('.secretary-card').is_visible()
-        assert s.page.locator('.secretary-task').count() <= 3
-        assert s.page.locator('.tab-fab').is_visible()
+        assert s.page.locator('.vehicle-home-card').count()==3
+        assert all(c.is_visible() for c in s.page.locator('.vehicle-glance').all())
+        assert all(not c.is_visible() for c in s.page.locator('.vehicle-panels').all())
+        assert s.page.locator('.assistant-widget').is_visible()
         assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet
     finally: s.sulje()
@@ -25,7 +26,7 @@ def test_valinta_ja_kasin(browser,base,lang):
     try:
         before=s.talli()
         valitse_ajoneuvo(s.page,cars[1]['id'])
-        assert cars[1]['plate'] in s.page.inner_text('.secretary-context')
+        assert cars[1]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-context').inner_text()
         kirjaa_avustajasta(s.page,'manual')
         ikkuna_valmis(s.page)
         assert s.page.get_attribute('#quickfuel-form','data-car')==cars[1]['id']
@@ -38,7 +39,7 @@ def test_ai_polut(browser,base):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-tekoaly':'1'})
     try:
         palvelu(s,oikeus=PLUS)
-        avaa_kirjausvaihtoehdot(s.page);s.page.wait_for_selector('[data-secretary-mode=text]')
+        avaa_kirjausvaihtoehdot(s.page);nykyinen_ajoneuvo(s.page).locator('[data-secretary-mode=text]').wait_for()
         kirjaa_avustajasta(s.page,'text')
         assert s.page.locator('#ai-say-in').evaluate('(el)=>el===document.activeElement')
         s.page.keyboard.press('Escape')
@@ -55,9 +56,9 @@ def test_tyhja_ja_pyyhkaisy(browser,base):
     finally:s.sulje()
     cars=tiedot.talli();s=avaa(browser,base,'home',autot=cars,kello=KELLO)
     try:
-        s.page.locator('.secretary-vehicle').dispatch_event('touchstart',{'touches':[{'identifier':1,'clientX':260,'clientY':200}]})
-        s.page.locator('.secretary-vehicle').dispatch_event('touchend',{'changedTouches':[{'identifier':1,'clientX':80,'clientY':200}]})
-        assert cars[1]['plate'] in s.page.inner_text('.secretary-context')
+        s.page.locator('.secretary-vehicle').first.dispatch_event('touchstart',{'touches':[{'identifier':1,'clientX':260,'clientY':200}]})
+        s.page.locator('.secretary-vehicle').first.dispatch_event('touchend',{'changedTouches':[{'identifier':1,'clientX':80,'clientY':200}]})
+        assert cars[0]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-context').text_content()
     finally:s.sulje()
 
 @pytest.mark.parametrize('width,height',[(844,390),(390,844)])
@@ -67,7 +68,7 @@ def test_turvallinen_sisalto_ja_suunta(browser,base,width,height):
     s=avaa(browser,base,'home',autot=cars,kello=KELLO,leveys=width,korkeus=height,asennettu=True)
     try:
         assert s.page.locator('.secretary-context img').count()==0
-        assert '<img' in s.page.inner_text('.secretary-context')
+        assert '<img' in nykyinen_ajoneuvo(s.page).locator('.secretary-context').text_content()
         assert s.page.locator('.secretary-task').count()==0
         assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet

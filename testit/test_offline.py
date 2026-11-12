@@ -24,7 +24,7 @@ from urllib.parse import urlsplit
 import pytest
 
 import tiedot
-from conftest import JUURI
+from conftest import JUURI, PaikallinenHTTPServer
 from test_varmuuskopio import kanoninen
 
 NAKYMA = "#app-screen .screen-content"
@@ -120,7 +120,7 @@ class Palvelin:
                     if portti:
                         valmis.set()
 
-        self.s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Kasittelija)
+        self.s = PaikallinenHTTPServer(("127.0.0.1", 0), Kasittelija)
         self.s.daemon_threads = True
         threading.Thread(target=self.s.serve_forever, daemon=True).start()
         self.osoite = f"http://127.0.0.1:{self.s.server_address[1]}"

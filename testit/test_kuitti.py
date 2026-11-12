@@ -121,17 +121,18 @@ def test_virheet_ja_poikkeukset(browser, base, kuva, tapaus, vastaus, status, vi
         s.sulje()
 
 
-def test_kaannetty_ja_kapea(browser, base, kuva):
+def test_vanha_kielivalinta_ja_kapea(browser, base, kuva):
     from test_leveys import MITTAUS
     s = avaa(browser, base, "fuel/tst1", autot=tiedot.talli(), kello=KELLO, kieli="sv", leveys=320, korkeus=640,
              extra={"ajoura-tekoaly": "1"})
     try:
         tila = palvelu(s)
+        assert s.page.evaluate("AjouraI18n.lang")=="fi"
         tila["ai_vastaus"] = KUITTI
         ikkuna(s)
         s.page.set_input_files("[data-ai-file]", str(kuva))
-        s.page.wait_for_function("() => /Kontrollera/.test(document.querySelector('.sf-ai-note').textContent)")
-        assert "Fyll i från bild" in s.page.inner_text(".sf-ai")
+        s.page.wait_for_function("() => /Tarkista/.test(document.querySelector('.sf-ai-note').textContent)")
+        assert "Täytä kuvasta" in s.page.inner_text(".sf-ai")
         assert s.page.evaluate("document.querySelector('.sheet').scrollWidth <= document.querySelector('.sheet').clientWidth")
         assert not s.virheet, s.virheet
     finally:

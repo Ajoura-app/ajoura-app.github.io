@@ -25,9 +25,8 @@ def talli(kuva=PYSTY):
 RP = {"ajoura-reports": '{"p":"12","t":"sum"}'}
 
 
-# 0.55: oma kuva täyttää ruudun tarkasti (cover, ei sumennettua kopiota 0.50:n tapaan), rajaus painottuu kuvan
-# alaosaan (ajoneuvo on puhelinkuvassa yleensä alempana), eikä kuva veny ruudun ulkopuolelle (0.55:n korjaama vika:
-# kuva näkyi omassa korkeudessaan, jolloin ruudussa näkyi kuvan yläosa).
+# 2.02/2.04: own pictures remain whole and centered (contain), including portrait pictures.
+# The image box stays within its frame and no blurred duplicate is introduced.
 KUVA_JS = """sel => [...document.querySelectorAll(sel)].filter(b => b.querySelector('img')).map(b => {
     const im = b.querySelector('img'), r = b.getBoundingClientRect(), f = im.getBoundingClientRect(), cs = getComputedStyle(im);
     return {luokka: im.className, fit: cs.objectFit, y: parseFloat(cs.objectPosition.split(' ')[1]), kpl: b.querySelectorAll('img').length,
@@ -39,14 +38,14 @@ KUVA_JS = """sel => [...document.querySelectorAll(sel)].filter(b => b.querySelec
     ("reports", ".rp-vpic", RP),
 ])
 @pytest.mark.parametrize("teema", [None, "dark"])
-def test_oma_kuva_tayttaa_ruudun(browser, base, nakyma, laatikko, extra, teema):
+def test_oma_kuva_sailyy_kokonaisena(browser, base, nakyma, laatikko, extra, teema):
     s = avaa(browser, base, nakyma, autot=talli(), extra=extra, teema=teema, kello=KELLO)
     try:
         tulos = s.page.evaluate(KUVA_JS, laatikko)
         assert len(tulos) == 2, tulos  # kaksi ajoneuvoa, joilla on oma kuva
         for t in tulos:
             assert t["luokka"] == "own-ph" and t["kpl"] == 1 and t["ladattu"], t
-            assert t["fit"] == "cover" and t["sama"] and 55 <= t["y"] <= 80 and t["korkeus"] > 20, t
+            assert t["fit"] == "contain" and t["sama"] and t["y"] == 50 and t["korkeus"] > 20, t
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -58,7 +57,7 @@ def test_tankkausikkunan_kuva(browser, base):
         s.page.click("button.fl-add")
         s.page.wait_for_selector(".sheet-thumb img.own-ph")
         t = s.page.evaluate(KUVA_JS, ".sheet-thumb")[0]
-        assert t["fit"] == "cover" and t["sama"], t
+        assert t["fit"] == "contain" and t["sama"] and t["y"] == 50, t
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
