@@ -9,9 +9,18 @@
   function renderVehicleHero(c,view) {
     // Only markup from app.js renderers is inserted as HTML; vehicle text is escaped here.
     return `<article class="garage-row secretary-hero" data-car="${esc(c.id)}">
-      <button type="button" class="secretary-hero-media vehicle-toggle" data-vehicle-toggle="${esc(c.id)}" aria-expanded="${expandedVehicles.has(c.id)}" aria-controls="vehicle-panels-${esc(c.id)}" aria-label="${esc(view.name)}">${view.image}<span class="vehicle-toggle-indicator" aria-hidden="true">⌄</span></button>
+      <button type="button" class="secretary-hero-media vehicle-toggle" data-vehicle-toggle="${esc(c.id)}" aria-expanded="${expandedVehicles.has(c.id)}" aria-controls="vehicle-panels-${esc(c.id)}" aria-label="${esc(view.name)}">${view.image}<span class="vehicle-toggle-indicator" aria-hidden="true"><i></i><i></i><i></i></span></button>
       <a class="row-info secretary-hero-meta" href="#vehicle/${esc(c.id)}"><span class="row-name"><strong>${esc(view.name)}</strong></span><small class="row-meta"><span>${esc(view.plate)}</span> <span class="nw">${esc(view.meter)}</span></small></a>
+      ${renderRing(c,view)}
     </article>`;
+  }
+  // 2.10: service gauge on the photo. The arc is the share of the service interval left (same value as the
+  // original status bar); an overdue service or a missing history shows no percentage, only the status.
+  function renderRing(c,view) {
+    const r=view.ring,tone=esc(view.tone),pct=r&&view.tone!=='late'?r.pct:null,len=2*Math.PI*42,arc=r?(view.tone==='late'?1:r.left):0;
+    const mark=view.tone==='ok'?'check':view.tone==='none'?'calendar':'alert';
+    const spoken=t(view.statusLabel)+(pct!==null?`, ${pct} % ${t('huoltovälistä jäljellä')}`:'');
+    return `<a class="vehicle-glance home-service-ring status-${tone}" href="#vehicle/${esc(c.id)}" aria-label="${esc(spoken)}"><svg class="ring-arc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42"/><circle class="ring-value" cx="50" cy="50" r="42" stroke-dasharray="${(arc*len).toFixed(1)} ${len.toFixed(1)}"/></svg><span class="ring-text" aria-hidden="true">${pct!==null?`<b>${pct} %</b>`:''}<span>${esc(t(view.statusLabel))}</span></span><span class="ring-mark ring-mark-${mark}" aria-hidden="true">${actionIcon(mark)}</span></a>`;
   }
   function renderService(c,view,tasks,coverage) {
     const previous=[...document.querySelectorAll('.home-service')].find(el=>el.dataset.car===c.id);
@@ -19,12 +28,15 @@
     const tasksOpen=!!previous?.querySelector('.secretary-all-tasks')?.open;
     return `<section class="home-service home-summary" data-car="${esc(c.id)}" aria-label="Huoltotilanne">
       <a class="row-wide home-service-original" href="#vehicle/${esc(c.id)}">${view.status}</a>
-      ${tasks.some(x=>x.kind==='Katsastus')?'<p class="home-inspection-note">Katsastuksen määräpäivä tarkistettava.</p>':''}
       <details class="secretary-vehicle-details"${opened?' open':''}><summary aria-label="Huollon lisätiedot"><span class="sr-only">Huollon lisätiedot</span><span class="secretary-chevron" aria-hidden="true">⌄</span></summary><div class="secretary-vehicle-detail"><a href="#vehicle/${esc(c.id)}">Avaa huoltohistoria →</a>${renderTasks(c,tasks,coverage,tasksOpen)}</div></details></section>`;
   }
 
-  function renderExpenses(c,view,tasks){const fuel=tasks.find(x=>x.kind==='fuel'||x.kind==='consumption');
-    return `<section class="home-expenses home-summary" aria-label="Kulut"><div class="home-cost-heading"><h3>Kulut</h3><span>Tänä vuonna · ${esc(view.year)}</span></div><dl><div><dt>${actionIcon('fuel')}<a href="#fuel/${esc(c.id)}">Tankkaukset ja lataukset</a></dt><dd>${esc(view.expenses.fuel)}</dd></div><div><dt>${actionIcon('service')}<a href="#vehicle/${esc(c.id)}">Huollot</a></dt><dd>${esc(view.expenses.service)}</dd></div><div class="home-cost-total"><dt>Yhteensä</dt><dd><a href="#reports" data-home-costs="${esc(c.id)}" aria-label="Avaa tämän ajoneuvon kuluraportti">${esc(view.expenses.total)}</a></dd></div></dl>${fuel?`<a class="home-cost-notice" href="${esc(fuel.href)}">${esc(fuel.title)}</a>`:''}</section>`;
+  // 2.10: the year's costs stay visible on the card; the tint follows the service status like the gauge.
+  function renderExpenses(c,view){
+    return `<section class="home-expenses home-summary status-${esc(view.tone)}" aria-label="${esc(t('Kulut'))} ${esc(view.year)}"><span class="cost-coins" aria-hidden="true">${actionIcon('coins')}</span><p class="cost-total"><span>${esc(t('Kulut'))} ${esc(view.year)}</span><b>${esc(view.expenses.total)}</b></p><dl class="cost-split"><div><dt><a href="#fuel/${esc(c.id)}" aria-label="${esc(t('Tankkaukset ja lataukset'))}">${actionIcon('fuel')}</a></dt><dd>${esc(view.expenses.fuel)}</dd></div><div><dt><a href="#vehicle/${esc(c.id)}" aria-label="${esc(t('Huollot'))}">${actionIcon('service')}</a></dt><dd>${esc(view.expenses.service)}</dd></div></dl><a class="cost-report" href="#reports" data-home-costs="${esc(c.id)}" aria-label="${esc(t('Avaa tämän ajoneuvon kuluraportti'))}">${actionIcon('chart')}${actionIcon('chevron')}</a></section>`;
+  }
+  function renderCostNotice(tasks){const fuel=tasks.find(x=>x.kind==='fuel'||x.kind==='consumption');
+    return fuel?`<a class="home-cost-notice" href="${esc(fuel.href)}">${esc(t(fuel.title))}</a>`:'';
   }
   const actionPaths={
     fuel:'<path d="M4 21V4h9v17M4 9h9M13 7h3l4 4v7a2 2 0 0 1-4 0v-5M3 21h11"/>',
@@ -33,15 +45,21 @@
     photo:'<path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/>',
     text:'<path d="m15 4 5 5M4 20l5-1L21 7l-5-5L4 14z"/>',
     manual:'<path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/>',
-    service:'<path d="M14 6a6 6 0 0 0-7 7l-5 5 4 4 5-5a6 6 0 0 0 7-7l-4 4-4-4z"/>'
+    service:'<path d="M14 6a6 6 0 0 0-7 7l-5 5 4 4 5-5a6 6 0 0 0 7-7l-4 4-4-4z"/>',
+    coins:'<ellipse cx="9" cy="6" rx="6" ry="2.5"/><path d="M3 6v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V6M3 10v4c0 1.4 2.7 2.5 6 2.5 1 0 2-.1 2.8-.3M15 10.5c-.8.3-1.8.5-2.9.5"/><ellipse cx="15" cy="14" rx="6" ry="2.5"/><path d="M9 14v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4"/>',
+    chart:'<path d="M6 20v-6M12 20V9M18 20V4"/>',
+    chevron:'<path d="m9 6 6 6-6 6"/>',
+    check:'<path d="m7 12.5 3.2 3.2L17 9"/>',
+    alert:'<path d="M12 7v6M12 17h.01"/>',
+    calendar:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>'
   };
   const actionIcon=mode=>`<svg class="secretary-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${actionPaths[mode]}</svg>`;
-  const addIcon=mode=>`<span class="home-add-icon" aria-hidden="true">${actionIcon(mode)}<svg class="home-add-badge" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9"/><path d="M10 6v8M6 10h8"/></svg></span>`;
   function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local,view,actionsOnly=false,hideActions=false}) {
-    const action=(label,mode,aria=label,icon=false)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(aria))}">${icon?addIcon(typeof icon==='string'?icon:mode):''}<span${icon?' class="sr-only"':''}>${esc(t(label))}</span></button>`;
+    const action=(label,mode)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(label))}"><span>${esc(t(label))}</span></button>`;
     const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(view.tone==='ok'?'Hei! Autosi huolto on kunnossa. Mitä kirjataan?':'Hei! Mitä kirjataan tänään?');
-    const fuelLabel=c.fuel==='Sähkö'?'Lataus +':'Tankkaus +';
-    const primary=`${action(fuelLabel,'manual',fuelLabel+', kirjaa käsin','fuel')}<a href="#add/${esc(c.id)}" data-secretary-service aria-label="Huolto +, kirjaa huolto käsin">${addIcon('service')}<span class="sr-only">Huolto +</span></a><a href="#notes/${esc(c.id)}" data-secretary-note aria-label="Muistiinpano +">${addIcon('note')}<span class="sr-only">Muistiinpano +</span></a>`;
+    const fuelLabel=c.fuel==='Sähkö'?'Lataus':'Tankkaus';
+    const shortcut=(mode,label)=>`${actionIcon(mode)}<span class="home-action-label">${esc(t(label))}</span>`;
+    const primary=`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="manual" aria-label="${esc(t(fuelLabel+' +, kirjaa käsin'))}">${shortcut('fuel',fuelLabel)}</button><a href="#add/${esc(c.id)}" data-secretary-service aria-label="${esc(t('Huolto +, kirjaa huolto käsin'))}">${shortcut('service','Huolto')}</a><a href="#notes/${esc(c.id)}" data-secretary-note aria-label="${esc(t('Muistiinpano +'))}">${shortcut('note','Muistiinpanot')}</a>`;
     if(actionsOnly)return `<div class="secretary-actions">${primary}</div>`;
     return `<section class="secretary-card">${hideActions?'':`<div class="secretary-actions">${primary}</div>`}<div class="secretary-intro"><div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
       <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div></div>
@@ -198,12 +216,13 @@
         const coverage=window.AjouraTasks.coverage(c),view=vehicle(c);
         const old=[...document.querySelectorAll('.vehicle-home-card')].find(el=>el.dataset.car===c.id);
         const options={available:!!(ai&&access?.ok),quotaBlocked:!!(ai&&access?.reason==='quota'),speech,tasks,moreOpen:!!old?.querySelector('.secretary-more')?.open,local:window.AjouraAssistant?.card(c)||'',view};
-        return `<article class="vehicle-home-card" data-car="${esc(c.id)}">
+        return `<article class="vehicle-home-card status-${esc(view.tone)}" data-car="${esc(c.id)}">
           <div class="secretary-vehicle">${renderVehicleHero(c,view)}</div>
-          <p class="vehicle-glance status-${esc(view.tone)}">${esc(view.statusLabel)}${tasks.some(x=>x.kind==='Katsastus')?' · Katsastuksen määräpäivä tarkistettava.':''}</p>
           ${renderAssistant(c,{...options,actionsOnly:true})}
+          ${renderExpenses(c,view)}
+          ${tasks.some(x=>x.kind==='Katsastus')?`<a class="home-inspection-alert" href="#vehicle/${esc(c.id)}">${actionIcon('calendar')}<span>${esc(t('Katsastuksen määräpäivä tarkistettava.'))}</span></a>`:''}
           <div class="vehicle-panels" id="vehicle-panels-${esc(c.id)}"${expandedVehicles.has(c.id)?'':' hidden'}>
-            ${renderService(c,view,tasks,coverage)}${renderExpenses(c,view,tasks)}${renderAssistant(c,{...options,hideActions:true})}
+            ${renderService(c,view,tasks,coverage)}${renderCostNotice(tasks)}${renderAssistant(c,{...options,hideActions:true})}
           </div></article>`;
       }).join('');
       return `<section class="secretary-home${isCinematic()?' secretary-cinematic':''} secretary-refined" aria-label="${esc(t('Autosihteeri'))}">

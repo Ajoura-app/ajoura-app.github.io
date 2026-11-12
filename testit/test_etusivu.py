@@ -39,7 +39,7 @@ def test_kuvakepainikkeet(browser, base, leveys):
             rivi=pg.locator(f'.vehicle-home-card[data-car="{cid}"]')
             actions=rivi.locator(':scope > .secretary-actions')
             assert actions.locator(':scope > *').count()==3
-            expected='Lataus +' if cid=='s1' else 'Tankkaus +'
+            expected='Lataus' if cid=='s1' else 'Tankkaus'
             assert actions.locator('button').inner_text()==expected
             assert actions.locator('[data-secretary-service]').get_attribute('href')==f'#add/{cid}'
             assert actions.locator('[data-secretary-note]').get_attribute('href')==f'#notes/{cid}'
@@ -116,15 +116,15 @@ def test_kaannokset(browser, base, kieli, nimi, tila):
 
 @pytest.mark.parametrize("teema", ["light", "dark"])
 def test_painikkeiden_yhtenainen_vari(browser, base, teema):
-    """0.90 (Niklas): tankkauspainike samaan vaaleaan ilmeeseen kuin huolto ja muistiinpano (ennen täysi sininen,
-    joka näytti liian tummalta). Tummassa tilassa ei omaa käänteissuodatinta, joten kaikki kolme näyttävät samalta."""
+    """0.90 (Niklas): pikapainikkeet samaan vaaleaan ilmeeseen. 2.10: hyväksytyn mallikuvan mukaan kaikki kolme ovat
+    samanlaisia tekstipainikkeita ilman omaa taustaa. Tummassa tilassa ei omaa käänteissuodatinta."""
     s = avaa(browser, base, "home", autot=talli(), teema=teema, kello=KELLO)
     try:
         avaa_ajoneuvon_tiedot(s.page)
-        tyylit=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions > *', """es=>es.map(e=>{const c=getComputedStyle(e);return [c.backgroundColor,c.borderTopColor,c.color,c.filter,c.boxShadow]})""")
-        assert len(tyylit)==3 and tyylit[1]==tyylit[2],tyylit
-        assert tyylit[0][0]!=tyylit[1][0],tyylit
-        assert all(t[3]=='none' for t in tyylit),tyylit
+        tyylit=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions > *', """es=>es.map(e=>{const c=getComputedStyle(e);return [c.backgroundColor,c.color,c.filter,c.boxShadow,c.fontSize]})""")
+        assert len(tyylit)==3 and tyylit[0]==tyylit[1]==tyylit[2],tyylit
+        assert tyylit[0][0]=='rgba(0, 0, 0, 0)',tyylit
+        assert all(t[2]=='none' for t in tyylit),tyylit
     finally:
         s.sulje()
 

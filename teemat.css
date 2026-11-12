@@ -194,16 +194,7 @@ html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme
 .secretary-cinematic .cinematic-inspect{grid-column:3;grid-row:1/3;padding:7px 5px;border:1px solid var(--t-accent);border-radius:18px;font-size:11px;text-align:center;color:var(--t-accent);overflow-wrap:anywhere}
 .secretary-cinematic .cinematic-task .task-detail-body{padding:0 0 12px}
 .secretary-cinematic .cinematic-task .task-detail-body>a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock{display:block;padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic)>.tab-dock>.tab-bar.main-tabs{width:100%;border-radius:20px}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a{display:flex;flex-direction:column;gap:4px;min-height:56px;border-radius:14px}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic) .main-tabs a:after{content:none}
 @media(max-width:350px){html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .secretary-cinematic .secretary-intro>.assistant-avatar{width:116px;height:116px}.secretary-cinematic .secretary-copy{padding:10px}.secretary-cinematic .secretary-message{font-size:15px}}
-}
-/* Keep the same labelled dock layout while the existing mobile typing rule hides it. */
-@media screen and (pointer:coarse){
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) #app-screen:has(.secretary-cinematic):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:block}
 }
 
 /* 2.02: compact writing shortcut and proportional transparent vehicle cutouts. */
@@ -282,11 +273,6 @@ html .secretary-home.secretary-refined .secretary-message{font-size:13px;line-he
 html .secretary-home.secretary-refined .secretary-more{position:static;width:auto;max-width:100%;margin:3px 0 0;padding:0;border:0;background:none}
 html .secretary-home.secretary-refined .secretary-more>summary{font-size:11px;min-height:44px;padding:3px 0;justify-content:flex-end;gap:8px}
 html .secretary-home.secretary-refined .secretary-more>summary:after{content:'⌄';font-size:16px}
-#app-screen:has(.secretary-refined)>.tab-dock{display:block;padding:6px 12px calc(8px + env(safe-area-inset-bottom))}
-#app-screen:has(.secretary-refined)>.tab-dock>:is(.avatar-shortcut,.tab-fab){display:none}
-#app-screen:has(.secretary-refined)>.tab-dock>.main-tabs{width:100%;zoom:1}
-#app-screen:has(.secretary-refined) .main-tabs a{display:flex;flex-direction:column;gap:3px;min-height:53px}
-#app-screen:has(.secretary-refined) .main-tabs a:after{content:none}
 @media(max-height:760px){html .secretary-home.secretary-refined .secretary-hero-media,html .secretary-home.secretary-refined .secretary-hero-media:has(.car-photo){height:140px;min-height:140px}}
 @media(min-width:600px){html .secretary-home.secretary-refined{max-width:620px;margin-inline:auto}}
 @media print{.home-summary,.secretary-card{display:none}}
@@ -351,17 +337,103 @@ html .secretary-home.secretary-refined .vehicle-toggle{display:block;width:100%;
 @media screen{
 html #app-screen>.tab-dock,html #app-screen:has(.secretary-home)>.tab-dock{background:none}
 html #app-screen .main-tabs a:after,html #app-screen:has(.secretary-refined) .main-tabs a:after{content:none}
-html #app-screen:has(.secretary-refined) .main-tabs a{min-height:48px}
 .assistant-widget{height:72px}
 .assistant-widget .secretary-mic{height:72px;padding:0;background:none;box-shadow:none}
 .assistant-widget .assistant-avatar{filter:drop-shadow(0 3px 5px #00000033)}
-html .secretary-home.secretary-refined .secretary-actions{padding:10px;gap:9px;border:1px solid var(--hairline);border-radius:23px;background:var(--t-home-notices,var(--t-surface,var(--paper)));box-shadow:0 2px 8px #0000000a}
-html .secretary-home.secretary-refined .secretary-actions>:is(button,a){position:relative;min-height:62px;padding:12px 4px;background:var(--t-surface,var(--paper));color:var(--ink);border:1px solid var(--hairline);box-shadow:0 2px 4px #00000014}
-html .secretary-home.secretary-refined .secretary-actions>:first-child{background:color-mix(in srgb,var(--t-accent,var(--blue)) 14%,var(--t-surface,var(--paper)));border-color:color-mix(in srgb,var(--t-accent,var(--blue)) 40%,var(--hairline))}
-.home-add-icon{position:relative;display:inline-flex;padding:4px 7px 0 0}
-html .secretary-home.secretary-refined .home-add-icon>.secretary-action-icon{width:28px;height:28px}
-.home-add-badge{position:absolute;right:-3px;top:-3px;width:19px;height:19px;overflow:visible}
-.home-add-badge circle{fill:var(--t-accent,var(--blue));stroke:var(--t-surface,var(--paper));stroke-width:1.5}
-.home-add-badge path{fill:none;stroke:var(--t-on-accent,#ffffff);stroke-width:2;stroke-linecap:round}
 html:not([data-theme]):not(.dark) .secretary-home.secretary-refined .secretary-hero{background-color:#e9dece;background-image:radial-gradient(ellipse at 50% 22%,#f7efe3 0%,#e9dece 65%,#d5c4af 100%)}
 }
+
+/* 2.10: vehicle card after the approved mock-up. One raised card per vehicle: photo scene with plate, kilometres and a
+   service gauge, text shortcuts under it and the year's costs tinted by the service status. Theme colours come from the
+   theme variables, so every theme keeps its own surfaces; the gauge and the plate sit on a dark scrim over the photo. */
+@media screen{
+html .secretary-home.secretary-refined{--home-ok:#2f9a5a;--home-soon:#c9860c;--home-late:#e06a2c;--home-none:#7a8794}
+html .secretary-home.secretary-refined .vehicle-home-card{position:relative;gap:4px;padding:7px 7px 8px;border:1px solid var(--hairline);border-radius:26px;background:var(--t-surface,var(--paper,#ffffff));box-shadow:0 10px 26px #3a281414,0 2px 6px #3a28140f}
+html .secretary-home.secretary-refined .vehicle-home-card+.vehicle-home-card{margin-top:16px;padding-top:7px;border-top:1px solid var(--hairline)}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-vehicle{margin:0}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr);margin:0;padding:0;border:0;border-radius:20px;overflow:hidden;box-shadow:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero:after{content:'';grid-area:1/1;align-self:end;z-index:1;height:58%;border-radius:0 0 20px 20px;background:linear-gradient(to top,#140c069e 0%,#140c0647 42%,#140c0600 100%);pointer-events:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media:has(.car-photo){grid-area:1/1;position:relative;height:auto;min-height:0;aspect-ratio:1.85;border-radius:20px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:14px 22px 30px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 112px);min-height:0;margin:0;padding:0 0 12px 14px;border-radius:0;background:none;color:#ffffff;text-decoration:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-name{display:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta{display:grid;gap:1px;margin:0;color:#f4ece4;font-size:15px;line-height:1.25;text-shadow:0 1px 4px #000000a6}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{color:#ffffff;font-size:30px;font-weight:800;line-height:1.05;letter-spacing:.01em;overflow-wrap:anywhere}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta:focus-visible{outline:3px solid #ffffff;outline-offset:-3px;border-radius:12px}
+html .secretary-home.secretary-refined .vehicle-home-card .vehicle-toggle-indicator{position:absolute;top:10px;right:10px;z-index:2;display:flex;align-items:center;justify-content:center;gap:4px;width:42px;height:42px;border:0;border-radius:50%;background:#fffaf4e6;color:#1f1a16;box-shadow:0 2px 8px #00000026;transform:none;font-size:0}
+html .secretary-home.secretary-refined .vehicle-home-card .vehicle-toggle-indicator i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor}
+html .secretary-home.secretary-refined .vehicle-home-card .vehicle-toggle[aria-expanded=true] .vehicle-toggle-indicator{background:#1f1a16e6;color:#ffffff}
+/* Service gauge */
+.secretary-home .vehicle-home-card .home-service-ring{grid-area:1/1;padding:0;align-self:end;justify-self:end;z-index:2;position:relative;display:grid;place-items:center;width:96px;height:96px;margin:0 10px 12px 0;border-radius:50%;background:#1c130cad;color:#ffffff!important;font-weight:600;text-decoration:none;box-shadow:0 4px 14px #0000002e;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.home-service-ring .ring-arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:7}
+.home-service-ring .ring-arc circle{stroke:#ffffff38}
+.home-service-ring .ring-arc .ring-value{stroke-linecap:round}
+.home-service-ring .ring-text{position:relative;display:grid;justify-items:center;max-width:70px;margin-top:-6px;text-align:center;font-size:11.5px;font-weight:600;line-height:1.15;text-shadow:0 1px 2px #00000080}
+.home-service-ring .ring-text b{font-size:21px;font-weight:800;line-height:1.05}
+.home-service-ring .ring-mark{position:absolute;left:50%;bottom:-2px;display:grid;place-items:center;width:22px;height:22px;margin-left:-11px;border:2px solid #ffffff;border-radius:50%;background:var(--home-ok);color:#ffffff}
+.home-service-ring .ring-mark svg{width:14px;height:14px;stroke-width:3}
+.home-service-ring.status-soon .ring-mark{background:var(--home-soon)}
+.home-service-ring.status-soon .ring-arc .ring-value{stroke:#f2b21f}
+.home-service-ring.status-late .ring-arc .ring-value{stroke:#ef5a3c}
+.home-service-ring .ring-arc .ring-value{stroke:#5fd17f}
+.home-service-ring.status-late .ring-mark{background:#d8432f}
+.home-service-ring.status-none .ring-mark{background:var(--home-none)}
+.home-service-ring:focus-visible{outline:3px solid #ffffff;outline-offset:2px}
+/* Shortcuts: icon and name, separated by thin dividers */
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:0;margin:2px 0 0!important;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions>:is(button,a){position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:46px;padding:4px 2px;border:0;border-radius:12px;background:none;box-shadow:none;color:var(--ink);font:inherit;font-size:14px;font-weight:500;text-decoration:none}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions>:not(:first-child):before{content:'';position:absolute;left:0;top:13px;bottom:13px;width:1px;background:var(--hairline)}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions>:is(button,a):hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions .secretary-action-icon{flex:none;width:22px;height:22px}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions .home-action-label{min-width:0;max-width:100%;overflow-wrap:anywhere;text-align:center;line-height:1.2}
+/* Year's costs */
+html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses{--tone:var(--home-ok);display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;margin:0;padding:10px 10px 10px 12px;border:0;border-radius:18px;background:color-mix(in srgb,var(--tone) 13%,var(--t-surface,var(--paper,#ffffff)));box-shadow:none;color:var(--ink)}
+html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses.status-soon{--tone:var(--home-soon)}
+html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses.status-late{--tone:var(--home-late)}
+html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses.status-none{--tone:var(--home-none)}
+.home-expenses .cost-coins{display:grid;color:color-mix(in srgb,var(--tone) 82%,var(--ink))}
+.home-expenses .cost-coins svg{width:30px;height:30px}
+.home-expenses .cost-total{display:grid;gap:1px;min-width:0;margin:0;font-size:12.5px;line-height:1.2}
+.home-expenses .cost-total b{font-size:20px;font-weight:800;line-height:1.1;white-space:nowrap}
+.home-expenses .cost-split{display:grid;gap:3px;margin:0;padding-left:10px;border-left:1px solid color-mix(in srgb,var(--ink) 16%,transparent)}
+.home-expenses .cost-split>div{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:0}
+.home-expenses .cost-split dt,.home-expenses .cost-split dd{margin:0}
+.home-expenses .cost-split a{display:grid;place-items:center;min-width:24px;min-height:24px;color:var(--ink)}
+.home-expenses .cost-split svg{width:17px;height:17px}
+.home-expenses .cost-split dd{font-size:12.5px;font-weight:600;white-space:nowrap;text-align:right}
+.home-expenses .cost-report{display:flex;align-items:center;justify-content:center;gap:2px;min-width:52px;min-height:44px;padding:0 8px;border-radius:22px;background:var(--t-surface,var(--paper,#ffffff));color:var(--ink);box-shadow:0 2px 6px #3a28141f;text-decoration:none}
+.home-expenses .cost-report svg{width:20px;height:20px}
+.home-expenses .cost-report svg:first-child{color:color-mix(in srgb,var(--tone) 82%,var(--ink));stroke-width:2.6}
+.home-expenses .cost-report:focus-visible,.home-expenses .cost-split a:focus-visible{outline:2px solid var(--t-accent,var(--blue));outline-offset:2px}
+.home-inspection-alert{display:flex;align-items:center;gap:8px;min-height:40px;margin:0;padding:6px 10px;border-radius:14px;color:var(--ink);font-size:13px;font-weight:600;text-decoration:none}
+.home-inspection-alert svg{flex:none;width:18px;height:18px;color:var(--home-soon)}
+html .secretary-home.secretary-refined .vehicle-home-card>.vehicle-panels{margin-top:6px;padding:4px 4px 2px}
+.home-cost-notice{display:block;font-size:13px;color:var(--ink)}
+}
+/* Narrow phones: names under the icons and the cost split under the total. */
+@container(max-width:349px){
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+html .secretary-home.secretary-refined .vehicle-home-card>.secretary-actions>:is(button,a){flex-direction:column;gap:3px;min-height:54px;font-size:12.5px}
+.secretary-home .vehicle-home-card .home-service-ring{width:86px;height:86px}
+.home-service-ring .ring-text{max-width:62px;font-size:11px}
+.home-service-ring .ring-text b{font-size:19px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{max-width:calc(100% - 100px)}
+html .secretary-home.secretary-refined .vehicle-home-card>.home-expenses{grid-template-columns:auto minmax(0,1fr) auto;row-gap:8px}
+.home-expenses .cost-split{grid-column:1/-1;grid-row:2;display:flex;flex-wrap:wrap;gap:4px 18px;padding:8px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.home-expenses .cost-split>div{justify-content:flex-start}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{font-size:26px}
+}
+/* Light warm themes without their own scene art use the same beige studio as the default theme. */
+@media screen{
+html:is([data-theme=premium],[data-theme=eko]) .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{background-color:#e9dece;background-image:radial-gradient(ellipse at 50% 22%,#f7efe3 0%,#e9dece 65%,#d5c4af 100%)}
+}
+/* Dark mode of the default theme inverts the whole screen; the photo scene is shown in its own colours instead,
+   with a dark warm studio behind the vehicle, so the plate and the gauge keep their light-on-dark contrast. */
+@media screen{
+html.dark .device-glass .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{filter:invert(1) hue-rotate(180deg);background-color:#2a211a;background-image:radial-gradient(ellipse at 50% 22%,#56463a 0%,#2f251d 62%,#1b1511 100%)}
+html.dark .device-glass .secretary-home.secretary-refined .vehicle-home-card .secretary-hero :is(img,.car-render){filter:none}
+}
+/* The home screen uses the same navigation as Tankkaus and Raportit; adding a vehicle stays in the header. */
+#app-screen:has(.secretary-home)>.tab-dock>.tab-fab{display:none}
+/* Same 44 px touch target on every view (320 px phones had 42 px). */
+html .tab-dock>.tab-bar.main-tabs a{min-height:44px}

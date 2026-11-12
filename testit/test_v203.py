@@ -22,7 +22,7 @@ def test_approved_layout_and_values(browser,base,theme,width):
     try:
         p=s.page;avaa_ensimmainen_kortti(p);before=s.talli()
         order=nykyinen_ajoneuvo(p).evaluate('e=>[...e.children].map(x=>x.classList[0])')
-        assert order==['secretary-vehicle','vehicle-glance','secretary-actions','vehicle-panels']
+        assert order==['secretary-vehicle','secretary-actions','home-expenses','vehicle-panels']
         assert nykyinen_ajoneuvo(p).locator('.home-service-original .row-pct').inner_text()=='55 % jäljellä'
         assert 'Ajettavaa jäljellä n. 8 200 km' in ' '.join(nykyinen_ajoneuvo(p).locator('.home-service-original').inner_text().split())
         costs=' '.join(nykyinen_ajoneuvo(p).locator('.home-expenses').inner_text().split())
@@ -50,7 +50,7 @@ def test_vehicle_switch_shortcuts_and_navigation(browser,base):
         p.go_back();p.wait_for_selector('.secretary-refined')
         valitse_ajoneuvo(p,'tst2')
         assert 'TST-202' in nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').inner_text()
-        assert nykyinen_ajoneuvo(p).locator('.secretary-actions button').inner_text()=='Lataus +'
+        assert nykyinen_ajoneuvo(p).locator('.secretary-actions button').inner_text()=='Lataus'
         assert p.locator('.main-tabs a[aria-label="Huolto"]').get_attribute('href')=='#vehicle/tst2'
         assert p.locator('.main-tabs a[aria-label="Tankkaus ja lataus"]').get_attribute('href')=='#fuel/tst2'
         nykyinen_ajoneuvo(p).locator('[data-secretary-mode=manual]').click();ikkuna_valmis(p)
@@ -113,7 +113,7 @@ def test_inspection_and_fuel_observations_remain_accessible(browser,base):
         p.evaluate('AjouraApp.cars()[0].fuels[0].km=null;AjouraApp.refresh()')
         assert nykyinen_ajoneuvo(p).locator('.home-service-original .row-txt b').inner_text()=='Huolto kunnossa'
         assert '20.8.2027' in nykyinen_ajoneuvo(p).locator('.home-service-original .row-txt strong').inner_text()
-        assert 'tarkistettava' in nykyinen_ajoneuvo(p).locator('.home-inspection-note').inner_text()
+        assert 'tarkistettava' in nykyinen_ajoneuvo(p).locator('.home-inspection-alert').inner_text()
         assert 'mittarilukema' in nykyinen_ajoneuvo(p).locator('.home-cost-notice').inner_text()
         nykyinen_ajoneuvo(p).locator('.home-service>.secretary-vehicle-details>summary').click()
         assert nykyinen_ajoneuvo(p).locator('.secretary-primary').is_visible()
