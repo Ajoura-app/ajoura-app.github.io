@@ -151,7 +151,9 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
         for i, a in enumerate(boxes):
             assert min(a['width'], a['height']) >= 44, a
             assert a['x'] >= 0 and a['x'] + a['width'] <= width
-            assert a['y'] >= dock['y'] and a['y'] + a['height'] <= height - safe
+            # 2.10: same placement as on Tankkaus (0.74: the capsule sits close to the bottom edge, at most 12 px
+            # into the iPhone home-indicator area).
+            assert a['y'] >= dock['y'] and a['y'] + a['height'] <= height - max(0, safe - 12)
             for b in boxes[i + 1:]:
                 assert a['x'] + a['width'] <= b['x'] or b['x'] + b['width'] <= a['x'] or a['y'] + a['height'] <= b['y'] or b['y'] + b['height'] <= a['y'], (a,b)
         nykyinen_ajoneuvo(p).locator('.secretary-all-tasks > summary').click()

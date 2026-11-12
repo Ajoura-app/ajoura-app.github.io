@@ -354,7 +354,7 @@ html .secretary-home.secretary-refined .vehicle-home-card .secretary-vehicle{mar
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr);margin:0;padding:0;border:0;border-radius:20px;overflow:hidden;box-shadow:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero:after{content:'';grid-area:1/1;align-self:end;z-index:1;height:58%;border-radius:0 0 20px 20px;background:linear-gradient(to top,#140c069e 0%,#140c0647 42%,#140c0600 100%);pointer-events:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media:has(.car-photo){grid-area:1/1;position:relative;height:auto;min-height:0;aspect-ratio:1.8;border-radius:20px}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:14px 22px 30px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:6px 4px 12px}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 112px);min-height:0;margin:0;padding:0 0 12px 14px;border-radius:0;background:none;color:#ffffff;text-decoration:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-name{display:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta{display:grid;gap:1px;margin:0;color:#f4ece4;font-size:15px;line-height:1.25;text-shadow:0 1px 4px #000000a6}
