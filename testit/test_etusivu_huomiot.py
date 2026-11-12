@@ -143,8 +143,8 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
             s.context.new_cdp_session(p).send('Emulation.setSafeAreaInsetsOverride',
                                             {'insets': {'top': 47, 'bottom': safe}})
         dock = p.locator('.tab-dock').bounding_box()
-        # Four labelled navigation controls require 80 px before the device safe area.
-        assert dock['height'] <= 80 + safe, dock
+        # 2.10: the same navigation as Tankkaus and Raportit (tablet scale 1.3 included) stays compact.
+        assert dock['height'] <= 84 + safe, dock
         controls = p.locator('.main-tabs a:visible')
         assert controls.count() == 4
         boxes = [x.bounding_box() for x in controls.all()]

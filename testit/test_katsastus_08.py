@@ -14,7 +14,7 @@ def test_arvio_ei_maaraaika(browser,base,lang,estimate,unknown,theme):
     try:
         p=s.page;before=s.talli()
         avaa_ajoneuvon_tiedot(p)
-        assert 'tarkistettava' in p.inner_text('.home-inspection-note')
+        assert 'tarkistettava' in p.inner_text('.home-inspection-alert')
         assert p.locator('.row-status.late,.row-status.soon').count()==0
         task=p.locator('[data-task-key*=inspection-check]');assert task.count()==1
         assert unknown in task.inner_text()

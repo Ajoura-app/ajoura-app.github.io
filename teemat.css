@@ -353,7 +353,7 @@ html .secretary-home.secretary-refined .vehicle-home-card+.vehicle-home-card{mar
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-vehicle{margin:0}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr);margin:0;padding:0;border:0;border-radius:20px;overflow:hidden;box-shadow:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero:after{content:'';grid-area:1/1;align-self:end;z-index:1;height:58%;border-radius:0 0 20px 20px;background:linear-gradient(to top,#140c069e 0%,#140c0647 42%,#140c0600 100%);pointer-events:none}
-html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media:has(.car-photo){grid-area:1/1;position:relative;height:auto;min-height:0;aspect-ratio:1.85;border-radius:20px}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media:has(.car-photo){grid-area:1/1;position:relative;height:auto;min-height:0;aspect-ratio:1.8;border-radius:20px}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:14px 22px 30px}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 112px);min-height:0;margin:0;padding:0 0 12px 14px;border-radius:0;background:none;color:#ffffff;text-decoration:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-name{display:none}
@@ -435,5 +435,9 @@ html.dark .device-glass .secretary-home.secretary-refined .vehicle-home-card .se
 }
 /* The home screen uses the same navigation as Tankkaus and Raportit; adding a vehicle stays in the header. */
 #app-screen:has(.secretary-home)>.tab-dock>.tab-fab{display:none}
+/* While typing on home, keep the dock's space (hidden) so buttons do not move when the keyboard closes mid-tap. */
+@media screen and (pointer:coarse){
+#app-screen:has(.secretary-home):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:block;visibility:hidden}
+}
 /* Same 44 px touch target on every view (320 px phones had 42 px). */
 html .tab-dock>.tab-bar.main-tabs a{min-height:44px}
