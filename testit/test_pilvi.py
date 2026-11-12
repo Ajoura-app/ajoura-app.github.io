@@ -197,12 +197,13 @@ def test_uloskirjautuminen_sailyttaa_tiedot(browser, base):
         a.sulje()
 
 
-def test_kirjautumisnakyma_kielet(browser, base):
-    for kieli, sana in (("en", "Sign in with Google"), ("sv", "Logga in med Google")):
+def test_kirjautumisnakyman_vanhat_kielivalinnat(browser, base):
+    for kieli in ("en", "sv"):
         s = avaa(browser, base, "login", kello=KELLO, kieli=kieli, leveys=320)
         try:
             teksti = s.page.inner_text("#app-screen")
-            assert sana in teksti and "pilveen" not in teksti and "Kirjaudu" not in teksti, teksti
+            assert s.page.evaluate("AjouraI18n.lang")=="fi"
+            assert "Kirjaudu Google-tilillä" in teksti and "pilveen" in teksti, teksti
             assert s.page.evaluate("document.querySelector('#app-screen .screen-content').scrollWidth <= 320")
         finally:
             s.sulje()
