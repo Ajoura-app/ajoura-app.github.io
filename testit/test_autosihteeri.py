@@ -5,7 +5,7 @@ from apu import avaa, KELLO, ikkuna_valmis, valitse_ajoneuvo, avaa_kirjausvaihto
 from test_plus import palvelu, PLUS
 
 @pytest.mark.parametrize('width',[320,375,390,430])
-@pytest.mark.parametrize('theme',['nykyinen','dark','auto','eko','blue-track','premium'])
+@pytest.mark.parametrize('theme',['nykyinen', 'dark'])
 def test_asettelu(browser,base,width,theme):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=width,
            teema='dark' if theme=='dark' else None,

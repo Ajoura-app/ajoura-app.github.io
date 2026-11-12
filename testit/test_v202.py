@@ -21,7 +21,7 @@ def test_vanha_kielivalinta_siirtyy_suomeen(browser,base,saved):
         assert p.locator('.app-heading').inner_text()=='Asetukset'
     finally:s.sulje()
 
-@pytest.mark.parametrize('theme',['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 @pytest.mark.parametrize('width',[320,390,430])
 def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
     cars=tiedot.talli();cars[0]['photo']=tiedot.jpeg(koko=(600,400))
@@ -42,7 +42,7 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
     finally:s.sulje()
 
 def test_uusi_mikrofoni_kaynnistaa_nykyisen_puhepolun(browser,base):
-    s=avaa(browser,base,'home',autot=tiedot.talli(),extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'1'})
+    s=avaa(browser,base,'home',autot=tiedot.talli(),extra={'ajoura-tekoaly':'1'})
     try:
         p=s.page;avaa_ensimmainen_kortti(p);cloud=palvelu(s,oikeus=PLUS);avaa_ensimmainen_kortti(p);p.evaluate(KEKSITTY_PUHE);p.evaluate('AjouraApp.refresh()')
         p.locator('[data-home-mic]').click()
@@ -54,7 +54,7 @@ def test_uusi_mikrofoni_kaynnistaa_nykyisen_puhepolun(browser,base):
 
 @pytest.mark.parametrize('fail',[False,True])
 def test_kuvan_kasittely_tallennus_ja_virhepolku(browser,base,fail):
-    s=avaa(browser,base,'vehicle/tst1',autot=tiedot.talli(),extra={'ajoura-ulkoasu':'garage'})
+    s=avaa(browser,base,'vehicle/tst1',autot=tiedot.talli(),extra={})
     try:
         p=s.page
         avaa_ensimmainen_kortti(p)

@@ -7,7 +7,7 @@ from test_mikrofoni import KEKSITTY_PUHE
 from test_plus import PLUS,palvelu
 
 CLOCK='2026-11-11T12:00:00'
-THEMES=['garage','copilot','nordic','journey','nykyinen','dark']
+THEMES=['nykyinen', 'dark']
 
 def garage():
     cars=tiedot.talli()
@@ -41,7 +41,7 @@ def test_approved_layout_and_values(browser,base,theme,width):
     finally:s.sulje()
 
 def test_vehicle_switch_shortcuts_and_navigation(browser,base):
-    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,extra={'ajoura-ulkoasu':'garage'})
+    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,extra={})
     try:
         p=s.page;avaa_ensimmainen_kortti(p);before=s.talli()
         p.locator('.cinematic-brand a[aria-label="Profiili ja tili"]').click();p.wait_for_function('location.hash==="#me/tili"')
@@ -73,7 +73,7 @@ def test_vehicle_switch_shortcuts_and_navigation(browser,base):
 
 
 def test_avatar_starts_speech_once(browser,base):
-    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'1'})
+    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,extra={'ajoura-tekoaly':'1'})
     try:
         p=s.page;avaa_ensimmainen_kortti(p);cloud=palvelu(s,oikeus=PLUS);avaa_ensimmainen_kortti(p);p.evaluate(KEKSITTY_PUHE);p.evaluate('AjouraApp.refresh()')
         p.locator('[data-home-mic] img').click()
@@ -86,7 +86,7 @@ def test_avatar_starts_speech_once(browser,base):
 
 def test_swipe_missing_service_and_overdue(browser,base):
     cars=garage();cars[0]['events']=[]
-    s=avaa(browser,base,'home',autot=cars,kello=CLOCK,extra={'ajoura-ulkoasu':'nordic'})
+    s=avaa(browser,base,'home',autot=cars,kello=CLOCK,extra={})
     try:
         p=s.page
         avaa_ensimmainen_kortti(p)
@@ -106,7 +106,7 @@ def test_swipe_missing_service_and_overdue(browser,base):
 
 def test_inspection_and_fuel_observations_remain_accessible(browser,base):
     cars=garage();cars[0]['events'].append(tiedot.merkinta('inspection','Katsastus','2024-01-01',130000,cost='55'))
-    s=avaa(browser,base,'home',autot=cars,kello=CLOCK,extra={'ajoura-ulkoasu':'garage'})
+    s=avaa(browser,base,'home',autot=cars,kello=CLOCK,extra={})
     try:
         p=s.page;avaa_ensimmainen_kortti(p);before=s.talli()
         # Exercise an incomplete in-memory observation without weakening backup validation.
@@ -123,7 +123,7 @@ def test_inspection_and_fuel_observations_remain_accessible(browser,base):
 
 
 def test_voice_unavailable_feedback_stays_by_avatar(browser,base):
-    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,asennettu=True,ios=True,extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'0'})
+    s=avaa(browser,base,'home',autot=garage(),kello=CLOCK,asennettu=True,ios=True,extra={'ajoura-tekoaly':'0'})
     try:
         p=s.page;avaa_ensimmainen_kortti(p);before=s.talli()
         p.locator('[data-home-mic]').click()

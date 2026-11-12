@@ -5,7 +5,7 @@ from test_v203 import garage, CLOCK
 
 
 @pytest.mark.parametrize('state', ['ok', 'late', 'missing'])
-@pytest.mark.parametrize('theme', ['garage', 'blue-track', 'nordic'])
+@pytest.mark.parametrize('theme', ['nykyinen'])
 def test_alkuperainen_huoltonakyma_vain_kerran(browser, base, state, theme):
     cars = garage()
     if state == 'late':

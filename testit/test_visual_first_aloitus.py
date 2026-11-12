@@ -3,7 +3,7 @@ import pytest
 import tiedot
 from apu import avaa,KELLO
 
-THEMES=['garage','copilot','nordic','journey']
+THEMES=['nykyinen']
 
 
 @pytest.mark.parametrize('theme',THEMES)
@@ -20,8 +20,9 @@ def test_splashin_tekstikontrasti(browser,base,theme):
     finally:s.sulje()
 
 
-def test_teemojen_ymparistot_ja_animaatiot_erottuvat(browser,base):
-    art=[];light=[];content=[]
+def test_kaynnistyksen_valo_ja_sisalto(browser,base):
+    """2.11: yksi teema; käynnistyksen valoanimaatio ei estä napautuksia eikä muuta sisältöä."""
+    light=[];content=[]
     for theme in THEMES:
         s=avaa(browser,base,'welcome',autot=tiedot.talli(),kello=KELLO,
                extra={'ajoura-ulkoasu':theme,'ajoura-hahmo':'mikko'})
@@ -29,10 +30,9 @@ def test_teemojen_ymparistot_ja_animaatiot_erottuvat(browser,base):
             p=s.page;before=s.talli();p.emulate_media(reduced_motion='no-preference')
             p.evaluate('''()=>{const root=document.createElement('div');root.className='intro-overlay';root.innerHTML=AjouraLaunch.html('');document.body.append(root)}''')
             style=p.locator('.ai-intro-light').evaluate('''e=>({art:getComputedStyle(e,'::before').backgroundImage,light:getComputedStyle(e,'::after').animationName,interactive:getComputedStyle(e).pointerEvents})''')
-            assert f'ui-art/{theme}-room.webp' in style['art']
             assert style['interactive']=='none'
             assert style['light']!='none'
-            art.append(style['art']);light.append(style['light'])
+            light.append(style['light'])
             content.append(p.inner_text('.ai-intro'))
             assert p.locator('.ai-intro .assistant-avatar img').get_attribute('src')=='hahmot/mikko.webp'
             assert p.locator('.ai-intro .assistant-avatar').bounding_box()['width']>=190
@@ -42,8 +42,7 @@ def test_teemojen_ymparistot_ja_animaatiot_erottuvat(browser,base):
             assert before==s.talli()
             assert not s.virheet,s.virheet
         finally:s.sulje()
-    assert len(set(art))==4 and len(set(light))==4
-    assert len(set(content))==1,'Theme must not change capabilities or the selected character'
+    assert light and content
 
 
 @pytest.mark.parametrize('theme',THEMES)
@@ -62,13 +61,12 @@ def test_welcome_suuri_teksti_ja_alkuperaiset_ohjaimet(browser,base,theme,lang,w
         p.locator('.ai-welcome-personal>summary').focus();p.keyboard.press('Enter')
         p.locator('[data-avatar-choice=mikko]').click()
         assert p.locator('.ai-welcome-hero img').get_attribute('src')=='hahmot/mikko.webp'
-        assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")==theme
         assert not p.evaluate("AjouraAccess.can('ai.receipt')")
-        p.locator('.ai-welcome-personal a[href="#theme"]').click()
-        p.wait_for_selector('[data-th-pick]')
-        target=THEMES[(THEMES.index(theme)+1)%len(THEMES)]
-        p.locator(f'[data-th-pick={target}]').click();p.locator('[data-th-apply]').click()
-        assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")==target
+        # 2.11: teemapainike poistettu; vaalea/tumma valitaan tervetulosivun omalla valitsimella.
+        assert p.locator('.ai-welcome-personal a[href="#theme"]').count()==0
+        p.locator('.ai-welcome [data-pref=Teema][data-value=dark]').click()
+        assert p.evaluate("document.documentElement.classList.contains('dark')")
+        p.goto(base+'/app.html#settings');p.wait_for_selector('.me-data')
         p.go_back();p.wait_for_selector('.ai-welcome')
         assert p.locator('.ai-welcome-hero img').get_attribute('src')=='hahmot/mikko.webp'
         p.locator('a[href="#login"]').click();p.wait_for_function('location.hash==="#login"')

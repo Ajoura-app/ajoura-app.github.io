@@ -12,9 +12,9 @@ NAKYMAT = {
     "edit": "edit/tst1/e1", "add": "add/tst1", "add-vene": "add/tst3", "report": "report/tst1",
     "report-raportit": "report/tst1/raportit", "caredit": "caredit/tst1", "owner": "owner/tst1",
     "notes": "notes/tst1", "fuel": "fuel/tst1", "fuel-sahko": "fuel/tst2",
-    "fuel-ajoneuvo": "fuel/tst1/ajoneuvo", "theme": "theme",
+    "fuel-ajoneuvo": "fuel/tst1/ajoneuvo",
 }
-TYHJA = ["home", "menu", "me", "help", "settings", "theme", "tips", "reports", "newcar", "fuel"]
+TYHJA = ["home", "menu", "me", "help", "settings", "tips", "reports", "newcar", "fuel"]
 
 
 def tarkista(s, osoite):

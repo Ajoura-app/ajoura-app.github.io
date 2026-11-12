@@ -26,28 +26,9 @@ LOPPU = "/* GENEROITU LOPPU */"
 # Teemat: id, perusvärit. Arvot ovat suunnittelun lähtökohtia (CLAUDE_TOTEUTUSOHJE), kontrastit tarkistettu
 # (testit/test_teemat.py). neutral_h/neutral_k: harmaasävyjen sävy (OKLCH-asteina) ja värikylläisyyden kerroin.
 # deco: sivun yläosan koristeen tummin väri (teemat.css: var(--t-deco)); tekstien kontrasti lasketaan myös sitä vasten.
-TEEMAT = {
-    "auto": dict(bg="#f5f4f2", surface="#ffffff", text="#1b1e21", accent="#94592a", neutral_h=70, neutral_k=0.35, deco="#ebe8e4",
-                 nav="#202326", hero="#202326", chart=["#2f6f9f", "#3f8a5a", "#94592a", "#7d8590"],
-                 # Etusivun ajoneuvokortti ja alavalikko tummina (grafiitti): oma tumma värimuunnos niiden sisällä.
-                 osat={".garage-row,.tab-bar.main-tabs": dict(bg="#17191c", surface="#23262a", text="#f4f2ef",
-                                                             accent="#d79a62", neutral_h=70, neutral_k=0.35, dark=True)}),
-    "eko": dict(bg="#f3f7f2", surface="#ffffff", text="#1b2c23", accent="#2c6848", neutral_h=150, neutral_k=0.75, deco="#e3efe2",
-                nav="#ffffff", hero="#ffffff", chart=["#2f6db0", "#2c8a57", "#b8742a", "#7b8a80"]),
-    "blue-track": dict(bg="#091d30", surface="#143650", text="#f4f8fb", accent="#43cada", neutral_h=245,
-                       neutral_k=1.1, dark=True, nav="#0e2a42", hero="#143650",
-                       chart=["#43cada", "#5fd39a", "#c7a2ff", "#9fb3c8"]),
-    "premium": dict(bg="#f3ece6", surface="#fff9f5", text="#282422", accent="#9a583f", neutral_h=55, neutral_k=0.9, deco="#ebe1d8",
-                    nav="#fff9f5", hero="#fff9f5", chart=["#4f6f8f", "#5d8a5e", "#9a583f", "#8f857d"]),
-    "garage": dict(bg="#071110", surface="#142423", text="#f1f8f6", accent="#48dbc5", neutral_h=180, neutral_k=0.8,
-                   dark=True, nav="#081412", hero="#112725", chart=["#48dbc5", "#a6d99c", "#e8bd78", "#9eafc0"]),
-    "copilot": dict(bg="#0e1025", surface="#202440", text="#f7f6ff", accent="#a399ff", neutral_h=285, neutral_k=0.9,
-                    dark=True, nav="#11142b", hero="#202440", chart=["#a399ff", "#75d4ce", "#e6b586", "#aab4da"]),
-    "nordic": dict(bg="#f3f7f5", surface="#ffffff", text="#163832", accent="#176a5a", neutral_h=160, neutral_k=0.5,
-                   nav="#ffffff", hero="#ffffff", chart=["#176a5a", "#467bb1", "#a16d2e", "#758b87"]),
-    "journey": dict(bg="#101916", surface="#1a2b25", text="#faf8ec", accent="#d7c376", neutral_h=150, neutral_k=0.6,
-                    dark=True, nav="#111e18", hero="#1a2b25", chart=["#d7c376", "#86c6a5", "#95b9d5", "#d1a0b4"]),
-}
+# 2.11 (käyttäjä): vain Alkuperäinen teema (ja sen tumma tila). Muut teemat (0.110–2.01) poistettiin, jotta yksi teema
+# viimeistellään ensin. Uusi teema lisätään tähän samassa muodossa kuin git-historiassa (versio 2.10).
+TEEMAT = {}
 # Teeman muuttujat koskevat vain sovellusta: puhelinkehyksen sisäosaa ja sen ulkopuolelle avautuvia ikkunoita,
 # sekä puhelimessa (selain tai asennettu sovellus) koko sivua. Tietokoneen esittelysivu pysyy ennallaan.
 ALUE = ("html[data-theme={t}] .device-glass,html[data-theme={t}] .att-viewer,html[data-theme={t}] .intro-overlay,"

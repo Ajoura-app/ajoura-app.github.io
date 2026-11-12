@@ -4,7 +4,7 @@ import tiedot
 from apu import avaa,KELLO
 from test_plus import palvelu,PLUS
 
-@pytest.mark.parametrize('theme',['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 @pytest.mark.parametrize('character',['emma','mikko','ankka'])
 @pytest.mark.parametrize('width',[320,390,430])
 def test_welcome_matriisi(browser,base,theme,character,width):
@@ -97,7 +97,7 @@ def test_welcome_ja_opastus_offline(browser):
         assert not k.virheet,k.virheet
     finally:k.sulje();server.sulje()
 
-@pytest.mark.parametrize('theme',['nykyinen','auto','eko','blue-track','premium','garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_kontrasti(browser,base,theme):
     from test_teemat import KONTRASTI
     s=avaa(browser,base,'welcome',kello=KELLO,extra={'ajoura-ulkoasu':theme})

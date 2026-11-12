@@ -4,7 +4,7 @@ import tiedot
 from apu import avaa, KELLO, ikkuna_valmis
 
 
-@pytest.mark.parametrize('theme', ['nykyinen', 'dark', 'garage', 'copilot', 'nordic', 'journey'])
+@pytest.mark.parametrize('theme', ['nykyinen', 'dark'])
 @pytest.mark.parametrize('width', [320, 390, 430])
 def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,

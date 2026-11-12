@@ -10,7 +10,7 @@ from apu import avaa, KELLO, valitse_ajoneuvo, avaa_ajoneuvon_tiedot
 def test_hero_kuva_ja_ensimmainen_nakyma(browser, base, width, height):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
              leveys=width, korkeus=height, asennettu=True, ios=True,
-             extra={'ajoura-ulkoasu': 'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -38,7 +38,7 @@ def test_valitsimen_nappaimisto_ja_jarjestys(browser, base, lang):
     cars = [tiedot.auto(id=f'v{i}', plate=f'TST-{i + 101}',
                        nick=f'Pitkä fiktiivinen ajoneuvon nimi numero {i + 1}') for i in range(5)]
     s = avaa(browser, base, 'home', autot=cars, kello=KELLO, kieli=lang,
-             leveys=320, extra={'ajoura-ulkoasu': 'garage'})
+             leveys=320, extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -76,7 +76,7 @@ def kosketa(cdp, x, y, dx, dy):
 
 def test_pyyhkaisy_oikeasta_kuva_alueesta(browser, base):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
-             asennettu=True, ios=True, extra={'ajoura-ulkoasu': 'garage'})
+             asennettu=True, ios=True, extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -108,7 +108,7 @@ def test_eri_ajoneuvojen_kuvat_ja_yksikot(browser, base, variant):
     elif variant == 'motorhome':
         c.update(body='motorhome', name='Testimatkailuauto')
     s = avaa(browser, base, 'home', autot=[c], kello=KELLO, leveys=320,
-             extra={'ajoura-ulkoasu': 'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -136,7 +136,7 @@ def test_heron_pitka_teksti_ja_kaksinkertainen_tekstikoko(browser, base):
     cars = tiedot.talli()
     cars[0]['nick'] = 'Fiktiivinen erittäin pitkä ajoneuvon nimi <img src=x onerror=alert(1)>'
     s = avaa(browser, base, 'home', autot=cars, kello=KELLO, leveys=320,
-             extra={'ajoura-ulkoasu': 'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)

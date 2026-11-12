@@ -1,10 +1,10 @@
-"""Teemat: Alkuperäinen, neljä aiempaa teemaa sekä Garage, Copilot, Nordic ja Journey.
+"""Teemat (2.11): käytössä on vain Alkuperäinen teema ja sen tumma tila.
 
-- Värit ovat app.css:ssä muodossa var(--c-xxxxxx,#xxxxxx): alkuperäinen väri on varaväri, joten Alkuperäinen-teema
-  (oletus) ei muutu eikä riipu teemat.css:stä. tyokalut/teemat.py pitää värit ja teemat.css:n ajan tasalla.
-- Valinta tallentuu laitteelle (localStorage ajoura-ulkoasu) ja näkyy heti ja uudelleenavauksessa.
-- Vanha tumma tila (ajoura-theme=dark) säilyy Alkuperäisessä teemassa; uusissa teemoissa ei käänteissuodatinta.
-- Jokaisessa teemassa tekstien kontrasti on vähintään yhtä hyvä kuin Alkuperäisessä (tai vähintään 4,5:1).
+- Muut teemat poistettiin käyttäjän päätöksellä 12.11.2026 (yksi teema valmiiksi ennen uusia).
+- Vanha teemavalinta (localStorage ajoura-ulkoasu) jätetään huomiotta: näkymä on Alkuperäinen.
+- Vaalea tai tumma tila valitaan Asetuksista (localStorage ajoura-theme); vanha #theme-osoite ohjaa Asetuksiin.
+- Värit ovat app.css:ssä yhä muodossa var(--c-xxxxxx,#xxxxxx), ja tyokalut/teemat.py pitää ne ajan tasalla uutta
+  teemaa varten.
 """
 import re
 import subprocess
@@ -17,14 +17,7 @@ import tiedot
 from apu import KELLO, avaa, odota_nakyma
 from conftest import JUURI
 
-VANHAT_TEEMAT = ["auto", "eko", "blue-track", "premium"]
-UUDET_TEEMAT = ["garage", "copilot", "nordic", "journey"]
-TEEMAT = VANHAT_TEEMAT + UUDET_TEEMAT
-TAUSTA = {"auto": "rgb(245, 244, 242)", "eko": "rgb(243, 247, 242)", "blue-track": "rgb(9, 29, 48)",
-          "premium": "rgb(243, 236, 230)", "garage": "rgb(7, 17, 16)", "copilot": "rgb(14, 16, 37)",
-          "nordic": "rgb(243, 247, 245)", "journey": "rgb(16, 25, 22)"}
-NAKYMAT = ["car-order", "home", "fuel/tst1", "reports", "vehicle/tst1", "event/tst1/e1", "add/tst1", "report/tst1",
-           "notes/tst1", "menu", "settings", "theme", "tips", "me"]
+POISTETUT = ["auto", "eko", "blue-track", "premium", "garage", "copilot", "nordic", "journey"]
 
 
 def test_generaattori_ajan_tasalla():
@@ -60,80 +53,7 @@ def test_alkuperainen_oletuksena(browser, base):
         s.sulje()
 
 
-def test_vanha_tumma_tila_sailyy(browser, base):
-    """Ennen 0.110:tä valittu tumma tila jää voimaan Alkuperäisessä teemassa, ja Asetukset kertoo sen."""
-    s = avaa(browser, base, "settings", autot=tiedot.talli(), teema="dark", kello=KELLO)
-    try:
-        assert s.page.evaluate("document.documentElement.classList.contains('dark')")
-        assert "Alkuperäinen · Tumma" in s.page.inner_text(".th-row")
-    finally:
-        s.sulje()
-
-
-def test_teeman_vaihto_ja_pysyvyys(browser, base):
-    s = avaa(browser, base, "settings", autot=tiedot.talli(), teema="dark", kello=KELLO, asennettu=True, ios=True)
-    p = s.page
-    try:
-        p.click(".th-row a[href='#theme']")
-        odota_nakyma(s, "theme")
-        assert p.locator("[data-th-pick]").count() == 9
-        assert p.locator(".th-opt.on [data-th-pick=nykyinen]").count() == 1
-        assert p.locator("[data-th-apply]").count() == 0, "Käytössä olevalla teemalla ei Ota käyttöön -painiketta"
-        p.click("[data-th-pick=eko]")
-        assert p.get_attribute("[data-th-pick=eko]", "aria-checked") == "true"
-        assert p.evaluate("document.documentElement.getAttribute('data-theme')") is None, "valinta ei vielä vaihda"
-        p.click(".th-opt.on [data-th-apply]")
-        p.wait_for_timeout(200)
-        tila = p.evaluate("[document.documentElement.getAttribute('data-theme'), document.documentElement.classList.contains('dark'),"
-                          "localStorage.getItem('ajoura-ulkoasu'), getComputedStyle(document.querySelector('.device-glass')).backgroundColor,"
-                          "document.querySelector('meta[name=theme-color]').content]")
-        assert tila == ["eko", False, "eko", TAUSTA["eko"], "#f3f7f2"], tila
-        assert "Teema otettu käyttöön" in p.inner_text(".th-opt.on")
-        # Uudelleenavaus: teema säilyy ja näkyy heti (app.html:n alussa, ennen sovelluksen skriptejä)
-        p.reload()
-        p.wait_for_selector("#app-screen .screen-content")
-        assert p.evaluate("document.documentElement.getAttribute('data-theme')") == "eko"
-        p.goto(base + "/app.html#settings")
-        p.wait_for_timeout(300)
-        assert "Eko" in p.inner_text(".th-row")
-        # Paluu Alkuperäiseen vaaleana
-        p.goto(base + "/app.html#theme")
-        p.wait_for_timeout(300)
-        p.click("[data-th-mode=light]")
-        p.click(".th-opt.on [data-th-apply]")
-        p.wait_for_timeout(200)
-        assert p.evaluate("[document.documentElement.getAttribute('data-theme'), document.documentElement.classList.contains('dark'),"
-                          "localStorage.getItem('ajoura-ulkoasu'), localStorage.getItem('ajoura-theme')]") == [None, False, "nykyinen", "light"]
-        p.click(".nav-back")
-        odota_nakyma(s, "settings")
-        assert not s.virheet, s.virheet
-    finally:
-        s.sulje()
-
-
-def test_koko_kuva_aukeaa(browser, base):
-    s = avaa(browser, base, "theme", autot=tiedot.talli(), kello=KELLO)
-    p = s.page
-    try:
-        p.click("[data-th-full=premium]")
-        p.wait_for_selector("dialog.th-viewer[open] img")
-        p.wait_for_function("document.querySelector('dialog.th-viewer img').naturalWidth > 0")
-        p.click("dialog.th-viewer button")
-        p.wait_for_selector("dialog.th-viewer", state="detached", timeout=2000)
-        assert not s.virheet, s.virheet
-    finally:
-        s.sulje()
-
-
-def test_tumma_tila_vain_alkuperaisessa(browser, base):
-    """Tumma tila on Alkuperäisen teeman käänteissuodatin: uusissa teemoissa sitä ei käytetä."""
-    s = avaa(browser, base, "home", autot=tiedot.talli(), teema="dark", extra={"ajoura-ulkoasu": "premium"}, kello=KELLO)
-    try:
-        assert s.page.evaluate("[document.documentElement.classList.contains('dark'), getComputedStyle(document.querySelector('.device-glass')).filter]") == [False, "none"]
-    finally:
-        s.sulje()
-
-
+# Muut testit (esim. test_landing.py, test_teemat_visuaaliset.py) käyttävät tätä kontrastimittausta.
 # Kontrasti: jokaisen näkyvän tekstin väri suhteessa sen taustaan. Tausta haetaan ylöspäin vanhemmista
 # (läpinäkyvät värit yhdistetään; liukuväreistä käytetään jokaista väriä ja pienin kontrasti ratkaisee).
 KONTRASTI = r"""() => {
@@ -176,160 +96,62 @@ KONTRASTI = r"""() => {
 }"""
 
 
-def _kontrastit(browser, base, nakyma, teema):
-    extra = {"ajoura-ulkoasu": teema} if teema else {}
-    s = avaa(browser, base, nakyma, autot=tiedot.talli(), kello=KELLO, asennettu=True, ios=True, extra=extra)
+@pytest.mark.parametrize("vanha", POISTETUT)
+def test_vanha_teemavalinta_ohitetaan(browser, base, vanha):
+    """Aiemmin muun teeman valinnut näkee Alkuperäisen vaalean ilmeen; tallennetut tiedot eivät muutu."""
+    s = avaa(browser, base, "home", autot=tiedot.talli(), kello=KELLO, extra={"ajoura-ulkoasu": vanha})
     try:
-        s.page.wait_for_timeout(300)
-        assert not s.virheet, f"{teema} #{nakyma}: " + "; ".join(s.virheet)
-        return {x["i"]: x for x in s.page.evaluate(KONTRASTI)}
-    finally:
-        s.sulje()
-
-
-@pytest.mark.parametrize("nakyma", NAKYMAT)
-def test_kontrasti_vahintaan_alkuperaisen_tasoa(browser, base, nakyma):
-    alku = _kontrastit(browser, base, nakyma, None)
-    virheet = []
-    for teema in TEEMAT:
-        t = _kontrastit(browser, base, nakyma, teema)
-        for i, x in t.items():
-            a = alku.get(i)
-            raja = 3.0 if x["iso"] else 4.5
-            vaatimus = min(raja, a["k"]) - 0.25 if a and a["t"] == x["t"] else raja
-            if x["k"] < vaatimus:
-                virheet.append(f"{teema}: '{x['t']}' ({x['sel']}) {x['k']}:1 < {vaatimus:.2f}")
-    assert not virheet, f"#{nakyma}: " + "; ".join(virheet[:12])
-
-
-@pytest.mark.parametrize("teema", TEEMAT)
-def test_teema_koko_sovelluksessa(browser, base, teema):
-    """Teema näkyy kaikissa keskeisissä näkymissä (tausta, kortit, alavalikko ja kelluva ＋), ei vain etusivulla."""
-    s = avaa(browser, base, "home", autot=tiedot.talli(), kello=KELLO, asennettu=True, ios=True, extra={"ajoura-ulkoasu": teema})
-    p = s.page
-    try:
-        for v in ["home", "fuel/tst1", "reports", "vehicle/tst1", "menu", "settings", "theme", "add/tst1"]:
-            p.goto(base + "/app.html#" + v)
-            p.wait_for_timeout(250)
-            assert p.evaluate("document.documentElement.getAttribute('data-theme')") == teema
-            assert p.evaluate("getComputedStyle(document.querySelector('#app-screen')).backgroundColor") == TAUSTA[teema], v
-            nav = p.evaluate("(() => { const a = document.querySelector('.tab-bar.main-tabs a[aria-current]'); return a ? getComputedStyle(a).backgroundColor : null; })()")
-            if nav:
-                assert nav not in ("rgb(223, 234, 253)",), f"#{v}: alavalikon valittu välilehti alkuperäisen sininen"
-            fab = p.evaluate("(() => { const a = document.querySelector('.tab-fab'); return a ? getComputedStyle(a).backgroundColor : null; })()")
-            if fab:
-                assert fab != "rgb(223, 234, 253)", f"#{v}: kelluva ＋ alkuperäisen sininen"
+        p = s.page
+        ennen = s.talli()
+        tila = p.evaluate("[document.documentElement.getAttribute('data-theme'), document.documentElement.classList.contains('dark'),"
+                          "getComputedStyle(document.querySelector('.device-glass')).backgroundColor]")
+        assert tila == [None, False, "rgb(245, 248, 252)"], tila
+        assert s.talli() == ennen
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
 
 
-def test_teemat_tiedosto_offline_osassa():
+def test_tumma_tila_asetuksista_ja_pysyvyys(browser, base):
+    s = avaa(browser, base, "settings", autot=tiedot.talli(), kello=KELLO)
+    try:
+        p = s.page
+        ennen = s.talli()
+        assert p.locator("[data-th-pick], .th-row, a[href='#theme']").count() == 0
+        p.locator('.me-data [data-pref=Teema][data-value=dark]').click()
+        assert p.evaluate("document.documentElement.classList.contains('dark')")
+        assert p.evaluate("localStorage.getItem('ajoura-theme')") == "dark"
+        assert p.locator('.me-data [data-pref=Teema][data-value=dark]').get_attribute('aria-pressed') == 'true'
+        p.reload()
+        p.wait_for_selector('.me-data')
+        assert p.evaluate("document.documentElement.classList.contains('dark')")
+        assert "invert(1)" in p.evaluate("getComputedStyle(document.querySelector('.device-glass')).filter")
+        p.locator('.me-data [data-pref=Teema][data-value=light]').click()
+        assert not p.evaluate("document.documentElement.classList.contains('dark')")
+        assert s.talli() == ennen
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_vanha_teemasivu_ohjaa_asetuksiin(browser, base):
+    s = avaa(browser, base, "theme", autot=tiedot.talli(), kello=KELLO)
+    try:
+        s.page.wait_for_function("location.hash === '#settings'")
+        assert s.page.locator('.me-data [data-pref=Teema]').count() == 2
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_muiden_teemojen_koodi_ja_kuvat_poistettu():
+    for f in ["teemat.css", "kaynnistys.css", "tervetuloa.css", "app.js", "app.html", "autosihteeri.js"]:
+        t = (JUURI / f).read_text()
+        assert not re.search(r"\[data-theme=|data-theme=\\?\"?(garage|copilot|nordic|journey|auto|eko|blue-track|premium)", t), f
+        assert "secretary-cinematic" not in t and "data-th-pick" not in t, f
+    assert not (JUURI / "teemakuvat").exists()
     sw = (JUURI / "sw.js").read_text()
+    assert "teemakuvat/" not in sw and "-room.webp'" not in sw.replace("'ui-art/garage-room.webp'", "")
     assert "'teemat.css'" in sw
-    html = (JUURI / "app.html").read_text()
-    assert re.search(r'href="teemat\.css\?v=ak-\d+"', html)
-    for t in ["nykyinen"] + TEEMAT:
-        assert (JUURI / "teemakuvat" / f"{t}.webp").is_file() and (JUURI / "teemakuvat" / f"{t}-pieni.webp").is_file()
-
-
-@pytest.mark.parametrize("teema", TEEMAT)
-def test_ei_vaakavieritysta_teemoissa(browser, base, teema):
-    """Teemojen erot (esim. Premiumin päätekirjasin, Ekon pyöreämmät kortit) eivät levitä näkymää 320 px:llä."""
-    from test_leveys import MITTAUS, NAKYMAT as LEVEYS_NAKYMAT
-    s = avaa(browser, base, "home", autot=tiedot.talli(), leveys=320, korkeus=800, kello=KELLO, extra={"ajoura-ulkoasu": teema})
-    virheet = []
-    try:
-        for v in LEVEYS_NAKYMAT:
-            s.page.goto(base + "/app.html#" + v)
-            s.page.wait_for_timeout(200)
-            m = s.page.evaluate(MITTAUS)
-            if m["yli"] > 0:
-                virheet.append(f"#{v}: {m['yli']} px yli (pisin {m['pisin']})")
-        assert not virheet, f"{teema} 320 px: " + "; ".join(virheet)
-        assert not s.virheet, s.virheet
-    finally:
-        s.sulje()
-
-@pytest.mark.parametrize('teema', UUDET_TEEMAT)
-def test_ai_first_vaihto_pysyvyys_ja_hahmo(browser, base, teema):
-    """A new palette changes immediately, keeps the garage and preserves the avatar."""
-    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':'auto'})
-    p=s.page
-    try:
-        before=s.talli()
-        p.evaluate("window.__themeTestMarker=123")
-        p.click(f'[data-th-pick={teema}]')
-        p.click('.th-opt.on [data-th-apply]')
-        assert p.evaluate('window.__themeTestMarker')==123, 'Theme change reloaded the app'
-        assert p.evaluate("document.documentElement.getAttribute('data-theme')")==teema
-        assert s.talli()==before
-        p.goto(base+'/app.html#home')
-        p.wait_for_selector('.vehicle-home-card')
-        assert p.get_attribute('.assistant-widget img','src')=='hahmot/emma.webp'
-        p.reload();p.wait_for_selector('.vehicle-home-card')
-        assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")==teema
-        assert s.talli()==before
-        # Test the initial HTML before app.js can apply a theme itself.
-        p.route('**/app.js?*',lambda route:route.abort())
-        p.reload(wait_until='domcontentloaded')
-        assert p.evaluate("document.documentElement.getAttribute('data-theme')")==teema
-    finally:s.sulje()
-
-@pytest.mark.parametrize('teema', ['nykyinen']+VANHAT_TEEMAT)
-def test_ai_first_sailyttaa_vanhan_valinnan(browser, base, teema):
-    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':teema})
-    try:
-        assert s.page.locator('[data-th-pick]').count()==9
-        assert s.page.locator(f'.th-opt.on [data-th-pick={teema}]').count()==1
-        s.page.reload();s.page.wait_for_selector('[data-th-pick]')
-        assert s.page.evaluate("localStorage.getItem('ajoura-ulkoasu')")==teema
-    finally:s.sulje()
-
-@pytest.mark.parametrize('teema', UUDET_TEEMAT)
-@pytest.mark.parametrize('width', [320,375,390,430])
-def test_ai_first_mobiili(browser, base, teema, width):
-    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=width,asennettu=True,extra={'ajoura-ulkoasu':teema})
-    try:
-        for view in ['home','theme']:
-            s.page.goto(base+'/app.html#'+view);s.page.wait_for_timeout(200)
-            assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
-        assert not s.virheet,s.virheet
-    finally:s.sulje()
-
-@pytest.mark.parametrize('teema', UUDET_TEEMAT)
-@pytest.mark.parametrize('kieli', ['fi','en','sv'])
-def test_ai_first_kielet(browser, base, teema, kieli):
-    s=avaa(browser,base,'theme',autot=tiedot.talli(),kello=KELLO,kieli=kieli,leveys=320,extra={'ajoura-ulkoasu':teema})
-    try:
-        assert s.page.locator('[data-th-pick]').count()==9
-        if kieli!='fi':
-            text=s.page.inner_text('#app-screen')
-            assert 'Aiemmat teemat' not in text
-            assert 'Metsänvihreä ja lämmin kulta.' not in text
-        assert not s.virheet,s.virheet
-    finally:s.sulje()
-
-
-def test_ai_first_teemat_offline(browser):
-    """New palettes and previews work without a network; switching keeps garage data."""
-    from test_offline import Palvelin, Kayttaja
-    server=Palvelin(JUURI)
-    k=Kayttaja(browser,server,tiedot.talli())
-    try:
-        k.asenna()
-        before=k.talli()
-        k.ctx.set_offline(True)
-        for theme in UUDET_TEEMAT:
-            k.avaa('theme')
-            k.page.click(f'[data-th-pick={theme}]')
-            k.page.click('.th-opt.on [data-th-apply]')
-            assert k.page.evaluate("document.documentElement.getAttribute('data-theme')")==theme
-            for suffix in ['', '-pieni']:
-                assert k.hae(f'teemakuvat/{theme}{suffix}.webp')[0]
-            k.avaa('home')
-            assert k.page.get_attribute('.assistant-widget img','src')=='hahmot/emma.webp'
-            assert k.talli()==before
-        assert not k.virheet,k.virheet
-    finally:
-        k.sulje();server.sulje()
+    assert re.search(r'href="teemat\.css\?v=ak-\d+"', (JUURI / "app.html").read_text())
+    assert "teemakuvat/" not in (JUURI / "index.html").read_text()

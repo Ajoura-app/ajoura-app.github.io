@@ -1,4 +1,5 @@
-"""Visual-first 04: distinct materials, readable controls and preserved vehicle/character choices."""
+"""Visual-first 04: readable controls and preserved vehicle/character choices. 2.11: one theme (Alkuperäinen);
+the check that themes differ from each other was removed with the other themes."""
 from copy import deepcopy
 import pytest
 
@@ -7,35 +8,7 @@ from apu import avaa, KELLO, avaa_tehtavat, kirjaa_avustajasta, valitse_ajoneuvo
 from test_plus import PLUS, FREE_EI, TEKOALY, palvelu
 from test_teemat import KONTRASTI
 
-THEMES = ['garage', 'copilot', 'nordic', 'journey']
-
-
-def test_teemat_erottuvat_myos_pintoina_ja_taustana(browser, base):
-    art, materials, texts = [], [], []
-    for theme in THEMES:
-        s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
-                 extra={'ajoura-ulkoasu':theme})
-        try:
-            p = s.page
-            before = s.talli()
-            appearance = p.evaluate('''() => {
-              const css=s=>getComputedStyle(document.querySelector(s));
-              const hero=css('.secretary-hero'),card=css('.home-service');
-              return {page:css('#app-screen').backgroundImage,hero:hero.backgroundImage,
-                      card:[card.backgroundImage,card.borderColor,card.borderRadius]};
-            }''')
-            assert appearance['hero'] != 'none', (theme,appearance)
-            assert appearance['page'] != 'none', (theme,appearance)
-            art.append((appearance['page'],appearance['hero']))
-            materials.append(tuple(appearance['card']))
-            texts.append(p.inner_text('.secretary-home'))
-            assert s.talli() == before
-            assert not s.virheet, s.virheet
-        finally:
-            s.sulje()
-    assert len(set(art)) == 4
-    assert len(set(materials)) == 4
-    assert len(set(texts)) == 1, 'Theme selection must not invent different tasks or content'
+THEMES = ['nykyinen']
 
 
 @pytest.mark.parametrize('theme', THEMES)
@@ -49,7 +22,8 @@ def test_taide_ei_peita_ajoneuvoa_tai_paatoimintoja(browser, base, theme, width,
         before = s.talli()
         media = nykyinen_ajoneuvo(p).locator('.secretary-hero-media')
         for pseudo in ['::before','::after']:
-            assert media.evaluate('(e,p)=>getComputedStyle(e,p).pointerEvents',pseudo) == 'none'
+            # Decorative layers must not catch taps (a missing pseudo element has content 'none').
+            assert media.evaluate('(e,p)=>{const c=getComputedStyle(e,p);return c.content==="none"||c.pointerEvents==="none"}',pseudo)
         assert nykyinen_ajoneuvo(p).locator('.secretary-hero-media :is(svg,img)').first.evaluate('(e)=>getComputedStyle(e).objectFit') == 'contain'
         assert p.locator('.assistant-widget img').get_attribute('src') == 'hahmot/emma.webp'
         if width == 390:
@@ -80,12 +54,12 @@ def test_myohassa_oleva_huolto_ja_puuttuva_taustakuva(browser, base, theme):
     try:
         p = s.page
         before = s.talli()
-        assert p.locator('.status-late').is_visible()
+        assert p.locator('.home-service-ring.status-late').is_visible()
         rows = p.evaluate(KONTRASTI)
         assert not [x for x in rows if x['k'] < 4.5], (theme,rows)
         p.route('**/ui-art/*.webp',lambda r:r.abort())
         p.reload()
-        p.wait_for_selector('.secretary-cinematic')
+        p.wait_for_selector('.secretary-refined')
         assert nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').is_visible()
         assert nykyinen_ajoneuvo(p).locator('.secretary-hero-media svg').is_visible()
         kirjaa_avustajasta(p,'manual')

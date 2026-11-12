@@ -23,7 +23,7 @@
 .ai-welcome-capabilities p{font-size:12px;line-height:1.4;color:var(--muted);margin:3px 0 0;overflow-wrap:anywhere}
 .ai-welcome .welcome-choices{display:grid;gap:8px;margin:2px 0 0}
 .ai-welcome .app-button{display:flex;align-items:center;justify-content:center;min-height:48px;font-size:15px;line-height:1.35;border-radius:18px;white-space:normal;overflow-wrap:anywhere;text-align:center;padding:10px 14px}
-html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme=journey]) .ai-welcome .welcome-choices>.app-button:not(.secondary){background:var(--t-home-action,var(--blue));color:var(--t-home-action-ink,#fff)}
+
 .ai-welcome-personal,.ai-welcome-tools,.ai-welcome-video{margin:0;padding:12px;border:1px solid var(--hairline);border-radius:18px;background:var(--t-surface,var(--paper));color:var(--ink)}
 .ai-welcome-personal:not([open]),.ai-welcome-video:not([open]){padding-block:0}
 .ai-welcome summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font-size:14px;font-weight:650;line-height:1.4;overflow-wrap:anywhere}
@@ -33,7 +33,6 @@ html:is([data-theme=garage],[data-theme=copilot],[data-theme=nordic],[data-theme
 .ai-welcome .avatar-settings{margin-top:12px}
 .ai-welcome :focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 @media(max-width:350px){.ai-welcome-hero{grid-template-columns:116px minmax(0,1fr)}.ai-welcome-hero .assistant-avatar{width:116px;height:116px}.ai-welcome-copy{padding:8px}.ai-welcome-name{font-size:20px}.ai-welcome-capabilities li{gap:8px;padding:10px}}
-html[data-theme=nordic] .ai-welcome-hero::before{opacity:.16}
 
 .ai-guide{background:var(--t-bg,var(--paper));color:var(--ink);animation:none;overflow:auto;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));gap:16px}
 .ai-guide-top{display:flex;justify-content:space-between;align-items:center;gap:12px}

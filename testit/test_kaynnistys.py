@@ -4,7 +4,7 @@ import json
 import tiedot
 from apu import avaa,KELLO
 
-@pytest.mark.parametrize('theme',['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 @pytest.mark.parametrize('character',['emma','mikko','ankka'])
 def test_teema_hahmo_ja_paluu(browser,base,theme,character):
     from apu import Sivu
@@ -31,7 +31,7 @@ def test_teema_hahmo_ja_paluu(browser,base,theme,character):
         assert not s.virheet,s.virheet
     finally:s.sulje()
 
-@pytest.mark.parametrize('theme',['nykyinen','auto','eko','blue-track','premium','garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_fallback_ja_hiljainen_tila(browser,base,theme):
     s=avaa(browser,base,'welcome',kello=KELLO,leveys=320,extra={'ajoura-ulkoasu':theme,'ajoura-hahmo-motion':'0'})
     try:

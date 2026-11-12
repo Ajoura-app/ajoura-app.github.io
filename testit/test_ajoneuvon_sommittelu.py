@@ -4,7 +4,7 @@ import tiedot
 from apu import avaa, KELLO
 
 
-@pytest.mark.parametrize('theme', ['garage', 'blue-track', 'nordic'])
+@pytest.mark.parametrize('theme', ['nykyinen'])
 @pytest.mark.parametrize('leveys', [320, 390, 430])
 def test_yhtenainen_ajoneuvokuva(browser, base, theme, leveys):
     cars = tiedot.talli()
@@ -18,7 +18,8 @@ def test_yhtenainen_ajoneuvokuva(browser, base, theme, leveys):
         media = p.locator('.vehicle-home-card').first.locator('.secretary-hero-media')
         plate = p.locator('.vehicle-home-card').first.locator('.secretary-hero-meta')
         h, m, a = hero.bounding_box(), media.bounding_box(), plate.bounding_box()
-        assert 'ui-art/' in hero.evaluate('(e)=>getComputedStyle(e).backgroundImage')
+        # 2.11: one theme; the vehicle stands in the beige studio scene.
+        assert 'radial-gradient' in hero.evaluate('(e)=>getComputedStyle(e).backgroundImage')
         assert abs(h['height'] - m['height']) < 4, 'Plate must not create a separate row'
         assert a['y'] >= m['y'] and a['y'] + a['height'] <= m['y'] + m['height'] + 1
         image = p.locator('.vehicle-home-card').first.locator('.secretary-hero-media img')

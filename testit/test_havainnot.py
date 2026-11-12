@@ -8,7 +8,7 @@ def car():
     return tiedot.auto(km=102000,events=[tiedot.merkinta('s','Huolto','2025-11-15',88000)],fuels=[tiedot.tankkaus('f'+str(i),d,100000+i*500,q,q*1.5) for i,(d,q) in enumerate(zip(['2026-09-01','2026-09-15','2026-10-01','2026-10-15','2026-10-25'],[50,50,50,50,70]))])
 
 @pytest.mark.parametrize('lang',['fi','en','sv'])
-@pytest.mark.parametrize('theme',['garage','nordic'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_huomiot_ja_hiljennys(browser,base,lang,theme):
     c=car();other=tiedot.auto(id='other');s=avaa(browser,base,'home',autot=[c,other],kello=KELLO,kieli=lang,leveys=320,asennettu=True,ios=True,extra={'ajoura-ulkoasu':theme})
     try:

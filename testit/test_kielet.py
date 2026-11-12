@@ -31,10 +31,9 @@ NAKYMAT = {
     "vehicle/tst3": [], "event/tst1/e1": [], "add/tst1": [], "edit/tst1/e1": [], "report/tst1": [],
     "notes/tst1": [], "fuel/tst1": [], "fuel/tst2": [], "fuel-vertailu": [".fv-veh>summary", "[data-fl-cmpcar=tst2]"],
     "owner/tst1": [], "caredit/tst1": [], "tankkausikkuna": [".fl-add"], "asennusohje": [".install-button"],
-    "theme": [], "theme-valittu": ["[data-th-pick=eko]"], "theme-kaytossa": ["[data-th-pick=premium]", "[data-th-apply]"],
     "login": [],
 }
-OSOITE = {"theme-valittu": "theme", "theme-kaytossa": "theme", "reports-lisaa": "reports", "reports-valitse": "reports", "reports-asetus": "reports", "reports-auto": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
+OSOITE = {"reports-lisaa": "reports", "reports-valitse": "reports", "reports-asetus": "reports", "reports-auto": "reports", "fuel-vertailu": "fuel/tst1", "tankkausikkuna": "fuel/tst1",
           "asennusohje": "home"}
 
 KERUU = """() => {

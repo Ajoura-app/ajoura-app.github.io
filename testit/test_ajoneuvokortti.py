@@ -9,7 +9,7 @@ import tiedot
 from apu import avaa, ikkuna_valmis, nykyinen_ajoneuvo, valitse_ajoneuvo
 
 KELLO = '2026-11-11T12:00:00'
-TEEMAT = ['nykyinen', 'dark', 'garage', 'copilot', 'nordic', 'journey', 'blue-track', 'premium']
+TEEMAT = ['nykyinen', 'dark']
 
 
 def talli():
@@ -183,7 +183,7 @@ def test_tumman_tilan_kuva_alue_on_tumma(browser, base):
 
 
 def test_kortin_toiminnot_sailyvat(browser, base):
-    s = avaa(browser, base, 'home', autot=talli(), kello=KELLO, extra={'ajoura-ulkoasu': 'garage'})
+    s = avaa(browser, base, 'home', autot=talli(), kello=KELLO, extra={})
     try:
         p = s.page
         ennen = s.talli()

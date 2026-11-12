@@ -17,12 +17,7 @@
 .ai-intro-light{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 65% 55%,var(--t-soft,var(--soft-blue)),transparent 75%)}
 .ai-intro-light::before{content:'';position:absolute;inset:27% 0 0;background:var(--t-home-art,none) center/cover;opacity:var(--launch-art-opacity);mask-image:linear-gradient(transparent,#000 35%,#000 82%,transparent)}
 .ai-intro-light::after{content:'';position:absolute;left:7%;right:7%;bottom:22%;height:2px;background:var(--launch-light-shape);transform-origin:left;animation:var(--launch-light-motion) 1.4s ease-out both}
-html[data-theme=copilot] .ai-intro{--launch-art-opacity:.36;--launch-light-motion:launch-copilot}
-html[data-theme=copilot] .ai-intro-light::after{left:-12%;right:-12%;bottom:10%;height:72%;background:none;border:1px solid var(--t-accent);border-radius:50%;transform-origin:center}
-html[data-theme=nordic] .ai-intro{--launch-art-opacity:.18;--launch-light-motion:launch-nordic;--launch-light-shape:linear-gradient(115deg,transparent,#fff9,transparent)}
-html[data-theme=nordic] .ai-intro-light::after{inset:8% -15%;height:auto}
-html[data-theme=journey] .ai-intro{--launch-art-opacity:.38;--launch-light-motion:launch-journey}
-html[data-theme=journey] .ai-intro-light::after{height:26%;bottom:20%;left:0;right:0;background:radial-gradient(ellipse at bottom,var(--t-accent),transparent 72%)}
+
 .intro-wait,.intro-wait *,.intro-wait::before,.intro-wait::after,.intro-wait *::before,.intro-wait *::after{animation-play-state:paused!important}
 .intro-overlay{transition:opacity .16s ease}
 .ai-intro-still *,.ai-intro-still *::before,.ai-intro-still *::after{animation:none!important;transition:none!important}
