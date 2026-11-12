@@ -47,16 +47,15 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         s.sulje()
 
 
-# 0.75: alavalikon kapseli on alustalla (.tab-dock), jonka tausta on näkymän taustaväri: sisältö ei näy kapselin
-# ympäriltä eikä alta, sivun lopussa viimeinen kortti jää kokonaan näkyviin kapselin yläpuolelle (myös iPhonen
-# kotipalkin alueen kanssa), varjo on kevyt ja tummassa tilassa ei ole hehkua. Näppäimistön ollessa auki alusta piiloon.
+# 2.09: kapseli kelluu läpinäkyvällä alustalla. Sivun lopussa viimeinen kortti jää kokonaan
+# näkyviin kapselin yläpuolelle myös iPhonen kotipalkin alueella. Näppäimistön ollessa auki alusta piiloon.
 LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scrollTop = sc.scrollHeight;
   const n = document.querySelector('.main-tabs'), d = n.closest('.tab-dock'), b = n.getBoundingClientRect(), g = sc.getBoundingClientRect();
   const sis = [...document.querySelectorAll('.screen-content > *')].filter(e => e.getBoundingClientRect().height);
   const viim = sis[sis.length - 1].getBoundingClientRect(), dc = d && getComputedStyle(d), nc = getComputedStyle(n);
   const f = document.querySelector('.tab-dock > .assistant-widget') || document.querySelector('.tab-dock > .tab-fab'), fb = f && f.getBoundingClientRect();
   return {alusta: !!d, rako: b.top - viim.bottom, fabRako: fb ? fb.top - viim.bottom : null, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
-          kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', peittava: dc ? dc.backgroundColor === getComputedStyle(document.querySelector('.device-glass')).backgroundColor && !['transparent','rgba(0, 0, 0, 0)'].includes(dc.backgroundColor) : false, avustaja: !!d.querySelector('.avatar-shortcut'), sticky: dc ? dc.position : '',
+          kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', taustavari: dc ? dc.backgroundColor : '', sticky: dc ? dc.position : '',
           koti: !!document.querySelector('.secretary-home'), varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""
 
 
@@ -73,8 +72,8 @@ def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, 
         s.page.wait_for_timeout(150)
         r = s.page.evaluate(LOPPU_JS)
         assert r["alusta"] and r["sticky"] == "sticky", r
-        assert r["peittava"] if r["avustaja"] else "gradient" in r["tausta"], r
-        assert r["alaReuna"] <= 0.5, r  # alusta ulottuu näytön alareunaan asti: sisältö ei näy kapselin alta
+        assert r["tausta"] == "none" and r["taustavari"] == "rgba(0, 0, 0, 0)", r
+        assert r["alaReuna"] <= 0.5, r  # läpinäkyvä alusta pitää kapselin näytön alareunassa
         if r["fabRako"] is None:
             assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
         else:  # 0.107: kelluva ＋ kapselin yläpuolella; viimeinen kortti jää kokonaan myös sen yläpuolelle

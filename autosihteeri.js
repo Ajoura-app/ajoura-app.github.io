@@ -36,11 +36,12 @@
     service:'<path d="M14 6a6 6 0 0 0-7 7l-5 5 4 4 5-5a6 6 0 0 0 7-7l-4 4-4-4z"/>'
   };
   const actionIcon=mode=>`<svg class="secretary-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${actionPaths[mode]}</svg>`;
+  const addIcon=mode=>`<span class="home-add-icon" aria-hidden="true">${actionIcon(mode)}<svg class="home-add-badge" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9"/><path d="M10 6v8M6 10h8"/></svg></span>`;
   function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local,view,actionsOnly=false,hideActions=false}) {
-    const action=(label,mode,aria=label,icon=false)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(aria))}">${icon?actionIcon(typeof icon==='string'?icon:mode):''}<span>${esc(t(label))}</span></button>`;
+    const action=(label,mode,aria=label,icon=false)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(aria))}">${icon?addIcon(typeof icon==='string'?icon:mode):''}<span${icon?' class="sr-only"':''}>${esc(t(label))}</span></button>`;
     const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(view.tone==='ok'?'Hei! Autosi huolto on kunnossa. Mitä kirjataan?':'Hei! Mitä kirjataan tänään?');
     const fuelLabel=c.fuel==='Sähkö'?'Lataus +':'Tankkaus +';
-    const primary=`${action(fuelLabel,'manual',fuelLabel+', kirjaa käsin','fuel')}<a href="#add/${esc(c.id)}" data-secretary-service aria-label="Huolto +, kirjaa huolto käsin">${actionIcon('service')}<span>Huolto +</span></a><a href="#notes/${esc(c.id)}" data-secretary-note>${actionIcon('note')}<span>Muistiinpano +</span></a>`;
+    const primary=`${action(fuelLabel,'manual',fuelLabel+', kirjaa käsin','fuel')}<a href="#add/${esc(c.id)}" data-secretary-service aria-label="Huolto +, kirjaa huolto käsin">${addIcon('service')}<span class="sr-only">Huolto +</span></a><a href="#notes/${esc(c.id)}" data-secretary-note aria-label="Muistiinpano +">${addIcon('note')}<span class="sr-only">Muistiinpano +</span></a>`;
     if(actionsOnly)return `<div class="secretary-actions">${primary}</div>`;
     return `<section class="secretary-card">${hideActions?'':`<div class="secretary-actions">${primary}</div>`}<div class="secretary-intro"><div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
       <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div></div>
@@ -52,7 +53,7 @@
     if(!c)return '';
     const available=window.AjouraAccess?.check('ai.receipt')?.ok;
     const speech=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
-    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}" aria-describedby="assistant-move-help">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span><span class="home-mic-label">Paina ja puhu</span></button>`;
+    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}" aria-describedby="assistant-move-help">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span></button>`;
     return `<div class="assistant-widget" data-assistant-widget>${mic}<span class="sr-only" id="assistant-move-help">Siirrä vetämällä tai nuolinäppäimillä. Home palauttaa sijainnin.</span><p class="home-voice-feedback" role="status"${voiceNotice?'':' hidden'}>${esc(voiceNotice)}</p></div>`;
   }
   // Device-only normalized position. The dock keeps the widget in the same layer as navigation.

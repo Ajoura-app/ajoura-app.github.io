@@ -11,8 +11,8 @@
 // Install fetches every file with this release's tag, so the saved set is one release (the tag also
 // bypasses GitHub's 10-minute cache). The user's own data (IndexedDB, localStorage) is never touched here.
 // VERSION must match the ?v=ak-N tag in app.html; CACHE is ajoura-pwa-(N + 50). testit/test_offline.py checks both.
-const VERSION = 'ak-132';
-const CACHE = 'ajoura-pwa-182';
+const VERSION = 'ak-133';
+const CACHE = 'ajoura-pwa-183';
 const WAIT = 3000;
 const FILES = ['car-photo.js', 'car-photo-worker.js', 'vendor/u2net/ort.wasm.min.mjs', 'vendor/u2net/ort-wasm-simd-threaded.mjs', 'ui-art/copilot-room.webp', 'ui-art/garage-room.webp', 'ui-art/journey-room.webp', 'ui-art/landing-car.webp', 'ui-art/nordic-room.webp', 'avustaja-sopimus.js', 'avustaja-client.js', 'analytiikka.js', 'havainnot.js', 'tehtavat.js', 'landing.css', 'landing.js', 'tervetuloa.js', 'tervetuloa.css', 'kaynnistys.js', 'kaynnistys.css', 'hahmot.js', 'hahmot/mikko.webp', 'hahmot/ankka.webp', 'hahmot/emma_128.webp', 'hahmot/mikko_128.webp', 'hahmot/ankka_128.webp', 'teemakuvat/garage.webp', 'teemakuvat/garage-pieni.webp', 'teemakuvat/copilot.webp', 'teemakuvat/copilot-pieni.webp', 'teemakuvat/nordic.webp', 'teemakuvat/nordic-pieni.webp', 'teemakuvat/journey.webp', 'teemakuvat/journey-pieni.webp', 'autosihteeri.js', 'autosihteeri.css', 'hahmot/emma.webp', './', 'app.html', 'app.css', 'ajoura.css', 'app.js', 'pdf-writer.js', 'roles.js', 'roles.css', 'teemat.css', 'sync.js', 'access.js', 'features.json', 'car-render.js','car-shapes.js','car-images.js','car-models.js','video.js','tips.js','vehicles.js','i18n-sv.js','i18n.js','tutorial.js','share.js', 'install.js', 'historia.html', 'tietosuoja.html', 'index.html', 'logo.svg', 'mark.svg', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'];
 

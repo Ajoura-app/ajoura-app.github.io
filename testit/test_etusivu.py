@@ -200,7 +200,7 @@ def test_kuvakkeiden_viiva(browser, base):
     s = avaa(browser, base, "home", autot=talli(), kello=KELLO)
     try:
         avaa_ajoneuvon_tiedot(s.page)
-        viivat=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions svg', 'es=>es.map(e=>getComputedStyle(e).strokeWidth)')
+        viivat=s.page.eval_on_selector_all('.vehicle-home-card:first-of-type > .secretary-actions .secretary-action-icon', 'es=>es.map(e=>getComputedStyle(e).strokeWidth)')
         assert len(viivat)==3 and set(viivat)=={'1.7px'},viivat
     finally:
         s.sulje()
