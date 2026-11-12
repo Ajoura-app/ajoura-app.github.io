@@ -145,6 +145,7 @@ def test_jarjestys_hiirella(browser, base):
     pg = s.page
     avaa_ajoneuvovalitsin(pg)
     pg.click('a[href="#car-order"]')
+    pg.wait_for_selector('.garage-rows .garage-row')
     try:
         assert jarjestys(s) == ["tst1", "tst2", "tst3"]
         x, y = keski(pg, "tst3"); _, y1 = keski(pg, "tst1", "")
@@ -176,6 +177,7 @@ def test_jarjestys_kosketuksella(browser, base):
     pg = s.page
     avaa_ajoneuvovalitsin(pg)
     pg.click('a[href="#car-order"]')
+    pg.wait_for_selector('.garage-rows .garage-row')
     try:
         cdp = pg.context.new_cdp_session(pg)
         kosketa = lambda tyyppi, x, y: cdp.send("Input.dispatchTouchEvent", {

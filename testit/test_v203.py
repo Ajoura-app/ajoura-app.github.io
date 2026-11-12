@@ -45,6 +45,7 @@ def test_vehicle_switch_shortcuts_and_navigation(browser,base):
     try:
         p=s.page;avaa_ensimmainen_kortti(p);before=s.talli()
         p.locator('.cinematic-brand a[aria-label="Profiili ja tili"]').click();p.wait_for_function('location.hash==="#me/tili"')
+        p.locator('.sync-box').wait_for()
         assert p.locator('.sync-box').is_visible()
         p.go_back();p.wait_for_selector('.secretary-refined')
         valitse_ajoneuvo(p,'tst2')
