@@ -17,7 +17,7 @@ def test_valilehdissa_vain_kuvakkeet(browser, base, kieli):
           korkeus: a.getBoundingClientRect().height, polut: a.querySelectorAll('svg path').length}))""")
         assert len(r) == 2 and all(x["teksti"] == "" and x["kuva"] == 1 and x["korkeus"] >= 40 for x in r), r
         assert [x["nimi"] for x in r] == NIMET[kieli], r
-        assert r[1]["polut"] == 4, "Raportit-kuvakkeessa pitää olla pohja, pumppu, salama ja pylväät"
+        assert r[1]["polut"] == 5, "Raportit-kuvakkeessa pitää olla pohja, pumppu, letku, salama ja pylväät"
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

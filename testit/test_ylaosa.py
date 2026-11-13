@@ -17,8 +17,10 @@ JS = """() => {const q = s => document.querySelector(s), r = s => q(s)?.getBound
 
 
 @pytest.mark.parametrize("leveys", [320, 390, 430])
+# 2.18: Valikko on alasivu (← Koti, kuten Asetukset), ja tankkauskirjassa on aina ← Raportit, joten otsikko on
+# paluulinkin alla.
 @pytest.mark.parametrize("nakyma,logo,otsikko", [("home", 1, "Etusivu"), ("fuel/tst1", 0, "Tankkaus"), ("reports", 0, "Raportit"),
-                                                 ("menu", 0, "Valikko"), ("fuel/tst1/ajoneuvo", 0, "Tankkaus")])
+                                                 ("fuel/tst1/ajoneuvo", 0, "Tankkaus")])
 def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
     s = avaa(browser, base, nakyma, autot=tiedot.talli(), leveys=leveys, kello=KELLO)
     try:
@@ -27,6 +29,7 @@ def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
             assert p.locator('.cinematic-brand').is_visible()
             assert p.locator('.cinematic-brand a[href="#newcar"]').is_visible()
             assert p.locator('.cinematic-brand a[href="#me/tili"]').is_visible()
+            assert p.locator('.cinematic-brand a.top-menu[href="#menu"]').is_visible()  # 2.18
             assert p.locator('.app-top').is_hidden()
             assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
             assert not s.virheet,s.virheet
@@ -35,7 +38,7 @@ def test_ylaosa(browser, base, leveys, nakyma, logo, otsikko):
         assert r["logo"] == logo and r["oikealla"] and r["alla"] and r["paalle"] == 0 and r["sivu"] <= 0, r
         if otsikko:
             assert r["otsikko"] == otsikko, r
-        if not logo and nakyma in ("fuel/tst1", "reports", "menu"):
+        if not logo and nakyma == "reports":
             assert r["otsikkoYla"] < 20, r  # otsikko ylimpänä (ennen logo- ja painikerivi sen yllä)
         assert not s.virheet, s.virheet
     finally:
