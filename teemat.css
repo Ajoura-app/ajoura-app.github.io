@@ -160,22 +160,10 @@ html .secretary-home.secretary-refined .secretary-hero-meta .row-meta>span:first
 .home-service-original .row-txt{grid-column:2/-1}
 .home-service-original:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:11px}
 
-/* 2.06: draggable assistant shares the sticky navigation layer. */
+/* 2.06: draggable assistant (2.15: moved into the navigation, see below). */
 @media screen{
-.tab-dock:has(>.assistant-widget)>.avatar-shortcut{display:none!important}
-#app-screen>.tab-dock:has(>.assistant-widget){padding-top:6px}
-.tab-dock:has(>.assistant-widget)>.tab-fab{left:12px;right:auto;bottom:calc(100% + 8px)}
-.assistant-widget{position:absolute;left:0;top:0;width:76px;height:84px;z-index:6;pointer-events:auto}
-.assistant-widget .secretary-mic{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:76px;height:84px;min-width:0;min-height:0;padding:0 0 16px;border:0;border-radius:36px;background:var(--t-bg,var(--paper));color:var(--ink);box-shadow:0 3px 14px #00000033;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
-.assistant-widget.is-dragging .secretary-mic{cursor:grabbing}
-.assistant-widget .secretary-mic .assistant-avatar{width:64px!important;height:64px!important;margin:0!important}
-.assistant-widget img{-webkit-user-drag:none}
-.assistant-widget .secretary-mic:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
-.assistant-widget .home-voice-feedback{position:absolute;box-sizing:border-box;max-height:180px;overflow:auto;margin:0;box-shadow:0 3px 14px #00000033}
 html .secretary-home.secretary-refined .secretary-intro{grid-template-columns:minmax(0,1fr)}
-#app-screen:has(>.tab-dock>.assistant-widget)>.screen-content{padding-bottom:110px}
 }
-@media print{.assistant-widget{display:none}}
 
 /* 2.07: all vehicles on home; details open from each image. */
 .vehicle-home-card,.vehicle-panels{display:grid;gap:10px;min-width:0}
@@ -192,15 +180,11 @@ html .secretary-home.secretary-refined .vehicle-toggle{display:block;width:100%;
 
 .home-order{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;margin-top:8px}
 
-.tab-dock:has(>.assistant-widget)>.fab-menu{left:12px;right:auto;bottom:calc(100% + 72px)}
 
 /* 2.09: floating capsule, icon shortcuts in one shared panel, and beige studio. */
 @media screen{
 html #app-screen>.tab-dock,html #app-screen:has(.secretary-home)>.tab-dock{background:none}
 html #app-screen .main-tabs a:after,html #app-screen:has(.secretary-refined) .main-tabs a:after{content:none}
-.assistant-widget{height:72px}
-.assistant-widget .secretary-mic{height:72px;padding:0;background:none;box-shadow:none}
-.assistant-widget .assistant-avatar{filter:drop-shadow(0 3px 5px #00000033)}
 html:not([data-theme]):not(.dark) .secretary-home.secretary-refined .secretary-hero{background-color:#e9dece;background-image:radial-gradient(ellipse at 50% 22%,#f7efe3 0%,#e9dece 65%,#d5c4af 100%)}
 }
 
@@ -293,3 +277,20 @@ html.dark .device-glass .secretary-home.secretary-refined .vehicle-home-card .se
 }
 /* Same 44 px touch target on every view (320 px phones had 42 px). */
 html .tab-dock>.tab-bar.main-tabs a{min-height:44px}
+
+/* 2.15 (Niklas): the assistant is the larger round button in the middle of the bottom navigation. */
+@media screen{
+html .tab-dock>.tab-bar.main-tabs.five{grid-template-columns:1fr 1fr 66px 1fr 1fr;overflow:visible}
+#app-screen>.tab-dock:has(.nav-assistant){padding-top:26px}
+/* Home has no floating ＋ (it is in the header), so no room is reserved for one under the last card. */
+#app-screen>.screen-content:has(.secretary-home){padding-bottom:16px}
+.nav-assistant{position:relative;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.nav-assistant .secretary-mic{position:relative;display:grid;place-items:center;width:62px;height:62px;min-width:0;min-height:0;margin:-26px 0 0;padding:0;border:3px solid var(--t-surface,var(--paper,#ffffff));border-radius:50%;background:var(--t-surface,var(--paper,#ffffff));color:var(--ink);box-shadow:0 4px 14px #10243f33;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.nav-assistant .secretary-mic .assistant-avatar{width:56px!important;height:56px!important;margin:0!important}
+.nav-assistant .secretary-mic:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.nav-assistant .home-mic-badge{top:auto;right:-4px;bottom:-3px;width:24px;height:24px;border:2px solid var(--t-surface,var(--paper,#ffffff))}
+.nav-assistant .home-mic-badge svg{width:14px;height:14px}
+.nav-assistant .home-voice-feedback{position:absolute;left:50%;bottom:calc(100% + 34px);width:min(280px,calc(100vw - 48px));max-height:180px;overflow:auto;margin:0;transform:translateX(-50%);box-sizing:border-box;box-shadow:0 3px 14px #00000033}
+.nav-assistant .home-voice-feedback[hidden]{display:none}
+}
+@media print{.nav-assistant{display:none}}

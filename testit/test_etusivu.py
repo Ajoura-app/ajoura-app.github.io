@@ -43,7 +43,8 @@ def test_kuvakepainikkeet(browser, base, leveys):
             assert actions.locator('button').inner_text()==expected
             assert actions.locator('[data-secretary-service]').get_attribute('href')==f'#add/{cid}'
             assert actions.locator('[data-secretary-note]').get_attribute('href')==f'#notes/{cid}'
-            assert rivi.locator('.vehicle-glance').is_visible()
+            # 2.12: the service status badge is shown only when a service can be counted (no invented percentage).
+            assert rivi.locator('.secretary-hero').is_visible()
             assert rivi.locator('.vehicle-panels').is_hidden()
             napit=[x.bounding_box() for x in actions.locator(':scope > *').all()]
             assert all(abs(n['y']-napit[0]['y'])<1 for n in napit)

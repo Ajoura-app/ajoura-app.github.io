@@ -29,7 +29,7 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
     try:
         p=s.page
         avaa_ensimmainen_kortti(p)
-        assert p.locator('.assistant-widget .assistant-avatar').bounding_box()['width']==64
+        assert p.locator('.assistant-widget .assistant-avatar').bounding_box()['width']>=56
         assert p.locator('[data-home-mic]').is_visible()
         image=nykyinen_ajoneuvo(p).locator('.secretary-hero-media .car-photo img').bounding_box()
         plate=nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').bounding_box()

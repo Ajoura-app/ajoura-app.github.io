@@ -25,7 +25,8 @@ def test_hero_kuva_ja_ensimmainen_nakyma(browser, base, width, height):
             assert hero['height'] >= 190, hero
             dock = p.locator('.tab-dock').bounding_box()
             widget = p.locator('.assistant-widget').bounding_box()
-            assert widget['y'] + widget['height'] <= dock['y'], (widget, dock)
+            # 2.15: the assistant is part of the navigation dock.
+            assert widget['y'] >= dock['y'] - 1, (widget, dock)
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth <= document.querySelector("#app-screen").clientWidth')
         assert before == s.talli()
         assert not s.virheet, s.virheet

@@ -44,10 +44,11 @@ def test_hahmot_ja_safe_area(browser,base,theme):
             p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
             assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
             assert p.locator('.assistant-widget .assistant-avatar img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
-            assert not p.locator('.avatar-shortcut').is_visible()
+            assert p.locator('.avatar-shortcut').count()==0
+            # 2.15: the assistant sits in the middle of the navigation and stays on screen.
             bounds=p.locator('.assistant-widget').bounding_box()
             nav=p.locator('.main-tabs').bounding_box()
-            assert bounds['y']+bounds['height']<=nav['y']
+            assert nav['x']<=bounds['x'] and bounds['x']+bounds['width']<=nav['x']+nav['width']
             for control in p.locator('.cinematic-brand a,.main-tabs a,.assistant-widget button').all():
                 box=control.bounding_box()
                 assert min(box['width'],box['height'])>=44
@@ -71,7 +72,7 @@ def test_kielet_ja_oikopolku(browser,base,lang):
         s.page.locator('.screen-content a[href="#settings"]').click()
         s.page.wait_for_selector('[data-avatar-choice=mikko][aria-pressed=true]')
         if lang!='fi':assert 'Hahmon animaatiot' not in s.page.inner_text('[data-avatar-settings]')
-        assert 'Mikko' in s.page.get_attribute('[data-avatar-shortcut]','aria-label')
+        assert s.page.get_attribute('.nav-assistant img','src')=='hahmot/mikko.webp'
     finally:s.sulje()
 
 @pytest.mark.parametrize('reduced,disabled',[('reduce',False),('no-preference',True),('no-preference',False)])
@@ -153,7 +154,6 @@ def test_hahmot_offline(browser):
             k.avaa('home')
             assert k.page.get_attribute('.assistant-widget img','src')==f'hahmot/{name}.webp'
             assert k.page.locator('.assistant-widget img').evaluate('(e)=>e.complete&&e.naturalWidth===512')
-            assert k.page.locator('.avatar-shortcut img').evaluate('(e)=>e.complete&&e.naturalWidth===128')
             assert k.talli()==before
         assert not k.virheet,k.virheet
     finally:k.sulje();server.sulje()

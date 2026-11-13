@@ -74,96 +74,20 @@
       <details class="secretary-more"${moreOpen?' open':''}><summary>${esc(t('Lisää vaihtoehtoja'))}</summary><div class="secretary-support">${available?`${action('Kirjoita tankkauksen tiedot','text')}${action('Kuvaa kuitti','photo')}`:''}<button type="button" data-tutorial>${esc(t('Näytä kirjausohje'))}</button></div>${local}</details>
     </section>`;
   }
+  // 2.15 (Niklas): the assistant is the larger button in the middle of the bottom navigation on every view (it used
+  // to float and could be dragged). A tap works as before: speech entry when available, otherwise a short explanation
+  // in a bubble above the button. No position is stored any more.
   function widget(c) {
     if(!c)return '';
     const available=window.AjouraAccess?.check('ai.receipt')?.ok;
     const speech=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
-    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}" aria-describedby="assistant-move-help">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span></button>`;
-    return `<div class="assistant-widget" data-assistant-widget>${mic}<span class="sr-only" id="assistant-move-help">Siirrä vetämällä tai nuolinäppäimillä. Home palauttaa sijainnin.</span><p class="home-voice-feedback" role="status"${voiceNotice?'':' hidden'}>${esc(voiceNotice)}</p></div>`;
+    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span></button>`;
+    return `<span class="assistant-widget nav-assistant" data-assistant-widget>${mic}<span class="home-voice-feedback" role="status"${voiceNotice?'':' hidden'}>${esc(voiceNotice)}</span></span>`;
   }
-  // Device-only normalized position. The dock keeps the widget in the same layer as navigation.
-  const widgetKey='ajoura-assistant-position';
-  let widgetPosition=null, widgetDrag=null, widgetObserver=null, widgetFrame=0, suppressWidgetClick=false;
-  try{const p=JSON.parse(localStorage.getItem(widgetKey));if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))widgetPosition={x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))};}catch(e){}
-  function widgetBounds() {
-    const el=document.querySelector('[data-assistant-widget]'),screen=document.getElementById('app-screen'),dock=el?.parentElement;
-    if(!el||!screen||!dock)return null;
-    const r=screen.getBoundingClientRect(),d=dock.getBoundingClientRect(),v=window.visualViewport;
-    const scale=d.width/dock.offsetWidth||1,w=el.offsetWidth*scale,h=el.offsetHeight*scale;
-    const left=Math.max(r.left,v?.offsetLeft||0)+8*scale;
-    const top=Math.max(r.top,v?.offsetTop||0)+8*scale;
-    const right=Math.max(left,Math.min(r.right,(v?.offsetLeft||0)+(v?.width||innerWidth))-8*scale-w);
-    const bottom=Math.max(top,Math.min(d.top-8*scale,(v?.offsetTop||0)+(v?.height||innerHeight)-8*scale)-h);
-    return {el,d,scale,w,h,left,top,right,bottom};
-  }
-  function positionWidget() {
-    const b=widgetBounds();if(!b)return;
-    const p=widgetPosition||{x:1,y:1};
-    const x=b.left+p.x*(b.right-b.left),y=b.top+p.y*(b.bottom-b.top);
-    b.el.style.left=(x-b.d.left)/b.scale+'px';b.el.style.top=(y-b.d.top)/b.scale+'px';
-    const feedback=b.el.querySelector('.home-voice-feedback');
-    if(feedback&&!feedback.hidden){
-      const width=Math.min(260,(b.right-b.left+b.w)/b.scale);
-      feedback.style.width=width+'px';
-      const fx=Math.max(b.left,Math.min(x,b.right+b.w-width*b.scale));
-      feedback.style.left=(fx-x)/b.scale+'px';
-      const above=y-b.top>=feedback.offsetHeight*b.scale+8*b.scale;
-      feedback.style.top=above?'auto':'calc(100% + 8px)';feedback.style.bottom=above?'calc(100% + 8px)':'auto';
-    }
-  }
-  function queueWidgetPosition(){if(!widgetFrame)widgetFrame=requestAnimationFrame(()=>{widgetFrame=0;positionWidget();});}
   function mountWidget() {
     sizeProgress();
-    widgetDrag=null;widgetObserver?.disconnect();
-    const el=document.querySelector('[data-assistant-widget]');if(!el)return;
-    widgetObserver=new ResizeObserver(queueWidgetPosition);
-    widgetObserver.observe(document.getElementById('app-screen'));widgetObserver.observe(el.parentElement);
-    positionWidget();queueWidgetPosition();
   }
-  function saveWidgetPosition(){try{localStorage.setItem(widgetKey,JSON.stringify(widgetPosition));}catch(e){}}
-  function moveWidget(x,y,b=widgetBounds()){
-    if(!b)return;
-    widgetPosition={x:b.right===b.left?0:Math.max(0,Math.min(1,(x-b.left)/(b.right-b.left))),y:b.bottom===b.top?0:Math.max(0,Math.min(1,(y-b.top)/(b.bottom-b.top)))};
-    positionWidget();
-  }
-  document.addEventListener('pointerdown',e=>{
-    const button=e.target.closest('[data-assistant-widget] [data-home-mic]');
-    if(!button||!e.isPrimary||e.button!==0)return;
-    suppressWidgetClick=false;
-    const b=widgetBounds(),r=b.el.getBoundingClientRect();
-    widgetDrag={id:e.pointerId,button,x:e.clientX,y:e.clientY,left:r.left,top:r.top,moved:false};
-    button.setPointerCapture(e.pointerId);
-  });
-  document.addEventListener('pointermove',e=>{
-    const d=widgetDrag;if(!d||d.id!==e.pointerId)return;
-    if(!d.moved&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<8)return;
-    d.moved=true;suppressWidgetClick=true;
-    d.button.closest('[data-assistant-widget]').classList.add('is-dragging');
-    moveWidget(d.left+e.clientX-d.x,d.top+e.clientY-d.y);e.preventDefault();
-  },{passive:false});
-  function finishWidgetDrag(e){
-    const d=widgetDrag;if(!d||d.id!==e.pointerId)return;
-    widgetDrag=null;d.button.closest('[data-assistant-widget]')?.classList.remove('is-dragging');
-    if(d.moved)saveWidgetPosition();
-    if(d.button.hasPointerCapture(e.pointerId))d.button.releasePointerCapture(e.pointerId);
-  }
-  document.addEventListener('pointerup',finishWidgetDrag);
-  document.addEventListener('pointercancel',finishWidgetDrag);
-  document.addEventListener('lostpointercapture',finishWidgetDrag);
-  // Capture before app.js opens the existing speech sheet on a click.
-  document.addEventListener('click',e=>{
-    if(e.detail!==0&&e.target.closest('[data-assistant-widget]')&&suppressWidgetClick){e.preventDefault();e.stopImmediatePropagation();suppressWidgetClick=false;}
-  },true);
-  document.addEventListener('keydown',e=>{
-    if(!e.target.matches('[data-assistant-widget] [data-home-mic]'))return;
-    if(e.key==='Home'){e.preventDefault();widgetPosition=null;try{localStorage.removeItem(widgetKey);}catch(err){}positionWidget();return;}
-    const delta={ArrowLeft:[-16,0],ArrowRight:[16,0],ArrowUp:[0,-16],ArrowDown:[0,16]}[e.key];
-    if(delta){e.preventDefault();const b=widgetBounds(),r=b.el.getBoundingClientRect();moveWidget(r.left+delta[0]*b.scale,r.top+delta[1]*b.scale,b);saveWidgetPosition();}
-  });
-  window.addEventListener('resize',()=>{queueWidgetPosition();sizeProgress();});
-  window.visualViewport?.addEventListener('resize',queueWidgetPosition);
-  window.visualViewport?.addEventListener('scroll',queueWidgetPosition);
-  document.addEventListener('scroll',e=>{if(e.target.id==='app-screen')queueWidgetPosition();},true);
+  window.addEventListener('resize',sizeProgress);
 
   function renderTaskDetails(x) {
     const reason=x.kind==='consumption'?'Vertailussa ovat viimeisin ja kolme aiempaa hyväksyttyä tankkausväliä. Ajotapa ja olosuhteet voivat selittää muutoksen.':x.kind==='fuel'?'Täydennä puuttuva tieto tankkauskirjassa.':x.kind==='Katsastus'?'Katsastusarvio perustuu tallennettuun katsastukseen.':'Muistutus perustuu tallennettuihin merkintöihin ja omaan huoltoväliisi.';
@@ -185,7 +109,7 @@
     const mic=e.target.closest('[data-home-mic]');if(mic){const access=window.AjouraAccess?.check('ai.receipt'),available=access?.ok,supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition),feedback=document.querySelector('.home-voice-feedback');
       if(available&&supported){voiceNotice='';if(feedback){feedback.textContent='';feedback.hidden=true;}return;}
       voiceNotice=available?'Puheentunnistus ei ole käytettävissä tässä selaimessa. Käytä näppäimistön sanelua tai kirjaa käsin.':access?.reason==='quota'?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':'Puhekirjaus tarvitsee kirjautumisen ja käytössä olevan tekoälyavustajan. Voit kirjata tiedot käsin.';
-      if(feedback){feedback.textContent=voiceNotice;feedback.hidden=false;positionWidget();}return;}
+      if(feedback){feedback.textContent=voiceNotice;feedback.hidden=false;}return;}
     const decision=e.target.closest('[data-task-later],[data-task-dismiss],[data-task-reset]');
     if(decision){
       const car=decision.closest('.vehicle-home-card')?.dataset.car;

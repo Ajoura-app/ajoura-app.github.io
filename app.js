@@ -227,7 +227,8 @@
   const contextCar=()=>{const r=route(),id=r.id||(r.view==='reports'?rpPrefs().car:'');return cars.find(c=>c.id===id)||cars.find(c=>c.id===window.AjouraSecretary?.selected())||cars[0];};
   const serviceLink=()=>{const c=contextCar();return c?'vehicle/'+c.id:'newcar';};
   const fuelLink=()=>{const c=contextCar();return c?'fuel/'+c.id:'fuel';};
-  const tabBar=view=>`<div class="tab-dock">${fab(view)}${window.AjouraAvatar.floating()}${window.AjouraSecretary?.widget(contextCar())||''}<nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#${fuelLink()}" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#${serviceLink()}" aria-label="Huolto"${tabOf(view)==='service'?here:''}>${svg(icons.wrench)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;
+  // 2.15 (Niklas): the assistant sits in the middle of the navigation (larger than the tabs) instead of floating.
+  const tabBar=view=>{const assistant=window.AjouraSecretary?.widget(contextCar())||'';return `<div class="tab-dock">${fab(view)}<nav class="tab-bar ${assistant?'five':'four'} main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#${fuelLink()}" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a>${assistant}<a href="#${serviceLink()}" aria-label="Huolto"${tabOf(view)==='service'?here:''}>${svg(icons.wrench)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;};
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
     ['Miten lisään auton?','Etusivu → sininen ＋ oikeassa alakulmassa. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
@@ -661,7 +662,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.14 (testiversio)';
+  const appVersion='2.15 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

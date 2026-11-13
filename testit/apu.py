@@ -170,7 +170,7 @@ def avaa_kirjausvaihtoehdot(page):
 
 
 def kirjaa_avustajasta(page, tapa):
-    if tapa=='speech':page.locator('.assistant-widget [data-secretary-mode=speech]').click();return
+    if tapa=='speech':page.locator('.nav-assistant [data-secretary-mode=speech]').click();return
     painike=nykyinen_ajoneuvo(page).locator('[data-secretary-mode=' + json.dumps(tapa) + ']')
     if not painike.is_visible():avaa_kirjausvaihtoehdot(page)
     painike.click()
