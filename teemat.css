@@ -306,3 +306,17 @@ html.dark .device-glass .secretary-home>.vehicle-home-card.dragging{box-shadow:n
 .vehicle-home-card .secretary-hero{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .vehicle-home-card .secretary-hero img{-webkit-user-drag:none}
 @media(prefers-reduced-motion:reduce){.secretary-home.sorting>.vehicle-home-card{transition:none}}
+/* 2.18 (Niklas): three bottom tabs: Koti, the assistant in the middle and Raportit (two without the assistant). */
+html .tab-dock>.tab-bar.main-tabs.with-ai{grid-template-columns:1fr 66px 1fr;overflow:visible}
+html .tab-dock>.tab-bar.main-tabs.no-ai{grid-template-columns:1fr 1fr}
+/* 2.18: Valikko is the ⋯ button at the top of Koti and Raportit. */
+.top-menu{display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border:1px solid var(--hairline,var(--c-d3dfee,#d3dfee));border-radius:50%;color:var(--ink);text-decoration:none;background:transparent}
+.top-menu:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px}
+.top-row .app-heading{margin:0}
+.rp-lead{margin:-4px 0 12px;font-size:12px;line-height:1.4;color:var(--c-5b6f84,#5b6f84)}
+.app-top:has(>.app-brand)~.top-row{padding-right:104px}
+@container(max-width:250px){.app-top:has(>.app-brand)~.top-row{padding-right:96px}}
+/* 2.19: Raportit summary: the record counts under the fuel and service cards and Muut kulut under the total. */
+.rp-other{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.rp-other .rp-dot{flex:0 0 auto}

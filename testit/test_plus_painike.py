@@ -155,7 +155,8 @@ def test_raportit_valikko(browser, base):
         assert not auki(pg)
         pg.click(f)  # 1. painallus avaa
         assert auki(pg) and pg.get_attribute(f, "aria-expanded") == "true"
-        assert pg.eval_on_selector_all("#fab-menu [role=menuitem]", "e => e.map(x => x.innerText.trim())") == ["Lisää huolto", "Lisää muistiinpano"]
+        # 2.21: myös tankkaus tai lataus.
+        assert pg.eval_on_selector_all("#fab-menu [role=menuitem]", "e => e.map(x => x.innerText.trim())") == ["Lisää tankkaus tai lataus", "Lisää huolto tai korjaus", "Lisää muistiinpano"]
         r = pg.evaluate("""() => {const m = document.querySelector('#fab-menu').getBoundingClientRect(), b = document.querySelector('.tab-fab').getBoundingClientRect(),
           n = document.querySelector('.main-tabs').getBoundingClientRect(), g = document.querySelector('#app-screen').getBoundingClientRect(),
           i = [...document.querySelectorAll('#fab-menu [role=menuitem]')].map(x => x.getBoundingClientRect().height);
@@ -167,20 +168,22 @@ def test_raportit_valikko(browser, base):
         assert not auki(pg)
         # Näppäimistö: Enter avaa ja kohdistaa ensimmäiseen, nuolet liikkuvat, Escape sulkee ja palauttaa kohdistuksen.
         pg.focus(f); pg.keyboard.press("Enter")
-        assert auki(pg) and pg.evaluate("document.activeElement.dataset.fabAct") == "svc"
+        assert auki(pg) and pg.evaluate("document.activeElement.dataset.fabAct") == "fuel"
+        pg.keyboard.press("ArrowDown")
+        assert pg.evaluate("document.activeElement.dataset.fabAct") == "svc"
         pg.keyboard.press("ArrowDown")
         assert pg.evaluate("document.activeElement.dataset.fabAct") == "memo"
         pg.keyboard.press("ArrowDown")
-        assert pg.evaluate("document.activeElement.dataset.fabAct") == "svc"
+        assert pg.evaluate("document.activeElement.dataset.fabAct") == "fuel"
         pg.keyboard.press("Escape")
         assert not auki(pg) and pg.evaluate("document.activeElement.matches('[data-fab-menu]')")
         # Näkymästä poistuminen sulkee valikon.
-        pg.click(f); pg.click(".main-tabs a[aria-label='Tankkaus ja lataus']"); pg.wait_for_selector(".tab-fab.fl-add")
+        pg.click(f); pg.click(".main-tabs a[aria-label='Koti']"); pg.wait_for_selector(".secretary-home")  # 2.18
         assert pg.locator("#fab-menu").count() == 0
         pg.goto(base+"/app.html#reports"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(150)
         assert not auki(pg)
         # Näppäimistöllä valinta: Kaikki ajoneuvot → ajoneuvon valinta → muistiinpanot.
-        pg.focus(f); pg.keyboard.press("Enter"); pg.keyboard.press("ArrowDown"); pg.keyboard.press("Enter")
+        pg.focus(f); pg.keyboard.press("Enter"); pg.keyboard.press("ArrowUp"); pg.keyboard.press("Enter")
         pg.wait_for_selector(".rp-addsheet"); assert not auki(pg)
         assert "Lisää muistiinpano" in pg.inner_text(".rp-addsheet")
         pg.click('[data-rp-pickcar="a2"]'); pg.wait_for_function("location.hash === '#notes/a2'")

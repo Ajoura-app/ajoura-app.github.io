@@ -301,7 +301,7 @@ def test_asetusikkunan_kaannokset(browser, base, kieli, otsikko, jaksot):
 
 
 @pytest.mark.parametrize("kieli,haku,osat", [
-    ("fi", "järjestän", ["Tankkaus ja lataus -välilehden", "Palauta widgettien järjestys"]),
+    ("fi", "järjestän", ["Raportit tai tankkauskirjan", "Palauta widgettien järjestys"]),  # 2.18: Tankkaus ei ole enää välilehti
     ("en", "arrange", ["Fuel and charging tab", "Reset widget order"]),
     ("sv", "ordnar", ["Tankning och laddning", "Återställ widgetarnas ordning"])])
 def test_ohjeissa_jarjestys_ja_aikavalit(browser, base, kieli, haku, osat):

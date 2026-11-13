@@ -1697,3 +1697,53 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 
 /* The unknown official deadline must remain readable in every theme. */
 .row-status.inspection-estimate .row-txt small{color:var(--ink)}
+/* 2.20 (Niklas): Raportit event list: every fill-up, charge and entry in one list; a row opens in place. */
+.rx-filter{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px}
+.rx-filter button{min-height:36px;padding:6px 12px;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:999px;background:var(--c-ffffff,#ffffff);font:inherit;font-size:12.5px;font-weight:600;color:var(--c-3f4f63,#3f4f63);cursor:pointer}
+.rx-filter button[aria-pressed="true"]{background:var(--c-dfeafd,#dfeafd);border-color:var(--c-b7cff3,#b7cff3);color:var(--c-0d4fb8,#0d4fb8)}
+.rx-list{list-style:none;margin:0;padding:0}
+.rx-item{border-top:1px solid var(--c-e3eaf2,#e3eaf2)}
+.rx-item:first-child{border-top:0}
+.rx-row{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 2px;border:0;background:none;font:inherit;text-align:left;color:inherit;cursor:pointer}
+.rx-row:focus-visible{outline:3px solid var(--c-1769f4,#1769f4);outline-offset:-2px;border-radius:10px}
+.rx-ico{display:grid;place-items:center;flex:0 0 auto;width:36px;height:36px;border-radius:11px}
+.rx-ico svg{width:18px;height:18px}
+.rxg-fuel .rx-ico{background:var(--c-e6f0fc,#e6f0fc);color:var(--c-1f63c6,#1f63c6)}
+.rxg-svc .rx-ico{background:var(--c-e0f4ef,#e0f4ef);color:var(--c-11705a,#11705a)}
+.rxg-other .rx-ico{background:var(--c-eef1f5,#eef1f5);color:var(--c-4f5f72,#4f5f72)}
+.rx-txt{flex:1;min-width:0}
+.rx-txt strong{display:block;font-size:14px;font-weight:650;line-height:1.3;overflow-wrap:anywhere}
+.rx-txt small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:var(--c-4f5f72,#4f5f72)}
+.rx-eur{flex:0 0 auto;font-size:14px;font-weight:700}
+.rx-row .rp-chev{flex:0 0 auto;transition:transform .2s;color:var(--c-4f5f72,#4f5f72)}
+.rx-row[aria-expanded="true"] .rp-chev{transform:rotate(180deg)}
+.rx-panel{margin:0 0 10px 46px;padding:10px 12px;border-radius:12px;background:var(--c-f3f6fa,#f3f6fa)}
+.rx-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:13px;line-height:1.4}
+.rx-facts>div{display:contents}
+.rx-facts dt{color:var(--c-4f5f72,#4f5f72)}
+.rx-facts dd{margin:0;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.rx-facts small,.rx-na{font-weight:400;color:var(--c-4f5f72,#4f5f72)}
+.rx-chips{gap:4px}
+.rx-note{white-space:pre-wrap;font-weight:400}
+.rx-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rx-act{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border:1px solid var(--c-b7cff3,#b7cff3);border-radius:10px;background:var(--c-ffffff,#ffffff);font:inherit;font-size:13px;font-weight:600;color:var(--c-0d4fb8,#0d4fb8);text-decoration:none;cursor:pointer}
+.rx-act.plain{border-color:var(--c-d3dfee,#d3dfee);color:var(--c-3f4f63,#3f4f63)}
+.rx-act svg{width:16px;height:16px}
+@container(max-width:250px){.rx-panel{margin-left:0}.rx-facts{grid-template-columns:1fr;gap:2px}.rx-facts dd{margin-bottom:6px}}
+/* 2.22 (Niklas): the vehicle page's ⋯ menu next to ← Koti. */
+.veh-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.veh-menu{position:relative}
+.veh-menu>summary{list-style:none;cursor:pointer}
+.veh-menu>summary::-webkit-details-marker{display:none}
+.veh-menu[open]>summary{background:var(--c-dfeafd,#dfeafd);border-color:var(--c-b7cff3,#b7cff3);color:var(--c-0d4fb8,#0d4fb8)}
+.veh-menu-list{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(300px,calc(100cqw - 36px));padding:6px;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:16px;background:var(--c-ffffff,#ffffff);box-shadow:0 12px 32px var(--c-10243f33,#10243f33)}
+.veh-mi{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 10px;border:0;border-radius:11px;background:none;font:inherit;text-align:left;color:var(--c-16202c,#16202c);text-decoration:none;cursor:pointer}
+.veh-mi:hover,.veh-mi:focus-visible{background:var(--c-eef3fa,#eef3fa)}
+.veh-mi:focus-visible{outline:3px solid var(--c-1769f4,#1769f4);outline-offset:-3px}
+.veh-mi-ico{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:var(--c-e6f0fc,#e6f0fc);color:var(--c-1f63c6,#1f63c6)}
+.veh-mi-t{min-width:0}
+.veh-mi-t strong{display:block;font-size:14px;font-weight:650;line-height:1.3}
+.veh-mi-t small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:var(--c-4f5f72,#4f5f72)}
+.veh-mi.danger{margin-top:4px;border-top:1px solid var(--c-e3eaf2,#e3eaf2);border-radius:0 0 11px 11px;padding-top:12px}
+.veh-mi.danger strong{color:var(--c-a32a35,#a32a35)}
+.veh-mi.danger .veh-mi-ico{background:var(--c-fdecee,#fdecee);color:var(--c-a32a35,#a32a35)}

@@ -18,7 +18,7 @@ def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
         assert dock.evaluate('(e)=>getComputedStyle(e).backgroundImage') == 'none'
         assert dock.evaluate('(e)=>getComputedStyle(e).backgroundColor') == 'rgba(0, 0, 0, 0)'
         assert dock.locator('nav.main-tabs').count() == 1
-        assert dock.locator('.main-tabs a').count() == 4
+        assert dock.locator('.main-tabs a').count() == 2  # 2.18: Koti ja Raportit (avustaja keskellä)
         for link in dock.locator('.main-tabs a').all():
             assert link.get_attribute('aria-label')
             assert link.evaluate('(e)=>getComputedStyle(e,"::after").content') == 'none'

@@ -207,9 +207,17 @@
   // and Valikko. A vehicle page belongs to Koti, and old #vehicles links open the home screen. Settings, backup, help and feedback open from
   // Valikko as sub-pages, and the Valikko tab stays lit on them. Old #me and #help links still work.
   const menuViews=['menu','me','help','tips','settings','theme','feedback'],tabViews=['home','vehicle','event','fuel','reports',...menuViews];
-  const tabOf=v=>['vehicle','event'].includes(v)?'service':v==='reports'||menuViews.includes(v)?'menu':v,here=' aria-current="page"';
+  // 2.18 (Niklas): the bottom tabs are Koti, the assistant (middle) and Raportit. Tankkaus and Huolto are no longer tabs:
+  // fill-ups, charges, services and costs are one Raportit page, and a vehicle's own page belongs to Koti. Valikko moved
+  // to the ⋯ button at the top of Koti and Raportit, so no tab is lit on Valikko and its sub-pages. Old #fuel links
+  // still open the fuel log, now as a page under Raportit.
+  const tabOf=v=>['vehicle','event'].includes(v)?'home':v==='fuel'?'reports':menuViews.includes(v)?'':v,here=' aria-current="page"';
+  const topMenu=`<a class="top-menu" href="#menu" aria-label="Valikko" title="Valikko"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></a>`;
   // 0.68: the main tabs show only icons (the name stays as aria-label for screen readers); the fuel tab's icon is a pump
   // with a bolt, since fuel and charging are logged on the same tab.
+  // 2.18: the Raportit tab's own icon: a fuel pump (with its hose) and a bolt (fill-ups and charges) on the same base line as three
+  // report bars. Drawn for 24 × 24 with the same 1.8 stroke as the other icons; currentColor gives the lit and unlit tab.
+  const reportsIcon='<path d="M1.5 20.5h20"/><path d="M2.5 20.5v-14A1.5 1.5 0 0 1 4 5h3.5A1.5 1.5 0 0 1 9 6.5v14"/><path d="M9 9.5h1.5a1 1 0 0 1 1 1V14"/><path d="M6.6 8.3 5 12h2.2l-1.6 3.7"/><path d="M14.5 20.5V16M18 20.5V11M21.5 20.5v-13"/>';
   const fuelTabIcon='<path d="M3.5 20V5.5A1.5 1.5 0 0 1 5 4h6a1.5 1.5 0 0 1 1.5 1.5V20M2.5 20h11M3.5 10h9"/><path d="M19 5l-3.2 7h3L17.200 19l4-8.200h-3z"/>';
   // 0.75: the capsule sits on a dock (app.css .tab-dock) so content never shows around or under it.
   // 0.107 (Niklas): one floating ＋ button (FAB) for the three main tabs. It sits in the same sticky dock as the tab bar,
@@ -222,20 +230,19 @@
   function fab(view){
     if(view==='home')return `<a class="tab-fab" href="#newcar" aria-label="Lisää ajoneuvo" title="Lisää ajoneuvo">${fabPlus}</a>`;
     if(view==='fuel'&&fabFuel&&cars.some(c=>c.id===fabFuel.id))return `<button type="button" class="tab-fab fl-add" data-quickfuel="${fabFuel.id}" data-kind="${fabFuel.kind}" aria-label="${fabFuel.name}" title="${fabFuel.name}">${fabPlus}</button>`;
-    if(view==='reports'&&cars.length)return `<div class="fab-menu" id="fab-menu" role="menu" aria-label="Lisää merkintä" hidden><button type="button" role="menuitem" data-fab-act="svc"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.wrench)}</span><span>Lisää huolto</span></button><button type="button" role="menuitem" data-fab-act="memo"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.note)}</span><span>Lisää muistiinpano</span></button></div><button type="button" class="tab-fab" data-fab-menu aria-haspopup="menu" aria-expanded="false" aria-controls="fab-menu" aria-label="Lisää merkintä" title="Lisää merkintä">${fabPlus}</button>`;
+    if(view==='reports'&&cars.length)return `<div class="fab-menu" id="fab-menu" role="menu" aria-label="Lisää merkintä" hidden><button type="button" role="menuitem" data-fab-act="fuel"><span class="fab-mi-ico" aria-hidden="true">${svg(fuelTabIcon)}</span><span>Lisää tankkaus tai lataus</span></button><button type="button" role="menuitem" data-fab-act="svc"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.wrench)}</span><span>Lisää huolto tai korjaus</span></button><button type="button" role="menuitem" data-fab-act="memo"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.note)}</span><span>Lisää muistiinpano</span></button></div><button type="button" class="tab-fab" data-fab-menu aria-haspopup="menu" aria-expanded="false" aria-controls="fab-menu" aria-label="Lisää merkintä" title="Lisää merkintä">${fabPlus}</button>`;
     return '';}
   const contextCar=()=>{const r=route(),id=r.id||(r.view==='reports'?rpPrefs().car:'');return cars.find(c=>c.id===id)||cars.find(c=>c.id===window.AjouraSecretary?.selected())||cars[0];};
-  const serviceLink=()=>{const c=contextCar();return c?'vehicle/'+c.id:'newcar';};
-  const fuelLink=()=>{const c=contextCar();return c?'fuel/'+c.id:'fuel';};
   // 2.15 (Niklas): the assistant sits in the middle of the navigation (larger than the tabs) instead of floating.
-  const tabBar=view=>{const assistant=window.AjouraSecretary?.widget(contextCar())||'';return `<div class="tab-dock">${fab(view)}<nav class="tab-bar ${assistant?'five':'four'} main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#${fuelLink()}" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a>${assistant}<a href="#${serviceLink()}" aria-label="Huolto"${tabOf(view)==='service'?here:''}>${svg(icons.wrench)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;};
+  const tabBar=view=>{const assistant=window.AjouraSecretary?.widget(contextCar())||'';return `<div class="tab-dock">${fab(view)}<nav class="tab-bar ${assistant?'with-ai':'no-ai'} main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a>${assistant}<a href="#reports" aria-label="Raportit"${tabOf(view)==='reports'?here:''}>${svg(reportsIcon)}</a></nav></div>`;};
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
     ['Miten lisään auton?','Etusivu → sininen ＋ oikeassa alakulmassa. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
     ['Miten muutan ajoneuvojen järjestystä?','Pidä etusivulla ajoneuvon korttia painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti ja säilyy myös varmuuskopiossa.'],
-    ['Miten järjestän Tankkaus ja lataus -välilehden?','Pidä korttia, kaaviota tai listaa painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti tähän laitteeseen. Alkuperäisen järjestyksen saat takaisin, kun napautat tunnusluvun kuvaketta ja valitset Palauta widgettien järjestys.'],
-    ['Voiko tunnusluvulla olla oma aikaväli?','Voi. Napauta Tankkaus ja lataus -välilehdellä tunnusluvun sinistä kuvaketta ja valitse aikaväli, esimerkiksi Kuluva kuukausi tai Mukautettu. Kortti näyttää käyttämänsä aikavälin luvun alla. Käytä sivun aikaväliä palauttaa kortin seuraamaan sivun yläosan valintaa.'],
+    ['Miten järjestän Raportit tai tankkauskirjan?','Pidä korttia, kaaviota tai listaa painettuna, kunnes se kohoaa, ja vedä se haluamaasi kohtaan. Järjestys tallentuu heti tähän laitteeseen. Alkuperäisen järjestyksen saat takaisin, kun napautat tunnusluvun kuvaketta ja valitset Palauta widgettien järjestys.'],
+    ['Voiko tunnusluvulla olla oma aikaväli?','Voi. Napauta Raporteissa tai tankkauskirjassa tunnusluvun sinistä kuvaketta ja valitse aikaväli, esimerkiksi Kuluva kuukausi tai Mukautettu. Kortti näyttää käyttämänsä aikavälin luvun alla. Käytä sivun aikaväliä palauttaa kortin seuraamaan sivun yläosan valintaa.'],
     ['Voinko lisätä moottoripyörän, veneen tai mopon?','Voit. Etusivu → sininen ＋ oikeassa alakulmassa ja valitse ensin ajoneuvolaji: auto, moottoripyörä, mopo, mopoauto, mönkijä, moottorikelkka, vene, traktori tai muu moottorilaite. Veneillä, traktoreilla ja muilla laitteilla seurataan käyttötunteja kilometrien sijaan.'],
+    ['Missä tankkaukset, huollot ja kulut ovat?','Alavalikon Raportit-välilehdellä: ylhäällä kulujen yhteenveto ja sen alla kaikki tankkaukset, lataukset ja huoltomerkinnät aikajärjestyksessä. Napauta tapahtumaa, niin näet tarkemmat tiedot ja voit muokata sitä. Ajoneuvon tankkauskirja kulutuskaavioineen avautuu Raporttien ajoneuvokohtaisista kuluista. Asetukset, varmuuskopio ja ohjeet ovat Kodin ja Raporttien oikean yläkulman ⋯-painikkeen takana.'],
     ['Miten kirjaan huollon tai korjauksen?','Avaa auto ja paina ＋ Lisää merkintä. Pakollisia ovat vain tyyppi ja päivämäärä. Kilometrit, kulut, tehdyt toimenpiteet, kuvat ja kuitit voit lisätä heti tai myöhemmin.'],
     ['Miten lisään kuitin tai kuvan?','Merkinnässä on erikseen Lisää kuvia ja Lisää kuitit. Voit ottaa kuvan kameralla tai valita sen kuvista. Kuvat pienennetään automaattisesti, jotta ne mahtuvat puhelimeen.'],
     ['Kuva ei lataudu. Mitä teen?','Kokeile toista kuvaa tai ota kuvasta kuvakaappaus ja lisää se. Jotkin kuvamuodot (esim. osa HEIC-kuvista) eivät aukea kaikissa selaimissa.'],
@@ -389,7 +396,7 @@
     return `<section class="today-card" aria-label="Tänään huomioitavaa">${scene()}<div class="today-top"><span class="today-bell" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">TÄNÄÄN HUOMIOITAVAA</span>${headline}<p>${sub}</p></div></div><div class="today-chips n${chips.length}">${chips.join('')}</div></section>`;}
   function garageOrder(){const year=today().slice(0,4);return `${back('home','Koti')}${top()}<h2 class="app-heading">Ajoneuvojen järjestys</h2><p class="app-subtitle">Paina ajoneuvoa pitkään ja vedä se haluamaasi kohtaan.</p><div class="garage-rows">${cars.map(c=>garageRow(c,dueInfo(c),year)).join('')}</div>`;}
   function home(){
-    if(!cars.length)return `${top(true)}<h2 class="app-heading home-heading">Etusivu</h2>${emptyGarage()}`;
+    if(!cars.length)return `${top(true)}<div class="top-row"><h2 class="app-heading home-heading">Etusivu</h2>${topMenu}</div>${emptyGarage()}`;
     const year=today().slice(0,4),rows=cars.map(c=>({c,d:dueInfo(c)}));
     const backupCard=backupDue()?`<div class="reminder-card backup-due"><span class="event-symbol" aria-hidden="true">${svg(icons.bell)}</span><div><span class="mini-label">VARMUUSKOPIO</span><strong>${stamp(backupKey)?'Edellisestä varmuuskopiosta on yli kuukausi':'Ota ensimmäinen varmuuskopio'}</strong><small>Tiedot ovat vain tässä puhelimessa. Tallenna ne tiedostoon, niin ne säilyvät, vaikka puhelin vaihtuisi tai hajoaisi.</small><button class="link-button" type="button" data-backup>Tallenna varmuuskopio →</button></div></div>`:'';
     // 0.45 (AJ-01, AJ-21, AJ-25): in a browser tab the data can be deleted (Safari: a week without a visit), so while the
@@ -662,7 +669,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.17 (testiversio)';
+  const appVersion='2.22 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -891,7 +898,7 @@
     // 0.101: Mukautettu's two dates under the row, not inside it (in 0.99 they pushed the Uusi tankkaus button down).
     return `<div class="fv-bar">${veh}${pPick}${add}</div>${o.p==='custom'?flDates('data-fl-custom',o.cf,o.ct):''}`;}
   function fuel(c,from){const o=flPrefs();fabFuel=null;
-    const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):from==='raportit'?back('reports','Raportit'):''}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2></div></div>`;
+    const head=()=>`${from==='ajoneuvo'&&c?back('vehicle/'+c.id,'Ajoneuvo'):back('reports','Raportit')}<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Tankkaus</h2></div></div>`;
     if(!c)return `${top()}${head()}${emptyGarage()}`;
     // A link to one vehicle's fuel log (vehicle page, Raportit, the quick sheet) opens that vehicle, not the comparison;
     // the tab itself (#fuel) keeps the view the user left.
@@ -1238,7 +1245,19 @@
     if(c.gen&&(c.body!==body||c.year!==year||c.name!==name))delete c.gen;Object.assign(c,{plate,name,nick,year,km,fuel,body,color});persist();notice='✓ Tiedot päivitetty.';go('vehicle/'+c.id);}
   // Right after a vehicle is saved: the two things a new user usually wants next, so adding three cars is a quick loop.
   const addedNext=c=>`<div class="added-next"><h3>Mitä seuraavaksi?</h3><a class="app-button" href="#add/${c.id}">＋ Kirjaa viimeisin huolto</a><a class="app-button secondary" href="#newcar">＋ Lisää seuraava ajoneuvo</a><p>${isCar(c)?'Vanhoja huoltoja ei tarvitse kirjata heti. Viimeisin huolto ja katsastus riittävät muistutuksiin.':'Vanhoja huoltoja ei tarvitse kirjata heti. Viimeisin huolto riittää muistutukseen.'}</p></div>`;
-  function vehicle(c){const sorted=[...c.events].sort(newest),year=today().slice(0,4);return `${back('home','Koti')}<div class="vehicle-hero">${vehicleImage(c)}<h2 class="app-heading">${escape(carName(c))}</h2><p>${c.nick?escape(c.name)+' · ':''}${[c.plate?escape(c.plate):'',c.year,typeOf(c),colorName(c.color),c.fuel?escape(c.fuel):'',c.engine?escape(c.engine):''].filter(Boolean).join(' · ')}</p><div class="photo-actions"><label class="photo-button">＋ ${c.photo?'Lisää kuvia':'Lisää omia kuvia'}<input type="file" accept="image/*" multiple data-car-photos="${c.id}" class="sr-only"></label>${c.photo?`<button type="button" class="photo-button plain" data-photo-remove="${c.id}">Poista pääkuva</button><button type="button" class="photo-button plain" data-photo-process="${c.id}">Poista kuvan tausta</button>`:''}<a class="photo-button" href="#caredit/${c.id}">Muokkaa tietoja</a></div>${carGallery(c)}</div>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${notice&&/lisätty talliin\.$/.test(notice)?addedNext(c):''}<div class="app-stats"><div><strong>${number(c.km)} <small>${ku(c)}</small></strong><span>${hourly(c)?'Käyttötunnit':'Mittarilukema'}</span></div><div><strong>${c.events.length}</strong><span>Merkintää</span></div></div><div class="cost-line"><span>Kirjatut kulut yhteensä</span><strong>${number(costOf(c.events))} €</strong><small>Vuonna ${year}: ${number(costOf(c.events.filter(e=>e.date.startsWith(year))))} €</small>${(f=>f?`<small class="fuel-cost">${costWord(c)} ${year}: ${number(f)} €</small>`:'')((c.fuels||[]).filter(f=>f.date.startsWith(year)&&f.cost!==null).reduce((m,f)=>m+f.cost,0))}</div>${notesCard(c)}${fuelCard(c)}<a class="app-button" href="#add/${c.id}">＋ Lisää merkintä</a>${upcoming(c)}${tipsCard(c)}${kmChart(c)}<div class="history-heading"><h3>Huoltohistoria</h3><a href="#report/${c.id}">Raportti →</a></div>${sorted.length?timeline(c,sorted):'<p class="app-empty">Ei vielä tapahtumia. Lisää ensimmäinen merkintä yllä olevasta painikkeesta.</p>'}<p class="app-note">${c.sample?'Esimerkkiauto: kuvitteellinen historia, rekisteritunnus ja hinnat. ':''}${c.photo?'Kuva on omasi ja pysyy tässä laitteessa.':(isCar(c)?'Automalli on tyylitelty kuvitus valitsemastasi korimallista ja väristä. Voit vaihtaa tilalle oman kuvan.':'Kuva on piirretty kuvitus valitsemastasi tyypistä ja väristä. Voit vaihtaa tilalle oman kuvan.')}</p><button class="app-back danger-link" type="button" data-remove="${c.id}">Poista ajoneuvo</button>`;}
+  // 2.22 (Niklas): the vehicle's own actions behind ⋯ at the top of the vehicle page: edit the details, notes,
+  // reminders (the Seuraavaksi card with the calendar export), the service reminder interval and, last, delete (the
+  // same confirmation and removeCar as before). The interval is still one for all vehicles (Asetukset); a separate
+  // oil-change interval per vehicle would be a new stored field and waits for approval.
+  const vehMenu=c=>{const it=(attr,icon,t,sub,cls='')=>`<${attr.startsWith('href')?'a':'button type="button"'} class="veh-mi${cls}" role="menuitem" ${attr}><span class="veh-mi-ico" aria-hidden="true">${svg(icon)}</span><span class="veh-mi-t"><strong>${t}</strong>${sub?`<small>${sub}</small>`:''}</span></${attr.startsWith('href')?'a':'button'}>`;
+    const memos=(c.memos||[]).length;
+    return `<details class="veh-menu"><summary class="top-menu" aria-label="Ajoneuvon toiminnot" title="Ajoneuvon toiminnot"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></summary><div class="veh-menu-list" role="menu" aria-label="Ajoneuvon toiminnot">`
+      +it(`href="#caredit/${c.id}"`,evIcons.edit,'Muokkaa perustietoja','Rekisteri, malli, vuosi, mittarilukema, käyttövoima')
+      +it(`href="#notes/${c.id}"`,icons.note,'Muistiinpanot',memos?`${memos} ${memos===1?'muistiinpano':'muistiinpanoa'}`:'Lisää ensimmäinen')
+      +it(`data-veh-jump="upcoming"`,icons.bell,'Muistutukset','Seuraava huolto ja katsastus, vienti kalenteriin')
+      +it(`href="#settings"`,icons.oil,'Huoltoväli',`<span class="nw">${number(profile.km)} km</span> tai <span class="nw">${profile.months} kk</span> · kaikille ajoneuvoille`)
+      +it(`data-remove="${c.id}"`,evIcons.trash,'Poista ajoneuvo','Kysyy vahvistuksen',' danger')+`</div></details>`;};
+  function vehicle(c){const sorted=[...c.events].sort(newest),year=today().slice(0,4);return `<div class="veh-top">${back('home','Koti')}${vehMenu(c)}</div><div class="vehicle-hero">${vehicleImage(c)}<h2 class="app-heading">${escape(carName(c))}</h2><p>${c.nick?escape(c.name)+' · ':''}${[c.plate?escape(c.plate):'',c.year,typeOf(c),colorName(c.color),c.fuel?escape(c.fuel):'',c.engine?escape(c.engine):''].filter(Boolean).join(' · ')}</p><div class="photo-actions"><label class="photo-button">＋ ${c.photo?'Lisää kuvia':'Lisää omia kuvia'}<input type="file" accept="image/*" multiple data-car-photos="${c.id}" class="sr-only"></label>${c.photo?`<button type="button" class="photo-button plain" data-photo-remove="${c.id}">Poista pääkuva</button><button type="button" class="photo-button plain" data-photo-process="${c.id}">Poista kuvan tausta</button>`:''}</div>${carGallery(c)}</div>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}${notice&&/lisätty talliin\.$/.test(notice)?addedNext(c):''}<div class="app-stats"><div><strong>${number(c.km)} <small>${ku(c)}</small></strong><span>${hourly(c)?'Käyttötunnit':'Mittarilukema'}</span></div><div><strong>${c.events.length}</strong><span>Merkintää</span></div></div><div class="cost-line"><span>Kirjatut kulut yhteensä</span><strong>${number(costOf(c.events))} €</strong><small>Vuonna ${year}: ${number(costOf(c.events.filter(e=>e.date.startsWith(year))))} €</small>${(f=>f?`<small class="fuel-cost">${costWord(c)} ${year}: ${number(f)} €</small>`:'')((c.fuels||[]).filter(f=>f.date.startsWith(year)&&f.cost!==null).reduce((m,f)=>m+f.cost,0))}</div>${notesCard(c)}${fuelCard(c)}<a class="app-button" href="#add/${c.id}">＋ Lisää merkintä</a>${upcoming(c)}${tipsCard(c)}${kmChart(c)}<div class="history-heading"><h3>Huoltohistoria</h3><a href="#report/${c.id}">Raportti →</a></div>${sorted.length?timeline(c,sorted):'<p class="app-empty">Ei vielä tapahtumia. Lisää ensimmäinen merkintä yllä olevasta painikkeesta.</p>'}<p class="app-note">${c.sample?'Esimerkkiauto: kuvitteellinen historia, rekisteritunnus ja hinnat. ':''}${c.photo?'Kuva on omasi ja pysyy tässä laitteessa.':(isCar(c)?'Automalli on tyylitelty kuvitus valitsemastasi korimallista ja väristä. Voit vaihtaa tilalle oman kuvan.':'Kuva on piirretty kuvitus valitsemastasi tyypistä ja väristä. Voit vaihtaa tilalle oman kuvan.')}</p>`;}
   // Own photos of the car: the first is the cover shown in the garage, the rest form a gallery under it.
   function carGallery(c){const g=c.gallery||[];if(!g.length)return '';return `<div class="car-gallery" aria-label="Kuvat autosta">${g.map((src,i)=>`<span class="att-thumb"><button type="button" class="att-open" data-view-src="${i}" data-view-kind="gallery" data-view-target="car:${c.id}" aria-label="Avaa kuva ${i+1}"><img src="${ownPhoto(src)}" alt=""></button><button type="button" class="att-remove" data-att-remove="gallery" data-att-index="${i}" data-att-target="car:${c.id}" aria-label="Poista kuva ${i+1}">×</button><button type="button" class="cover-pick" data-cover="${c.id}" data-cover-index="${i}" aria-label="Aseta kuva ${i+1} pääkuvaksi" title="Pääkuvaksi">★</button></span>`).join('')}</div><p class="gallery-help">${g.length+1} kuvaa · ★ vaihtaa pääkuvan</p>`;}
   async function addCarPhotos(input){const c=cars.find(c=>c.id===input.dataset.carPhotos);if(!c)return;const files=[...(input.files||[])];input.value='';if(!files.length)return;
@@ -1367,7 +1386,9 @@
   // Valikko tab: rows like a phone's settings list. Each opens a sub-page with a back link, because the installed
   // iPhone app has no browser back button.
   const menuRow=(to,icon,title,sub)=>`${to.startsWith('data-')?`<button class="menu-row" type="button" ${to}>`:`<a class="menu-row" href="${to}">`}<span class="event-symbol" aria-hidden="true">${svg(icons[icon])}</span><span><strong>${title}</strong><small>${sub}</small></span><span class="chevron" aria-hidden="true">›</span>${to.startsWith('data-')?'</button>':'</a>'}`;
-  function menu(){return `${top()}<h2 class="app-heading">Valikko</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}<div class="menu-group">${menuRow('#reports','chart','Raportit','Kulut ja ajoneuvojen raportit')}${menuRow('#settings','gear','Asetukset','Huoltoväli ja ulkoasu')}${menuRow('#me','save','Varmuuskopio ja tiedot',backupWhen()||'Varmuuskopiota ei ole vielä otettu')}</div><h3 class="menu-h">Ohjeet ja tuki</h3><div class="menu-group">${(s=>menuRow('#tips',s.icon,'Kausi- ja huoltovinkit',`<span>Nyt:</span> <span>${s.chip.fi}</span>`))(seasonNow())}${menuRow('#help','help','Ohjeet ja kysymykset','Yleisimmät kysymykset ja haku')}${menuRow('data-tutorial','play','Käyttöönoton opas','Lyhyt esittely sovelluksesta')}${menuRow('#feedback','chat','Anna palautetta','Kerro, mikä toimi ja mikä ei')}${menuRow('data-share-app','share','Suosittele AJOURAa','Jaa linkki kaverille')}</div><h3 class="menu-h">Tietoa</h3><div class="menu-group">${menuRow('tietosuoja.html','inspection','Tietosuoja','Mitä tietoja sovellus käsittelee')}</div><p class="app-fineprint menu-version">AJOURA ${appVersion}</p>`;}
+  // 2.18: Valikko opens from the ⋯ button at the top of Koti and Raportit (no longer a tab), so it has a way back to
+  // Koti; Raportit is a tab of its own and no longer repeated here.
+  function menu(){return `${back('home','Koti')}<h2 class="app-heading">Valikko</h2>${notice?`<p class="success-note" role="status">${escape(notice)}</p>`:''}<div class="menu-group">${menuRow('#settings','gear','Asetukset','Huoltoväli ja ulkoasu')}${menuRow('#me','save','Varmuuskopio ja tiedot',backupWhen()||'Varmuuskopiota ei ole vielä otettu')}</div><h3 class="menu-h">Ohjeet ja tuki</h3><div class="menu-group">${(s=>menuRow('#tips',s.icon,'Kausi- ja huoltovinkit',`<span>Nyt:</span> <span>${s.chip.fi}</span>`))(seasonNow())}${menuRow('#help','help','Ohjeet ja kysymykset','Yleisimmät kysymykset ja haku')}${menuRow('data-tutorial','play','Käyttöönoton opas','Lyhyt esittely sovelluksesta')}${menuRow('#feedback','chat','Anna palautetta','Kerro, mikä toimi ja mikä ei')}${menuRow('data-share-app','share','Suosittele AJOURAa','Jaa linkki kaverille')}</div><h3 class="menu-h">Tietoa</h3><div class="menu-group">${menuRow('tietosuoja.html','inspection','Tietosuoja','Mitä tietoja sovellus käsittelee')}</div><p class="app-fineprint menu-version">AJOURA ${appVersion}</p>`;}
   // Raportit tab: every vehicle's report in one place. Comparing vehicles comes next (pala B).
   // Raportit 0.27 (Niklas 25.10.2026): costs for a chosen period, vehicles and cost types, as key figures and a bar per vehicle.
   // costKind, costsOf and drivenIn are the one shared cost calculation: the vehicle page's Kulut tab must use them too,
@@ -1419,13 +1440,15 @@
   const rpGroups=[['fuel','Polttoaine ja lataus'],['service','Huollot'],['repair','Korjaukset'],['other','Muut']];
   // The report's four cost groups from costsOf's six types: inspections and tyres are "Muut" (the vehicle page keeps six).
   const rpG=x=>({fuel:x.fuel,service:x.service,repair:x.repair,other:x.inspect+x.tyres+x.other}),rpGOf=k=>k==='inspect'||k==='tyres'?'other':k;
-  const rpKpis=['tot','mon','fuel','svc'],rpWidgets=[...rpKpis,'months','dist','cars','exp'];
+  const rpKpis=['tot','mon','fuel','svc'],rpWidgets=[...rpKpis,'events','months','dist','cars','exp'];
   function rpPrefs(){let o={};try{o=JSON.parse(prefGet(rpKey)||'{}')||{};}catch(e){}const list=a=>Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,500):[];
     const pg=flPer(o,{p:'year',cf:'',ct:'',cu:null}),kp={};if(o.kp&&typeof o.kp==='object')for(const k of rpKpis){const v=flPer(o.kp[k],null);if(v)kp[k]=v;}
-    const w=Array.isArray(o.w)?[...new Set(o.w.filter(x=>rpWidgets.includes(x)))]:[];for(const x of rpWidgets)if(!w.includes(x))w.push(x);
+    const w=Array.isArray(o.w)?[...new Set(o.w.filter(x=>rpWidgets.includes(x)))]:[];
+    // 2.20: a saved order from before the event list gets the list right after the key-figure cards.
+    if(w.length&&!w.includes('events'))w.splice(Math.max(...rpKpis.map(k=>w.indexOf(k)))+1,0,'events');for(const x of rpWidgets)if(!w.includes(x))w.push(x);
     let car=typeof o.car==='string'&&cars.some(c=>c.id===o.car)?o.car:'';
     if(o.car===undefined&&Array.isArray(o.offCars)&&o.offCars.length){const on=cars.filter(c=>!o.offCars.includes(c.id));if(on.length===1)car=on[0].id;}
-    return {p:pg.p,cf:pg.cf,ct:pg.ct,cu:pg.cu,kp,w,car,offKinds:list(o.offKinds).filter(k=>rpGroups.some(([x])=>x===k)),s:['cost','costa','name','km'].includes(o.s)?o.s:'cost'};}
+    return {p:pg.p,cf:pg.cf,ct:pg.ct,cu:pg.cu,kp,w,car,offKinds:list(o.offKinds).filter(k=>rpGroups.some(([x])=>x===k)),s:['cost','costa','name','km'].includes(o.s)?o.s:'cost',ef:['all','fuel','svc','other'].includes(o.ef)?o.ef:'all'};}
   // 0.76: 12 kk is twelve calendar months, the month going on included (3.11.2026: 1.12.2025–3.11.2026). Until 0.75 it was
   // the 365 days back from today, which touched 13 calendar months and drew 13 month bars.
   // 0.80: Edellinen vuosi (prev) and Mukautettu (custom: the dates the user chose, kept with the Raportit choices).
@@ -1479,9 +1502,45 @@
   const rpSetT={tot:'Kokonaiskulujen asetukset',mon:'Kuukausikulujen asetukset',fuel:'Polttoaine- ja latauskulujen asetukset',svc:'Huoltojen ja korjausten asetukset'};
   const rpCal='<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>';
   const rpAllPic=`<span class="fv-vpic fv-vall" aria-hidden="true">${svg('<path d="M3 16.5v-3l2-4.5h9l3 4.5v3z"/><path d="M8 9V7.5h8.5l2.5 4h1.5v4H18"/><circle cx="6.5" cy="16.5" r="1.5"/><circle cx="13.5" cy="16.5" r="1.5"/>')}</span>`;
-  function reports(){if(!cars.length)return `${top()}<h2 class="app-heading">Raportit</h2>${emptyGarage()}`;
+  // 2.20 (Niklas): every record of the chosen vehicle(s) and period in one list, newest first: fill-ups, charges,
+  // services, repairs, inspections and other entries. Built for the screen only from the stored entries and fill-ups;
+  // each keeps its own id, type and edit form, nothing is stored together. The groups are the same as the summary's
+  // (rpG: fuel / services and repairs / other), so a filter shows exactly the records behind one figure. The filter is
+  // a view setting on this device (ef in the Raportit choices) and never changes the totals above it.
+  const rxFilters=[['all','Kaikki'],['fuel','Tankkaukset ja lataukset'],['svc','Huollot ja korjaukset'],['other','Muut']];
+  let rxShow=10;const rxOpen=new Set();
+  const rxGroup=k=>k==='fuel'?'fuel':k==='service'||k==='repair'?'svc':'other';
+  function rxItems(sel,from,to){const out=[];
+    for(const c of sel){
+      for(const e of c.events)if(e.date>=from&&e.date<=to)out.push({g:rxGroup(costKind(e.type)),c,date:e.date,km:e.km,e,id:'e-'+c.id+'-'+e.id});
+      const fs=c.fuels||[];if(!fs.length)continue;
+      // Consumption of a fill-up from the same calculation as the fuel log (fuelStats: full fill-ups only, impossible
+      // intervals and contradicting readings left out), per kind so litres and kWh never mix.
+      const cons=new Map();for(const k of chargeKinds(c)){const v=fcar(c,k);for(const x of fuelStats(v).series)cons.set(x.id,{v:x.v,u:unitOf(v)});}
+      for(const f of fs)if(f.date>=from&&f.date<=to)out.push({g:'fuel',c,date:f.date,km:f.km,f,cons:cons.get(f.id)||null,id:'f-'+c.id+'-'+f.id});}
+    return out.sort((a,b)=>b.date.localeCompare(a.date)||(b.km??-1)-(a.km??-1));}
+  const rxRow=(k,v)=>`<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  function rxItem(x){const c=x.c,km=v=>v===null||v===undefined?'':`<span class="nw">${number(v)} ${ku(c)}</span>`;let ico,title,cost,rows=[],acts;
+    if(x.f){const f=x.f,kd=fillKind(c,f),v=fcar(c,kd),u=unitOf(v),el=u==='kWh';ico=svg(el?bolt:icons.fuel);title=el?'Lataus':kd==='gas'?'Kaasutankkaus':'Tankkaus';cost=f.cost;
+      rows=[rxRow(el?'Ladattu':'Tankattu',`<span class="nw">${dec(f.qty,2)} ${u}</span>${f.full?'':' <small>(osatankkaus)</small>'}`),rxRow('Hinta',f.cost!==null?`<span class="nw">${dec(f.cost,2)} €</span>`:'Ei merkitty'),f.cost!==null&&f.qty>0?rxRow(el?'Hinta / kWh':`Hinta / ${u}`,`<span class="nw">${dec(f.cost/f.qty,el?2:3)} €/${u}</span>`):'',rxRow(hourly(c)?'Tuntimittari':'Mittarilukema',km(f.km)||'Ei merkitty'),
+        rxRow('Kulutus',x.cons?`<span class="nw">${dec(x.cons.v)} ${x.cons.u}/${per(c)}</span>`:'<span class="rx-na">Ei laskettavissa tästä kirjauksesta</span>'),f.grade?rxRow('Laatu',escape(f.grade)):'',f.est?rxRow('Huom.','Hinta-arvio'):'',f.skip?rxRow('Huom.','Ei mukana kulutuksessa'):''];
+      acts=`<button type="button" class="rx-act" data-rx-fill="${f.id}" data-rx-car="${c.id}">${svg(evIcons.edit)}<span>Muokkaa merkintää</span></button>`;}
+    else{const e=x.e,ph=(e.photos||[]).length,rc=(e.receipts||[]).length,w=e.by?byWho(e.by,true):'';ico=eventIcon(dispType(c,e.type));title=escape(dispType(c,e.type));cost=evCost(e)||(e.cost!==''&&e.cost!=null?0:null);
+      rows=[rxRow('Päivämäärä',date(e.date)),rxRow(hourly(c)?'Tuntimittari':'Mittarilukema',km(e.km)||'Ei merkitty'),rxRow('Kustannus',cost!==null?`<span class="nw">${number(cost)} €</span>`:'Ei merkitty'),
+        e.items?.length?rxRow('Tehdyt toimenpiteet',`<ul class="ev-chips rx-chips">${e.items.map(i=>`<li>${escape(i)}</li>`).join('')}</ul>`):'',w?rxRow('Työn teki',whoHtml(w)):'',e.note?rxRow('Muistiinpano',`<span class="rx-note" translate="no">${escape(e.note)}</span>`):'',
+        ph||rc?rxRow('Liitteet',[ph?`<span class="nw">${ph} ${ph===1?'kuva':'kuvaa'}</span>`:'',rc?`<span class="nw">${rc} ${rc===1?'kuitti':'kuittia'}</span>`:''].filter(Boolean).join(' · ')):''];
+      acts=`<a class="rx-act" href="#edit/${c.id}/${e.id}">${svg(evIcons.edit)}<span>Muokkaa merkintää</span></a><a class="rx-act plain" href="#event/${c.id}/${e.id}">${svg(icons.doc)}<span>${ph||rc?'Kuvat ja kuitit':'Avaa merkintä'}</span></a>`;}
+    return `<li class="rx-item rxg-${x.g}"><button type="button" class="rx-row" data-rx="${x.id}" aria-expanded="${rxOpen.has(x.id)}" aria-controls="rx-${x.id}"><span class="rx-ico" aria-hidden="true">${ico}</span><span class="rx-txt"><strong>${title}</strong><small><span translate="no">${escape(carName(c))}</span> · <span class="nw">${date(x.date)}</span></small></span><b class="rx-eur nw">${cost!==null&&cost!==undefined?dec(cost,2)+' €':''}</b>${chev}</button><div class="rx-panel" id="rx-${x.id}"${rxOpen.has(x.id)?'':' hidden'}><dl class="rx-facts">${rows.join('')}</dl><div class="rx-acts">${acts}</div></div></li>`;}
+  function rxSection(o,sel,from,to){const all=rxItems(sel,from,to),f=rxFilters.some(([k])=>k===o.ef)?o.ef:'all',list=f==='all'?all:all.filter(x=>x.g===f),n=Math.min(list.length,rxShow);
+    const chips=`<div class="rx-filter" role="group" aria-label="Näytä tapahtumat">${rxFilters.map(([k,t])=>`<button type="button" data-rx-f="${k}" aria-pressed="${k===f}">${t}</button>`).join('')}</div>`;
+    return `<section class="rp-card rx-card fv-w fv-wide" data-fw="events" aria-labelledby="rx-h"><div class="rp-hrow"><h3 class="rp-h" id="rx-h">Tapahtumat</h3><small class="fl-unit"><span>${number(list.length)}</span> <span>kpl</span></small></div>${chips}
+      ${list.length?`<ul class="rx-list">${list.slice(0,n).map(rxItem).join('')}</ul>`:`<p class="rp-empty">${all.length?'Ei tämän lajin tapahtumia valitulla ajanjaksolla.':'Ei kirjauksia valitulla ajanjaksolla.'}</p>`}
+      ${list.length>n?`<button type="button" class="fl-moreb rx-more" data-rx-more><span>Näytä lisää</span> <span>(${list.length-n})</span></button>`:''}<p class="fl-sub">Napauta tapahtumaa, niin näet tarkemmat tiedot. Suodatus ei muuta yllä olevia summia.</p></section>`;}
+  // 2.18: Raportit gathers fill-ups, charges, services and costs; ⋯ at the top opens Valikko.
+  const rpHead=`<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2></div>${topMenu}</div><p class="rp-lead">Tankkaukset, lataukset, huollot ja kulut</p>`;
+  function reports(){if(!cars.length)return `${top()}${rpHead}${emptyGarage()}`;
     const o=rpPrefs(),d=rpCalc(o),{from,to,kinds,sel,kn,rows,sum}=d,one=!!o.car,c1=one?sel[0]:null,pName=flPName(o),msg=notice?`<p class="success-note" role="status">${escape(notice)}</p>`:'';
-    const head=`<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Raportit</h2></div></div>`;
+    const head=rpHead;
     // The vehicle list: Kaikki ajoneuvot first, then the garage. One tap chooses and closes the list.
     const item=(id,pic,name,sub,on)=>`<div class="fv-mi rp-vmi${on?' on':''}"><button type="button" class="fv-mname" data-rp-car="${id}"${on?' aria-current="true"':''}>${pic}<span class="fv-mtxt"><span class="fl-mn"${id?' translate="no"':''}>${name}</span>${sub?`<small translate="no">${sub}</small>`:''}</span><span class="rp-vck" aria-hidden="true">${on?flCk:''}</span></button></div>`;
     const items=item('',rpAllPic,'Kaikki ajoneuvot','',!one)+cars.map(c=>item(c.id,flPic(c),escape(carName(c)),c.plate?escape(c.plate):'',one&&c.id===o.car)).join('');
@@ -1496,10 +1555,15 @@
     // The monthly average divides by the months of the period: whole calendar months count 1 and a month going on (or
     // the ends of Mukautettu) its share of days (monthsIn). The divisor is shown under the period.
     const mTxt=v=>{const r=Math.round(v*10)/10;return dec(r,r%1?1:0);};
-    const w={tot:kc('tot',flEuro,'Kokonais\u00adkulut',dd=>eB(dd.sum)),
+    // 2.19 (Niklas): the summary says what the totals are made of: the fuel and service cards show how many records are
+    // behind them, and the total shows the third group (Muut: inspections, tyres and other entries), so the three groups
+    // add up to the total. Counted for the card's own period, from the same entries as the sums.
+    const inD=(dd,d0)=>d0>=dd.from&&d0<=dd.to,nOf=(dd,g)=>dd.sel.reduce((m,c)=>m+(g==='fuel'?(c.fuels||[]).filter(f=>inD(dd,f.date)).length:c.events.filter(e=>inD(dd,e.date)&&['service','repair'].includes(costKind(e.type))).length),0);
+    const nTxt=(n,one,many)=>`<p class="rp-basis rp-count"><span>${number(n)}</span> <span>${n===1?one:many}</span></p>`;
+    const w={tot:kc('tot',flEuro,'Kokonais\u00adkulut',dd=>eB(dd.sum),dd=>`<p class="rp-basis rp-other"><i class="rp-dot rpk-other" aria-hidden="true"></i><span>Muut kulut</span> <span class="nw">${eur(gsum(dd,['other']))}</span></p>`),
       mon:kc('mon',rpCal,'Keskimäärin / kk',dd=>eB(dd.sum/dd.months),dd=>`<p class="rp-basis"><span>${mTxt(dd.months)}</span> <span>kk:n ajalta</span></p>`),
-      fuel:kc('fuel',fuelTabIcon,'Polttoaine ja lataus',dd=>eB(gsum(dd,['fuel']))),
-      svc:kc('svc',icons.wrench,'Huollot ja korjaukset',dd=>eB(gsum(dd,['service','repair'])))};
+      fuel:kc('fuel',fuelTabIcon,'Polttoaine ja lataus',dd=>eB(gsum(dd,['fuel'])),dd=>nTxt(nOf(dd,'fuel'),'kirjaus','kirjausta')),
+      svc:kc('svc',icons.wrench,'Huollot ja korjaukset',dd=>eB(gsum(dd,['service','repair'])),dd=>nTxt(nOf(dd,'svc'),'merkintä','merkintää'))};
     // Costs by month (by year for a long history), stacked by cost group; a tapped bar shows the month's breakdown.
     const vis=kinds.filter(k=>!o.offKinds.includes(k)),allTot={};for(const k of kinds)allTot[k]=rows.reduce((m,r)=>m+r.s[k],0);
     const mList=rpMonths(o,{from,to,sel,kinds:vis}),yb=!!(mList[0]&&mList[0].year);
@@ -1525,6 +1589,7 @@
     w.exp=`<section class="rp-card rp-export fv-w fv-wide" data-fw="exp" aria-labelledby="rp-he"><h3 class="rp-h" id="rp-he">Raporttien vienti</h3><p class="rp-sub">${who} · <span class="nw">${pTxt}</span></p>
       <div class="rp-xrow"><button type="button" class="rp-xbtn" data-rp-pdf${sum?'':' disabled'}><span class="rp-pdf-ico" aria-hidden="true">${svg(icons.doc)}</span><span class="rp-rtxt"><strong>PDF</strong><small>Kulujen yhteenveto</small></span></button><button type="button" class="rp-xbtn" data-rp-csv${nRows?'':' disabled'}><span class="rp-pdf-ico csv" aria-hidden="true">${svg('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 15h16M10 4v16"/>')}</span><span class="rp-rtxt"><strong>CSV</strong><small><span>${number(nRows)}</span> <span>${nRows===1?'rivi':'riviä'}</span></small></span></button></div>
       <p class="fl-fine rp-csvnote">${sum?'<span>PDF: tunnusluvut ja kulut lajeittain ja ajoneuvoittain.</span> ':''}${nRows?'<span>CSV: jokainen merkintä ja tankkaus omalla rivillään; aukeaa Excelissä, Numbersissa ja Google Sheetsissä.</span>':'<span>Valitulla ajanjaksolla ei ole vietäviä kirjauksia.</span>'}</p></section>`;
+    w.events=rxSection(o,sel,from,to);
     return `${top()}${head}${bar}${msg}<div class="fv-grid rp-wgrid" data-w-grid="reports">${o.w.map(k=>w[k]).join('')}</div>`;}
   const rng=(a,b)=>a.slice(0,4)===b.slice(0,4)?`${dm(a)}–${date(b)}`:`${date(a)}–${date(b)}`;
   const pLabel=p=>({year:'Tämä vuosi',prev:'Edellinen vuosi','12':'12 kk',month:'Kuluva kuukausi',pmonth:'Edellinen kuukausi',custom:'Mukautettu'})[p]||'Koko historia';
@@ -1592,9 +1657,11 @@
       resetOrder:()=>{const o2=rpPrefs();o2.w=[...rpWidgets];notice='✓ Widgettien järjestys palautettu.';rpSave(o2,sel);}});}
   // 0.107: Lisää huolto or Lisää muistiinpano from the Raportit ＋ menu. With one vehicle chosen (or only one in the
   // garage) the form opens straight away; with Kaikki ajoneuvot the vehicle is picked first in this small sheet.
-  const fabGo=(act,c)=>go((act==='memo'?'notes/':'add/')+c.id);
+  // 2.21 (Niklas): the menu also adds a fill-up or charge, with the same fill-up sheet as Koti and the fuel log
+  // (openSheet: the vehicle's usual kind, fuel or electricity, chosen in the sheet).
+  const fabGo=(act,c)=>act==='fuel'?openSheet(c,screen.querySelector('[data-fab-menu]')):go((act==='memo'?'notes/':'add/')+c.id);
   function rpCarSheet(act,from){closeSheet();sheetBack=from||null;sheetSel='[data-fab-menu]';const l=document.createElement('div');l.className='sheet-layer';
-    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${act==='memo'?'Lisää muistiinpano':'Lisää huolto'}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
+    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${act==='memo'?'Lisää muistiinpano':act==='fuel'?'Lisää tankkaus tai lataus':'Lisää huolto tai korjaus'}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
       <p class="rp-addq">Valitse ajoneuvo</p><div class="rp-addopts">${cars.map(c=>`<button type="button" class="rp-addopt" data-rp-pickcar="${c.id}"><span class="rp-pdf-ico rp-addthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong>${c.plate?`<small translate="no">${escape(c.plate)}</small>`:''}</span><span class="chevron" aria-hidden="true">›</span></button>`).join('')}</div></div>`;
     glass.appendChild(l);screen.inert=true;
     l.addEventListener('click',e=>{const b=e.target.closest('[data-rp-pickcar]');if(b){const c=cars.find(x=>x.id===b.dataset.rpPickcar);sheetBack=null;closeSheet();if(c)fabGo(act,c);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();});
@@ -1614,6 +1681,12 @@
     // A vehicle from the list (or "Vertaa kaikkia"), or a tap on a vehicle's row: the whole page shows that vehicle.
     const car=t.closest('[data-rp-car]');if(car){const id=car.dataset.rpCar;if(id&&!cars.some(c=>c.id===id))return true;rpMonth=null;o.car=id;rpSave(o,'.rp-veh>summary');return true;}
     const op=t.closest('[data-rp-open]');if(op){const id=op.dataset.rpOpen;if(!cars.some(c=>c.id===id))return true;rpMonth=null;o.car=id;prefSet(rpKey,flKeep(o));render();screen.scrollTop=0;refocus('.rp-veh>summary');return true;}
+    // 2.20: the event list. A tap opens or closes a record in place (no re-render, so the page does not jump); the
+    // filter and Näytä lisää re-render the list; a fill-up opens the existing fill-up sheet for editing.
+    const rx=t.closest('[data-rx]');if(rx){const open=rx.getAttribute('aria-expanded')!=='true',pn=document.getElementById(rx.getAttribute('aria-controls'));rx.setAttribute('aria-expanded',String(open));if(pn)pn.hidden=!open;if(open)rxOpen.add(rx.dataset.rx);else rxOpen.delete(rx.dataset.rx);return true;}
+    const rf=t.closest('[data-rx-f]');if(rf){o.ef=rf.dataset.rxF;rxShow=10;rpSave(o,`[data-rx-f="${o.ef}"]`);return true;}
+    if(t.closest('[data-rx-more]')){const k=rxShow;rxShow+=20;const y=screen.scrollTop;render();screen.scrollTop=y;screen.querySelectorAll('.rx-list .rx-row')[k]?.focus({preventScroll:true});return true;}
+    const rfl=t.closest('[data-rx-fill]');if(rfl){const c=cars.find(x=>x.id===rfl.dataset.rxCar),f=c&&(c.fuels||[]).find(x=>x.id===rfl.dataset.rxFill);if(f)openSheet(c,rfl,f);return true;}
     const kd=t.closest('[data-rp-kind]');if(kd){rpMonth=null;o.offKinds=flip(o.offKinds,kd.dataset.rpKind);rpSave(o,`[data-rp-kind="${kd.dataset.rpKind}"]`);return true;}
     return false;}
   // PDF report of the Raportit summary (0.32, Niklas 26.10.2026). The installed iPhone app ignores window.print(), so the
@@ -2036,15 +2109,20 @@
   screen.addEventListener('input',event=>{const n=event.target.closest('[data-notes]');if(n){const c=cars.find(c=>c.id===n.dataset.notes);if(c){c.notes=n.value.slice(0,5000);if(!c.notes)delete c.notes;clearTimeout(notesTimer);notesTimer=setTimeout(persist,400);}return;}});
   screen.addEventListener('input',event=>{const pl=event.target;if(pl.id==='plate-input'||(pl.name==='plate'&&pl.form)){const m=maskPlate(pl.value);if(m!==pl.value){pl.value=m;pl.setSelectionRange?.(m.length,m.length);}}if(event.target.id==='help-search'){const raw=event.target.value.trim().toLowerCase(),q=raw.length>5?raw.slice(0,raw.length-2):raw;let n=0;screen.querySelectorAll('.faq').forEach(d=>{const hit=!q||d.textContent.toLowerCase().includes(q);d.hidden=!hit;if(hit)n++;if(q&&hit)d.open=true;});document.getElementById('faq-empty').hidden=n>0;return;}if(event.target.closest('.parts-set')){const f=event.target.closest('#event-form');if(f)syncPartsTotal(f);}const look=event.target.closest('#look-form');if(look&&draft)syncLook(look);const carForm=event.target.closest('#car-form');if(carForm&&draft)syncDetails(carForm);const form=event.target.closest('#event-form');if(form&&form.dataset.confirmed){delete form.dataset.confirmed;form.querySelector('[type=submit]').textContent='Tallenna';document.getElementById('form-error').textContent='';}});
   // Swipe left/right on a main screen to move between the bottom tabs.
-  const tabOrder=['home','fuel','service','menu'];let touch=null;
+  const tabOrder=['home','reports'];let touch=null;
   screen.addEventListener('touchstart',e=>{const t=e.touches[0];touch=e.touches.length===1&&!e.target.closest('input,select,textarea,.garage-strip,.secretary-vehicle,.check-grid,video,.report-table,.fl-cars,.fl-chart')?{x:t.clientX,y:t.clientY,at:Date.now()}:null;},{passive:true});
   screen.addEventListener('touchend',e=>{if(!touch)return;const t=e.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y,fast=Date.now()-touch.at<600;touch=null;if(!fast||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2)return;
-    const v=route().view,cur=tabOrder.indexOf(tabOf(v));if(cur<0)return;const next=tabOrder[cur+(dx<0?1:-1)];if(!next)return;screen.dataset.swipe=dx<0?'left':'right';go(next==='service'?serviceLink():next==='fuel'?fuelLink():next);setTimeout(()=>delete screen.dataset.swipe,400);},{passive:true});
+    const v=route().view,cur=tabOrder.indexOf(tabOf(v));if(cur<0)return;const next=tabOrder[cur+(dx<0?1:-1)];if(!next)return;screen.dataset.swipe=dx<0?'left':'right';go(next);setTimeout(()=>delete screen.dataset.swipe,400);},{passive:true});
   function reset(){if(!confirm('Poistetaanko kaikki autot ja merkinnät?'))return;cars=[];profile={...defaultProfile};sequence=0;notice='';draft=null;lookup=null;window.AjouraCarPhoto?.clear();try{[storeKey,backupKey,sinceKey].forEach(k=>localStorage.removeItem(k));}catch(e){}idb.del(storeKey).catch(()=>{});if(window.AjouraSync)window.AjouraSync.forget();document.getElementById('demo-announcement').textContent='Kaikki tiedot poistettu.';go(installed?'welcome':'launcher');}
   screen.addEventListener('click',event=>{const cost=event.target.closest('[data-home-costs]');if(cost){event.preventDefault();const o=rpPrefs();o.car=cost.dataset.homeCosts;o.p='year';o.kp={};o.offKinds=[];prefSet(rpKey,flKeep(o));go('reports');return;}const kl=event.target.closest('[data-fl-kindlink]');if(kl){const o=flPrefs();o.k=kl.dataset.flKindlink;prefSet(flKey,flKeep(o));}const q=event.target.closest('[data-quickfuel]');if(q){const c=cars.find(c=>c.id===q.dataset.quickfuel);if(c){openSheet(c,q,null,q.dataset.kind);const mode=q.dataset.secretaryMode,l=glass.querySelector('.sheet-layer');
       if(mode&&l){l.dataset.secretaryMode=mode;const target={manual:'[data-ai-manual]',photo:'[data-ai-cam]',speech:'[data-ai-mic]'}[mode];if(target)l.querySelector(target)?.click();if(mode==='text')l.querySelector('#ai-say-in')?.focus();}}return;}const to=event.target.closest('[data-scroll-to]');if(to){const el=document.getElementById(to.dataset.scrollTo);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:to.dataset.scrollBlock||'center'});}});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&glass.querySelector('.sheet-layer'))closeSheet();});
   // 0.107: the Raportit ＋ menu (fab). A tap outside closes it before the tap is handled (capture).
+  // 2.22: the vehicle page's ⋯ menu closes on a tap outside it or Escape (focus back on ⋯); Muistutukset scrolls to the
+  // Seuraavaksi card on the same page.
+  document.addEventListener('click',e=>{const d=screen.querySelector('.veh-menu[open]');if(d&&!e.target.closest('.veh-menu'))d.open=false;},true);
+  screen.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const d=e.target.closest?.('.veh-menu[open]');if(d){e.preventDefault();d.open=false;d.querySelector('summary').focus();}});
+  screen.addEventListener('click',e=>{const j=e.target.closest('[data-veh-jump]');if(!j)return;const d=j.closest('details');if(d)d.open=false;const u=screen.querySelector('.upcoming');if(!u)return;const h=u.querySelector('h3')||u;h.tabIndex=-1;u.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});h.focus({preventScroll:true});});
   document.addEventListener('click',e=>{const m=screen.querySelector('#fab-menu');if(m&&!m.hidden&&!e.target.closest('#fab-menu,[data-fab-menu]'))fabMenu(false,false);},true);
   screen.addEventListener('click',e=>{const b=e.target.closest('[data-fab-menu]');if(b){fabMenu(b.getAttribute('aria-expanded')!=='true',e.detail===0);return;}const a=e.target.closest('[data-fab-act]');if(a)fabAct(a.dataset.fabAct,screen.querySelector('[data-fab-menu]'));});
   screen.addEventListener('keydown',e=>{const m=screen.querySelector('#fab-menu');if(!m||m.hidden)return;

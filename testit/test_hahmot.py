@@ -68,7 +68,8 @@ def test_isommat_mobiilileveydet(browser,base,width):
 def test_kielet_ja_oikopolku(browser,base,lang):
     s=avaa(browser,base,'fuel/tst1',autot=tiedot.talli(),kello=KELLO,kieli=lang,extra={'ajoura-hahmo':'mikko'})
     try:
-        s.page.locator('.main-tabs a[aria-label="Valikko"]').click()
+        s.page.locator('.main-tabs a[aria-label="Raportit"]').click()  # 2.18: Valikko on Raporttien ⋯-painikkeen takana
+        s.page.locator('.screen-content a.top-menu').click()
         s.page.locator('.screen-content a[href="#settings"]').click()
         s.page.wait_for_selector('[data-avatar-choice=mikko][aria-pressed=true]')
         if lang!='fi':assert 'Hahmon animaatiot' not in s.page.inner_text('[data-avatar-settings]')

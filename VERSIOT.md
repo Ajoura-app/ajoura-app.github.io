@@ -6,7 +6,25 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.17
+## Julkaistu versio 2.22
+
+13.11.2026, käyttäjän ehdotus "tankkaus ja huoltoraportti yhdeksi sivuksi": Tankkaus, Huolto ja Raportit yhdistetty yhdeksi Raportit-kokonaisuudeksi, viisi muutosta omina versioinaan (2.18–2.22). Julkaistaan, kun käyttäjä hyväksyy pull requestin.
+
+- **2.18** Alavalikko Koti | avustaja | Raportit (avustaja keskellä kuten 2.15). Tankkaus- ja Huolto-välilehdet poistettu; ajoneuvosivu kuuluu Kotiin. Raportit sai oman kuvakkeen (polttoainepumppu letkuineen, salama ja raporttipylväät; icons/raportit.svg värillinen ja raportit-mono.svg yksivärinen). Valikko avautuu Kodin ja Raporttien oikean yläkulman ⋯-painikkeesta, ja Valikosta pääsee ← Kotiin; Raportit-rivi poistettu Valikosta. Raporttien alaotsikko "Tankkaukset, lataukset, huollot ja kulut". Vanhat #fuel-linkit avaavat tankkauskirjan Raporttien alasivuna (← Raportit). Pyyhkäisy vaihtaa Kodin ja Raporttien välillä.
+- **2.19** Yhteenvedossa kirjausten määrät (polttoaine ja lataus: kirjaukset; huollot ja korjaukset: merkinnät) ja kokonaiskuluissa Muut kulut, joten kolme ryhmää täsmää kokonaissummaan. Laskenta ennallaan (rpCalc, costsOf).
+- **2.20** Yhteinen tapahtumalista: tankkaukset, lataukset, huollot, korjaukset, katsastukset ja muut merkinnät uusin ensin. Napautus avaa tiedot samalla sivulla (määrä, hinta, yksikköhinta, mittarilukema ja kulutus fuelStatsista; huollossa toimenpiteet, tekijä, muistiinpano ja liitteet), Muokkaa merkintää avaa nykyisen lomakkeen. Suodatus Kaikki / Tankkaukset ja lataukset / Huollot ja korjaukset / Muut ei muuta summia. 10 riviä ja Näytä lisää. Tallennettu aiempi widgettijärjestys saa listan tunnuslukukorttien perään.
+- **2.21** Raporttien ＋-valikkoon Lisää tankkaus tai lataus (sama tankkausikkuna kuin Kodissa; Kaikki ajoneuvot -tilassa ajoneuvo valitaan ensin). Huolto-rivin nimi Lisää huolto tai korjaus.
+- **2.22** Ajoneuvosivun ⋯-valikko: Muokkaa perustietoja, Muistiinpanot, Muistutukset (Seuraavaksi-kortti ja kalenterivienti), Huoltoväli ja viimeisenä Poista ajoneuvo (sama vahvistus kuin ennen). Erilliset Muokkaa tietoja- ja Poista ajoneuvo -painikkeet siirtyivät valikkoon.
+
+Tallennettu tietomuoto, varmuuskopio, synkronointi, käyttöoikeudet, tekoäly ja Supabase-koodi ennallaan. Ajoneuvokohtainen öljynvaihtoväli jätettiin tekemättä: se on uusi tallennettava kenttä (kysy ensin -lista). Välimuisti ak-146 / ajoura-pwa-196.
+
+Varmennus: koko perussarja versiolla 2.22 **700 läpäistyä / 0 epäonnistunutta / 256 ohitettua** (versiolla 2.18 erikseen 672 / 7, korjattu: vanhan alavalikon testit päivitetty uuteen rakenteeseen). Laaja sarja versiota 2.17 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois). Jokaisen version uusi testi (test_v218–test_v222) kaatui edellistä versiota vastaan.
+
+Fyysisellä iPhonella tarkistettava: alavalikko (Koti, avustaja, Raportit) ja ⋯-painike Kodissa ja Raporteissa, tapahtuman avaus ja sulku sekä Muokkaa merkintää, ＋-valikon tankkaus, ajoneuvosivun ⋯-valikko ja poiston vahvistus, kotipalkin alue ja vieritys pitkällä listalla.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.17
 
 13.11.2026, käyttäjän iPhone-havaintojen perusteella kuusi muutosta, kukin omana versionaan (2.12–2.17), julkaistu yhdessä käyttäjän pyynnöstä:
 
@@ -24,8 +42,6 @@ Korjaus ennen julkaisua (2.17): etusivun viimeinen rivi jää avustajanapin ylä
 Varmennus: koko perussarja versiolla 2.17 **659 läpäistyä / 7 epäonnistunutta / 258 ohitettua**. Kuusi epäonnistumista oli etusivun alalaidan alle 1 px:n päällekkäisyys, joka korjattiin; uusinta (test_etusivu_huomiot, test_valilehdet) 33 läpäistyä. Seitsemäs on kuvavälimuistin tyhjennyksen ajoitus testissä test_v202::test_kuvan_kasittely_tallennus_ja_virhepolku: se epäonnistuu satunnaisesti myös tuotantoversioissa 2.09 ja 2.11 (tietojen poisto ei odota välimuistin tyhjennystä ennen uudelleenlatausta; käyttämättömät kuvat siivotaan seuraavalla latauksella). Ei korjattu tässä, koska se koskee tietojen poistoa. Laaja sarja versiota 2.11 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois). Jokaisen version uusi testi kaatui edellistä versiota vastaan. Kontrasti kuvan päällä vähintään 10:1 (pikselimittaus).
 
 Fyysisellä iPhonella tarkistettava: huoltokehys ja prosentti omalla autokuvalla, rekisterin luettavuus, kuvan napautus (lisätiedot) ja rekisterin napautus (ajoneuvosivu), avustajanappi alavalikon keskellä ja puhekirjaus, Ei hahmoa -valinta, kortin siirto pitkällä painalluksella ja että vieritys toimii normaalisti.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.11
 
@@ -262,4 +278,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.03 | 11.11.2026 | `codex/home-2.03` → main | Hyväksytyn havainnekuvan etusivu: erilliset huolto- ja vuosikulukortit, kolme kirjauspainiketta, pieni puheavustaja, ajoneuvokohtaiset oikotiet, Raportit Valikossa. Välimuisti ak-127 / ajoura-pwa-177. |
 | 2.10 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main (yhdessä 2.11:n kanssa) | Etusivun ajoneuvokortti mallikuvan mukaan: rekisteri, kilometrit, lisätietopainike ja huoltomittari kuvan päällä, tekstilliset pikapainikkeet ja tilan mukaan sävytetty kulurivi; etusivulla sama alavalikko kuin Tankkauksessa. Välimuisti ak-134 / ajoura-pwa-184. |
 | 2.11 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Muut teemat poistettu: vain Alkuperäinen ja tumma tila (Asetukset → Ulkoasu). Välimuisti ak-135 / ajoura-pwa-185. |
-| 2.12–2.17 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Huoltokehys kuvan ympärillä, rekisteri häivytettynä kuvan kulmaan, autosihteerin tekstit pois etusivulta, avustaja alavalikon keskelle, Ei hahmoa -vaihtoehto (kipinäkuvake), korttien siirto pitkällä painalluksella. Välimuisti ak-141 / ajoura-pwa-191. Tämä on nyt julkaistu versio. |
+| 2.12–2.17 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Huoltokehys kuvan ympärillä, rekisteri häivytettynä kuvan kulmaan, autosihteerin tekstit pois etusivulta, avustaja alavalikon keskelle, Ei hahmoa -vaihtoehto (kipinäkuvake), korttien siirto pitkällä painalluksella. Välimuisti ak-141 / ajoura-pwa-191. |
+| 2.18–2.22 | 13.11.2026 | `claude/gallant-keller-gmurq6` → main | Raportit yhdistää tankkaukset, lataukset, huollot ja kulut: alavalikko Koti, avustaja ja Raportit, Valikko ⋯:n takana, yhteenvedon määrät, yhteinen tapahtumalista, ＋-valikon tankkaus, ajoneuvosivun ⋯-valikko. Välimuisti ak-146 / ajoura-pwa-196. Tämä on nyt julkaistu versio. |

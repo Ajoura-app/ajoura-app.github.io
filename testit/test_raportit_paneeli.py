@@ -18,7 +18,7 @@ from test_raportit import talli
 
 M, T = tiedot.merkinta, tiedot.tankkaus
 VUOSI = {"ajoura-reports": '{"p":"year"}'}
-OLETUS = ["tot", "mon", "fuel", "svc", "months", "dist", "cars", "exp"]
+OLETUS = ["tot", "mon", "fuel", "svc", "events", "months", "dist", "cars", "exp"]  # 2.20: tapahtumalista
 # talli(), Tämä vuosi (1.1.–29.10.2026): polttoaine 110 + 124, huollot 285 + 190, korjaukset 496, muut 60 (pesu).
 POLTTO, HUOLLOT, KORJAUKSET, MUUT = 234, 475, 496, 60
 YHT = POLTTO + HUOLLOT + KORJAUKSET + MUUT
@@ -357,7 +357,7 @@ def keski(pg, k):
 
 
 def test_widgettien_jarjestys(browser, base):
-    s = avaa(browser, base, "reports", autot=talli(), extra=VUOSI, korkeus=2600, mobiili=False, kello=KELLO)
+    s = avaa(browser, base, "reports", autot=talli(), extra=VUOSI, korkeus=3400, mobiili=False, kello=KELLO)  # 2.20: tapahtumalista pidentää sivua
     pg = s.page
     try:
         x, y = keski(pg, "tot"); x2, _ = keski(pg, "mon")
