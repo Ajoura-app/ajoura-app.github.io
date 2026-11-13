@@ -51,8 +51,7 @@ def test_vehicle_switch_shortcuts_and_navigation(browser,base):
         valitse_ajoneuvo(p,'tst2')
         assert 'TST-202' in nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').inner_text()
         assert nykyinen_ajoneuvo(p).locator('.secretary-actions button').inner_text()=='Lataus'
-        assert p.locator('.main-tabs a[aria-label="Huolto"]').get_attribute('href')=='#vehicle/tst2'
-        assert p.locator('.main-tabs a[aria-label="Tankkaus ja lataus"]').get_attribute('href')=='#fuel/tst2'
+        assert p.locator('.main-tabs a[aria-label="Raportit"]').get_attribute('href')=='#reports'  # 2.18: Huolto- ja Tankkaus-välilehdet poistuivat
         nykyinen_ajoneuvo(p).locator('[data-secretary-mode=manual]').click();ikkuna_valmis(p)
         assert p.locator('#quickfuel-form').get_attribute('data-car')=='tst2'
         p.keyboard.press('Escape')
@@ -65,7 +64,7 @@ def test_vehicle_switch_shortcuts_and_navigation(browser,base):
         nykyinen_ajoneuvo(p).locator('[data-home-costs]').click();p.wait_for_function('location.hash==="#reports"')
         prefs=p.evaluate('JSON.parse(localStorage.getItem("ajoura-reports"))')
         assert prefs['car']=='tst2' and prefs['p']=='year' and prefs['offKinds']==[]
-        p.goto(base+'/app.html#menu');p.locator('a[href="#reports"]').click()
+        p.goto(base+'/app.html#menu');p.locator('.main-tabs a[href="#reports"]').click()  # 2.18: Raportit alavalikossa, ei Valikossa
         assert p.url.endswith('#reports')
         assert s.talli()==before
         assert not s.virheet,s.virheet

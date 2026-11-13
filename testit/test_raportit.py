@@ -92,7 +92,8 @@ def test_ajoneuvonapit_ruudulla(browser, base, leveys, nakyma, extra, valikot, l
     s = avaa(browser, base, nakyma, autot=kuusi_autoa(), leveys=leveys, extra=extra, kello=KELLO)
     try:
         r = s.page.evaluate(NAPIT_JS)
-        assert r["valikot"] == valikot and r["laatikot"] == laatikot and r["alaotsikko"] == 0, r
+        # 2.18 (Niklas): Raportit-sivulla on alaotsikko "Tankkaukset, lataukset, huollot ja kulut"; Tankkauksessa ei.
+        assert r["valikot"] == valikot and r["laatikot"] == laatikot and r["alaotsikko"] == (1 if nakyma == "reports" else 0), r
         if laatikot:
             assert r["korkeudet"] == 1 and r["ylat"] == 1, r  # samankorkuiset, samalla rivillä
         assert r["yli"] == 0 and r["sivu"] <= 0, r

@@ -175,7 +175,7 @@ def test_raportit_valikko(browser, base):
         pg.keyboard.press("Escape")
         assert not auki(pg) and pg.evaluate("document.activeElement.matches('[data-fab-menu]')")
         # Näkymästä poistuminen sulkee valikon.
-        pg.click(f); pg.click(".main-tabs a[aria-label='Tankkaus ja lataus']"); pg.wait_for_selector(".tab-fab.fl-add")
+        pg.click(f); pg.click(".main-tabs a[aria-label='Koti']"); pg.wait_for_selector(".secretary-home")  # 2.18
         assert pg.locator("#fab-menu").count() == 0
         pg.goto(base+"/app.html#reports"); pg.wait_for_function("location.hash === '#reports'"); pg.wait_for_timeout(150)
         assert not auki(pg)

@@ -17,7 +17,7 @@ def test_avustaja_alavalikon_keskella_ja_muita_isompi(browser, base, width, heig
         p=s.page;before=s.talli()
         nav=p.locator('.tab-dock>.main-tabs')
         lapset=nav.evaluate('n=>[...n.children].map(e=>e.matches(".nav-assistant")?"avustaja":e.getAttribute("aria-label"))')
-        assert lapset==['Koti','Tankkaus ja lataus','avustaja','Huolto','Valikko'],lapset
+        assert lapset==['Koti','avustaja','Raportit'],lapset  # 2.18: Koti, avustaja, Raportit
         nappi=p.locator('.nav-assistant [data-home-mic]');b=nappi.bounding_box();n=nav.bounding_box()
         assert abs((b['x']+b['width']/2)-(n['x']+n['width']/2))<2,'avustaja keskellä'
         linkki=nav.locator('a').first.bounding_box()
@@ -63,7 +63,7 @@ def test_widget_seuraa_ajoneuvoa_ja_tyhja_talli(browser,base):
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst1'
         p.locator('[data-vehicle-toggle]').nth(1).click()
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst2'
-        p.locator('.main-tabs a[aria-label="Huolto"]').click()
+        p.evaluate('location.hash="#vehicle/tst2"')  # 2.18: Huolto-välilehti poistui; ajoneuvosivu avataan Kodista
         p.wait_for_function('location.hash==="#vehicle/tst2"')
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst2'
         p.locator('.assistant-widget button').click()
@@ -74,6 +74,6 @@ def test_widget_seuraa_ajoneuvoa_ja_tyhja_talli(browser,base):
     s=avaa(browser,base,'home',autot=[],kello=KELLO)
     try:
         assert s.page.locator('.assistant-widget').count()==0
-        assert s.page.locator('.main-tabs.four>a').count()==4
+        assert s.page.locator('.main-tabs.no-ai>a').count()==2  # 2.18: Koti ja Raportit
         assert not s.virheet,s.virheet
     finally:s.sulje()

@@ -56,7 +56,7 @@ def test_toisen_kortin_lisatiedot_paivittavat_botin_ja_alavalikon(browser,base):
         assert p.evaluate('window.__cardBefore.isConnected')
         assert second.locator('.secretary-vehicle-details').evaluate('(e)=>e.open')
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst2'
-        assert p.locator('.main-tabs a[aria-label="Huolto"]').get_attribute('href')=='#vehicle/tst2'
-        assert p.locator('.main-tabs a[aria-label="Tankkaus ja lataus"]').get_attribute('href')=='#fuel/tst2'
+        # 2.18: ajoneuvokohtaiset Huolto- ja Tankkaus-välilehdet poistuivat; Raportit on yksi välilehti.
+        assert p.locator('.main-tabs a[aria-label="Raportit"]').get_attribute('href')=='#reports'
         assert not s.virheet,s.virheet
     finally:s.sulje()
