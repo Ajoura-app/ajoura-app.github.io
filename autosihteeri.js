@@ -13,13 +13,23 @@
       ${renderRing(c,view)}
     </article>`;
   }
-  // 2.10: service gauge on the photo. The arc is the share of the service interval left (same value as the
-  // original status bar); an overdue service or a missing history shows no percentage, only the status.
+  // 2.12 (Niklas): the service status runs around the photo as a frame. Its length is the share of the service interval
+  // left (the same value as the original status bar) and its colour slides from green to red like that bar. A small
+  // percentage sits in the photo's lower right corner. An overdue service shows a full red frame and "!" instead of a
+  // percentage; without a service history there is no frame (no percentage is invented).
   function renderRing(c,view) {
-    const r=view.ring,tone=esc(view.tone),pct=r&&view.tone!=='late'?r.pct:null,len=2*Math.PI*42,arc=r?(view.tone==='late'?1:r.left):0;
-    const mark=view.tone==='ok'?'check':view.tone==='none'?'calendar':'alert';
+    const r=view.ring;if(!r)return '';
+    const late=view.tone==='late',pct=late?null:r.pct,arc=late?1:Math.max(0,Math.min(1,r.left));
     const spoken=t(view.statusLabel)+(pct!==null?`, ${pct} % ${t('huoltovälistä jäljellä')}`:'');
-    return `<a class="vehicle-glance home-service-ring status-${tone}" href="#vehicle/${esc(c.id)}" aria-label="${esc(spoken)}"><svg class="ring-arc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42"/><circle class="ring-value" cx="50" cy="50" r="42" stroke-dasharray="${(arc*len).toFixed(1)} ${len.toFixed(1)}"/></svg><span class="ring-text" aria-hidden="true">${pct!==null?`<b>${pct} %</b>`:''}<span>${esc(t(view.statusLabel))}</span></span><span class="ring-mark ring-mark-${mark}" aria-hidden="true">${actionIcon(mark)}</span></a>`;
+    return `<svg class="hero-progress" aria-hidden="true" focusable="false" data-progress="${arc.toFixed(3)}"><rect class="hero-progress-track"/><rect class="hero-progress-value" pathLength="100" stroke-dasharray="${(arc*100).toFixed(1)} 100" style="stroke:${esc(r.color)}"/></svg><a class="vehicle-glance home-service-pill status-${esc(view.tone)}" href="#vehicle/${esc(c.id)}" aria-label="${esc(spoken)}">${pct!==null?`<span>${pct} %</span>`:actionIcon('alert')}</a>`;
+  }
+  // The frame's dash is set in real pixels as well: pathLength on a rectangle is not supported in every browser.
+  function sizeProgress() {
+    document.querySelectorAll('.hero-progress-value').forEach(el=>{
+      const p=Number(el.closest('svg').dataset.progress)||0;let len=0;
+      try{len=el.getTotalLength();}catch(e){return;}
+      if(!len)return;el.removeAttribute('pathLength');el.style.strokeDasharray=`${(p*len).toFixed(1)} ${len.toFixed(1)}`;
+    });
   }
   function renderService(c,view,tasks,coverage) {
     const previous=[...document.querySelectorAll('.home-service')].find(el=>el.dataset.car===c.id);
@@ -105,6 +115,7 @@
   }
   function queueWidgetPosition(){if(!widgetFrame)widgetFrame=requestAnimationFrame(()=>{widgetFrame=0;positionWidget();});}
   function mountWidget() {
+    sizeProgress();
     widgetDrag=null;widgetObserver?.disconnect();
     const el=document.querySelector('[data-assistant-widget]');if(!el)return;
     widgetObserver=new ResizeObserver(queueWidgetPosition);
@@ -151,7 +162,7 @@
     const delta={ArrowLeft:[-16,0],ArrowRight:[16,0],ArrowUp:[0,-16],ArrowDown:[0,16]}[e.key];
     if(delta){e.preventDefault();const b=widgetBounds(),r=b.el.getBoundingClientRect();moveWidget(r.left+delta[0]*b.scale,r.top+delta[1]*b.scale,b);saveWidgetPosition();}
   });
-  window.addEventListener('resize',queueWidgetPosition);
+  window.addEventListener('resize',()=>{queueWidgetPosition();sizeProgress();});
   window.visualViewport?.addEventListener('resize',queueWidgetPosition);
   window.visualViewport?.addEventListener('scroll',queueWidgetPosition);
   document.addEventListener('scroll',e=>{if(e.target.id==='app-screen')queueWidgetPosition();},true);

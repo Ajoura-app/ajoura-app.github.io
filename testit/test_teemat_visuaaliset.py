@@ -54,7 +54,7 @@ def test_myohassa_oleva_huolto_ja_puuttuva_taustakuva(browser, base, theme):
     try:
         p = s.page
         before = s.talli()
-        assert p.locator('.home-service-ring.status-late').is_visible()
+        assert p.locator('.home-service-pill.status-late').is_visible()
         rows = p.evaluate(KONTRASTI)
         assert not [x for x in rows if x['k'] < 4.5], (theme,rows)
         p.route('**/ui-art/*.webp',lambda r:r.abort())

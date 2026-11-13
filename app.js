@@ -369,7 +369,7 @@
     return {image:vehicleImage(c),name:carName(c),plate:c.plate||typeOf(c),meter:`${number(c.km)} ${ku(c)}`,year,cost:cost?number(cost):'',
       statusLabel:d?.what==='Katsastus'?'Katsastusarvio':d?(d.tone==='soon'?'Huolto lähestyy':statusHead[d.tone][d.what]):c.events.length?'Ei huoltomuistutuksia':'Huoltohistoria puuttuu',
       statusValue:d?date(d.due):'Kirjaa viimeisin huolto',estimated:d?.what==='Katsastus',tone:d?.tone||'none',
-      status:rowStatus(c,d),actions:garageActions(c),service:d,ring:d?{pct:Math.round(d.left*100),left:d.left}:null,
+      status:rowStatus(c,d),actions:garageActions(c),service:d,ring:d?{pct:Math.round(d.left*100),left:d.left,color:barColor(d.tone==='late'?0:d.left)}:null,
       expenses:{service:dec(service,2)+' €',fuel:dec(total-service,2)+' €',total:dec(total,2)+' €'},
       remaining:d?[d.days<0?'Myöhässä '+number(-d.days)+' pv':number(d.days)+' pv',d.kmLeft===null?'':(d.kmLeft<0?'Ylitys '+number(-d.kmLeft):number(d.kmLeft))+' km'].filter(Boolean).join(' · '):''};
   }
@@ -661,7 +661,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.11 (testiversio)';
+  const appVersion='2.12 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).

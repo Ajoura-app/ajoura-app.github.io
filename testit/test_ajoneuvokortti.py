@@ -85,21 +85,24 @@ def test_ajoneuvokortti_mallikuvan_mukaan(browser, base, teema, leveys):
 
         kuva = laatikko(kortti.locator('.secretary-hero'))
         rekisteri = laatikko(kortti.locator('.secretary-hero-meta'))
-        mittari = laatikko(kortti.locator('.home-service-ring'))
+        mittari = laatikko(kortti.locator('.home-service-pill'))
         lisaa = laatikko(kortti.locator('.vehicle-toggle-indicator'))
         assert sisalla(rekisteri, kuva) and sisalla(mittari, kuva) and sisalla(lisaa, kuva)
-        # Rekisteri vasemmassa alakulmassa, mittari oikeassa alakulmassa, lisätiedot oikeassa yläkulmassa.
+        # Rekisteri vasemmassa alakulmassa, huoltoprosentti oikeassa alakulmassa, lisätiedot oikeassa yläkulmassa.
         assert rekisteri['x'] - kuva['x'] < 30 and kuva['y'] + kuva['height'] - (rekisteri['y'] + rekisteri['height']) < 30
         assert kuva['x'] + kuva['width'] - (mittari['x'] + mittari['width']) < 30
         assert kuva['y'] + kuva['height'] - (mittari['y'] + mittari['height']) < 30
         assert lisaa['y'] - kuva['y'] < 30 and kuva['x'] + kuva['width'] - (lisaa['x'] + lisaa['width']) < 30
-        assert rekisteri['x'] + rekisteri['width'] <= mittari['x'] + 1, 'rekisteritunnus ja mittari päällekkäin'
-        assert mittari['width'] >= 80 and abs(mittari['width'] - mittari['height']) < 1
+        assert rekisteri['x'] + rekisteri['width'] <= mittari['x'] + 1, 'rekisteritunnus ja prosentti päällekkäin'
+        assert mittari['width'] >= 44 and mittari['height'] <= 40, 'prosentti pienenä merkkinä (2.12)'
+        # Huoltokehys kiertää koko kuvan.
+        kehys = laatikko(kortti.locator('.hero-progress'))
+        assert abs(kehys['width'] - kuva['width']) < 2 and abs(kehys['height'] - kuva['height']) < 2
         meta = ' '.join(kortti.locator('.secretary-hero-meta').inner_text().split())
         assert 'TST-101' in meta and '152 400 km' in meta
         assert kortti.locator('.secretary-hero-meta .row-meta>span').first.evaluate(
             'e=>parseFloat(getComputedStyle(e).fontSize)') >= 24
-        assert kortti.locator('.home-service-ring').evaluate('e=>getComputedStyle(e).color') == 'rgb(255, 255, 255)'
+        assert kortti.locator('.home-service-pill').evaluate('e=>getComputedStyle(e).color') == 'rgb(255, 255, 255)'
 
         painikkeet = kortti.locator('.secretary-actions>*')
         assert painikkeet.count() == 3
@@ -125,7 +128,7 @@ def test_ajoneuvokortti_mallikuvan_mukaan(browser, base, teema, leveys):
         assert sisalla(raportti, laatikko(kulut))
         for el in kulut.locator('.cost-total b, .cost-split dd').all():
             assert el.evaluate('e=>e.scrollWidth<=e.clientWidth+1'), el.inner_text()
-        for el in kortti.locator('.home-expenses span, .home-expenses dd, .ring-text span').all():
+        for el in kortti.locator('.home-expenses span, .home-expenses dd, .home-service-pill span').all():
             assert el.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)') >= 11
 
         assert kortti.locator('.vehicle-panels').is_hidden()
@@ -136,37 +139,44 @@ def test_ajoneuvokortti_mallikuvan_mukaan(browser, base, teema, leveys):
         s.sulje()
 
 
-def test_huoltomittarin_tilat(browser, base):
+KEHYS_JS = """e => {const v = e.querySelector('.hero-progress-value'), d = getComputedStyle(v).strokeDasharray.split(/[ ,]+/).map(parseFloat);
+  return {osuus: d[0] / v.getTotalLength(), vari: getComputedStyle(v).stroke};}"""
+
+
+def test_huoltokehyksen_tilat(browser, base):
+    """2.12: huollon tila kehyksenä kuvan ympärillä ja pienenä prosenttina oikeassa alakulmassa."""
     autot = talli()
-    autot[1]['events'] = []  # ei huoltohistoriaa: ei laskennallista prosenttia
+    autot[1]['events'] = []  # ei huoltohistoriaa: ei kehystä eikä laskennallista prosenttia
     s = avaa(browser, base, 'home', autot=autot, kello=KELLO)
     try:
         p = s.page
-        kunnossa = p.locator('.vehicle-home-card[data-car=tst1] .home-service-ring')
-        assert ' '.join(kunnossa.inner_text().split()) == '55 % Huolto kunnossa'
-        assert kunnossa.get_attribute('aria-label') == 'Huolto kunnossa, 55 % huoltovälistä jäljellä'
-        assert kunnossa.locator('.ring-mark-check').count() == 1
-        assert kunnossa.get_attribute('href') == '#vehicle/tst1'
-        assert 'status-ok' in p.locator('.vehicle-home-card[data-car=tst1] .home-expenses').get_attribute('class')
-        # Sama prosentti kuin alkuperäisessä huoltonäkymässä.
+        kortti = p.locator('.vehicle-home-card[data-car=tst1]')
+        merkki = kortti.locator('.home-service-pill')
+        assert merkki.inner_text().strip() == '55 %'
+        assert merkki.get_attribute('aria-label') == 'Huolto kunnossa, 55 % huoltovälistä jäljellä'
+        assert merkki.get_attribute('href') == '#vehicle/tst1'
+        kehys = kortti.locator('.secretary-hero').evaluate(KEHYS_JS)
+        assert abs(kehys['osuus'] - 0.55) < 0.02, kehys
+        # Väri liukuu vihreästä punaiseen kuten alkuperäisen huoltonäkymän palkki.
+        assert kehys['vari'] == p.evaluate("getComputedStyle(document.querySelector('.vehicle-home-card[data-car=tst1] .row-bar i')).backgroundColor"), kehys
+        assert 'status-ok' in kortti.locator('.home-expenses').get_attribute('class')
         valitse_ajoneuvo(p, 'tst1')
         assert nykyinen_ajoneuvo(p).locator('.home-service-original .row-pct').inner_text() == '55 % jäljellä'
 
-        puuttuu = p.locator('.vehicle-home-card[data-car=tst2] .home-service-ring')
-        assert ' '.join(puuttuu.inner_text().split()) == 'Huoltohistoria puuttuu'
-        assert '%' not in puuttuu.inner_text()
-        assert puuttuu.locator('.ring-mark-calendar').count() == 1
+        puuttuu = p.locator('.vehicle-home-card[data-car=tst2]')
+        assert puuttuu.locator('.hero-progress, .home-service-pill').count() == 0
 
         p.evaluate('AjouraApp.cars()[0].km=200000;AjouraApp.refresh()')
-        myohassa = p.locator('.vehicle-home-card[data-car=tst1] .home-service-ring')
-        assert ' '.join(myohassa.inner_text().split()) == 'Huolto myöhässä'
-        assert '%' not in myohassa.inner_text()
-        assert myohassa.locator('.ring-mark-alert').count() == 1
-        assert 'status-late' in p.locator('.vehicle-home-card[data-car=tst1] .home-expenses').get_attribute('class')
+        kortti = p.locator('.vehicle-home-card[data-car=tst1]')
+        merkki = kortti.locator('.home-service-pill')
+        assert '%' not in merkki.inner_text() and merkki.locator('svg').count() == 1
+        assert merkki.get_attribute('aria-label') == 'Huolto myöhässä'
+        kehys = kortti.locator('.secretary-hero').evaluate(KEHYS_JS)
+        assert kehys['osuus'] > 0.99 and kehys['vari'] == 'rgb(226, 85, 85)', kehys
+        assert 'status-late' in kortti.locator('.home-expenses').get_attribute('class')
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
-
 
 def test_tumman_tilan_kuva_alue_on_tumma(browser, base):
     s = avaa(browser, base, 'home', autot=talli(), kello=KELLO, teema='dark')
@@ -259,11 +269,11 @@ def test_kuvan_paalla_olevat_tekstit_luettavia(browser, base, teema, kuva):
     try:
         p = s.page
         alueet = p.evaluate('''() => [...document.querySelectorAll('.vehicle-home-card .secretary-hero-meta .row-meta>span,'
-          + ' .vehicle-home-card .ring-text>*')].map(e => {const r = e.getBoundingClientRect(), c = getComputedStyle(e);
+          + ' .vehicle-home-card .home-service-pill>span')].map(e => {const r = e.getBoundingClientRect(), c = getComputedStyle(e);
           return {t: e.textContent.trim(), x: r.x, y: r.y, w: r.width, h: r.height,
                   iso: parseFloat(c.fontSize) >= 18.66 || (parseFloat(c.fontSize) >= 14 && +c.fontWeight >= 700)};})''')
-        assert len(alueet) >= 6
-        p.add_style_tag(content='.secretary-hero-meta,.secretary-hero-meta *,.ring-text,.ring-text *'
+        assert len(alueet) >= 5
+        p.add_style_tag(content='.secretary-hero-meta,.secretary-hero-meta *,.home-service-pill,.home-service-pill *'
                                 '{color:transparent!important;text-shadow:none!important}')
         p.wait_for_timeout(100)
         kuvakaappaus = Image.open(io.BytesIO(p.screenshot())).convert('RGB')
