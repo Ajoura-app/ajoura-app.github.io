@@ -157,3 +157,33 @@ def test_hahmot_offline(browser):
             assert k.talli()==before
         assert not k.virheet,k.virheet
     finally:k.sulje();server.sulje()
+
+
+def test_ei_hahmoa_vaihtoehto_tekoalykuvakkeella(browser,base):
+    """2.16 (Niklas): neljäs vaihtoehto ilman hahmoa. Hahmon kuvan tilalla on tekoälyn kipinäkuvake; valinta näkyy heti,
+    säilyy uudelleenavauksessa eikä anna tekoälyoikeutta tai muuta tallin tietoja."""
+    s=avaa(browser,base,'settings',autot=tiedot.talli(),kello=KELLO)
+    p=s.page
+    try:
+        before=s.talli()
+        valinnat=p.locator('[data-avatar-choice]')
+        assert valinnat.count()==4
+        assert [x.strip() for x in valinnat.all_inner_texts()]==['Emma','Mikko','Bottiankka','Ei hahmoa']
+        p.click('[data-avatar-choice=ai]')
+        assert p.get_attribute('[data-avatar-choice=ai]','aria-pressed')=='true'
+        assert p.evaluate("localStorage.getItem('ajoura-hahmo')")=='ai'
+        nappi=p.locator('.nav-assistant .assistant-avatar')
+        assert 'avatar-ai' in nappi.get_attribute('class') and nappi.locator('img').count()==0
+        assert nappi.locator('svg.avatar-ai-icon').is_visible()
+        p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card');p.reload();p.wait_for_selector('.vehicle-home-card')
+        assert p.locator('.nav-assistant .avatar-ai svg').is_visible()
+        assert p.locator('.nav-assistant [data-home-mic]').get_attribute('aria-label')=='Kirjaa puhumalla'
+        assert not p.evaluate("AjouraAccess.can('ai.receipt')")
+        # Käynnistys ja tervetulosivu toimivat ilman hahmokuvaa.
+        assert '<img' not in p.evaluate("AjouraLaunch.html('')").split('assistant-avatar')[1].split('</span>')[0]
+        p.goto(base+'/app.html#settings');p.wait_for_selector('[data-avatar-choice]')
+        p.click('[data-avatar-choice=emma]')
+        assert p.get_attribute('.nav-assistant img','src')=='hahmot/emma.webp'
+        assert s.talli()==before
+        assert not s.virheet,s.virheet
+    finally:s.sulje()

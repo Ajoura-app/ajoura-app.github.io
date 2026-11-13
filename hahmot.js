@@ -2,21 +2,28 @@
 // Device-only appearance preferences. No account, entitlement, network or garage writes.
 (() => {
   const KEY='ajoura-hahmo', MOTION='ajoura-hahmo-motion';
-  const characters={emma:'Emma',mikko:'Mikko',ankka:'Bottiankka'};
+  // 2.16 (Niklas): a fourth choice without a character. It shows an AI sparkle symbol (two four-pointed stars, the
+  // common sign for AI features) instead of a portrait; everything else works exactly like with a character.
+  const characters={emma:'Emma',mikko:'Mikko',ankka:'Bottiankka',ai:'Avustaja'};
+  const choiceName=id=>id==='ai'?t('Ei hahmoa'):characters[id];
+  const sparkle='<svg class="avatar-ai-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 3.5l1.9 5.1 5.1 1.9-5.1 1.9L10 17.5l-1.9-5.1L3 10.5l5.1-1.9z"/><path d="M18 14l.9 2.1 2.1.9-2.1.9L18 20l-.9-2.1-2.1-.9 2.1-.9z"/></svg>';
   const states={neutral:'',listening:'Kuunnellaan…',checking:'Tarkistetaan tietoja…',success:'Kirjaus tallennettu.',attention:'Tarkista tiedot.'};
   const get=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
   let character=Object.hasOwn(characters,get(KEY))?get(KEY):'emma', motion=get(MOTION)!=='0', state='neutral', timer=0;
   const t=s=>window.AjouraI18n?window.AjouraI18n.t(s):s;
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const image=(id,size)=>`hahmot/${id}${size==='large'?'':'_128'}.webp`;
+  const face=(id,size)=>id==='ai'?sparkle:`<img src="${image(id,size)}" alt="" width="${size==='large'?88:56}" height="${size==='large'?88:56}">`;
   function avatar(size='large',id=character,live=true){
-    return `<span class="assistant-avatar avatar-${size}" data-avatar${live?' data-avatar-live':''} data-avatar-state="${live?state:'neutral'}" data-avatar-motion="${motion?'on':'off'}"><img src="${image(id,size)}" alt="" width="${size==='large'?88:56}" height="${size==='large'?88:56}"><span class="avatar-badge" aria-hidden="true"></span></span>`;
+    return `<span class="assistant-avatar avatar-${size}${id==='ai'?' avatar-ai':''}" data-avatar${live?' data-avatar-live':''} data-avatar-state="${live?state:'neutral'}" data-avatar-motion="${motion?'on':'off'}">${face(id,size)}<span class="avatar-badge" aria-hidden="true"></span></span>`;
   }
   const feedback=()=>`<span class="avatar-feedback" data-avatar-feedback role="status" aria-live="polite">${esc(t(states[state]))}</span>`;
   function paint(){
     document.querySelectorAll('[data-avatar-live]').forEach(el=>{
       el.dataset.avatarState=state;el.dataset.avatarMotion=motion?'on':'off';
-      const img=el.querySelector('img');img.setAttribute('src',image(character,el.classList.contains('avatar-large')?'large':'small'));
+      const size=el.classList.contains('avatar-large')?'large':'small',img=el.querySelector('img');
+      if((character==='ai')!==el.classList.contains('avatar-ai')||!img&&character!=='ai'){el.classList.toggle('avatar-ai',character==='ai');el.querySelector('img,.avatar-ai-icon')?.remove();el.insertAdjacentHTML('afterbegin',face(character,size));}
+      else if(img)img.setAttribute('src',image(character,size));
     });
     document.querySelectorAll('[data-avatar-name]').forEach(el=>{el.textContent=characters[character];});
     document.querySelectorAll('[data-avatar-feedback]').forEach(el=>{el.textContent=t(states[state]);});
@@ -27,7 +34,7 @@
     clearTimeout(timer);state=next;paint();
     if(next==='success'||next==='attention')timer=setTimeout(()=>{state='neutral';paint();},4000);
   }
-  function settings(){return `<section class="me-data avatar-settings" data-avatar-settings><h3>${esc(t('Avustajan hahmo'))}</h3><p>${esc(t('Hahmo ja animaatiot ovat tämän laitteen asetuksia. Kaikilla hahmoilla on samat toiminnot.'))}</p><div class="avatar-choices" role="group" aria-label="${esc(t('Avustajan hahmo'))}">${Object.entries(characters).map(([id,name])=>`<button type="button" data-avatar-choice="${id}" aria-pressed="${id===character}">${avatar('choice',id,false)}<span translate="no">${name}</span></button>`).join('')}</div><label class="avatar-motion"><input type="checkbox" data-avatar-motion-toggle${motion?' checked':''}><span>${esc(t('Hahmon animaatiot'))}</span></label><p class="avatar-save-note" data-avatar-save-note role="status"></p></section>`;}
+  function settings(){return `<section class="me-data avatar-settings" data-avatar-settings><h3>${esc(t('Avustajan hahmo'))}</h3><p>${esc(t('Hahmo ja animaatiot ovat tämän laitteen asetuksia. Kaikilla hahmoilla on samat toiminnot.'))}</p><div class="avatar-choices" role="group" aria-label="${esc(t('Avustajan hahmo'))}">${Object.entries(characters).map(([id,name])=>`<button type="button" data-avatar-choice="${id}" aria-pressed="${id===character}">${avatar('choice',id,false)}<span translate="no">${esc(choiceName(id))}</span></button>`).join('')}</div><label class="avatar-motion"><input type="checkbox" data-avatar-motion-toggle${motion?' checked':''}><span>${esc(t('Hahmon animaatiot'))}</span></label><p class="avatar-save-note" data-avatar-save-note role="status"></p></section>`;}
   document.addEventListener('click',e=>{
     if(e.target.closest('[data-avatar-shortcut]')){
       const root=document.getElementById('app-screen');
