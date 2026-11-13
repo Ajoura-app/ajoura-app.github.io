@@ -34,8 +34,8 @@ def test_tiivis_palkki_ja_nakyva_mikrofoni(browser,base,theme,width):
         image=nykyinen_ajoneuvo(p).locator('.secretary-hero-media .car-photo img').bounding_box()
         plate=nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').bounding_box()
         assert image['y']<=plate['y']<image['y']+image['height']
-        assert nykyinen_ajoneuvo(p).locator('.secretary-intro').bounding_box()['height']<110
-        assert nykyinen_ajoneuvo(p).locator('.secretary-copy').evaluate('e=>e.scrollWidth<=e.clientWidth')
+        # 2.14: no assistant name or greeting on the home screen.
+        assert nykyinen_ajoneuvo(p).locator('.secretary-intro, .secretary-copy').count()==0
         p.locator('[data-home-mic]').click()
         assert 'Puhekirjaus tarvitsee' in p.locator('.home-voice-feedback').inner_text()
         assert not s.virheet

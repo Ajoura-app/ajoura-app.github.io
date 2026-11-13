@@ -293,5 +293,3 @@ html.dark .device-glass .secretary-home.secretary-refined .vehicle-home-card .se
 }
 /* Same 44 px touch target on every view (320 px phones had 42 px). */
 html .tab-dock>.tab-bar.main-tabs a{min-height:44px}
-/* 2.11: assistant panel label readable on the light panel (was #6c7e90, 3.9:1). */
-html .secretary-home .secretary-copy .mini-label{color:var(--muted)}

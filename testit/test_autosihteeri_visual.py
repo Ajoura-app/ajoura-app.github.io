@@ -51,7 +51,7 @@ def test_valitsimen_nappaimisto_ja_jarjestys(browser, base, lang):
         second.focus()
         p.keyboard.press('Enter')
         assert second.get_attribute('aria-expanded') == 'true'
-        assert 'TST-102' in cards.nth(1).locator('.secretary-context').text_content()
+        assert 'TST-102' in cards.nth(1).locator('.secretary-hero-meta').text_content()
         assert second.evaluate('(e)=>e===document.activeElement')
         p.keyboard.press('Space')
         assert second.get_attribute('aria-expanded') == 'false'
@@ -85,7 +85,7 @@ def test_pyyhkaisy_oikeasta_kuva_alueesta(browser, base):
         media = nykyinen_ajoneuvo(p).locator('.secretary-hero-media').bounding_box()
         x, y = media['x'] + media['width'] * .8, media['y'] + media['height'] / 2
         kosketa(cdp, x, y, -140, 0)
-        assert 'TST-101' in nykyinen_ajoneuvo(p).locator('.secretary-context').text_content()
+        assert 'TST-101' in nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').text_content()
         kosketa(cdp, x, y, 5, -90)
         assert p.locator('[data-secretary-car]').count() == 0
         assert p.locator('.vehicle-home-card').count() == 3

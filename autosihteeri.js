@@ -63,16 +63,14 @@
     calendar:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>'
   };
   const actionIcon=mode=>`<svg class="secretary-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${actionPaths[mode]}</svg>`;
+  // 2.14 (Niklas): no assistant name, label or greeting on the home screen; the panel keeps the extra entry options.
   function renderAssistant(c,{available,quotaBlocked,speech,tasks,moreOpen,local,view,actionsOnly=false,hideActions=false}) {
     const action=(label,mode)=>`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="${mode}" aria-label="${esc(t(label))}"><span>${esc(t(label))}</span></button>`;
-    const message=quotaBlocked?'Tämän kuun tunnistukset on käytetty. Kirjaa tiedot käsin.':tasks[0]?.title||(view.tone==='ok'?'Hei! Autosi huolto on kunnossa. Mitä kirjataan?':'Hei! Mitä kirjataan tänään?');
     const fuelLabel=c.fuel==='Sähkö'?'Lataus':'Tankkaus';
     const shortcut=(mode,label)=>`${actionIcon(mode)}<span class="home-action-label">${esc(t(label))}</span>`;
     const primary=`<button type="button" data-quickfuel="${esc(c.id)}" data-secretary-mode="manual" aria-label="${esc(t(fuelLabel+' +, kirjaa käsin'))}">${shortcut('fuel',fuelLabel)}</button><a href="#add/${esc(c.id)}" data-secretary-service aria-label="${esc(t('Huolto +, kirjaa huolto käsin'))}">${shortcut('service','Huolto')}</a><a href="#notes/${esc(c.id)}" data-secretary-note aria-label="${esc(t('Muistiinpano +'))}">${shortcut('note','Muistiinpanot')}</a>`;
     if(actionsOnly)return `<div class="secretary-actions">${primary}</div>`;
-    return `<section class="secretary-card">${hideActions?'':`<div class="secretary-actions">${primary}</div>`}<div class="secretary-intro"><div class="secretary-copy"><span class="mini-label">${esc(t('AUTOSIHTEERI'))}</span><h3 translate="no" data-avatar-name>${window.AjouraAvatar.name()}</h3>
-      <p class="secretary-context">${esc(c.nick||c.name)} · ${esc(c.plate)}</p><p class="secretary-message">${esc(t(message))}</p>${available?`<p class="secretary-note">${esc(t('Tarkistat tiedot ennen tallennusta.'))}</p>`:''}</div></div>
-      ${window.AjouraAvatar.feedback()}
+    return `<section class="secretary-card">${hideActions?'':`<div class="secretary-actions">${primary}</div>`}${window.AjouraAvatar.feedback()}
       <details class="secretary-more"${moreOpen?' open':''}><summary>${esc(t('Lisää vaihtoehtoja'))}</summary><div class="secretary-support">${available?`${action('Kirjoita tankkauksen tiedot','text')}${action('Kuvaa kuitti','photo')}`:''}<button type="button" data-tutorial>${esc(t('Näytä kirjausohje'))}</button></div>${local}</details>
     </section>`;
   }
