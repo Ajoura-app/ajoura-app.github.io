@@ -6,7 +6,7 @@ import pytest
 import tiedot
 from apu import KELLO, avaa
 
-NIMET = ["Muokkaa perustietoja", "Muistiinpanot", "Muistutukset", "Huoltoväli", "Poista ajoneuvo"]
+NIMET = ["Muokkaa perustietoja", "Muistiinpanot", "Muistutukset", "Öljynvaihtoväli", "Poista ajoneuvo"]  # 2.23: ajoneuvokohtainen
 
 
 @pytest.mark.parametrize("leveys", [320, 390])
@@ -29,7 +29,7 @@ def test_valikon_sisalto_ja_mitat(browser, base, leveys, teema):
         assert r["sisalla"] and r["korkeus"] >= 44 and r["nappi"] >= 44, r
         assert p.get_attribute('.veh-mi[href^="#caredit"]', 'href') == '#caredit/tst1'
         assert p.get_attribute('.veh-mi[href^="#notes"]', 'href') == '#notes/tst1'
-        assert '15 000 km' in p.inner_text('.veh-mi[href="#settings"]').replace('\xa0', ' ')
+        assert '15 000 km' in p.inner_text('.veh-mi[href="#oil/tst1"]').replace('\xa0', ' ')  # 2.23
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
