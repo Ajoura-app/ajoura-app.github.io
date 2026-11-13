@@ -288,3 +288,23 @@ def test_kuvan_paalla_olevat_tekstit_luettavia(browser, base, teema, kuva):
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize('leveys', [320, 390, 430])
+def test_rekisteri_kiinni_vasemmassa_alakulmassa_ja_haivytetty(browser, base, leveys):
+    """2.13 (Niklas): rekisteritunnus ei ole erillinen rajattu laatikko, vaan kiinni kuvan vasemmassa alakulmassa,
+    ja sen tausta häivytetään kuvaan (oikea reuna ja yläreuna läpinäkyviä)."""
+    s = avaa(browser, base, 'home', autot=talli(), kello=KELLO, leveys=leveys)
+    try:
+        kortti = s.page.locator('.vehicle-home-card').first
+        kuva = laatikko(kortti.locator('.secretary-hero'))
+        meta = kortti.locator('.secretary-hero-meta')
+        r = laatikko(meta)
+        assert abs(r['x'] - kuva['x']) < 1.5 and abs((r['y'] + r['height']) - (kuva['y'] + kuva['height'])) < 1.5, (r, kuva)
+        tyyli = meta.evaluate('e=>{const c=getComputedStyle(e);return [c.borderTopRightRadius,c.backgroundImage,c.maskImage||c.webkitMaskImage]}')
+        assert tyyli[0] == '0px', tyyli
+        assert tyyli[1].startswith('linear-gradient(90deg') and tyyli[1].rstrip(')').endswith('rgba(20, 12, 6, 0) 100%'), tyyli
+        assert tyyli[2].startswith('linear-gradient(rgba(0, 0, 0, 0)'), tyyli
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
