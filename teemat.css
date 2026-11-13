@@ -283,7 +283,7 @@ html .tab-dock>.tab-bar.main-tabs a{min-height:44px}
 html .tab-dock>.tab-bar.main-tabs.five{grid-template-columns:1fr 1fr 66px 1fr 1fr;overflow:visible}
 #app-screen>.tab-dock:has(.nav-assistant){padding-top:26px}
 /* Home has no floating ＋ (it is in the header), so no room is reserved for one under the last card. */
-#app-screen>.screen-content:has(.secretary-home){padding-bottom:16px}
+#app-screen>.screen-content:has(.secretary-home){padding-bottom:28px}
 .nav-assistant{position:relative;display:flex;align-items:center;justify-content:center;pointer-events:auto}
 .nav-assistant .secretary-mic{position:relative;display:grid;place-items:center;width:62px;height:62px;min-width:0;min-height:0;margin:-26px 0 0;padding:0;border:3px solid var(--t-surface,var(--paper,#ffffff));border-radius:50%;background:var(--t-surface,var(--paper,#ffffff));color:var(--ink);box-shadow:0 4px 14px #10243f33;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .nav-assistant .secretary-mic .assistant-avatar{width:56px!important;height:56px!important;margin:0!important}
