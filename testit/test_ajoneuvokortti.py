@@ -331,3 +331,65 @@ def test_kuvan_napautus_avaa_lisatiedot_rekisterin_vierestakin(browser, base, le
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+def _kortin_keski(page, tunniste):
+    b = page.locator(f'.vehicle-home-card[data-car={tunniste}] .secretary-hero').bounding_box()
+    return b['x'] + b['width'] / 2, b['y'] + b['height'] / 2
+
+
+def test_kortin_siirto_pitkalla_painalluksella_kosketus(browser, base):
+    """2.17 (Niklas): etusivun ajoneuvokortin voi siirtää painamalla kuvaa pitkään ja vetämällä. Järjestys tallentuu
+    samaan tallin järjestykseen kuin Järjestä ajoneuvot -näkymässä; vapautus ei avaa lisätietoja."""
+    s = avaa(browser, base, 'home', autot=talli(), korkeus=2600, kello=KELLO)
+    p = s.page
+    try:
+        ennen = s.talli()
+        assert [c['id'] for c in ennen['cars']] == ['tst1', 'tst2', 'tst3']
+        cdp = p.context.new_cdp_session(p)
+        kosketa = lambda tyyppi, x, y: cdp.send('Input.dispatchTouchEvent', {
+            'type': tyyppi, 'touchPoints': [] if tyyppi == 'touchEnd' else [{'x': x, 'y': y, 'id': 1}]})
+        x, y = _kortin_keski(p, 'tst1')
+        _, y3 = _kortin_keski(p, 'tst3')
+        kosketa('touchStart', x, y); p.wait_for_timeout(650)
+        assert p.locator('.vehicle-home-card.dragging').count() == 1
+        for i in range(1, 13):
+            kosketa('touchMove', x, y + (y3 + 120 - y) * i / 12); p.wait_for_timeout(20)
+        kosketa('touchEnd', 0, 0); p.wait_for_timeout(350)
+        assert [c['id'] for c in s.talli()['cars']] == ['tst2', 'tst3', 'tst1']
+        assert p.eval_on_selector_all('.vehicle-home-card', 'e=>e.map(x=>x.dataset.car)') == ['tst2', 'tst3', 'tst1']
+        assert p.evaluate('location.hash') == '#home'
+        assert p.locator('.vehicle-panels:not([hidden])').count() == 0, 'vapautus avasi lisätiedot'
+        # Muut tiedot ennallaan: vain järjestys muuttui.
+        jalkeen = s.talli()
+        assert sorted(jalkeen['cars'], key=lambda c: c['id']) == sorted(ennen['cars'], key=lambda c: c['id'])
+        p.reload(); p.wait_for_selector('.vehicle-home-card')
+        assert p.eval_on_selector_all('.vehicle-home-card', 'e=>e.map(x=>x.dataset.car)') == ['tst2', 'tst3', 'tst1']
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()
+
+
+def test_kortin_siirto_ei_hairitse_napautusta_vieritysta_tai_painikkeita(browser, base):
+    s = avaa(browser, base, 'home', autot=talli(), korkeus=2600, mobiili=False, kello=KELLO)
+    p = s.page
+    try:
+        # Liike ennen pitkää painallusta on vieritys: korttia ei nosteta.
+        x, y = _kortin_keski(p, 'tst2')
+        p.mouse.move(x, y); p.mouse.down(); p.mouse.move(x, y - 40); p.wait_for_timeout(650)
+        assert p.locator('.vehicle-home-card.dragging').count() == 0
+        p.mouse.up()
+        # Pitkä painallus pikapainikkeessa ei nosta korttia.
+        b = p.locator('.vehicle-home-card[data-car=tst2] [data-secretary-service]').bounding_box()
+        p.mouse.move(b['x'] + b['width'] / 2, b['y'] + b['height'] / 2); p.mouse.down(); p.wait_for_timeout(650)
+        assert p.locator('.vehicle-home-card.dragging').count() == 0
+        p.mouse.up(); p.goto(base + '/app.html#home'); p.wait_for_selector('.vehicle-home-card')
+        # Lyhyt napautus kuvaan avaa tai sulkee lisätiedot kuten ennen (hiiren veto yllä on myös napautus).
+        nappi = p.locator('.vehicle-home-card[data-car=tst2] [data-vehicle-toggle]')
+        auki = nappi.get_attribute('aria-expanded') == 'true'
+        nappi.click()
+        assert p.locator('.vehicle-home-card[data-car=tst2] .vehicle-panels').is_visible() != auki
+        assert [c['id'] for c in s.talli()['cars']] == ['tst1', 'tst2', 'tst3']
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

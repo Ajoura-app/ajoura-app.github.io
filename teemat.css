@@ -298,3 +298,11 @@ html .tab-dock>.tab-bar.main-tabs.five{grid-template-columns:1fr 1fr 66px 1fr 1f
 /* 2.16 (Niklas): assistant without a character, shown as an AI sparkle on the accent colour. */
 .assistant-avatar.avatar-ai{display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#1769f4 0%,#6a4ff0 100%);color:#ffffff;overflow:hidden}
 .assistant-avatar.avatar-ai .avatar-ai-icon{width:56%;height:56%;fill:currentColor}
+
+/* 2.17 (Niklas): vehicle cards on home are ordered with the same long press as Järjestä ajoneuvot. */
+.secretary-home.sorting>.vehicle-home-card{transition:transform .18s ease}
+.secretary-home>.vehicle-home-card.dragging{z-index:5;transition:none;box-shadow:0 22px 40px -14px #12284a66,0 2px 6px #12284a1f;cursor:grabbing}
+html.dark .device-glass .secretary-home>.vehicle-home-card.dragging{box-shadow:none;outline:2px solid var(--blue)}
+.vehicle-home-card .secretary-hero{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.vehicle-home-card .secretary-hero img{-webkit-user-drag:none}
+@media(prefers-reduced-motion:reduce){.secretary-home.sorting>.vehicle-home-card{transition:none}}
