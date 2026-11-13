@@ -26,7 +26,7 @@ def test_valinta_ja_kasin(browser,base,lang):
     try:
         before=s.talli()
         valitse_ajoneuvo(s.page,cars[1]['id'])
-        assert cars[1]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-context').inner_text()
+        assert cars[1]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-hero-meta').inner_text()
         kirjaa_avustajasta(s.page,'manual')
         ikkuna_valmis(s.page)
         assert s.page.get_attribute('#quickfuel-form','data-car')==cars[1]['id']
@@ -58,7 +58,7 @@ def test_tyhja_ja_pyyhkaisy(browser,base):
     try:
         s.page.locator('.secretary-vehicle').first.dispatch_event('touchstart',{'touches':[{'identifier':1,'clientX':260,'clientY':200}]})
         s.page.locator('.secretary-vehicle').first.dispatch_event('touchend',{'changedTouches':[{'identifier':1,'clientX':80,'clientY':200}]})
-        assert cars[0]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-context').text_content()
+        assert cars[0]['plate'] in nykyinen_ajoneuvo(s.page).locator('.secretary-hero-meta').text_content()
     finally:s.sulje()
 
 @pytest.mark.parametrize('width,height',[(844,390),(390,844)])
@@ -67,8 +67,8 @@ def test_turvallinen_sisalto_ja_suunta(browser,base,width,height):
     cars[0]['nick']='<img src=x onerror=alert(1)>'
     s=avaa(browser,base,'home',autot=cars,kello=KELLO,leveys=width,korkeus=height,asennettu=True)
     try:
-        assert s.page.locator('.secretary-context img').count()==0
-        assert '<img' in nykyinen_ajoneuvo(s.page).locator('.secretary-context').text_content()
+        assert s.page.locator('.secretary-hero-meta img').count()==0
+        assert '<img' in nykyinen_ajoneuvo(s.page).locator('.secretary-hero-meta').text_content()
         assert s.page.locator('.secretary-task').count()==0
         assert s.page.evaluate("document.querySelector('#app-screen').scrollWidth<=document.querySelector('#app-screen').clientWidth")
         assert not s.virheet

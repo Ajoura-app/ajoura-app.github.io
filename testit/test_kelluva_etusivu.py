@@ -24,7 +24,8 @@ def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
             assert link.evaluate('(e)=>getComputedStyle(e,"::after").content') == 'none'
             assert link.bounding_box()['height'] >= 44
         button = p.locator('.assistant-widget .secretary-mic')
-        assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor') == 'rgba(0, 0, 0, 0)'
+        # 2.15: the assistant is a round button in the middle of the navigation.
+        assert button.evaluate('(e)=>getComputedStyle(e).borderRadius') == '50%'
         assert p.locator('.assistant-widget .home-mic-label').count() == 0
         assert button.get_attribute('aria-label') == 'Kirjaa puhumalla'
         # 2.10: shortcuts are named icons in a plain row (see test_ajoneuvokortti.py for the full card).

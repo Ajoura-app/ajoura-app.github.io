@@ -45,7 +45,7 @@ def test_sijainti_ja_ulkoasu(browser, base, leveys, nakyma, extra):
         else:
             r=pg.evaluate(SIJAINTI_JS)
             assert r['n']==1 and r['dockissa'] and r['naytolla'] and not r['peittaa'],r
-            assert 8<=r['vasen']<=20 and r['ylos']>=8,r
+            assert 8<=r['oikea']<=20 and r['ylos']>=8,r  # 2.15: oikeassa alakulmassa (0.107), avustaja alavalikossa
             assert r['w']>=56 and r['h']>=56 and r['pyorea'],r
             assert r['tausta']!='rgba(0, 0, 0, 0)' and r['teksti']=='',r
             pg.locator('#app-screen').evaluate('(e)=>e.scrollTop=400');pg.wait_for_timeout(100)
@@ -66,7 +66,7 @@ def test_iphone_safe_area_ja_tumma(browser, base, kotipalkki):
             pg.wait_for_timeout(200)
         widget=pg.locator('.assistant-widget').bounding_box()
         nav=pg.locator('.main-tabs').bounding_box()
-        assert widget['y']+widget['height']<=nav['y']
+        assert nav['x']<=widget['x'] and widget['x']+widget['width']<=nav['x']+nav['width']  # 2.15: alavalikon keskellä
         assert pg.locator('.tab-fab').is_hidden()
         assert not s.virheet, s.virheet
     finally:

@@ -36,7 +36,7 @@ def test_taide_ei_peita_ajoneuvoa_tai_paatoimintoja(browser, base, theme, width,
                 assert r['y'] + r['height'] <= dock['y'] + 1, (theme,r,dock)
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         valitse_ajoneuvo(p,'tst2')
-        assert 'TST-202' in nykyinen_ajoneuvo(p).locator('.secretary-context').text_content()
+        assert 'TST-202' in nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').text_content()
         kirjaa_avustajasta(p,'manual')
         ikkuna_valmis(p)
         assert p.locator('#quickfuel-form').get_attribute('data-car') == 'tst2'
@@ -54,7 +54,7 @@ def test_myohassa_oleva_huolto_ja_puuttuva_taustakuva(browser, base, theme):
     try:
         p = s.page
         before = s.talli()
-        assert p.locator('.home-service-ring.status-late').is_visible()
+        assert p.locator('.home-service-pill.status-late').is_visible()
         rows = p.evaluate(KONTRASTI)
         assert not [x for x in rows if x['k'] < 4.5], (theme,rows)
         p.route('**/ui-art/*.webp',lambda r:r.abort())
@@ -178,7 +178,7 @@ def test_teeman_css_virhe_sailyttaa_luettavan_ja_toimivan_pinnan(browser, base, 
         p.reload()
         p.wait_for_selector('.vehicle-home-card')
         avaa_ensimmainen_kortti(p)
-        assert nykyinen_ajoneuvo(p).locator('.secretary-intro [data-avatar-name]').inner_text() == 'Emma'
+        assert p.locator('[data-home-mic] img').get_attribute('src') == 'hahmot/emma.webp'
         kirjaa_avustajasta(p,'manual')
         ikkuna_valmis(p)
         assert p.locator('#quickfuel-form input[name=km]').is_visible()

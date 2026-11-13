@@ -41,7 +41,8 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         assert r["py"] >= r["h"] / 2 - 1 and r["korostus"] != "rgba(0, 0, 0, 0)", r
         assert r["alaväli"] <= 10, r  # 0.74: kapseli lähellä alareunaa (iPhonessa kotipalkin yläpuolella)
         assert r["korostus"] == "rgb(223, 234, 253)", r  # 0.109 (Niklas): valittu vaaleansiniseksi kortin painikkeiden tapaan (0.74–0.108 täysi sininen)
-        assert max(r["valit"]) - min(r["valit"]) <= 1.5, r  # kuvakkeet tasavälein
+        # 2.15: kuvakkeet symmetrisesti; keskellä on tila isommalle avustajapainikkeelle.
+        assert abs(r["valit"][0] - r["valit"][-1]) <= 1.5 and r["valit"][1] > r["valit"][0], r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -53,7 +54,7 @@ LOPPU_JS = """() => {const sc = document.querySelector('#app-screen'); sc.scroll
   const n = document.querySelector('.main-tabs'), d = n.closest('.tab-dock'), b = n.getBoundingClientRect(), g = sc.getBoundingClientRect();
   const sis = [...document.querySelectorAll('.screen-content > *')].filter(e => e.getBoundingClientRect().height);
   const viim = sis[sis.length - 1].getBoundingClientRect(), dc = d && getComputedStyle(d), nc = getComputedStyle(n);
-  const f = document.querySelector('.tab-dock > .assistant-widget') || document.querySelector('.tab-dock > .tab-fab'), fb = f && f.getBoundingClientRect();
+  const f = [...document.querySelectorAll('.tab-dock > .tab-fab')].find(e => e.getClientRects().length), fb = f && f.getBoundingClientRect();
   return {alusta: !!d, rako: b.top - viim.bottom, fabRako: fb ? fb.top - viim.bottom : null, alaReuna: d ? g.bottom - d.getBoundingClientRect().bottom : null,
           kapseliAla: g.bottom - b.bottom, tausta: dc ? dc.backgroundImage : '', taustavari: dc ? dc.backgroundColor : '', sticky: dc ? dc.position : '',
           koti: !!document.querySelector('.secretary-home'), varjo: nc.boxShadow, sumeus: Math.max(0, ...[...nc.boxShadow.matchAll(/(\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px (\\d+(?:\\.\\d+)?)px/g)].map(m => +m[3]))};}"""

@@ -227,7 +227,8 @@
   const contextCar=()=>{const r=route(),id=r.id||(r.view==='reports'?rpPrefs().car:'');return cars.find(c=>c.id===id)||cars.find(c=>c.id===window.AjouraSecretary?.selected())||cars[0];};
   const serviceLink=()=>{const c=contextCar();return c?'vehicle/'+c.id:'newcar';};
   const fuelLink=()=>{const c=contextCar();return c?'fuel/'+c.id:'fuel';};
-  const tabBar=view=>`<div class="tab-dock">${fab(view)}${window.AjouraAvatar.floating()}${window.AjouraSecretary?.widget(contextCar())||''}<nav class="tab-bar four main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#${fuelLink()}" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a><a href="#${serviceLink()}" aria-label="Huolto"${tabOf(view)==='service'?here:''}>${svg(icons.wrench)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;
+  // 2.15 (Niklas): the assistant sits in the middle of the navigation (larger than the tabs) instead of floating.
+  const tabBar=view=>{const assistant=window.AjouraSecretary?.widget(contextCar())||'';return `<div class="tab-dock">${fab(view)}<nav class="tab-bar ${assistant?'five':'four'} main-tabs" aria-label="Sovelluksen valikko"><a href="#home" aria-label="Koti"${tabOf(view)==='home'?here:''}>${svg(icons.home)}</a><a href="#${fuelLink()}" aria-label="Tankkaus ja lataus"${tabOf(view)==='fuel'?here:''}>${svg(fuelTabIcon)}</a>${assistant}<a href="#${serviceLink()}" aria-label="Huolto"${tabOf(view)==='service'?here:''}>${svg(icons.wrench)}</a><a href="#menu" aria-label="Valikko"${tabOf(view)==='menu'?here:''}>${svg(icons.more)}</a></nav></div>`;};
   // Help tab: the most common questions with ready answers, filtered by a search field.
   const faq=[
     ['Miten lisään auton?','Etusivu → sininen ＋ oikeassa alakulmassa. Valitse ensin merkki ja malli (tai hae rekisteritunnuksella), sitten korimalli ja väri. Mittarilukeman voit päivittää myöhemmin.'],
@@ -369,7 +370,7 @@
     return {image:vehicleImage(c),name:carName(c),plate:c.plate||typeOf(c),meter:`${number(c.km)} ${ku(c)}`,year,cost:cost?number(cost):'',
       statusLabel:d?.what==='Katsastus'?'Katsastusarvio':d?(d.tone==='soon'?'Huolto lähestyy':statusHead[d.tone][d.what]):c.events.length?'Ei huoltomuistutuksia':'Huoltohistoria puuttuu',
       statusValue:d?date(d.due):'Kirjaa viimeisin huolto',estimated:d?.what==='Katsastus',tone:d?.tone||'none',
-      status:rowStatus(c,d),actions:garageActions(c),service:d,ring:d?{pct:Math.round(d.left*100),left:d.left}:null,
+      status:rowStatus(c,d),actions:garageActions(c),service:d,ring:d?{pct:Math.round(d.left*100),left:d.left,color:barColor(d.tone==='late'?0:d.left)}:null,
       expenses:{service:dec(service,2)+' €',fuel:dec(total-service,2)+' €',total:dec(total,2)+' €'},
       remaining:d?[d.days<0?'Myöhässä '+number(-d.days)+' pv':number(d.days)+' pv',d.kmLeft===null?'':(d.kmLeft<0?'Ylitys '+number(-d.kmLeft):number(d.kmLeft))+' km'].filter(Boolean).join(' · '):''};
   }
@@ -661,7 +662,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.11 (testiversio)';
+  const appVersion='2.17 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1944,7 +1945,9 @@
   // moves it and the other cards make room, and letting go saves the new order. The order is simply the order of the cars
   // list, so the saved data and the backup keep their format. Moving the finger before the press is long enough is a
   // normal scroll; the buttons on the card keep their own taps. Near the top or bottom edge the screen scrolls along.
-  {let timer=0,drag=null,ptr=null,blockClick=0;const HOLD=450,MOVE=8;
+  // 2.17 (Niklas): the same long press moves the vehicle cards on the home screen (the photo, plate and card frame;
+  // the shortcuts, costs and opened details keep their own taps). The saved order is the same cars list.
+  {let timer=0,drag=null,ptr=null,blockClick=0;const HOLD=450,MOVE=8,SORTABLE='.garage-rows>.garage-row,.secretary-home>.vehicle-home-card';
     const end=save=>{clearTimeout(timer);timer=0;if(!drag)return;const d=drag;drag=null;cancelAnimationFrame(d.raf);
       d.list.classList.remove('sorting');d.rows.forEach(r=>{r.style.transform='';r.classList.remove('dragging');});
       try{d.row.releasePointerCapture(d.pid);}catch(e){}blockClick=performance.now();
@@ -1955,14 +1958,14 @@
       d.rows.forEach((r,i)=>{if(i===d.from)return;const shift=d.from<to&&i>d.from&&i<=to?-1:to<d.from&&i>=to&&i<d.from?1:0;r.style.transform=shift?`translateY(${shift*d.step/d.z}px)`:'';});};
     const tick=()=>{const d=drag;if(!d)return;const r=screen.getBoundingClientRect(),dock=screen.querySelector('.tab-dock'),bottom=dock?dock.getBoundingClientRect().top:r.bottom;
       const v=ptr.y<r.top+70?-Math.ceil((r.top+70-ptr.y)/6):ptr.y>bottom-50?Math.ceil((ptr.y-bottom+50)/6):0;if(v){screen.scrollTop+=v;place();}d.raf=requestAnimationFrame(tick);};
-    const start=(row,e)=>{const list=row.parentElement,rows=[...list.children].filter(r=>r.classList.contains('garage-row'));if(rows.length<2)return;
+    const start=(row,e)=>{const list=row.parentElement,kind=row.classList.contains('vehicle-home-card')?'vehicle-home-card':'garage-row',rows=[...list.children].filter(r=>r.classList.contains(kind));if(rows.length<2)return;
       const top=list.getBoundingClientRect().top,rects=rows.map(r=>r.getBoundingClientRect()),tops=rects.map(q=>q.top-top),hs=rects.map(q=>q.height);
       // Visual pixels per CSS pixel of a transform (the screen is zoomed 1.12× or 1.3× on wider phones).
       row.style.transform='translateY(100px)';const z=(row.getBoundingClientRect().top-rects[rows.indexOf(row)].top)/100||1;row.style.transform='';
       const from=rows.indexOf(row),step=hs[from]+(tops[1]-tops[0]-hs[0]);
       drag={row,list,rows,tops,hs,z,from,to:from,step,pid:e.pointerId,grab:e.clientY-top-tops[from],raf:0};
       try{row.setPointerCapture(e.pointerId);}catch(err){}list.classList.add('sorting');row.classList.add('dragging');place();drag.raf=requestAnimationFrame(tick);};
-    screen.addEventListener('pointerdown',e=>{if(drag||e.button>0||!e.isPrimary)return;const row=e.target.closest('.garage-rows>.garage-row');if(!row||e.target.closest('.row-actions'))return;
+    screen.addEventListener('pointerdown',e=>{if(drag||e.button>0||!e.isPrimary)return;const row=e.target.closest(SORTABLE);if(!row||e.target.closest('.row-actions,.secretary-actions,.home-expenses,.home-inspection-alert,.vehicle-panels'))return;
       ptr={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};const ev={pointerId:e.pointerId,clientY:e.clientY};clearTimeout(timer);timer=setTimeout(()=>{timer=0;ev.clientY=ptr.y;start(row,ev);},HOLD);});
     screen.addEventListener('pointermove',e=>{if(!ptr)return;ptr.x=e.clientX;ptr.y=e.clientY;if(timer&&Math.hypot(ptr.x-ptr.x0,ptr.y-ptr.y0)>MOVE){clearTimeout(timer);timer=0;}if(drag){e.preventDefault();place();}});
     screen.addEventListener('pointerup',()=>{end(true);ptr=null;});
@@ -1970,9 +1973,9 @@
     // While a card is lifted the page must not scroll under the finger (iPhone needs a non-passive touchmove for that).
     screen.addEventListener('touchmove',e=>{if(drag)e.preventDefault();},{passive:false});
     // The release after a drag is not a tap on the card, and a long press does not open the link menu or start a link drag.
-    screen.addEventListener('click',e=>{if(blockClick&&performance.now()-blockClick<400&&e.target.closest('.garage-rows')){e.preventDefault();e.stopPropagation();}},true);
-    screen.addEventListener('contextmenu',e=>{if(e.target.closest('.garage-rows>.garage-row'))e.preventDefault();});
-    screen.addEventListener('dragstart',e=>{if(e.target.closest&&e.target.closest('.garage-rows'))e.preventDefault();});
+    screen.addEventListener('click',e=>{if(blockClick&&performance.now()-blockClick<400&&e.target.closest('.garage-rows,.secretary-home')){e.preventDefault();e.stopPropagation();}},true);
+    screen.addEventListener('contextmenu',e=>{if(e.target.closest(SORTABLE))e.preventDefault();});
+    screen.addEventListener('dragstart',e=>{if(e.target.closest&&e.target.closest('.garage-rows,.secretary-home'))e.preventDefault();});
     window.addEventListener('hashchange',()=>end(false));}
   // 0.99 (Niklas): the Tankkaus widgets (0.102: also Raportit, data-w-grid) are ordered the same way: the same long press (0.45 s), the same 8 px of movement
   // that keeps it a scroll, the same lifted look, scrolling along at the top and bottom edges, and the release saves at

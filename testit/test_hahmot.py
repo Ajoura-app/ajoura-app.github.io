@@ -44,10 +44,11 @@ def test_hahmot_ja_safe_area(browser,base,theme):
             p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
             assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
             assert p.locator('.assistant-widget .assistant-avatar img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain'
-            assert not p.locator('.avatar-shortcut').is_visible()
+            assert p.locator('.avatar-shortcut').count()==0
+            # 2.15: the assistant sits in the middle of the navigation and stays on screen.
             bounds=p.locator('.assistant-widget').bounding_box()
             nav=p.locator('.main-tabs').bounding_box()
-            assert bounds['y']+bounds['height']<=nav['y']
+            assert nav['x']<=bounds['x'] and bounds['x']+bounds['width']<=nav['x']+nav['width']
             for control in p.locator('.cinematic-brand a,.main-tabs a,.assistant-widget button').all():
                 box=control.bounding_box()
                 assert min(box['width'],box['height'])>=44
@@ -71,7 +72,7 @@ def test_kielet_ja_oikopolku(browser,base,lang):
         s.page.locator('.screen-content a[href="#settings"]').click()
         s.page.wait_for_selector('[data-avatar-choice=mikko][aria-pressed=true]')
         if lang!='fi':assert 'Hahmon animaatiot' not in s.page.inner_text('[data-avatar-settings]')
-        assert 'Mikko' in s.page.get_attribute('[data-avatar-shortcut]','aria-label')
+        assert s.page.get_attribute('.nav-assistant img','src')=='hahmot/mikko.webp'
     finally:s.sulje()
 
 @pytest.mark.parametrize('reduced,disabled',[('reduce',False),('no-preference',True),('no-preference',False)])
@@ -153,7 +154,36 @@ def test_hahmot_offline(browser):
             k.avaa('home')
             assert k.page.get_attribute('.assistant-widget img','src')==f'hahmot/{name}.webp'
             assert k.page.locator('.assistant-widget img').evaluate('(e)=>e.complete&&e.naturalWidth===512')
-            assert k.page.locator('.avatar-shortcut img').evaluate('(e)=>e.complete&&e.naturalWidth===128')
             assert k.talli()==before
         assert not k.virheet,k.virheet
     finally:k.sulje();server.sulje()
+
+
+def test_ei_hahmoa_vaihtoehto_tekoalykuvakkeella(browser,base):
+    """2.16 (Niklas): neljäs vaihtoehto ilman hahmoa. Hahmon kuvan tilalla on tekoälyn kipinäkuvake; valinta näkyy heti,
+    säilyy uudelleenavauksessa eikä anna tekoälyoikeutta tai muuta tallin tietoja."""
+    s=avaa(browser,base,'settings',autot=tiedot.talli(),kello=KELLO)
+    p=s.page
+    try:
+        before=s.talli()
+        valinnat=p.locator('[data-avatar-choice]')
+        assert valinnat.count()==4
+        assert [x.strip() for x in valinnat.all_inner_texts()]==['Emma','Mikko','Bottiankka','Ei hahmoa']
+        p.click('[data-avatar-choice=ai]')
+        assert p.get_attribute('[data-avatar-choice=ai]','aria-pressed')=='true'
+        assert p.evaluate("localStorage.getItem('ajoura-hahmo')")=='ai'
+        nappi=p.locator('.nav-assistant .assistant-avatar')
+        assert 'avatar-ai' in nappi.get_attribute('class') and nappi.locator('img').count()==0
+        assert nappi.locator('svg.avatar-ai-icon').is_visible()
+        p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card');p.reload();p.wait_for_selector('.vehicle-home-card')
+        assert p.locator('.nav-assistant .avatar-ai svg').is_visible()
+        assert p.locator('.nav-assistant [data-home-mic]').get_attribute('aria-label')=='Kirjaa puhumalla'
+        assert not p.evaluate("AjouraAccess.can('ai.receipt')")
+        # Käynnistys ja tervetulosivu toimivat ilman hahmokuvaa.
+        assert '<img' not in p.evaluate("AjouraLaunch.html('')").split('assistant-avatar')[1].split('</span>')[0]
+        p.goto(base+'/app.html#settings');p.wait_for_selector('[data-avatar-choice]')
+        p.click('[data-avatar-choice=emma]')
+        assert p.get_attribute('.nav-assistant img','src')=='hahmot/emma.webp'
+        assert s.talli()==before
+        assert not s.virheet,s.virheet
+    finally:s.sulje()

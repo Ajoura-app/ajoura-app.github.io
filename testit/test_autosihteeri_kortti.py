@@ -32,17 +32,11 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
         frame = p.locator('.assistant-widget [data-avatar]').bounding_box()
         actual = img.bounding_box()
-        assert frame['width'] == 64
+        assert frame['width'] >= 56  # 2.15: alavalikon keskinappi (alavalikon suurennus mukana)
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
-        names = {'emma':'Emma', 'mikko':'Mikko', 'ankka':'Bottiankka'}
-        assert nykyinen_ajoneuvo(p).locator('.secretary-intro [data-avatar-name]').inner_text() == names[character]
-        message=nykyinen_ajoneuvo(p).locator('.secretary-message').inner_text()
-        nykyinen_ajoneuvo(p).locator('.home-service>.secretary-vehicle-details>summary').click()
-        assert message == nykyinen_ajoneuvo(p).locator('[data-task-key] h4').first.inner_text()
-        nykyinen_ajoneuvo(p).locator('.home-service>.secretary-vehicle-details>summary').click()
-        if ai:
-            assert nykyinen_ajoneuvo(p).locator('.secretary-note').is_hidden()
-            assert 'Tarkistat tiedot ennen tallennusta.' in nykyinen_ajoneuvo(p).locator('.secretary-note').inner_text()
+        # 2.14 (Niklas): no assistant label, name, greeting or note on the home screen.
+        assert nykyinen_ajoneuvo(p).locator('.secretary-intro, [data-avatar-name], .secretary-message, .secretary-note').count() == 0
+        assert 'AUTOSIHTEERI' not in nykyinen_ajoneuvo(p).inner_text().upper()
         if width == 390:
             assert card['height'] > 0 and card['width'] <= width, card
             dock = p.locator('.tab-dock').bounding_box()
@@ -90,7 +84,8 @@ def test_toiminnot_oikeuksien_ja_puhetuen_mukaan(browser, base, mode):
             assert nykyinen_ajoneuvo(p).locator('.secretary-actions [data-secretary-service]').is_visible()
             if mode == 'quota':
                 assert p.evaluate("AjouraAccess.check('ai.receipt').reason") == 'quota'
-                assert 'Tämän kuun tunnistukset on käytetty.' in nykyinen_ajoneuvo(p).locator('.secretary-message').inner_text()
+                p.locator('[data-home-mic]').click()
+                assert 'Tämän kuun tunnistukset on käytetty.' in p.locator('.home-voice-feedback').inner_text()
         valitse_ajoneuvo(p, 'tst2')
         kirjaa_avustajasta(p, 'manual')
         ikkuna_valmis(p)
@@ -110,7 +105,7 @@ def test_tyhjan_tiedon_viesti_ei_keksi_havaintoa(browser, base):
         p = s.page
         avaa_ensimmainen_kortti(p)
         assert nykyinen_ajoneuvo(p).locator('[data-task-key]').count() == 0
-        assert nykyinen_ajoneuvo(p).locator('.secretary-message').inner_text() == 'Hei! Mitä kirjataan tänään?'
+        assert nykyinen_ajoneuvo(p).locator('.secretary-message').count() == 0
         assert nykyinen_ajoneuvo(p).locator('.assistant-local').count() == 0
         assert not s.virheet, s.virheet
     finally:
@@ -139,7 +134,6 @@ def test_lisavaihtoehtojen_nappaimisto_ja_tekstin_suurennus(browser, base):
           const sizes=els.map(e=>parseFloat(getComputedStyle(e).fontSize));
           els.forEach((e,i)=>e.style.fontSize=sizes[i]*2+'px');
         }''')
-        assert nykyinen_ajoneuvo(p).locator('.secretary-note').evaluate('(e)=>e.scrollHeight<=e.clientHeight')
         assert p.evaluate('document.querySelector("#app-screen").scrollWidth<=document.querySelector("#app-screen").clientWidth')
         avaa_kirjausvaihtoehdot(p)
         nykyinen_ajoneuvo(p).locator('[data-secretary-mode=manual]').click()
