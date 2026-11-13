@@ -669,7 +669,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.18 (testiversio)';
+  const appVersion='2.19 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1507,10 +1507,15 @@
     // The monthly average divides by the months of the period: whole calendar months count 1 and a month going on (or
     // the ends of Mukautettu) its share of days (monthsIn). The divisor is shown under the period.
     const mTxt=v=>{const r=Math.round(v*10)/10;return dec(r,r%1?1:0);};
-    const w={tot:kc('tot',flEuro,'Kokonais\u00adkulut',dd=>eB(dd.sum)),
+    // 2.19 (Niklas): the summary says what the totals are made of: the fuel and service cards show how many records are
+    // behind them, and the total shows the third group (Muut: inspections, tyres and other entries), so the three groups
+    // add up to the total. Counted for the card's own period, from the same entries as the sums.
+    const inD=(dd,d0)=>d0>=dd.from&&d0<=dd.to,nOf=(dd,g)=>dd.sel.reduce((m,c)=>m+(g==='fuel'?(c.fuels||[]).filter(f=>inD(dd,f.date)).length:c.events.filter(e=>inD(dd,e.date)&&['service','repair'].includes(costKind(e.type))).length),0);
+    const nTxt=(n,one,many)=>`<p class="rp-basis rp-count"><span>${number(n)}</span> <span>${n===1?one:many}</span></p>`;
+    const w={tot:kc('tot',flEuro,'Kokonais\u00adkulut',dd=>eB(dd.sum),dd=>`<p class="rp-basis rp-other"><i class="rp-dot rpk-other" aria-hidden="true"></i><span>Muut kulut</span> <span class="nw">${eur(gsum(dd,['other']))}</span></p>`),
       mon:kc('mon',rpCal,'Keskimäärin / kk',dd=>eB(dd.sum/dd.months),dd=>`<p class="rp-basis"><span>${mTxt(dd.months)}</span> <span>kk:n ajalta</span></p>`),
-      fuel:kc('fuel',fuelTabIcon,'Polttoaine ja lataus',dd=>eB(gsum(dd,['fuel']))),
-      svc:kc('svc',icons.wrench,'Huollot ja korjaukset',dd=>eB(gsum(dd,['service','repair'])))};
+      fuel:kc('fuel',fuelTabIcon,'Polttoaine ja lataus',dd=>eB(gsum(dd,['fuel'])),dd=>nTxt(nOf(dd,'fuel'),'kirjaus','kirjausta')),
+      svc:kc('svc',icons.wrench,'Huollot ja korjaukset',dd=>eB(gsum(dd,['service','repair'])),dd=>nTxt(nOf(dd,'svc'),'merkintä','merkintää'))};
     // Costs by month (by year for a long history), stacked by cost group; a tapped bar shows the month's breakdown.
     const vis=kinds.filter(k=>!o.offKinds.includes(k)),allTot={};for(const k of kinds)allTot[k]=rows.reduce((m,r)=>m+r.s[k],0);
     const mList=rpMonths(o,{from,to,sel,kinds:vis}),yb=!!(mList[0]&&mList[0].year);
