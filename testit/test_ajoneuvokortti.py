@@ -308,3 +308,26 @@ def test_rekisteri_kiinni_vasemmassa_alakulmassa_ja_haivytetty(browser, base, le
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
+
+
+@pytest.mark.parametrize('leveys', [320, 390, 430])
+def test_kuvan_napautus_avaa_lisatiedot_rekisterin_vierestakin(browser, base, leveys):
+    """2.13: rekisterin häivytetty tausta ei vie kuvan napautuksia; vain teksti avaa ajoneuvon sivun."""
+    s = avaa(browser, base, 'home', autot=talli(), kello=KELLO, leveys=leveys)
+    try:
+        p = s.page
+        kortti = p.locator('.vehicle-home-card').first
+        kuva = laatikko(kortti.locator('.secretary-hero'))
+        meta = laatikko(kortti.locator('.secretary-hero-meta'))
+        teksti = laatikko(kortti.locator('.secretary-hero-meta .row-meta>span').first)
+        # Kohdat: kuvan keskipiste ja häivytetyn alueen oikea reuna tekstin oikealla puolella.
+        for x, y in [(kuva['x'] + kuva['width'] / 2, kuva['y'] + kuva['height'] / 2),
+                     (min(meta['x'] + meta['width'] - 8, teksti['x'] + teksti['width'] + 20), teksti['y'] + teksti['height'] / 2)]:
+            assert p.evaluate('([x,y])=>!!document.elementFromPoint(x,y).closest("[data-vehicle-toggle]")', [x, y]), (x, y)
+        kortti.locator('[data-vehicle-toggle]').click()
+        assert kortti.locator('.vehicle-panels').is_visible()
+        kortti.locator('.secretary-hero-meta .row-meta>span').first.click()
+        p.wait_for_function('location.hash==="#vehicle/tst1"')
+        assert not s.virheet, s.virheet
+    finally:
+        s.sulje()

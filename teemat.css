@@ -218,6 +218,9 @@ html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media,
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-media :is(.car-photo,.car-stage){padding:6px 4px 12px}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{grid-area:1/1;align-self:end;justify-self:start;z-index:2;display:block;min-width:0;max-width:calc(100% - 72px);min-height:0;margin:0;padding:22px 56px 12px 14px;border-radius:0;background:linear-gradient(90deg,#140c06d1 0%,#140c06b8 calc(100% - 56px),#140c0600 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 20px);mask-image:linear-gradient(to bottom,transparent 0,#000 20px);color:#ffffff;text-decoration:none}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-name{display:none}
+/* 2.13: the faded backdrop lets taps through to the photo (details toggle); only the plate and kilometres open the vehicle. */
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta{pointer-events:none}
+html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span{pointer-events:auto}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta{display:grid;gap:1px;margin:0;color:#fbf6f0;font-size:15px;line-height:1.25;text-shadow:0 1px 4px #000000a6}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta .row-meta>span:first-child{color:#ffffff;font-size:28px;font-weight:800;line-height:1.05;letter-spacing:.01em;overflow-wrap:anywhere}
 html .secretary-home.secretary-refined .vehicle-home-card .secretary-hero-meta:focus-visible{outline:3px solid #ffffff;outline-offset:-3px;border-radius:12px}
