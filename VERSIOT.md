@@ -6,9 +6,23 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.22
+## Julkaistu versio 2.23
 
-13.11.2026, käyttäjän ehdotus "tankkaus ja huoltoraportti yhdeksi sivuksi": Tankkaus, Huolto ja Raportit yhdistetty yhdeksi Raportit-kokonaisuudeksi, viisi muutosta omina versioinaan (2.18–2.22). Julkaistaan, kun käyttäjä hyväksyy pull requestin.
+13.11.2026, käyttäjän päätös: öljynvaihtoväli valitaan ajoneuvokohtaisesti, oletus 15 000 km / 12 kk.
+
+- **2.23** Ajoneuvon ⋯ → Öljynvaihtoväli: Oletus (Asetusten väli, 15 000 km / 12 kk, ellei sitä ole muutettu) tai Oma väli tälle ajoneuvolle (km 1 000–60 000, kk 1–36; tuntimittarilla vain kuukaudet). Muistutus tulee sen mukaan, kumpi täyttyy ensin, ja lasketaan viimeisimmästä huollosta tai öljynvaihdosta (sama merkintäsääntö kuin ennen, isService). Seuraavaksi-kortti, etusivun huoltomittari ja kalenterivienti käyttävät ajoneuvon väliä. Asetusten väli on nyt "Öljynvaihtovälin oletus".
+
+**Tallennettu tietomuoto muuttui (käyttäjän pyynnöstä):** ajoneuvoon valinnainen kenttä `oil = {km, months}`. Ilman kenttää käytetään oletusta, joten vanhat tiedot ja vanhojen versioiden varmuuskopiot toimivat sellaisinaan. Vanhemmat versiot ohittavat kentän eivätkä hävitä sitä (laaja testi: varmuuskopio edestakaisin 2.22:n kautta). Viallinen väli poistetaan laitteen tiedoista latauksessa (ajoneuvo säilyy), varmuuskopiotiedostossa se hylätään kuten muutkin virheet. Pilvisynkronointi yhdistää kentän kuten muut ajoneuvon kentät; Supabaseen ei muutoksia (talli on jsonb). Paikallinen avustajaprototyyppi (avustaja-client.js, ei julkisessa osoitteessa) käyttää yhä yhteistä väliä. Välimuisti ak-147 / ajoura-pwa-197.
+
+Varmennus: koko perussarja **709 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Laaja sarja versiota 2.22 vastaan: 10 läpäistyä / 8 ohitettua (uusi oma-vali-kierros mukana). Uusi testi test_v223.py kaatui versiota 2.22 vastaan (8/9; vikasietoisuustesti toimii vanhassakin, koska se ohittaa kentän).
+
+Fyysisellä iPhonella tarkistettava: ⋯ → Öljynvaihtoväli, valinnan vaihto ja numeronäppäimistö, tallennus ja Seuraavaksi-kortin uusi arvio, etusivun prosentti.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.22
+
+13.11.2026, käyttäjän ehdotus "tankkaus ja huoltoraportti yhdeksi sivuksi": Tankkaus, Huolto ja Raportit yhdistetty yhdeksi Raportit-kokonaisuudeksi, viisi muutosta omina versioinaan (2.18–2.22). Käyttäjä hyväksyi ja yhdisti 13.11.2026 (PR #25).
 
 - **2.18** Alavalikko Koti | avustaja | Raportit (avustaja keskellä kuten 2.15). Tankkaus- ja Huolto-välilehdet poistettu; ajoneuvosivu kuuluu Kotiin. Raportit sai oman kuvakkeen (polttoainepumppu letkuineen, salama ja raporttipylväät; icons/raportit.svg värillinen ja raportit-mono.svg yksivärinen). Valikko avautuu Kodin ja Raporttien oikean yläkulman ⋯-painikkeesta, ja Valikosta pääsee ← Kotiin; Raportit-rivi poistettu Valikosta. Raporttien alaotsikko "Tankkaukset, lataukset, huollot ja kulut". Vanhat #fuel-linkit avaavat tankkauskirjan Raporttien alasivuna (← Raportit). Pyyhkäisy vaihtaa Kodin ja Raporttien välillä.
 - **2.19** Yhteenvedossa kirjausten määrät (polttoaine ja lataus: kirjaukset; huollot ja korjaukset: merkinnät) ja kokonaiskuluissa Muut kulut, joten kolme ryhmää täsmää kokonaissummaan. Laskenta ennallaan (rpCalc, costsOf).
@@ -21,8 +35,6 @@ Tallennettu tietomuoto, varmuuskopio, synkronointi, käyttöoikeudet, tekoäly j
 Varmennus: koko perussarja versiolla 2.22 **700 läpäistyä / 0 epäonnistunutta / 256 ohitettua** (versiolla 2.18 erikseen 672 / 7, korjattu: vanhan alavalikon testit päivitetty uuteen rakenteeseen). Laaja sarja versiota 2.17 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois). Jokaisen version uusi testi (test_v218–test_v222) kaatui edellistä versiota vastaan.
 
 Fyysisellä iPhonella tarkistettava: alavalikko (Koti, avustaja, Raportit) ja ⋯-painike Kodissa ja Raporteissa, tapahtuman avaus ja sulku sekä Muokkaa merkintää, ＋-valikon tankkaus, ajoneuvosivun ⋯-valikko ja poiston vahvistus, kotipalkin alue ja vieritys pitkällä listalla.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.17
 
@@ -279,4 +291,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.10 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main (yhdessä 2.11:n kanssa) | Etusivun ajoneuvokortti mallikuvan mukaan: rekisteri, kilometrit, lisätietopainike ja huoltomittari kuvan päällä, tekstilliset pikapainikkeet ja tilan mukaan sävytetty kulurivi; etusivulla sama alavalikko kuin Tankkauksessa. Välimuisti ak-134 / ajoura-pwa-184. |
 | 2.11 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Muut teemat poistettu: vain Alkuperäinen ja tumma tila (Asetukset → Ulkoasu). Välimuisti ak-135 / ajoura-pwa-185. |
 | 2.12–2.17 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Huoltokehys kuvan ympärillä, rekisteri häivytettynä kuvan kulmaan, autosihteerin tekstit pois etusivulta, avustaja alavalikon keskelle, Ei hahmoa -vaihtoehto (kipinäkuvake), korttien siirto pitkällä painalluksella. Välimuisti ak-141 / ajoura-pwa-191. |
-| 2.18–2.22 | 13.11.2026 | `claude/gallant-keller-gmurq6` → main | Raportit yhdistää tankkaukset, lataukset, huollot ja kulut: alavalikko Koti, avustaja ja Raportit, Valikko ⋯:n takana, yhteenvedon määrät, yhteinen tapahtumalista, ＋-valikon tankkaus, ajoneuvosivun ⋯-valikko. Välimuisti ak-146 / ajoura-pwa-196. Tämä on nyt julkaistu versio. |
+| 2.18–2.22 | 13.11.2026 | `claude/gallant-keller-gmurq6` → main | Raportit yhdistää tankkaukset, lataukset, huollot ja kulut: alavalikko Koti, avustaja ja Raportit, Valikko ⋯:n takana, yhteenvedon määrät, yhteinen tapahtumalista, ＋-valikon tankkaus, ajoneuvosivun ⋯-valikko. Välimuisti ak-146 / ajoura-pwa-196. |
+| 2.23 | 13.11.2026 | `claude/gallant-keller-gmurq6` → main | Ajoneuvokohtainen öljynvaihtoväli (ajoneuvon ⋯), oletus 15 000 km / 12 kk; uusi valinnainen kenttä oil. Välimuisti ak-147 / ajoura-pwa-197. Tämä on nyt julkaistu versio. |
