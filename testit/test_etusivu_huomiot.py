@@ -16,14 +16,15 @@ def kolme_tehtavaa():
 @pytest.mark.parametrize('width', [320, 390])
 def test_yksi_tarkein_ja_nappaimistolla_avattavat_tehtavat(browser, base, lang, width):
     s = avaa(browser, base, 'home', autot=kolme_tehtavaa(), kieli=lang, kello=KELLO,
-             leveys=width, extra={'ajoura-ulkoasu': 'garage'})
+             leveys=width, extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
         before = s.talli()
         tasks = nykyinen_ajoneuvo(p).locator('[data-task-key]')
         assert tasks.count() == 3
-        assert p.locator('[data-task-key]:visible').count() == 2
+        # 2.11: one featured task (the two-task cinematic layout belonged to the removed themes).
+        assert p.locator('[data-task-key]:visible').count() == 1
         assert ':Huolto:' in nykyinen_ajoneuvo(p).locator('.secretary-primary').get_attribute('data-task-key')
         assert p.locator('.secretary-primary .task-reason').is_visible()
         assert p.locator('.secretary-summary').count() == 0
@@ -45,7 +46,7 @@ def test_yksi_tarkein_ja_nappaimistolla_avattavat_tehtavat(browser, base, lang, 
 
 def test_siirto_ohitus_palautus_ja_ajoneuvon_vaihto(browser, base):
     s = avaa(browser, base, 'home', autot=kolme_tehtavaa() + [tiedot.auto(id='other')],
-             kello=KELLO, leveys=320, extra={'ajoura-ulkoasu': 'garage'})
+             kello=KELLO, leveys=320, extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
@@ -80,7 +81,7 @@ def test_siirto_ohitus_palautus_ja_ajoneuvon_vaihto(browser, base):
 
 def test_todellinen_vertailu_ja_ennusteen_perustelu_sailyvat(browser, base):
     s = avaa(browser, base, 'home', autot=[consumption_car()], kello=KELLO,
-             leveys=320, extra={'ajoura-ulkoasu': 'garage'})
+             leveys=320, extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
@@ -106,7 +107,7 @@ def test_todellinen_vertailu_ja_ennusteen_perustelu_sailyvat(browser, base):
 @pytest.mark.parametrize('lang', ['fi', 'en', 'sv'])
 def test_hiljainen_tila_ja_suurennettu_teksti(browser, base, lang):
     s = avaa(browser, base, 'home', autot=[tiedot.auto()], kello=KELLO, kieli=lang,
-             leveys=320, extra={'ajoura-ulkoasu': 'nordic'})
+             leveys=320, extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
@@ -135,7 +136,7 @@ def test_hiljainen_tila_ja_suurennettu_teksti(browser, base, lang):
 def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
     s = avaa(browser, base, 'home', autot=kolme_tehtavaa(), kello=KELLO,
              leveys=width, korkeus=height, asennettu=True, ios=True,
-             extra={'ajoura-ulkoasu': 'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
@@ -143,15 +144,17 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
             s.context.new_cdp_session(p).send('Emulation.setSafeAreaInsetsOverride',
                                             {'insets': {'top': 47, 'bottom': safe}})
         dock = p.locator('.tab-dock').bounding_box()
-        # Four labelled navigation controls require 80 px before the device safe area.
-        assert dock['height'] <= 80 + safe, dock
+        # 2.10: the same navigation as Tankkaus and Raportit (tablet scale 1.3 included) stays compact.
+        assert dock['height'] <= 84 + safe, dock
         controls = p.locator('.main-tabs a:visible')
         assert controls.count() == 4
         boxes = [x.bounding_box() for x in controls.all()]
         for i, a in enumerate(boxes):
             assert min(a['width'], a['height']) >= 44, a
             assert a['x'] >= 0 and a['x'] + a['width'] <= width
-            assert a['y'] >= dock['y'] and a['y'] + a['height'] <= height - safe
+            # 2.10: same placement as on Tankkaus (0.74: the capsule sits close to the bottom edge, at most 12 px
+            # into the iPhone home-indicator area).
+            assert a['y'] >= dock['y'] and a['y'] + a['height'] <= height - max(0, safe - 12)
             for b in boxes[i + 1:]:
                 assert a['x'] + a['width'] <= b['x'] or b['x'] + b['width'] <= a['x'] or a['y'] + a['height'] <= b['y'] or b['y'] + b['height'] <= a['y'], (a,b)
         nykyinen_ajoneuvo(p).locator('.secretary-all-tasks > summary').click()
@@ -169,7 +172,7 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
 @pytest.mark.parametrize('lang', ['fi', 'en', 'sv'])
 def test_pitkat_perustelut_ja_kaksinkertainen_teksti(browser, base, lang):
     s = avaa(browser, base, 'home', autot=kolme_tehtavaa(), kello=KELLO, kieli=lang,
-             leveys=320, extra={'ajoura-ulkoasu': 'garage'})
+             leveys=320, extra={})
     try:
         p = s.page
         avaa_ajoneuvon_tiedot(p)
@@ -200,7 +203,7 @@ def test_pitkat_perustelut_ja_kaksinkertainen_teksti(browser, base, lang):
 
 
 @pytest.mark.parametrize('lang', ['fi', 'en', 'sv'])
-@pytest.mark.parametrize('theme', ['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme', ['nykyinen'])
 def test_kirjoitus_ei_siirra_painiketta_kesken_napautuksen(browser, base, lang, theme):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO, kieli=lang,
              leveys=320, asennettu=True, ios=True, extra={'ajoura-ulkoasu': theme})

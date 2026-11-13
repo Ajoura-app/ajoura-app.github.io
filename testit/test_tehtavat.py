@@ -26,7 +26,7 @@ def cars():
     return [tiedot.auto(year=2010,events=[tiedot.merkinta('s','Huolto','2025-11-15',140000),tiedot.merkinta('i','Katsastus','2025-11-15',140000)],fuels=[tiedot.tankkaus('f','2026-11-01',152400,40,60)])]
 
 @pytest.mark.parametrize('lang',['fi','en','sv'])
-@pytest.mark.parametrize('theme',['garage','nordic'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_tehtavat_ja_valinnat(browser,base,lang,theme):
     s=avaa(browser,base,'home',autot=cars(),kello=KELLO,kieli=lang,leveys=320,extra={'ajoura-ulkoasu':theme})
     try:

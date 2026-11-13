@@ -130,21 +130,6 @@ html.dark .secretary-card{box-shadow:none}
 /* Give the two floating controls their own opaque footer area, so neither covers form controls. */
 .tab-dock:has(>.avatar-shortcut){padding-top:80px;background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
 .tab-dock>.avatar-shortcut,.tab-dock:has(>.avatar-shortcut)>.tab-fab{bottom:calc(100% - 68px)}
-/* Only the home dock shares one row; the other views keep their existing floating controls. */
-@media screen{
-#app-screen:has(.secretary-home){scroll-padding-bottom:calc(80px + env(safe-area-inset-bottom))}
-#app-screen:has(.secretary-home)>.tab-dock{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:6px;margin-top:0;padding:6px 12px calc(8px + env(safe-area-inset-bottom));background:var(--t-bg,var(--c-f5f8fc,#f5f8fc))}
-#app-screen:has(.secretary-home)>.tab-dock>.tab-bar.main-tabs{grid-column:2;grid-row:1;width:100%;min-width:0;margin:0;zoom:1}
-#app-screen:has(.secretary-home)>.tab-dock>.main-tabs a{min-width:44px;min-height:44px}
-#app-screen:has(.secretary-home)>.tab-dock>:is(.avatar-shortcut,.tab-fab){position:relative;inset:auto;grid-row:1;width:44px;height:44px}
-#app-screen:has(.secretary-home)>.tab-dock>.avatar-shortcut{grid-column:1}
-#app-screen:has(.secretary-home)>.tab-dock>.tab-fab{grid-column:3}
-#app-screen:has(.secretary-home)>.tab-dock .avatar-shortcut .assistant-avatar{width:40px;height:40px}
-}
-/* Retain the home dock's layout while typing: restoring it on blur must not move a button mid-click. */
-@media screen and (pointer:coarse){
-#app-screen:has(.secretary-home):has(:is(input:not([type=checkbox],[type=radio],[type=range],[type=file]),textarea):focus)>.tab-dock{display:grid;visibility:hidden}
-}
 .task-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .secretary-tasks .task-help,.task-coverage{font-size:12px;line-height:1.6;color:var(--muted);margin:8px 0}
 .task-reset{font:inherit;font-size:13px;min-height:44px;background:transparent;color:var(--ink);border:1px solid var(--hairline);border-radius:12px;padding:10px}

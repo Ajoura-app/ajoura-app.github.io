@@ -78,10 +78,8 @@ def test_alavalikko_ei_peita_sisaltoa(browser, base, teema, kotipalkki, nakyma, 
             assert 12 <= r["rako"] <= 60, r  # viimeinen kortti kokonaan kapselin yläpuolella, ei ylisuurta tyhjää
         else:  # 0.107: kelluva ＋ kapselin yläpuolella; viimeinen kortti jää kokonaan myös sen yläpuolelle
             assert 0 <= r["fabRako"] <= 140, r
-        if r['koti']:
-            assert kotipalkki + 6 <= r['kapseliAla'] <= kotipalkki + 10, r
-        else:
-            assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r
+        # 2.10: etusivulla sama alavalikko kuin muissa näkymissä.
+        assert r["kapseliAla"] <= (kotipalkki - 12 if kotipalkki else 10) + 1, r
         if teema == "dark":
             assert r["varjo"] == "none", r  # käänteisvärisuodatin tekisi varjosta vaalean hehkun
         else:

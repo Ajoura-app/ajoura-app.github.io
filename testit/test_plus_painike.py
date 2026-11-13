@@ -246,10 +246,13 @@ def test_vaalea_varimaailma(browser, base, nakyma):
     try:
         r = s.page.evaluate(VARI_JS)
         assert r["tab"] == "rgb(223, 234, 253)", r
-        assert r["fab"] != "rgba(0, 0, 0, 0)",r
         if r["kortti"]:
-            assert r["kortti"] == r["fab"] and r["korttiReuna"] == r["fabReuna"], r
-        assert r["fabK"] >= 3 and r["tabK"] >= 3, r
+            # 2.10: etusivun pikapainikkeet ovat mallikuvan mukaan tekstipainikkeita ilman omaa taustaa.
+            assert r["kortti"] == "rgba(0, 0, 0, 0)", r
+        else:
+            assert r["fab"] != "rgba(0, 0, 0, 0)", r
+            assert r["fabK"] >= 3, r
+        assert r["tabK"] >= 3, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

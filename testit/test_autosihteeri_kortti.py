@@ -14,7 +14,7 @@ from test_plus import PLUS, FREE_EI, palvelu
 def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, width, height):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
              leveys=width, korkeus=height, asennettu=True, ios=True,
-             extra={'ajoura-ulkoasu':'garage', 'ajoura-hahmo':character, 'ajoura-tekoaly':'1' if ai else '0'})
+             extra={'ajoura-hahmo':character, 'ajoura-tekoaly':'1' if ai else '0'})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -62,7 +62,7 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
 @pytest.mark.parametrize('mode', ['speech', 'text-only', 'ai-off', 'free', 'quota'])
 def test_toiminnot_oikeuksien_ja_puhetuen_mukaan(browser, base, mode):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
-             extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'0' if mode == 'ai-off' else '1'})
+             extra={'ajoura-tekoaly':'0' if mode == 'ai-off' else '1'})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -105,7 +105,7 @@ def test_toiminnot_oikeuksien_ja_puhetuen_mukaan(browser, base, mode):
 
 def test_tyhjan_tiedon_viesti_ei_keksi_havaintoa(browser, base):
     s = avaa(browser, base, 'home', autot=[tiedot.auto()], kello=KELLO,
-             extra={'ajoura-ulkoasu':'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -119,7 +119,7 @@ def test_tyhjan_tiedon_viesti_ei_keksi_havaintoa(browser, base):
 
 def test_lisavaihtoehtojen_nappaimisto_ja_tekstin_suurennus(browser, base):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO, leveys=320,
-             extra={'ajoura-ulkoasu':'garage', 'ajoura-tekoaly':'1'})
+             extra={'ajoura-tekoaly':'1'})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)
@@ -152,7 +152,7 @@ def test_lisavaihtoehtojen_nappaimisto_ja_tekstin_suurennus(browser, base):
 
 def test_paikallinen_kokeilu_on_lisavaihtoehdoissa_ei_omana_korttina(browser, base):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
-             extra={'ajoura-ulkoasu':'garage'})
+             extra={})
     try:
         p = s.page
         avaa_ensimmainen_kortti(p)

@@ -33,7 +33,7 @@ def test_pitka_vastaus_pysyy_lisavaihtoehdoissa(browser,base,local_api):
         if body.get('action')=='answer' and response['status']==200:
             response['body']['text']='Fiktiivinen pitkä paikallinen testivastaus. '*100
         return response
-    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':'garage'})
+    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,extra={})
     try:
         bind(s,pitka_vastaus);p=s.page;before=s.talli()
         nykyinen_ajoneuvo(p).locator('[data-assistant-opt]').check()
@@ -51,7 +51,7 @@ def test_pitka_vastaus_pysyy_lisavaihtoehdoissa(browser,base,local_api):
 @pytest.mark.parametrize('lang',['fi','en','sv'])
 def test_local_browser(browser,base,local_api,lang):
     request,url=local_api
-    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,kieli=lang,asennettu=True,ios=True,leveys=320,extra={'ajoura-ulkoasu':'nordic'})
+    s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,kieli=lang,asennettu=True,ios=True,leveys=320,extra={})
     try:
         bind(s,request);p=s.page;before=s.talli()
         assert nykyinen_ajoneuvo(p).locator('[data-assistant-send]').count()==0;nykyinen_ajoneuvo(p).locator('[data-assistant-opt]').check()

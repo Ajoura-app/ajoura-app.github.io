@@ -513,7 +513,7 @@ def test_plus_tarkistukset_vain_access_js_ssa():
     assert "'access.js'" in sw and 'src="access.js?v=' in (JUURI / "app.html").read_text(encoding="utf-8")
 
 
-@pytest.mark.parametrize("teema", [None, "dark", "auto", "eko", "blue-track", "premium"])
+@pytest.mark.parametrize("teema", [None, "dark"])
 def test_plus_ulkoasu_teemoissa(browser, base, teema):
     """Kytkin ja maksumuuri jokaisessa teemassa: teksti vähintään 11 px ja kontrasti vähintään 4,5:1."""
     from test_teemat import KONTRASTI

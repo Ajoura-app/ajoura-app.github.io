@@ -8,13 +8,13 @@ def car(date='2025-11-15'):
     return tiedot.auto(year=2010,events=[tiedot.merkinta('inspection','Katsastus',date,150000)])
 
 @pytest.mark.parametrize('lang,estimate,unknown',[('fi','Katsastusarvio','Virallinen määräpäivä ei ole tiedossa.'),('en','Inspection estimate','The official deadline is not known.'),('sv','Besiktningsuppskattning','Den officiella sista dagen är inte känd.')])
-@pytest.mark.parametrize('theme',['garage','nordic'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_arvio_ei_maaraaika(browser,base,lang,estimate,unknown,theme):
     s=avaa(browser,base,'home',autot=[car()],kello=KELLO,kieli=lang,leveys=320,asennettu=True,extra={'ajoura-ulkoasu':theme})
     try:
         p=s.page;before=s.talli()
         avaa_ajoneuvon_tiedot(p)
-        assert 'tarkistettava' in p.inner_text('.home-inspection-note')
+        assert 'tarkistettava' in p.inner_text('.home-inspection-alert')
         assert p.locator('.row-status.late,.row-status.soon').count()==0
         task=p.locator('[data-task-key*=inspection-check]');assert task.count()==1
         assert unknown in task.inner_text()
@@ -57,7 +57,7 @@ def test_vanha_kalenterivienti_on_myos_arvio(browser,base,lang,title):
         assert before==s.talli()
     finally:s.sulje()
 
-@pytest.mark.parametrize('theme',['garage','copilot','nordic','journey'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_arvion_tekstin_kontrasti(browser,base,theme):
     from test_teemat import KONTRASTI
     s=avaa(browser,base,'home',autot=[car('2023-01-01')],kello=KELLO,leveys=320,asennettu=True,extra={'ajoura-ulkoasu':theme})

@@ -1,10 +1,10 @@
-"""2.09: approved floating capsule and grouped icon-only home shortcuts."""
+"""2.09: approved floating capsule; 2.10: named shortcuts on the vehicle card."""
 import pytest
 import tiedot
 from apu import avaa, KELLO, ikkuna_valmis
 
 
-@pytest.mark.parametrize('theme', ['nykyinen', 'dark', 'garage', 'copilot', 'nordic', 'journey'])
+@pytest.mark.parametrize('theme', ['nykyinen', 'dark'])
 @pytest.mark.parametrize('width', [320, 390, 430])
 def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
     s = avaa(browser, base, 'home', autot=tiedot.talli(), kello=KELLO,
@@ -27,14 +27,12 @@ def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
         assert button.evaluate('(e)=>getComputedStyle(e).backgroundColor') == 'rgba(0, 0, 0, 0)'
         assert p.locator('.assistant-widget .home-mic-label').count() == 0
         assert button.get_attribute('aria-label') == 'Kirjaa puhumalla'
+        # 2.10: shortcuts are named icons in a plain row (see test_ajoneuvokortti.py for the full card).
         for group in p.locator('.vehicle-home-card>.secretary-actions').all():
-            assert group.evaluate('(e)=>parseFloat(getComputedStyle(e).paddingLeft)') >= 8
-            assert group.evaluate('(e)=>{const s=getComputedStyle(e);return s.backgroundColor!=="rgba(0, 0, 0, 0)"||s.backgroundImage!=="none"}')
-            assert group.locator(':scope>.home-add-icon').count() == 0
-            assert group.locator(':scope>* .home-add-badge').count() == 3
+            assert group.locator(':scope>*').count() == 3
             for action in group.locator(':scope>*').all():
-                assert action.locator('.sr-only').count() == 1
-                assert action.locator('.home-add-icon').is_visible()
+                assert action.locator('.secretary-action-icon').is_visible()
+                assert action.locator('.home-action-label').is_visible()
                 assert action.bounding_box()['width'] >= 44
                 assert action.bounding_box()['height'] >= 44
         if theme == 'nykyinen':

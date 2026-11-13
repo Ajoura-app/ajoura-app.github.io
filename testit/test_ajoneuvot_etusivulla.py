@@ -4,7 +4,7 @@ import tiedot
 from apu import avaa,KELLO,ikkuna_valmis
 
 @pytest.mark.parametrize('width',[320,390,430])
-@pytest.mark.parametrize('theme',['garage','blue-track','nordic'])
+@pytest.mark.parametrize('theme',['nykyinen'])
 def test_kaikki_ajoneuvot_ja_omat_paneelit(browser,base,width,theme):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=width,extra={'ajoura-ulkoasu':theme})
     try:

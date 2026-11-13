@@ -10,11 +10,11 @@ from test_mikrofoni import KEKSITTY_PUHE
 from test_tekoalytila import TEKSTI
 
 CHARACTERS=['emma','mikko','ankka']
-THEMES=['nykyinen','dark','auto','eko','blue-track','premium','garage','copilot','nordic','journey']
+THEMES=['nykyinen', 'dark']
 
 @pytest.mark.parametrize('character',CHARACTERS)
 def test_valinta_pysyvyys_ja_teema(browser,base,character):
-    s=avaa(browser,base,'settings',autot=tiedot.talli(),kello=KELLO,extra={'ajoura-ulkoasu':'copilot'})
+    s=avaa(browser,base,'settings',autot=tiedot.talli(),kello=KELLO,extra={})
     p=s.page
     try:
         before=s.talli()
@@ -23,9 +23,9 @@ def test_valinta_pysyvyys_ja_teema(browser,base,character):
         assert p.input_value('#me-form input[name=months]')=='9','Hahmon vaihto tyhjensi keskeneräisen lomakkeen'
         p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card')
         assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
-        assert p.evaluate("localStorage.getItem('ajoura-ulkoasu')")=='copilot'
-        p.goto(base+'/app.html#theme');p.wait_for_selector('[data-th-pick=nordic]')
-        p.click('[data-th-pick=nordic]');p.click('.th-opt.on [data-th-apply]')
+        # 2.11: ulkoasun (vaalea/tumma) vaihto ei vaihda hahmoa.
+        p.goto(base+'/app.html#settings');p.wait_for_selector('.me-data')
+        p.click('.me-data [data-pref=Teema][data-value=dark]')
         p.goto(base+'/app.html#home');p.wait_for_selector('.vehicle-home-card');p.reload();p.wait_for_selector('.vehicle-home-card')
         assert p.get_attribute('.assistant-widget img','src')==f'hahmot/{character}.webp'
         assert s.talli()==before

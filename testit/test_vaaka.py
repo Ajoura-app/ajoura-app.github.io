@@ -43,9 +43,10 @@ def test_vaakanakymat(browser, base, tila, kieli, koko):
             m = s.page.evaluate(MITTAUS)
             if m["yli"] > 0:
                 virheet.append(f"#{v}: {m['yli']} px sivuttain yli")
-            # The approved home and dock use CSS pixels; other views retain the legacy zoom.
+            # The approved home uses CSS pixels; other views retain the legacy zoom. 2.10: the navigation is the same
+            # on every view (also on home), so it always keeps the legacy zoom.
             zoom = 1 if v == "home" else 1.12
-            if abs(m["zoom"] - zoom) > 0.001 or (m["tabZoom"] is not None and abs(m["tabZoom"] - zoom) > 0.001):
+            if abs(m["zoom"] - zoom) > 0.001 or (m["tabZoom"] is not None and abs(m["tabZoom"] - 1.12) > 0.001):
                 virheet.append(f"#{v}: suurennus {m['zoom']}/{m['tabZoom']}, pitäisi olla {zoom}")
             if m["tabAla"] is not None and (m["tabAla"] > m["ikkuna"] + 0.5 or m["tabYla"] < 0):
                 virheet.append(f"#{v}: alavalikko ruudun ulkopuolella ({m['tabYla']:.0f}–{m['tabAla']:.0f} / {m['ikkuna']})")
@@ -83,23 +84,24 @@ def test_tankkausikkunan_tallenna_on_tavoitettavissa(browser, base, tila, koko):
 
 
 def test_pystynakyma_ja_leva_pysty_eivat_muutu(browser, base):
-    """Home stays at CSS scale 1; the fuel view retains the legacy portrait/tablet scale."""
+    """Home content stays at CSS scale 1; the fuel view retains the legacy portrait/tablet scale. 2.10: the navigation
+    is the same on home and fuel, so both use the legacy navigation scale."""
     for (l, k, legacy) in [(390, 844, 1.12), (700, 1000, 1.3)]:
         for view in ["home", "fuel/tst1"]:
             s = avaa(browser, base, view, autot=tiedot.talli(), leveys=l, korkeus=k, kello=KELLO,
                      asennettu=True, ios=True)
             try:
                 m = s.page.evaluate(MITTAUS)
-                _kunnossa(m, 1 if view == "home" else legacy)
+                _kunnossa(m, 1 if view == "home" else legacy, legacy)
                 assert not s.virheet, s.virheet
             finally:
                 s.sulje()
 
 
-def _kunnossa(m, odotettu_zoom):
+def _kunnossa(m, odotettu_zoom, valikon_zoom):
     assert m["yli"] <= 0, m
     assert abs(m["zoom"] - odotettu_zoom) < 0.001, m
-    assert abs(m["tabZoom"] - odotettu_zoom) < 0.001, m
+    assert abs(m["tabZoom"] - valikon_zoom) < 0.001, m
     assert m["tabAla"] <= m["ikkuna"] + 0.5 and m["tabYla"] >= 0, m
 
 
@@ -113,7 +115,7 @@ def test_kaantaminen_kesken_kaiken_safarissa(browser, base, alku):
             s.page.wait_for_timeout(400)
             m = s.page.evaluate(MITTAUS)
             assert "fullscreen" in m["luokka"].split(), (l, k, m)
-            _kunnossa(m, 1)
+            _kunnossa(m, 1, 1.12)
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

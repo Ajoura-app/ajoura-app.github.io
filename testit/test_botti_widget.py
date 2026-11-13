@@ -16,7 +16,7 @@ def drag(page, box, x, y):
 @pytest.mark.parametrize('width,height', [(320,568),(390,844),(430,932),(1440,1000)])
 def test_widget_pysyy_siirtyy_ja_muistaa(browser, base, width, height):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=width,korkeus=height,
-           asennettu=width<600,extra={'ajoura-ulkoasu':'garage'})
+           asennettu=width<600,extra={})
     try:
         p=s.page;before=s.talli()
         widget=p.locator('.assistant-widget');button=widget.locator('button')
@@ -53,7 +53,7 @@ def test_widget_pysyy_siirtyy_ja_muistaa(browser, base, width, height):
 
 def test_rajaus_kosketus_ja_puhe_vasta_napautuksesta(browser,base):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,leveys=390,
-           extra={'ajoura-ulkoasu':'garage','ajoura-tekoaly':'1'})
+           extra={'ajoura-tekoaly':'1'})
     try:
         p=s.page;cloud=palvelu(s,oikeus=PLUS)
         p.evaluate(KEKSITTY_PUHE);p.evaluate('AjouraApp.refresh()')
@@ -78,7 +78,7 @@ def test_rajaus_kosketus_ja_puhe_vasta_napautuksesta(browser,base):
 
 def test_widget_seuraa_ajoneuvoa_ja_tyhja_talli(browser,base):
     s=avaa(browser,base,'home',autot=tiedot.talli(),kello=KELLO,
-           extra={'ajoura-ulkoasu':'blue-track'})
+           extra={})
     try:
         p=s.page
         assert p.locator('.assistant-widget [data-home-mic]').get_attribute('data-home-mic')=='tst1'

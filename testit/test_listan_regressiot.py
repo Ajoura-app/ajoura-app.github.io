@@ -20,7 +20,7 @@ def test_jarjestys_on_saavutettavissa_listasta(browser, base):
 def test_toisen_ajoneuvon_tehtavan_kohdistus_ja_avoin_lista(browser, base):
     first=cars()[0];second=copy.deepcopy(first);second.update(id='other',plate='TST-202')
     s=avaa(browser,base,'home',autot=[first,second],kello=KELLO,leveys=390,
-           extra={'ajoura-ulkoasu':'garage'})
+           extra={})
     try:
         p=s.page;before=s.talli()
         cards=p.locator('.vehicle-home-card')
