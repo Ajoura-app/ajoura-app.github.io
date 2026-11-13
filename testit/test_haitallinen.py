@@ -23,7 +23,7 @@ def talli():
 
 
 NAKYMAT = ["home", "vehicle/tst1", "event/tst1/e1", "edit/tst1/e1", "report/tst1", "notes/tst1",
-           "reports", "fuel/tst1", "owner/tst1", "caredit/tst1", "tips"]
+           "reports", "fuel/tst1", "owner/tst1", "caredit/tst1", "oil/tst1", "tips"]  # 2.23: oil
 
 
 def ei_koodia(s, missa):

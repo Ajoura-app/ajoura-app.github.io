@@ -1747,3 +1747,10 @@ html.dark .device-glass .plus-tag,html.dark .device-glass .ai-switch{filter:inve
 .veh-mi.danger{margin-top:4px;border-top:1px solid var(--c-e3eaf2,#e3eaf2);border-radius:0 0 11px 11px;padding-top:12px}
 .veh-mi.danger strong{color:var(--c-a32a35,#a32a35)}
 .veh-mi.danger .veh-mi-ico{background:var(--c-fdecee,#fdecee);color:var(--c-a32a35,#a32a35)}
+/* 2.23: the vehicle's oil-change interval (oilPage). */
+.oil-mode{margin:0 0 14px;padding:4px 12px;border:1px solid var(--hairline);border-radius:12px;background:var(--c-ffffff,#ffffff)}
+.oil-mode .fk-opt{margin:0;font-weight:600}
+.oil-mode .fk-opt small{font-weight:400}
+.app-form .oil-mode .fk-opt{display:flex;align-items:center;gap:10px;margin:0;min-height:48px;font-size:14px}
+.app-form .oil-mode .fk-opt input{flex:none;width:20px;height:20px;min-height:0;margin:0;padding:0}
+.app-form .oil-mode .fk-opt small{margin-left:auto;font-size:12px;text-align:right}
