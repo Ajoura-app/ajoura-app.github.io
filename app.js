@@ -230,7 +230,7 @@
   function fab(view){
     if(view==='home')return `<a class="tab-fab" href="#newcar" aria-label="Lisää ajoneuvo" title="Lisää ajoneuvo">${fabPlus}</a>`;
     if(view==='fuel'&&fabFuel&&cars.some(c=>c.id===fabFuel.id))return `<button type="button" class="tab-fab fl-add" data-quickfuel="${fabFuel.id}" data-kind="${fabFuel.kind}" aria-label="${fabFuel.name}" title="${fabFuel.name}">${fabPlus}</button>`;
-    if(view==='reports'&&cars.length)return `<div class="fab-menu" id="fab-menu" role="menu" aria-label="Lisää merkintä" hidden><button type="button" role="menuitem" data-fab-act="svc"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.wrench)}</span><span>Lisää huolto</span></button><button type="button" role="menuitem" data-fab-act="memo"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.note)}</span><span>Lisää muistiinpano</span></button></div><button type="button" class="tab-fab" data-fab-menu aria-haspopup="menu" aria-expanded="false" aria-controls="fab-menu" aria-label="Lisää merkintä" title="Lisää merkintä">${fabPlus}</button>`;
+    if(view==='reports'&&cars.length)return `<div class="fab-menu" id="fab-menu" role="menu" aria-label="Lisää merkintä" hidden><button type="button" role="menuitem" data-fab-act="fuel"><span class="fab-mi-ico" aria-hidden="true">${svg(fuelTabIcon)}</span><span>Lisää tankkaus tai lataus</span></button><button type="button" role="menuitem" data-fab-act="svc"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.wrench)}</span><span>Lisää huolto tai korjaus</span></button><button type="button" role="menuitem" data-fab-act="memo"><span class="fab-mi-ico" aria-hidden="true">${svg(icons.note)}</span><span>Lisää muistiinpano</span></button></div><button type="button" class="tab-fab" data-fab-menu aria-haspopup="menu" aria-expanded="false" aria-controls="fab-menu" aria-label="Lisää merkintä" title="Lisää merkintä">${fabPlus}</button>`;
     return '';}
   const contextCar=()=>{const r=route(),id=r.id||(r.view==='reports'?rpPrefs().car:'');return cars.find(c=>c.id===id)||cars.find(c=>c.id===window.AjouraSecretary?.selected())||cars[0];};
   // 2.15 (Niklas): the assistant sits in the middle of the navigation (larger than the tabs) instead of floating.
@@ -669,7 +669,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.20 (testiversio)';
+  const appVersion='2.21 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -1645,9 +1645,11 @@
       resetOrder:()=>{const o2=rpPrefs();o2.w=[...rpWidgets];notice='✓ Widgettien järjestys palautettu.';rpSave(o2,sel);}});}
   // 0.107: Lisää huolto or Lisää muistiinpano from the Raportit ＋ menu. With one vehicle chosen (or only one in the
   // garage) the form opens straight away; with Kaikki ajoneuvot the vehicle is picked first in this small sheet.
-  const fabGo=(act,c)=>go((act==='memo'?'notes/':'add/')+c.id);
+  // 2.21 (Niklas): the menu also adds a fill-up or charge, with the same fill-up sheet as Koti and the fuel log
+  // (openSheet: the vehicle's usual kind, fuel or electricity, chosen in the sheet).
+  const fabGo=(act,c)=>act==='fuel'?openSheet(c,screen.querySelector('[data-fab-menu]')):go((act==='memo'?'notes/':'add/')+c.id);
   function rpCarSheet(act,from){closeSheet();sheetBack=from||null;sheetSel='[data-fab-menu]';const l=document.createElement('div');l.className='sheet-layer';
-    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${act==='memo'?'Lisää muistiinpano':'Lisää huolto'}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
+    l.innerHTML=`<div class="sheet-backdrop" data-sheet-close></div><div class="sheet fk-sheet rp-addsheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="sheet-grip" aria-hidden="true"></span><div class="sheet-head"><h2 id="sheet-title">${act==='memo'?'Lisää muistiinpano':act==='fuel'?'Lisää tankkaus tai lataus':'Lisää huolto tai korjaus'}</h2><button class="sheet-x" type="button" data-sheet-close aria-label="Sulje">×</button></div>
       <p class="rp-addq">Valitse ajoneuvo</p><div class="rp-addopts">${cars.map(c=>`<button type="button" class="rp-addopt" data-rp-pickcar="${c.id}"><span class="rp-pdf-ico rp-addthumb" aria-hidden="true">${rpThumb(c)}</span><span class="rp-rtxt"><strong translate="no">${escape(carName(c))}</strong>${c.plate?`<small translate="no">${escape(c.plate)}</small>`:''}</span><span class="chevron" aria-hidden="true">›</span></button>`).join('')}</div></div>`;
     glass.appendChild(l);screen.inert=true;
     l.addEventListener('click',e=>{const b=e.target.closest('[data-rp-pickcar]');if(b){const c=cars.find(x=>x.id===b.dataset.rpPickcar);sheetBack=null;closeSheet();if(c)fabGo(act,c);return;}if(e.target.closest('[data-sheet-close]'))closeSheet();});
