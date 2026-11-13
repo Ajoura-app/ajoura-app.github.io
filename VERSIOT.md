@@ -6,7 +6,28 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.11
+## Julkaistu versio 2.17
+
+13.11.2026, käyttäjän iPhone-havaintojen perusteella kuusi muutosta, kukin omana versionaan (2.12–2.17), julkaistu yhdessä käyttäjän pyynnöstä:
+
+- **2.12** Huoltotila kiertää ajoneuvokuvan ympäri kehyksenä: pituus on huoltovälistä jäljellä oleva osuus ja väri liukuu vihreästä punaiseen kuten alkuperäisen huoltonäkymän palkki. Prosentti näkyy pienenä kuvan oikeassa alakulmassa. Myöhässä: täysi punainen kehys ja !-merkki. Ilman huoltohistoriaa ei kehystä eikä prosenttia.
+- **2.13** Rekisteritunnus ja kilometrit kiinni kuvan vasemmassa alakulmassa, tausta häivytetty kuvaan (ei rajattua laatikkoa). Kontrasti valkoisen auton kuvan päälläkin vähintään 10:1. Korjaus ennen julkaisua: häivytetty alue ei vie kuvan napautuksia (320 px:llä kuvan napautus avasi muuten ajoneuvon sivun).
+- **2.14** Autosihteerin otsikko, hahmon nimi, tervehdys ja tarkistusmuistutus poistettu etusivun lisätiedoista. Lisää vaihtoehtoja säilyy; käytetyn kiintiön viesti näkyy mikrofonia painettaessa.
+- **2.15** Kelluva, siirrettävä botti poistettu. Avustaja on jokaisen näkymän alavalikon keskellä muita isompana pyöreänä painikkeena (Koti, Tankkaus, avustaja, Huolto, Valikko). Napautus toimii kuten ennen. Tankkauksen ＋ palasi oikeaan alakulmaan (0.107). Tallennettu botin sijainti ei ole enää käytössä.
+- **2.16** Neljäs hahmovaihtoehto Ei hahmoa: hahmon kuvan tilalla tekoälyn kipinäkuvake (kaksi nelisakaraista tähteä) sinivioletilla pohjalla. Laitteen asetus, ei oikeuksia.
+- **2.17** Etusivun ajoneuvokortteja voi siirtää painamalla kuvaa pitkään ja vetämällä (sama toteutus kuin Järjestä ajoneuvot). Järjestys tallentuu tallin järjestykseen; tietomuoto ennallaan.
+
+Tallennettu tietomuoto, varmuuskopio, synkronointi, käyttöoikeudet ja Supabase-koodi ennallaan. Välimuisti ak-141 / ajoura-pwa-191.
+
+Korjaus ennen julkaisua (2.17): etusivun viimeinen rivi jää avustajanapin yläpuolelle (alalaidan väli 16 → 28 px).
+
+Varmennus: koko perussarja versiolla 2.17 **659 läpäistyä / 7 epäonnistunutta / 258 ohitettua**. Kuusi epäonnistumista oli etusivun alalaidan alle 1 px:n päällekkäisyys, joka korjattiin; uusinta (test_etusivu_huomiot, test_valilehdet) 33 läpäistyä. Seitsemäs on kuvavälimuistin tyhjennyksen ajoitus testissä test_v202::test_kuvan_kasittely_tallennus_ja_virhepolku: se epäonnistuu satunnaisesti myös tuotantoversioissa 2.09 ja 2.11 (tietojen poisto ei odota välimuistin tyhjennystä ennen uudelleenlatausta; käyttämättömät kuvat siivotaan seuraavalla latauksella). Ei korjattu tässä, koska se koskee tietojen poistoa. Laaja sarja versiota 2.11 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois). Jokaisen version uusi testi kaatui edellistä versiota vastaan. Kontrasti kuvan päällä vähintään 10:1 (pikselimittaus).
+
+Fyysisellä iPhonella tarkistettava: huoltokehys ja prosentti omalla autokuvalla, rekisterin luettavuus, kuvan napautus (lisätiedot) ja rekisterin napautus (ajoneuvosivu), avustajanappi alavalikon keskellä ja puhekirjaus, Ei hahmoa -valinta, kortin siirto pitkällä painalluksella ja että vieritys toimii normaalisti.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.11
 
 12.11.2026, käyttäjän päätös: muut teemat poistettu, jotta yksi teema viimeistellään ennen uusia. Käytössä on vain Alkuperäinen teema ja sen tumma tila. Asetusten Teeman valinta -sivu poistui; Asetukset → Ulkoasu on nyt suora valinta Vaalea/Tumma, ja vanha #theme-osoite ohjaa Asetuksiin. Aiemmin muun teeman valinnut näkee Alkuperäisen vaalean ilmeen (laitteen asetus ajoura-ulkoasu jätetään huomiotta; tallennetut tiedot eivät muutu). Tervetulosivun teemapainike ja julkisen etusivun teemaesittely poistettu, tekstit "teema" → "ulkoasu".
 
@@ -16,7 +37,7 @@ Lisäksi korjaus: avustajapaneelin AUTOSIHTEERI-otsikon kontrasti 3,9:1 → 5,2:
 
 Testit: test_teemat.py kirjoitettu uudelleen (vanha valinta ohitetaan, tumma tila Asetuksista, #theme ohjautuu, poistetut tiedostot), test_cinematic_garage.py poistettu, muiden testien teemaparametrit rajattu Alkuperäiseen (ja tummaan). CLAUDE.md: kieli- ja teemaohje päivitetty käyttäjän päätösten mukaan.
 
-Varmennus (2.10 + 2.11 yhdessä): koko perussarja yhdellä ajolla **645 läpäistyä / 0 epäonnistunutta / 258 ohitettua** (ohitukset: pois käytöstä olevat EN/SV-kielet ja paikallinen PostgreSQL). Testejä on 900 (ennen 1 280), koska samoja testejä ei enää ajeta jokaiselle teemalle. Laaja sarja tuotantoversiota 2.09 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois): varmuuskopiot edestakaisin ja offline-päivitys kunnossa. Yksi kuvankäsittelytesti (test_v202) epäonnistui kerran kuormitetussa ajossa ja läpäisi yksinään sekä 2.10:ssä että 2.11:ssä. JavaScript-syntaksi ja git diff --check kunnossa. Fyysisellä iPhonella tarkistettava: etusivun kortti, alavalikko ja botin veto, Asetukset → Ulkoasu Vaalea/Tumma sekä se, että aiemmin muun teeman valinneella laitteella ilme vaihtuu vaaleaksi. Käyttäjä hyväksyi julkaisun 13.11.2026 (versiot 2.10 ja 2.11 samalla kertaa). Tämä on nyt julkaistu versio.
+Varmennus (2.10 + 2.11 yhdessä): koko perussarja yhdellä ajolla **645 läpäistyä / 0 epäonnistunutta / 258 ohitettua** (ohitukset: pois käytöstä olevat EN/SV-kielet ja paikallinen PostgreSQL). Testejä on 900 (ennen 1 280), koska samoja testejä ei enää ajeta jokaiselle teemalle. Laaja sarja tuotantoversiota 2.09 vastaan: 9 läpäistyä / 8 ohitettua (PDF-työkalut puuttuvat, EN/SV pois): varmuuskopiot edestakaisin ja offline-päivitys kunnossa. Yksi kuvankäsittelytesti (test_v202) epäonnistui kerran kuormitetussa ajossa ja läpäisi yksinään sekä 2.10:ssä että 2.11:ssä. JavaScript-syntaksi ja git diff --check kunnossa. Fyysisellä iPhonella tarkistettava: etusivun kortti, alavalikko ja botin veto, Asetukset → Ulkoasu Vaalea/Tumma sekä se, että aiemmin muun teeman valinneella laitteella ilme vaihtuu vaaleaksi. Käyttäjä hyväksyi julkaisun 13.11.2026 (versiot 2.10 ja 2.11 samalla kertaa).
 
 ## Versio 2.10 (julkaistu yhdessä 2.11:n kanssa)
 
@@ -240,4 +261,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.02 | 11.11.2026 | [PR #18](https://github.com/Ajoura-app/ajoura-app.github.io/pull/18) → main; `backup/2026-11-11-v2.02` | Suomi ainoana käyttökielenä, ajoneuvokuvien paikallinen taustanpoisto ja teemaan sovitus, alkuperäiset JPEG-kuvat ja varmuuskopioiden yhteensopivuus säilyvät, tiivis avustajapalkki ja näkyvä mikrofoni. Välimuisti ak-126 / ajoura-pwa-176. |
 | 2.03 | 11.11.2026 | `codex/home-2.03` → main | Hyväksytyn havainnekuvan etusivu: erilliset huolto- ja vuosikulukortit, kolme kirjauspainiketta, pieni puheavustaja, ajoneuvokohtaiset oikotiet, Raportit Valikossa. Välimuisti ak-127 / ajoura-pwa-177. |
 | 2.10 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main (yhdessä 2.11:n kanssa) | Etusivun ajoneuvokortti mallikuvan mukaan: rekisteri, kilometrit, lisätietopainike ja huoltomittari kuvan päällä, tekstilliset pikapainikkeet ja tilan mukaan sävytetty kulurivi; etusivulla sama alavalikko kuin Tankkauksessa. Välimuisti ak-134 / ajoura-pwa-184. |
-| 2.11 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Muut teemat poistettu: vain Alkuperäinen ja tumma tila (Asetukset → Ulkoasu). Välimuisti ak-135 / ajoura-pwa-185. Tämä on nyt julkaistu versio. |
+| 2.11 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Muut teemat poistettu: vain Alkuperäinen ja tumma tila (Asetukset → Ulkoasu). Välimuisti ak-135 / ajoura-pwa-185. |
+| 2.12–2.17 | 13.11.2026 | `claude/lucid-rubin-05l1ph` → main | Huoltokehys kuvan ympärillä, rekisteri häivytettynä kuvan kulmaan, autosihteerin tekstit pois etusivulta, avustaja alavalikon keskelle, Ei hahmoa -vaihtoehto (kipinäkuvake), korttien siirto pitkällä painalluksella. Välimuisti ak-141 / ajoura-pwa-191. Tämä on nyt julkaistu versio. |
