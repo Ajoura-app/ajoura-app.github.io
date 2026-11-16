@@ -67,3 +67,51 @@ on conflict (user_id) do update set plan = 'plus', status = 'active', valid_unti
 Plus pois: `update public.subscriptions set status = 'canceled', updated_at = now() where user_id = (select id from auth.users where email = 'testaaja@esimerkki.fi');`
 
 Kuukausikiintiö (nyt väliaikainen 30): `update public.plan_limits set ai_monthly_limit = 30 where plan = 'plus';` (null = ei rajaa)
+
+
+## Traccar Cloud: rajattu GPS-yhteystesti
+
+`gps-traccar` on vain luku -Edge Function yhdelle testaajalle. Se kutsuu kiinteästi osoitteita
+`https://server.traccar.org/api/devices` ja `/api/positions`.
+Se palauttaa ainoastaan laitteiden lukumäärän, sijaintitiedon saatavuuden ja viimeisimmän GPS-päivityksen ajan.
+Se **ei** palauta koordinaatteja, IMEI-tunnuksia, laitenimiä, Traccarin vastauksia eikä API-tokenia.
+Se ei tallenna mitään tietokantaan eikä muuta Ajouran ajoneuvojen mittarilukemia.
+GPS:n reitti- ja ajopäiväkirjatoiminnot tehdään erillisenä myöhempänä vaiheena.
+
+### Edellytykset
+
+1. Supabase Dashboard → Edge Functions → Secrets: `TRACCAR_API_TOKEN` on lyhytaikainen
+   Traccarin käyttöoikeustunnus. **Älä koskaan tallenna sitä GitHubiin, selaimeen tai lokiin.**
+2. Supabase Dashboard → Authentication → Users: hae omaa Ajoura-kirjautumista vastaava
+   käyttäjän UUID (User ID). Lisää se Edge Functions → Secrets -kohtaan nimellä
+   `TRACCAR_TEST_OWNER_ID`. Älä kopioi sähköpostiosoitetta tähän arvoon.
+3. `SUPABASE_URL` ja Supabasen julkinen avain tulevat Supabasen omasta ympäristöstä.
+   Funktion `verify_jwt = true`, ja se tarkistaa JWT:n lisäksi käyttäjän ID:n
+   Supabase Authilta. Pelkkä publishable-avain ei anna käyttöoikeutta.
+
+### Käyttöönotto ja testaus
+
+- Muutokset valmistellaan erilliseen kehityshaaraan. Supabasen GitHub-integraatio julkaisee
+  Edge Functionin, kun hyväksytty muutos yhdistetään tuotantohaaraan. **Älä yhdistä
+  ennen käyttäjän julkaisuhyväksyntää.**
+- Mockatut automaattiset testit: `python3 -m pytest testit/test_gps_traccar.py`.
+  Testit eivät ota yhteyttä oikeaan Traccariin eivätkä tarvitse oikeaa tokenia.
+- Julkaisun jälkeen tee `GET /functions/v1/gps-traccar` Ajouran kirjautuneen testikäyttäjän
+  JWT:llä. Lähetä Supabase publishable-avain `apikey`-otsakkeessa ja käyttäjän
+  istuntotunniste `Authorization: Bearer ...` -otsakkeessa. Älä liitä JWT:tä tai
+  vastausta, jossa on tunnuksia, keskusteluun.
+- Onnistunut vastaus: `ok: true` ja `deviceCount: 1`; lisäksi
+  `positionAvailable: true` tarkoittaa, että sijainti saatiin. Aikaleiman
+  vanheneminen on tulkittava erikseen.
+- Jos `deviceCount > 1`, funktio ei valitse ajoneuvoa automaattisesti.
+  Jos käyttäjän ID tai token puuttuu, funktio vastaa 503.
+  Virhe `traccar_auth` tarkoittaa, että Traccarin tunnus ei kelpaa tai on vanhentunut.
+- Token vanhenee asetettuna päivänä; poista testi ja sen salaisuudet, kun testijakso päättyy.
+
+### Rajaukset
+
+Tämä on kertaluonteinen yhteystesti, ei GPS-synkronointi tai julkinen päätepiste.
+Ei jatkuvaa pollausta, ei sijaintihistorian siirtoa eikä jaetun tallin jäsenten
+pääsyä Traccar-tietoihin. Laajemmassa ratkaisussa tarvitaan erillinen
+ajoneuvo–GPS-laite-sidonta, käyttäjäkohtainen valtuutus, tietosuojapäätökset ja
+kutsujen/kiintiöiden rajoittaminen.
