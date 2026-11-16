@@ -69,14 +69,31 @@ Plus pois: `update public.subscriptions set status = 'canceled', updated_at = no
 Kuukausikiintiö (nyt väliaikainen 30): `update public.plan_limits set ai_monthly_limit = 30 where plan = 'plus';` (null = ei rajaa)
 
 
-## Traccar Cloud: rajattu GPS-yhteystesti
+## Traccar Cloud: rajattu GPS-luku (testivaihe, yksi testaaja)
 
-`gps-traccar` on vain luku -Edge Function yhdelle testaajalle. Se kutsuu kiinteästi osoitteita
-`https://server.traccar.org/api/devices` ja `/api/positions`.
-Se palauttaa ainoastaan laitteiden lukumäärän, sijaintitiedon saatavuuden ja viimeisimmän GPS-päivityksen ajan.
-Se **ei** palauta koordinaatteja, IMEI-tunnuksia, laitenimiä, Traccarin vastauksia eikä API-tokenia.
-Se ei tallenna mitään tietokantaan eikä muuta Ajouran ajoneuvojen mittarilukemia.
-GPS:n reitti- ja ajopäiväkirjatoiminnot tehdään erillisenä myöhempänä vaiheena.
+`gps-traccar` on vain luku -Edge Function yhdelle testaajalle (`TRACCAR_TEST_OWNER_ID`).
+Se kutsuu vain kiinteää osoitetta `https://server.traccar.org` ja vain polkuja
+`/api/devices`, `/api/positions`, `/api/reports/trips` ja `/api/reports/stops` (GET).
+Se ei lähetä laitteelle komentoja, ei muuta Traccarin asetuksia, ei tallenna mitään tietokantaan,
+ei kirjoita lokiin eikä muuta Ajouran ajoneuvojen mittarilukemia.
+
+| Kutsu (GET) | Palauttaa |
+|---|---|
+| ilman `action`-parametria | yhteystesti kuten ennen: laitteiden määrä, sijainnin saatavuus ja ikä, ei koordinaatteja |
+| `?action=devices` | laitteet: Traccarin sisäinen numero, nimi, tila, viimeisin päivitys (ei IMEI:tä eikä puhelinnumeroa) |
+| `?action=position&device=N` | viimeisin sijainti, sen ikä sekuntteina, `fresh` (enintään 10 min vanha), nopeus km/h |
+| `?action=trips&device=N&from=…&to=…` | ajot uusin ensin (enintään 32 vrk): alku, loppu, kesto, matka metreinä, keskinopeus, alku- ja loppupiste, osoite jos Traccar antaa |
+| `?action=route&device=N&from=…&to=…` | reittipisteet `[lat, lon, aika, km/h]` (enintään 26 h, harvennettu enintään 2 000 pisteeseen) |
+| `?action=stops&device=N&from=…&to=…` | pysähdykset (enintään 26 h) |
+
+- Ajat ovat UTC-muodossa (`2026-11-16T09:00:00Z`). Sovellus muuntaa ne Suomen aikaan.
+- Traccar ilmoittaa nopeudet solmuina; funktio muuntaa ne km/h:ksi (× 1,852). Matka on metreinä.
+- Laite tarkistetaan tilin laiteluettelosta ennen sen tietojen hakua (muuten 404).
+- Virheet: `400 action/params/device/range`, `401 auth`, `403 forbidden`, `404 device`, `429 rate`
+  (60 pyyntöä/min/käyttäjä, paras yritys), `502 traccar_auth` (Traccarin tunnus vanhentunut),
+  `502 traccar_unavailable`, `502 traccar_too_large`, `504 traccar_timeout`, `503 not_configured`.
+- Ajon `key` (laite + ajon ensimmäinen sijaintipiste) on pysyvä tunniste myöhempää ajopäiväkirjaa varten,
+  jotta samaa ajoa ei tuoda kahdesti.
 
 ### Edellytykset
 
@@ -94,24 +111,21 @@ GPS:n reitti- ja ajopäiväkirjatoiminnot tehdään erillisenä myöhempänä va
 - Muutokset valmistellaan erilliseen kehityshaaraan. Supabasen GitHub-integraatio julkaisee
   Edge Functionin, kun hyväksytty muutos yhdistetään tuotantohaaraan. **Älä yhdistä
   ennen käyttäjän julkaisuhyväksyntää.**
-- Mockatut automaattiset testit: `python3 -m pytest testit/test_gps_traccar.py`.
-  Testit eivät ota yhteyttä oikeaan Traccariin eivätkä tarvitse oikeaa tokenia.
-- Julkaisun jälkeen tee `GET /functions/v1/gps-traccar` Ajouran kirjautuneen testikäyttäjän
-  JWT:llä. Lähetä Supabase publishable-avain `apikey`-otsakkeessa ja käyttäjän
-  istuntotunniste `Authorization: Bearer ...` -otsakkeessa. Älä liitä JWT:tä tai
-  vastausta, jossa on tunnuksia, keskusteluun.
-- Onnistunut vastaus: `ok: true` ja `deviceCount: 1`; lisäksi
-  `positionAvailable: true` tarkoittaa, että sijainti saatiin. Aikaleiman
-  vanheneminen on tulkittava erikseen.
-- Jos `deviceCount > 1`, funktio ei valitse ajoneuvoa automaattisesti.
-  Jos käyttäjän ID tai token puuttuu, funktio vastaa 503.
+- Mockatut automaattiset testit: `python3 -m pytest testit/test_gps_traccar.py testit/test_gps_data.py`.
+  Testit eivät ota yhteyttä oikeaan Traccariin eivätkä tarvitse oikeaa tokenia; kaikki sijainnit ovat keksittyjä.
+- Oikea testi tehdään testaajan omalla kirjautumisella tietokoneen selaimessa (ajoura-app.github.io/app.html,
+  kehittäjätyökalujen konsoli). Funktion osoite on `https://<projekti>.supabase.co/functions/v1/gps-traccar`;
+  `apikey`-otsakkeeseen julkinen avain (sync.js) ja `Authorization: Bearer` -otsakkeeseen
+  `await AjouraSync.accessToken()`. Älä liitä JWT:tä, koordinaatteja tai vastauksia keskusteluun:
+  raportoi vain HTTP-tila, `error`-koodi, laitteiden määrä ja ajojen lukumäärä.
+- Onnistunut yhteystesti: `ok: true` ja `deviceCount: 1`; `positionAvailable: true` tarkoittaa, että sijainti saatiin.
   Virhe `traccar_auth` tarkoittaa, että Traccarin tunnus ei kelpaa tai on vanhentunut.
 - Token vanhenee asetettuna päivänä; poista testi ja sen salaisuudet, kun testijakso päättyy.
 
 ### Rajaukset
 
-Tämä on kertaluonteinen yhteystesti, ei GPS-synkronointi tai julkinen päätepiste.
-Ei jatkuvaa pollausta, ei sijaintihistorian siirtoa eikä jaetun tallin jäsenten
-pääsyä Traccar-tietoihin. Laajemmassa ratkaisussa tarvitaan erillinen
-ajoneuvo–GPS-laite-sidonta, käyttäjäkohtainen valtuutus, tietosuojapäätökset ja
-kutsujen/kiintiöiden rajoittaminen.
+Tämä on yhden testaajan lukuyhteys, ei GPS-synkronointi eikä julkinen päätepiste.
+Ei jatkuvaa pollausta, ei sijaintihistorian tallennusta eikä jaetun tallin jäsenten
+pääsyä Traccar-tietoihin. Usean käyttäjän ratkaisussa tarvitaan erillinen
+käyttäjä–ajoneuvo–GPS-laite-sidonta tietokannassa (RLS), käyttäjäkohtainen valtuutus,
+tietosuojaselosteen päivitys sekä tietokantaan perustuva pyyntörajoitus.
