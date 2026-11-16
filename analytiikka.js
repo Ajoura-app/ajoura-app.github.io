@@ -14,7 +14,8 @@ const inspMonths=(c,last)=>Number(last.date.slice(0,4))-Number(c.year)<8?24:12;
   function fuelStats(c,{hourlyValue=false}={}){const fk=hourlyValue?1:100,f=[...(c.fuels||[])].sort((a,b)=>a.km-b.km||a.date.localeCompare(b.date)),full=f.map((x,i)=>x.full?i:-1).filter(i=>i>=0);
     const sumQty=(a,b)=>f.slice(a+1,b+1).reduce((n,x)=>n+x.qty,0);let avg=null,lastCons=null;
     
-    const priced=f.filter(x=>x.cost!==null),cost=priced.reduce((n,x)=>n+x.cost,0),qty=priced.reduce((n,x)=>n+x.qty,0);
+    // 2.24: cost is what the user paid (fill-ups marked nocost left out); the average price uses every priced fill-up.
+    const priced=f.filter(x=>x.cost!==null),pc=priced.reduce((n,x)=>n+x.cost,0),cost=priced.filter(x=>!x.nocost).reduce((n,x)=>n+x.cost,0),qty=priced.reduce((n,x)=>n+x.qty,0);
     // 0.58: an interval that holds a fill-up marked "Älä huomioi kulutuksessa" (skip: e.g. someone else filled up in between
     // and the amount is unknown) is left out of consumption; its litres and costs still count everywhere else.
     // 0.77: an interval that cannot be real (over 40 l, 80 kWh or 30 kg per 100 km; e.g. 50 l over 10 km = 500 l/100 km)
@@ -37,7 +38,7 @@ const inspMonths=(c,last)=>Number(last.date.slice(0,4))-Number(c.year)<8?24:12;
       if(q/dd*fk>lim){carry={q,d:dd,s:one};continue;}
       sq+=q;sd+=dd;series.push({date:f[b].date,km:f[b].km,v:q/dd*fk,q,d:dd,id:f[b].id});}
     if(carry)sus.push({...carry.s,how:'drop'});if(sd>0){avg=sq/sd*fk;lastCons=series[series.length-1].v;}
-    return {fills:f,avg,lastCons,cost,price:qty>0?cost/qty:null,per100:avg!==null&&qty>0?avg*cost/qty:null,series,sus,ord};}
+    return {fills:f,avg,lastCons,cost,price:qty>0?pc/qty:null,per100:avg!==null&&qty>0?avg*pc/qty:null,series,sus,ord};}
   const fillKind=(c,f)=>c.fuel==='Sähkö'||f.el===true?'el':gasGrades.includes(f.grade)||(!f.grade&&c.fuel==='Kaasu')?'gas':'fuel';
   const chargeKinds=c=>{const k=c.fuel==='Sähkö'?['el']:c.fuel==='Kaasu'?['gas','fuel']:['Bensiini','Diesel'].includes(c.fuel)?['fuel']:['fuel','el'];for(const f of c.fuels||[]){const x=fillKind(c,f);if(!k.includes(x))k.push(x);}return k;};
   const fcar=(c,k)=>{const all=c.fuels||[],fl=all.filter(f=>fillKind(c,f)===k),fu=k==='el'?'Sähkö':k==='gas'?'Kaasu':c.fuel==='Kaasu'||c.fuel==='Sähkö'?'Bensiini':c.fuel;return fl.length===all.length&&fu===c.fuel?c:{...c,fuels:fl,fuel:fu};};
