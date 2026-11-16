@@ -33,7 +33,8 @@ def kierros(browser, osoite, tiedosto, tmp_path, nimi):
 
 
 # 2.23: "oma-vali" = ajoneuvolla oma öljynvaihtoväli (oil). Vanhempi versio ei käytä kenttää, mutta ei saa hävittää sitä.
-@pytest.mark.parametrize("aineisto", ["testitalli", "vanha-0.37", "oma-vali"])
+# 2.24: "ei-kuluihin" = tankkaus merkitty "Älä huomioi kustannuksissa" (nocost); vanhempi versio ei saa hävittää kenttää.
+@pytest.mark.parametrize("aineisto", ["testitalli", "vanha-0.37", "oma-vali", "ei-kuluihin"])
 def test_edestakaisin(browser, base, vanha_base, tmp_path, aineisto):
     if aineisto == "vanha-0.37":
         alku = VANHA
@@ -41,6 +42,8 @@ def test_edestakaisin(browser, base, vanha_base, tmp_path, aineisto):
         autot = tiedot.talli()
         if aineisto == "oma-vali":
             autot[0]["oil"] = {"km": 30000, "months": 24}
+        if aineisto == "ei-kuluihin":
+            autot[0]["fuels"][1]["nocost"] = True
         alku = tmp_path / "alku.json"
         alku.write_text(json.dumps({"app": "AJOURA", "version": 1, "saved": "2026-10-29T08:00:00.000Z",
                                     "cars": autot, "profile": {"name": "", "months": 12, "km": 15000}}), "utf-8")
