@@ -7,3 +7,8 @@ project_id = "ajoura"
 enabled = true
 # Alusta tarkistaa istuntotunnisteen ennen funktiota; funktio tarkistaa käyttäjän ja Plus-tilauksen vielä itse.
 verify_jwt = true
+
+[functions.gps-traccar]
+enabled = true
+# Read-only GPS connectivity probe. Both Supabase JWT and explicit owner verification are required.
+verify_jwt = true
