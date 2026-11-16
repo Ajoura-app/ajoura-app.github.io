@@ -6,7 +6,21 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.23
+## Julkaistu versio 2.24
+
+16.11.2026, käyttäjän havainto: tankkauksesta puuttui valinta, jolla kulun voi jättää pois, kun joku muu maksaa polttoaineen.
+
+- **2.24** Tankkausikkunaan valinta **Älä huomioi kustannuksissa** ("Esim. joku muu maksoi"). Summa ja litrahinta näkyvät kirjauksessa, mutta summaa ei lasketa kuluihin: tankkauskirjan Kulut yhteensä ja kuukausisummat, Raportit (kokonais-, kuukausi- ja polttoainekulut, €/km), ajoneuvosivun vuoden kulut ja huoltohistoriaraportti. Keskihinta (€/l) ja kulutus lasketaan yhä kaikista tankkauksista, koska ne eivät riipu maksajasta. Merkintä näkyy rivillä ("ei kuluihin"), Raporttien tapahtumalistassa ("Ei mukana kustannuksissa"), PDF:ssä ja CSV:n lisätiedossa (CSV:ssä summa on yhä rivillä).
+
+**Tallennettu tietomuoto muuttui (käyttäjän pyynnöstä):** tankkaukseen valinnainen kenttä `nocost: true`, vain kun summa on annettu. Ilman kenttää kaikki toimii kuten ennen, joten vanhat tiedot ja varmuuskopiot toimivat sellaisinaan. Vanhemmat versiot ohittavat kentän eivätkä hävitä sitä (laaja testi: varmuuskopio edestakaisin 2.23:n kautta), mutta laskevat summan kuluihin. Viallinen arvo poistetaan laitteen tiedoista latauksessa (tankkaus säilyy). Pilvisynkronointi yhdistää tankkaukset kuten ennen; Supabaseen ei muutoksia. Paikallinen avustajaprototyyppi (avustaja-sopimus.js, ei julkisessa osoitteessa) ei vielä tunne kenttää. Välimuisti ak-148 / ajoura-pwa-198.
+
+Varmennus: koko perussarja **716 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Laaja sarja versiota 2.23 vastaan: 11 läpäistyä / 8 ohitettua (uusi ei-kuluihin-kierros mukana); näkymävertailussa muuttui vain versionumero. Uusi testi test_v224.py kaatui versiota 2.23 vastaan (3/5; varmuuskopio- ja vikasietoisuustesti toimivat vanhassakin, koska se ohittaa kentän). Testi löysi myös virheen, jossa valinnan poisto muokkauksessa ei tallentunut; korjattu ennen julkaisua.
+
+Fyysisellä iPhonella tarkistettava: tankkausikkunan uusi valintaruutu (napautus, teksti ei leikkaudu), tallennus ja muokkaus, tankkauskirjan Kulut yhteensä -kortti ja kuukauden summa, Raportit-sivun polttoainekulut.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.23
 
 13.11.2026, käyttäjän päätös: öljynvaihtoväli valitaan ajoneuvokohtaisesti, oletus 15 000 km / 12 kk.
 
@@ -17,8 +31,6 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 Varmennus: koko perussarja **709 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Laaja sarja versiota 2.22 vastaan: 10 läpäistyä / 8 ohitettua (uusi oma-vali-kierros mukana). Uusi testi test_v223.py kaatui versiota 2.22 vastaan (8/9; vikasietoisuustesti toimii vanhassakin, koska se ohittaa kentän).
 
 Fyysisellä iPhonella tarkistettava: ⋯ → Öljynvaihtoväli, valinnan vaihto ja numeronäppäimistö, tallennus ja Seuraavaksi-kortin uusi arvio, etusivun prosentti.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.22
 
