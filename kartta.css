@@ -1,0 +1,69 @@
+/* AJOURA Kartta ja Ajopäiväkirja (2.25, GPS-suunnitelman vaihe 2a). Näkymät piirtää kartta.js.
+   Tumma tila kääntää koko puhelinnäkymän värit (app.css: html.dark .device-glass), joten kartta käännetään takaisin
+   ja sille ladataan OpenFreeMapin oma tumma tyyli. Kartan omat painikkeet ovat tavallista käyttöliittymää ja
+   kääntyvät muun sovelluksen mukana. */
+
+/* Kartta ei saa olla suurennetun (zoom) näkymän sisällä: MapLibre laskee kosketuksen paikan näytön pikseleistä.
+   Muu näkymän sisältö suurennetaan kuten muissa näkymissä. */
+@container(min-width:350px){.screen-content.kartta-screen{zoom:1}.kartta-screen>:not(.kartta){zoom:1.12}}
+@container(min-width:440px){.screen-content.kartta-screen{zoom:1}.kartta-screen>:not(.kartta){zoom:1.3}}
+@media screen and (orientation:landscape) and (max-height:500px){
+  @container(min-width:440px){.kartta-screen>:not(.kartta){zoom:1.12}}
+}
+
+.kartta{position:relative;isolation:isolate;margin:0 0 10px;aspect-ratio:4/5;min-height:260px;max-height:calc(100svh - 240px);border:1px solid var(--c-d3dfee,#d3dfee);border-radius:18px;overflow:hidden;background:var(--c-e4ebf3,#e4ebf3);box-shadow:0 2px 10px var(--c-10243f14,#10243f14)}
+.kartta>.kartta-map,.kartta>.kartta-map.maplibregl-map{position:absolute;inset:0;width:100%;height:100%}
+.kartta-map:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+
+/* Painikkeet kartan päällä: 44 px kosketusalue. */
+.kartta-nappi{display:grid;place-items:center;width:44px;height:44px;min-height:0;margin:0;padding:0;border:0;border-radius:12px;background:var(--c-fffffff2,#fffffff2);color:var(--ink,#17283d);box-shadow:0 2px 8px var(--c-10243f2e,#10243f2e);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.kartta-nappi:hover{background:var(--c-eef4fc,#eef4fc)}
+.kartta-nappi:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.kartta-zoom{position:absolute;right:10px;bottom:34px;z-index:2;display:flex;flex-direction:column;border-radius:12px;box-shadow:0 2px 8px var(--c-10243f2e,#10243f2e)}
+.kartta-zoom .kartta-nappi{box-shadow:none}
+.kartta-zoom .kartta-nappi:first-child{border-radius:12px 12px 0 0;border-bottom:1px solid var(--c-d3dfee,#d3dfee)}
+.kartta-zoom .kartta-nappi:last-child{border-radius:0 0 12px 12px}
+.kartta-tasot{position:absolute;top:10px;right:10px;z-index:2}
+.kartta-tasovalikko{position:absolute;top:50px;right:0;min-width:150px;padding:6px;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:12px;background:var(--c-ffffff,#fff);box-shadow:0 6px 18px var(--c-10243f33,#10243f33)}
+.kartta-tasovalikko[hidden]{display:none}
+.kartta-tasovalikko button{display:block;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:8px;background:none;color:var(--ink,#17283d);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.kartta-tasovalikko button[aria-checked="true"]{background:var(--c-dfeafd,#dfeafd);color:var(--blue);font-weight:650}
+.kartta:not([data-tila="ready"]) .kartta-zoom,.kartta:not([data-tila="ready"]) .kartta-tasot{display:none}
+/* Lyhyt ilmoitus kartan päällä (esim. satelliittikuva ei latautunut → peruskartta). */
+.kartta-ilmoitus{position:absolute;top:10px;left:10px;right:64px;z-index:2;margin:0;padding:8px 12px;border-radius:12px;background:var(--c-17283dee,#17283dee);color:var(--c-ffffff,#fff);font-size:12px;line-height:1.4;box-shadow:0 2px 8px var(--c-10243f2e,#10243f2e)}
+.kartta-ilmoitus[hidden]{display:none}
+
+/* Lataus, ei verkkoa ja virhe. */
+.kartta-tila{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:20px 22px;text-align:center;background:var(--c-eef3f9,#eef3f9);color:var(--ink,#17283d);font-size:13px;line-height:1.45}
+.kartta-tila[hidden]{display:none}
+.kartta-tila p{margin:0;max-width:30ch}
+.kartta-tila .kartta-tila-otsikko{font-size:15px;font-weight:650}
+.kartta-tila .app-button{margin-top:10px;width:auto;min-width:160px}
+.kartta[data-tila="loading"] .kartta-tila-otsikko{animation:kartta-hehku 1.4s ease-in-out infinite}
+@keyframes kartta-hehku{50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.kartta[data-tila="loading"] .kartta-tila-otsikko{animation:none}}
+
+/* MapLibren lähde- ja mittakaavamerkintä: luettava koko (11 px) ja sävy myös tummalla kartalla. */
+.kartta .maplibregl-ctrl-bottom-left{display:flex;flex-direction:column-reverse;align-items:flex-start;max-width:calc(100% - 66px)}
+.kartta .maplibregl-ctrl-attrib{font-size:11px;line-height:1.4;color:#33475c;background:#ffffffd9}
+.kartta .maplibregl-ctrl-attrib a{color:#24394f}
+.kartta .maplibregl-ctrl-attrib.maplibregl-compact{min-height:24px}
+.kartta .maplibregl-ctrl-scale{font-size:11px;color:#24394f;border-color:#24394f;background:#ffffffbf}
+html.dark .device-glass .kartta-map{filter:invert(1) hue-rotate(180deg)}
+html.dark .device-glass .kartta .maplibregl-ctrl-attrib{color:#cfd9e5;background:#141c26d9}
+html.dark .device-glass .kartta .maplibregl-ctrl-attrib a{color:#e4ebf3}
+html.dark .device-glass .kartta .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-button{filter:invert(1)}
+html.dark .device-glass .kartta .maplibregl-ctrl-scale{color:#e4ebf3;border-color:#e4ebf3;background:#141c26bf}
+
+.kartta-huom{margin:0 2px 8px;font-size:12px;line-height:1.45;color:var(--c-5b6f84,#5b6f84)}
+
+/* Pitkä otsikko mahtuu ⋯-painikkeen viereen kapeassa puhelimessa. */
+@container(max-width:379px){.kartta-screen .ajot-otsikko{font-size:20px}}
+/* Ajopäiväkirja (vaihe 2a): vain tieto vahvistetusta GPS-yhteydestä; ajonäkymät tulevat vaiheissa 2e–2f. */
+.kartta-tyhja{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px;padding:22px 18px 18px;text-align:center;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:18px;background:var(--c-ffffff,#fff)}
+.kartta-tyhja h3{margin:4px 0 0;font-size:17px;line-height:1.25}
+.kartta-tyhja p{margin:0;font-size:13px;line-height:1.5;color:var(--c-4f5f72,#4f5f72);max-width:34ch}
+.kartta-tyhja .app-button{margin-top:8px}
+.kartta-tyhja-ikoni{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--c-dfeafd,#dfeafd);color:var(--blue)}
+
+@media print{.kartta-zoom,.kartta-tasot,.kartta-tila .app-button{display:none!important}}

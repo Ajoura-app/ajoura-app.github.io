@@ -320,3 +320,22 @@ html .tab-dock>.tab-bar.main-tabs.no-ai{grid-template-columns:1fr 1fr}
 /* 2.19: Raportit summary: the record counts under the fuel and service cards and Muut kulut under the total. */
 .rp-other{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .rp-other .rp-dot{flex:0 0 auto}
+
+/* 2.25 (GPS-suunnitelma, vaihe 2a): alavalikko Koti | Kartta | (Ajopäiväkirja) | Raportit | AI. Jokaisessa kohdassa
+   kuvake ja lyhyt teksti; avustaja on viimeinen kohta tavallisen kokoisena (2.15–2.24 korotettu pyöreä painike keskellä).
+   Ajopäiväkirja-teksti ei mahdu puhelimen leveydelle vähintään 11 px:n koossa, joten siellä se on "Ajot". */
+@media screen{
+html .tab-dock>.tab-bar.main-tabs.labeled{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:calc(100% - 24px);gap:2px;padding:4px;border-radius:999px;overflow:visible}
+#app-screen>.tab-dock:has(.main-tabs.labeled){padding-top:16px}
+html .tab-dock>.tab-bar.main-tabs.labeled a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:50px;padding:4px 2px;border-radius:22px}
+html .tab-dock>.tab-bar.main-tabs.labeled a svg{width:22px;height:22px;flex:0 0 auto}
+.main-tabs.labeled .tab-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;line-height:1.2;font-weight:600;letter-spacing:-.01em}
+.main-tabs.labeled .tl-long{display:none}
+.main-tabs.labeled .nav-assistant{display:flex;align-items:stretch;min-width:0}
+html .main-tabs.labeled .nav-assistant .secretary-mic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:auto;min-width:0;min-height:50px;margin:0;padding:4px 2px;border:0;border-radius:22px;background:none;box-shadow:none;color:var(--c-4f5f72,#4f5f72)}
+html .main-tabs.labeled .nav-assistant .secretary-mic .assistant-avatar{width:24px!important;height:24px!important;margin:0!important;flex:0 0 auto}
+html .main-tabs.labeled .nav-assistant .home-mic-badge{top:3px;right:calc(50% - 21px);bottom:auto;width:15px;height:15px;border-width:1.5px}
+html .main-tabs.labeled .nav-assistant .home-mic-badge svg{width:9px;height:9px}
+html .main-tabs.labeled .nav-assistant .home-voice-feedback{left:auto;right:0;bottom:calc(100% + 24px);transform:none}
+}
+@container(min-width:560px){.main-tabs.labeled .tl-long{display:inline}.main-tabs.labeled .tl-short{display:none}}

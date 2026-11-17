@@ -1,5 +1,6 @@
 """2.18 (Niklas): alavalikko Koti | avustaja | Raportit. Tankkaus- ja Huolto-välilehdet poistuivat, Valikko on
-Kodin ja Raporttien yläosan ⋯-painikkeen takana. Vanhat #fuel-linkit avaavat tankkauskirjan Raporttien alasivuna."""
+Kodin ja Raporttien yläosan ⋯-painikkeen takana. Vanhat #fuel-linkit avaavat tankkauskirjan Raporttien alasivuna.
+2.25: alavalikko Koti | Kartta | Raportit | avustaja (AI) (test_v225.py); Kartta on Kodin ja Raporttien välissä."""
 import pytest
 
 import tiedot
@@ -15,7 +16,7 @@ def test_alavalikko_ja_valittu_valilehti(browser, base, nakyma, valittu):
     s = avaa(browser, base, nakyma, autot=tiedot.talli(), kello=KELLO)
     try:
         p = s.page
-        assert p.locator('.tab-dock>.main-tabs').evaluate(LAPSET) == ['Koti', 'avustaja', 'Raportit']
+        assert p.locator('.tab-dock>.main-tabs').evaluate(LAPSET) == ['Koti', 'Kartta', 'Raportit', 'avustaja']  # 2.25
         assert p.locator('.main-tabs a[aria-label="Raportit"]').get_attribute('href') == '#reports'
         assert p.evaluate(VALITTU) == valittu
         # Kuvake: pohjaviiva, pumppu, letku, salama ja pylväät 24 × 24 -ruudussa.
@@ -53,7 +54,7 @@ def test_tyhja_talli_valikko_ja_raportit(browser, base):
     s = avaa(browser, base, "home", autot=[], kello=KELLO)
     try:
         p = s.page
-        assert p.locator('.tab-dock>.main-tabs').evaluate(LAPSET) == ['Koti', 'Raportit']
+        assert p.locator('.tab-dock>.main-tabs').evaluate(LAPSET) == ['Koti', 'Kartta', 'Raportit']  # 2.25
         p.locator('.screen-content a.top-menu').click()
         p.wait_for_function('location.hash==="#menu"')
         p.locator('.main-tabs a[aria-label="Raportit"]').click()
@@ -89,7 +90,7 @@ def test_pyyhkaisy_kodin_ja_raporttien_valilla(browser, base):
           const touch = new Touch({identifier: 1, target: sc, clientX: x, clientY: 300});
           sc.dispatchEvent(new TouchEvent(type, {touches: type === 'touchend' ? [] : [touch], changedTouches: [touch], bubbles: true}));};
           t('touchstart', 300); t('touchend', 100);}""")
-        p.wait_for_function('location.hash==="#reports"')
+        p.wait_for_function('location.hash==="#kartta"')  # 2.25: Kartta on Kodin ja Raporttien välissä
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

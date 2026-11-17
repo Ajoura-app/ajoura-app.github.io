@@ -145,10 +145,10 @@ def test_tiivis_alareuna_ei_peita_sisaltoa(browser, base, width, height, safe):
                                             {'insets': {'top': 47, 'bottom': safe}})
         dock = p.locator('.tab-dock').bounding_box()
         # 2.10: the same navigation as Tankkaus and Raportit (tablet scale 1.3 included) stays compact;
-        # 2.15: plus room for the raised assistant button in the middle.
+        # 2.15: plus room for the raised assistant button in the middle (2.25: the assistant is a normal tab).
         assert dock['height'] <= 84 + 26 + safe, dock
         controls = p.locator('.main-tabs a:visible')
-        assert controls.count() == 2  # 2.18: Koti ja Raportit
+        assert controls.count() == 3  # 2.25: Koti, Kartta ja Raportit
         boxes = [x.bounding_box() for x in controls.all()]
         for i, a in enumerate(boxes):
             assert min(a['width'], a['height']) >= 44, a

@@ -77,11 +77,12 @@
   // 2.15 (Niklas): the assistant is the larger button in the middle of the bottom navigation on every view (it used
   // to float and could be dragged). A tap works as before: speech entry when available, otherwise a short explanation
   // in a bubble above the button. No position is stored any more.
-  function widget(c) {
+  // 2.25: in the bottom navigation the button is the last tab and shows a short visible label (AI).
+  function widget(c,opts={}) {
     if(!c)return '';
     const available=window.AjouraAccess?.check('ai.receipt')?.ok;
     const speech=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
-    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span></button>`;
+    const mic=`<button type="button" class="secretary-mic" data-home-mic="${esc(c.id)}" ${available&&speech?`data-quickfuel="${esc(c.id)}" data-secretary-mode="speech"`:""} aria-label="${esc(t('Kirjaa puhumalla'))}">${window.AjouraAvatar.avatar()}<span class="home-mic-badge">${actionIcon('speech')}</span>${opts.label?`<span class="tab-label" aria-hidden="true">${esc(opts.label)}</span>`:''}</button>`;
     return `<span class="assistant-widget nav-assistant" data-assistant-widget>${mic}<span class="home-voice-feedback" role="status"${voiceNotice?'':' hidden'}>${esc(voiceNotice)}</span></span>`;
   }
   function mountWidget() {
