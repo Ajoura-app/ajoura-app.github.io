@@ -32,7 +32,8 @@ def test_kompakti_kortti_ja_alkuperaiset_hahmot(browser, base, character, ai, wi
         assert img.evaluate('(e)=>e.complete&&e.naturalWidth===512&&getComputedStyle(e).objectFit==="contain"&&getComputedStyle(e).transform==="none"')
         frame = p.locator('.assistant-widget [data-avatar]').bounding_box()
         actual = img.bounding_box()
-        assert frame['width'] >= 56  # 2.15: alavalikon keskinappi (alavalikon suurennus mukana)
+        assert frame['width'] >= 24  # 2.25: AI on alavalikon tavallinen kohta (2.15–2.24: keskinappi ≥ 56 px)
+        assert p.locator('.assistant-widget [data-home-mic]').bounding_box()['height'] >= 44
         assert abs(actual['width'] - frame['width']) <= 1 and abs(actual['height'] - frame['height']) <= 1
         # 2.14 (Niklas): no assistant label, name, greeting or note on the home screen.
         assert nykyinen_ajoneuvo(p).locator('.secretary-intro, [data-avatar-name], .secretary-message, .secretary-note').count() == 0

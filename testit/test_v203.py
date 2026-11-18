@@ -29,7 +29,8 @@ def test_approved_layout_and_values(browser,base,theme,width):
         assert all(value in costs for value in ['1 284,60','486,00','1 770,60','2026'])
         assert '900,00' not in costs
         assert nykyinen_ajoneuvo(p).locator('.secretary-actions>*').count()==3
-        assert p.locator('.secretary-mic .assistant-avatar').bounding_box()['width']>=56
+        assert p.locator('.secretary-mic .assistant-avatar').bounding_box()['width']>=24  # 2.25: AI alavalikon viimeisenä
+        assert p.locator('.secretary-mic').bounding_box()['height']>=44
         pic=nykyinen_ajoneuvo(p).locator('.secretary-hero-media img').bounding_box();plate=nykyinen_ajoneuvo(p).locator('.secretary-hero-meta').bounding_box()
         assert pic['y']<=plate['y']<pic['y']+pic['height']
         assert nykyinen_ajoneuvo(p).locator('.secretary-vehicle-details').get_attribute('open') is None

@@ -1,23 +1,24 @@
 """0.68: etusivun alavalikossa vain kuvakkeet; nimi säilyy ruudunlukijalle (aria-label).
-2.18: välilehdet ovat Koti, avustaja (keskellä) ja Raportit; Raportit-kuvake on pumppu + salama + pylväät."""
+2.18: välilehdet ovat Koti, avustaja (keskellä) ja Raportit; Raportit-kuvake on pumppu + salama + pylväät.
+2.25 (GPS-suunnitelma 2a): Koti | Kartta | Raportit | AI, kuvake ja lyhyt teksti; nimi edelleen aria-labelissa."""
 import pytest
 
 import tiedot
 from apu import KELLO, avaa, avaa_ajoneuvon_tiedot
 
-NIMET = {"fi": ["Koti", "Raportit"]}
+NIMET = {"fi": ["Koti", "Kartta", "Raportit"]}
 
 
 @pytest.mark.parametrize("kieli", ["fi"])  # 2.02: EN/SV pois käytöstä
-def test_valilehdissa_vain_kuvakkeet(browser, base, kieli):
+def test_valilehdissa_kuvake_ja_teksti(browser, base, kieli):
     s = avaa(browser, base, "home", autot=[tiedot.auto()], kieli=kieli, kello=KELLO)
     try:
         r = s.page.evaluate("""() => [...document.querySelectorAll('.main-tabs a')].map(a => ({
           teksti: a.textContent.trim(), nimi: a.getAttribute('aria-label'), kuva: a.querySelectorAll('svg').length,
           korkeus: a.getBoundingClientRect().height, polut: a.querySelectorAll('svg path').length}))""")
-        assert len(r) == 2 and all(x["teksti"] == "" and x["kuva"] == 1 and x["korkeus"] >= 40 for x in r), r
+        assert len(r) == 3 and all(x["teksti"] == x["nimi"] and x["kuva"] == 1 and x["korkeus"] >= 44 for x in r), r
         assert [x["nimi"] for x in r] == NIMET[kieli], r
-        assert r[1]["polut"] == 5, "Raportit-kuvakkeessa pitää olla pohja, pumppu, letku, salama ja pylväät"
+        assert r[2]["polut"] == 5, "Raportit-kuvakkeessa pitää olla pohja, pumppu, letku, salama ja pylväät"
         assert not s.virheet, s.virheet
     finally:
         s.sulje()
@@ -32,7 +33,7 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         r = s.page.evaluate("""() => {const n = document.querySelector('.main-tabs'), b = n.getBoundingClientRect(),
           g = document.querySelector('#app-screen').getBoundingClientRect(), k = document.querySelector('.vehicle-home-card').getBoundingClientRect(),
           cs = getComputedStyle(n), alav = g.bottom - b.bottom, a = getComputedStyle(n.querySelector('a[aria-current]')),
-          xs = [...n.querySelectorAll('a svg')].map(v => {const q = v.getBoundingClientRect(); return q.left + q.width / 2});
+          xs = [...n.children].map(v => {const q = v.getBoundingClientRect(); return q.left + q.width / 2});
           return {vasen: b.left - k.left, oikea: b.right - k.right, keski: (b.left + b.right) / 2 - (g.left + g.right) / 2,
                   py: parseFloat(cs.borderTopLeftRadius), alaväli: alav, h: b.height, korostus: a.backgroundColor,
                   valit: xs.slice(1).map((x, i) => x - xs[i]), kk: (b.left + b.right) / 2,
@@ -41,9 +42,9 @@ def test_alavalikko_kelluva_kapseli(browser, base, leveys):
         assert r["py"] >= r["h"] / 2 - 1 and r["korostus"] != "rgba(0, 0, 0, 0)", r
         assert r["alaväli"] <= 10, r  # 0.74: kapseli lähellä alareunaa (iPhonessa kotipalkin yläpuolella)
         assert r["korostus"] == "rgb(223, 234, 253)", r  # 0.109 (Niklas): valittu vaaleansiniseksi kortin painikkeiden tapaan (0.74–0.108 täysi sininen)
-        # 2.15/2.18: Koti ja Raportit symmetrisesti, isompi avustajapainike keskellä.
-        assert len(r["xs"]) == 2 and abs(r["avustaja"] - r["kk"]) <= 1.5, r
-        assert abs((r["kk"] - r["xs"][0]) - (r["xs"][1] - r["kk"])) <= 1.5, r
+        # 2.25: Koti, Kartta, Raportit ja avustaja (AI) tasavälein, avustaja viimeisenä.
+        assert len(r["xs"]) == 4 and abs(r["avustaja"] - r["xs"][3]) <= 1.5, r
+        assert max(r["valit"]) - min(r["valit"]) <= 1.5, r
         assert not s.virheet, s.virheet
     finally:
         s.sulje()

@@ -18,14 +18,15 @@ def test_kelluva_palkki_ja_kuvakepainikkeet(browser, base, theme, width):
         assert dock.evaluate('(e)=>getComputedStyle(e).backgroundImage') == 'none'
         assert dock.evaluate('(e)=>getComputedStyle(e).backgroundColor') == 'rgba(0, 0, 0, 0)'
         assert dock.locator('nav.main-tabs').count() == 1
-        assert dock.locator('.main-tabs a').count() == 2  # 2.18: Koti ja Raportit (avustaja keskellä)
+        assert dock.locator('.main-tabs a').count() == 3  # 2.25: Koti, Kartta ja Raportit (avustaja viimeisenä)
         for link in dock.locator('.main-tabs a').all():
             assert link.get_attribute('aria-label')
             assert link.evaluate('(e)=>getComputedStyle(e,"::after").content') == 'none'
             assert link.bounding_box()['height'] >= 44
         button = p.locator('.assistant-widget .secretary-mic')
-        # 2.15: the assistant is a round button in the middle of the navigation.
-        assert button.evaluate('(e)=>getComputedStyle(e).borderRadius') == '50%'
+        # 2.25: the assistant is the last item of the navigation (2.15–2.24 a round button in the middle).
+        assert button.evaluate('(e)=>e.closest(".main-tabs").lastElementChild.contains(e)')
+        assert button.bounding_box()['height'] >= 44
         assert p.locator('.assistant-widget .home-mic-label').count() == 0
         assert button.get_attribute('aria-label') == 'Kirjaa puhumalla'
         # 2.10: shortcuts are named icons in a plain row (see test_ajoneuvokortti.py for the full card).
