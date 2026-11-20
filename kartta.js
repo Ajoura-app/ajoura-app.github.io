@@ -52,6 +52,7 @@
   let lib = null, map = null, mapEl = null, mapTheme = '', run = 0, timer = 0;
   let state = 'idle', reason = '';
   let satErrors = 0, satOk = false, satTimer = 0, noteTimer = 0;
+  let ML = null, me = null, locating = false, locMove = false; // MapLibre-moduuli, oman sijainnin merkki ja haku käynnissä
   // sync.js (ladataan ennen tätä) lukee istunnon heti, joten uloskirjautuneelle välilehti ei välähdä näkyviin.
   const signedIn = () => { const S = window.AjouraSync; return !!(S && S.enabled && S.account && S.account()); };
   let gps = get(GPS_KEY) === '1' && signedIn(), checkedAt = 0, checking = null;
@@ -86,7 +87,7 @@
   function drop() {
     run++; clearTimeout(timer); clearTimeout(satTimer);
     if (map) { try { map.remove(); } catch (e) { /* jo poistettu */ } }
-    map = null; mapEl = null; mapTheme = '';
+    map = null; mapEl = null; mapTheme = ''; me = null;
     if (state !== 'offline' && state !== 'error') state = 'idle';
   }
   function start() {
@@ -108,7 +109,7 @@
           locale: LOCALE, fadeDuration: 0
         });
       } catch (e) { map = null; clearTimeout(timer); return show('error', 'webgl'); }
-      mapEl = el; mapTheme = theme;
+      mapEl = el; mapTheme = theme; ML = m; me = null;
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
       map.addControl(new m.AttributionControl({ compact: true }), 'bottom-left');
@@ -121,7 +122,8 @@
         if (e && e.sourceId === SAT_LAYER) { satFailed(e); return; }
         if (id === run && state === 'loading' && !(e && (e.sourceId || e.tile))) { drop(); show('error', 'tiles'); }
       });
-      map.on('moveend', saveView);
+      // Oman sijainnin keskitystä ei tallenneta kartan viimeisimmäksi näkymäksi; käyttäjän omat siirrot tallennetaan.
+      map.on('moveend', () => { if (locMove) { locMove = false; return; } saveView(); });
     }, () => { if (id !== run) return; clearTimeout(timer); show('error', 'lib'); });
   }
   // Tila näkyy kartan päällä: lataus, ei verkkoa tai virhe. Kartta ja sen painikkeet näkyvät vain valmiina.
@@ -180,18 +182,45 @@
     clearTimeout(noteTimer); noteTimer = setTimeout(() => { n.hidden = true; }, 6000);
   }
 
+  // ---- Oma sijainti (2.27) ----
+  // Vain painettaessa: selain kysyy luvan, ja sijaintia käytetään vain tässä laitteessa kartan keskittämiseen ja
+  // merkkiin. Sitä ei lähetetä AJOURAlle eikä tallenneta; merkki katoaa, kun Kartta suljetaan. Karttapalvelu saa
+  // karttakuvien pyynnöistä tiedon katsotusta alueesta kuten muutenkin (tietosuojaseloste, kohta Kartta).
+  function locate(btn) {
+    if (locating || !map || !navigator.geolocation) return;
+    locating = true; btn.setAttribute('aria-busy', 'true'); btn.classList.add('haetaan');
+    const id = run, done = () => { locating = false; btn.removeAttribute('aria-busy'); btn.classList.remove('haetaan'); };
+    navigator.geolocation.getCurrentPosition(pos => {
+      done();
+      if (id !== run || !map) return;
+      const c = [pos.coords.longitude, pos.coords.latitude];
+      if (!c.every(Number.isFinite)) return note('Sijaintia ei saatu. Yritä uudelleen.');
+      if (!me) { const dot = document.createElement('div'); dot.className = 'kartta-oma'; dot.setAttribute('aria-hidden', 'true'); me = new ML.Marker({ element: dot }); }
+      me.setLngLat(c).addTo(map);
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches, to = { center: c, zoom: Math.max(map.getZoom(), 14) };
+      locMove = true;
+      if (still) map.jumpTo(to); else map.easeTo({ ...to, duration: 800 });
+      const say = document.getElementById('demo-announcement'); if (say) say.textContent = 'Kartta keskitettiin sijaintiisi.';
+    }, err => {
+      done();
+      if (id !== run) return;
+      note(err && err.code === 1 ? 'Sijaintilupa on estetty. Voit sallia sen selaimen tai puhelimen asetuksista.' : 'Sijaintia ei saatu. Yritä uudelleen.');
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+  }
+
   // ---- Näkymät ----
   const layerButton = () => LAYERS.length > 1 ? `<div class="kartta-tasot"><button class="kartta-nappi" type="button" data-kartta-tasot aria-haspopup="menu" aria-expanded="false" aria-controls="kartta-tasovalikko" aria-label="Karttataso">${svg('<path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/>')}</button><div class="kartta-tasovalikko" id="kartta-tasovalikko" role="menu" hidden>${LAYERS.map(l => `<button type="button" role="menuitemradio" aria-checked="${l.id === layer() ? 'true' : 'false'}" data-kartta-taso="${esc(l.id)}">${esc(l.name)}</button>`).join('')}</div></div>` : '';
   const layer = () => { const v = get(LAYER_KEY); return LAYERS.some(l => l.id === v) ? v : LAYERS[0].id; };
+  const locateButton = () => navigator.geolocation ? `<button class="kartta-nappi" type="button" data-kartta-sijainti aria-label="Näytä oma sijainti">${svg('<circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>')}</button>` : '';
   function mapView() {
     return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Kartta</h2></div>${App().ui.topMenu}</div>
       <section class="kartta" data-tila="${esc(state)}" aria-label="Kartta">
         <div class="kartta-map"></div>
-        ${layerButton()}
+        <div class="kartta-ylanapit">${layerButton()}${locateButton()}</div>
         <div class="kartta-zoom" role="group" aria-label="Kartan zoomaus"><button class="kartta-nappi" type="button" data-kartta-zoom="in" aria-label="Lähennä">${svg('<path d="M12 5v14M5 12h14"/>')}</button><button class="kartta-nappi" type="button" data-kartta-zoom="out" aria-label="Loitonna">${svg('<path d="M5 12h14"/>')}</button></div>
         <div class="kartta-tila" role="status" aria-live="polite"></div>
       </section>
-      <p class="kartta-huom">Tulossa: oma sijainti sekä lähimmät huoltoasemat, korjaamot ja latauspisteet.</p>`;
+      <p class="kartta-huom">Tulossa: lähimmät huoltoasemat, korjaamot ja latauspisteet.</p>`;
   }
   function diaryView() {
     return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading ajot-otsikko">Ajopäiväkirja</h2></div>${App().ui.topMenu}</div>
@@ -255,6 +284,8 @@
     const z = t.closest('[data-kartta-zoom]');
     if (z) { if (map) z.dataset.karttaZoom === 'in' ? map.zoomIn() : map.zoomOut(); return; }
     if (t.closest('[data-kartta-uudelleen]')) { start(); return; }
+    const me_ = t.closest('[data-kartta-sijainti]');
+    if (me_) { locate(me_); return; }
     const b = t.closest('[data-kartta-tasot]'), menu = document.getElementById('kartta-tasovalikko');
     if (b && menu) { menu.hidden = !menu.hidden; b.setAttribute('aria-expanded', String(!menu.hidden)); return; }
     const l = t.closest('[data-kartta-taso]');

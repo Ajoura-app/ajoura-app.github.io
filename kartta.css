@@ -23,12 +23,18 @@
 .kartta-zoom .kartta-nappi{box-shadow:none}
 .kartta-zoom .kartta-nappi:first-child{border-radius:12px 12px 0 0;border-bottom:1px solid var(--c-d3dfee,#d3dfee)}
 .kartta-zoom .kartta-nappi:last-child{border-radius:0 0 12px 12px}
-.kartta-tasot{position:absolute;top:10px;right:10px;z-index:2}
-.kartta-tasovalikko{position:absolute;top:50px;right:0;min-width:150px;padding:6px;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:12px;background:var(--c-ffffff,#fff);box-shadow:0 6px 18px var(--c-10243f33,#10243f33)}
+.kartta-ylanapit{position:absolute;top:10px;right:10px;z-index:2;display:flex;flex-direction:column;gap:8px}
+.kartta-tasot{position:relative}
+.kartta-tasovalikko{position:absolute;z-index:3;top:50px;right:0;min-width:150px;padding:6px;border:1px solid var(--c-d3dfee,#d3dfee);border-radius:12px;background:var(--c-ffffff,#fff);box-shadow:0 6px 18px var(--c-10243f33,#10243f33)}
 .kartta-tasovalikko[hidden]{display:none}
 .kartta-tasovalikko button{display:block;width:100%;min-height:44px;padding:0 12px;border:0;border-radius:8px;background:none;color:var(--ink,#17283d);font:inherit;font-size:14px;text-align:left;cursor:pointer}
 .kartta-tasovalikko button[aria-checked="true"]{background:var(--c-dfeafd,#dfeafd);color:var(--blue);font-weight:650}
-.kartta:not([data-tila="ready"]) .kartta-zoom,.kartta:not([data-tila="ready"]) .kartta-tasot{display:none}
+.kartta:not([data-tila="ready"]) .kartta-zoom,.kartta:not([data-tila="ready"]) .kartta-ylanapit{display:none}
+/* Oma sijainti (2.27): haun aikana painike sykkii; merkki on kartan sisällä, joten sen värit ovat todelliset myös
+   tummassa tilassa (kartta käännetään takaisin). */
+.kartta-nappi.haetaan svg{animation:kartta-hehku 1s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.kartta-nappi.haetaan svg{animation:none}}
+.kartta-oma{width:18px;height:18px;border:3px solid #ffffff;border-radius:50%;background:#1769f4;box-shadow:0 0 0 6px #1769f440,0 1px 4px #10243f66;box-sizing:border-box}
 /* Lyhyt ilmoitus kartan päällä (esim. satelliittikuva ei latautunut → peruskartta). */
 .kartta-ilmoitus{position:absolute;top:10px;left:10px;right:64px;z-index:2;margin:0;padding:8px 12px;border-radius:12px;background:var(--c-17283dee,#17283dee);color:var(--c-ffffff,#fff);font-size:12px;line-height:1.4;box-shadow:0 2px 8px var(--c-10243f2e,#10243f2e)}
 .kartta-ilmoitus[hidden]{display:none}
@@ -66,4 +72,4 @@ html.dark .device-glass .kartta .maplibregl-ctrl-scale{color:#e4ebf3;border-colo
 .kartta-tyhja .app-button{margin-top:8px}
 .kartta-tyhja-ikoni{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--c-dfeafd,#dfeafd);color:var(--blue)}
 
-@media print{.kartta-zoom,.kartta-tasot,.kartta-tila .app-button{display:none!important}}
+@media print{.kartta-zoom,.kartta-ylanapit,.kartta-tila .app-button{display:none!important}}
