@@ -6,15 +6,27 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.26
+## Julkaistu versio 2.27
+
+20.11.2026, GPS-suunnitelman vaihe 2b (osa 1). Niklas hyväksyi selosteen tekstin 20.11.2026.
+
+- **2.27** Kartalla **oma sijainti vain pyydettäessä**: sijaintipainike kartan oikeassa yläkulmassa. Painettaessa selain kysyy luvan, kartta keskittyy sijaintiin (vähintään lähitasolle) ja näyttää sinisen merkin. Sijaintia käytetään vain laitteessa: sitä ei lähetetä AJOURAlle eikä tallenneta, keskitys ei muuta kartan muistamaa näkymää, ja merkki katoaa, kun Kartta suljetaan. Estetty lupa ja epäonnistunut haku antavat lyhyen ilmoituksen kartan päällä. Tietosuojaselosteen Kartta-kohtaan kappale Oma sijainti. "Tulossa"-teksti päivitetty (huoltoasemat, korjaamot, latauspisteet).
+
+Esri-satelliitti ei ole vielä käytössä: Esrin ohjeen mukaan Static Basemap Tiles -palvelussa on vain satelliittikuvan nimet (imagery/labels), ei itse kuvaa; World Imagery tulee Basemap Styles -palvelusta, joka vaatii avaimeen Basemaps-oikeuden (premium:user:basemaps). Avain ja sen oikeus testataan ennen satelliitin käyttöönottoa. Tallennettu tietomuoto, varmuuskopio, synkronointi ja Supabase ennallaan. Välimuisti ak-151 / ajoura-pwa-201.
+
+Varmennus: koko perussarja **736 läpäistyä / 1 epäonnistunut / 256 ohitettua**. Epäonnistunut test_v202 (autokuvan käsittely, ei liity karttaan) kaatuu satunnaisesti vain koko sarjan aikana: erikseen ajettuna test_v202.py meni läpi 6/6 sekä tällä versiolla että versiolla 2.24; korjaus omana tehtävänään. Uusi testi test_v227.py (5) kaatui versiota 2.26 vastaan (4/5), ja tarkoitukselliset rikkomukset (keskitys tallennetaan, sijainti kysytään heti, ei virheilmoitusta, seloste puuttuu) jäivät kiinni; tumman tilan kääntö on katettu test_v225:ssä.
+
+Fyysisellä iPhonella tarkistettava: sijaintipainike kysyy luvan kotivalikon sovelluksessa, kartta keskittyy ja merkki näkyy, kielletty lupa antaa ilmoituksen (Asetukset → Tietosuoja → Sijaintipalvelut), merkki tummassa tilassa.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.26
 
 18.11.2026, Niklaksen hyväksymä teksti ennen Kartan julkaisua.
 
 - **2.26** Tietosuojaselosteeseen kohta **Kartta**: Kartta-välilehti hakee karttakuvat OpenFreeMap-palvelusta, joka näkee laitteen IP-osoitteen ja katsotun alueen; AJOURA ei lähetä palveluun tallin tietoja eikä sijaintia; kartta-aineiston lähteet (© OpenStreetMap-tekijät, ODbL, ja © OpenMapTiles). OpenFreeMap myös kohtiin "Milloin tietoja lähtee laitteeltasi" ja "Palvelut, joiden kautta sivu toimii". Päivityspäivä 18.11.2026. Sovelluksen toiminta ennallaan. Välimuisti ak-150 / ajoura-pwa-200.
 
 Varmennus: koko perussarja **732 läpäistyä / 0 epäonnistunutta / 256 ohitettua** (mukana 2.25). Uusi testi test_v226.py kaatui versiota 2.25 vastaan; se vartioi myös vaihetta 2b (kun Esri-avain lisätään, selosteen pitää mainita Esri).
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.25
 
@@ -327,4 +339,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.23 | 13.11.2026 | `claude/gallant-keller-gmurq6` → main | Ajoneuvokohtainen öljynvaihtoväli (ajoneuvon ⋯), oletus 15 000 km / 12 kk; uusi valinnainen kenttä oil. Välimuisti ak-147 / ajoura-pwa-197. |
 | 2.24 | 16.11.2026 | `claude/focused-pasteur-ksqg0y` → main | Tankkaukseen Älä huomioi kustannuksissa (joku muu maksoi): summa näkyy, mutta ei kuluissa; uusi valinnainen kenttä nocost. Välimuisti ak-148 / ajoura-pwa-198. |
 | 2.25 | 17.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-suunnitelman vaihe 2a: Kartta-välilehti kaikille (MapLibre 6.18.0, OpenFreeMap vaalea ja tumma), alavalikko Koti, Kartta, (Ajopäiväkirja GPS-oikeudella), Raportit ja AI; karttatasopainike Esri-satelliittia varten automaattisella paluulla peruskarttaan. Välimuisti ak-149 / ajoura-pwa-199. |
-| 2.26 | 18.11.2026 | `claude/keen-noether-a7w1xe` → main | Tietosuojaselosteeseen Kartta-kohta (OpenFreeMap, lähteet). Välimuisti ak-150 / ajoura-pwa-200. Tämä on nyt julkaistu versio. |
+| 2.26 | 18.11.2026 | `claude/keen-noether-a7w1xe` → main | Tietosuojaselosteeseen Kartta-kohta (OpenFreeMap, lähteet). Välimuisti ak-150 / ajoura-pwa-200. |
+| 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. Tämä on nyt julkaistu versio. |
