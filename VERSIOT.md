@@ -6,7 +6,21 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.27
+## Julkaistu versio 2.28
+
+20.11.2026, GPS-suunnitelman vaihe 2b (osa 2). Niklas loi Esri-avaimen ja hyväksyi selosteen tekstin 20.11.2026.
+
+- **2.28** Kartan tasovalikkoon **Satelliitti** (Esri World Imagery). Tasopainike oikeassa yläkulmassa: Peruskartta (oletus) tai Satelliitti; valinta säilyy laitteessa. Satelliittikuva piirretään peruskartan alueiden ja viivojen päälle, ja nimet ja symbolit jäävät näkyviin (myös tummassa tilassa). Lähdemerkintä "Powered by Esri | Source: Esri, Vantor, GeoEye, Earthstar Geographics, …" näkyy vain satelliitin ollessa valittuna. Jos kuvat eivät lataudu, kartta palaa peruskarttaan ja näyttää ilmoituksen (2.25). Esrille ei lähetetä mitään ennen valintaa. Tietosuojaselosteeseen kappale Satelliittikuva ja Esri palvelulistaan.
+
+Esri-avain (julkinen selainavain, Niklaksen hyväksymä poikkeus 17.11.2026) on kartta.js:ssä: oikeutena vain taustakarttatyylit, rajaus https://ajoura-app.github.io, vanhenee 20.11.2027, käytön mukainen laskutus pois. Testattu 20.11.2026: tyylipalvelu noudattaa osoiterajausta, mutta kuvapalvelu (ibasemaps-api) ei tarkista sitä, joten avainta voi käyttää muualla; suojana on laskutuksen esto (kiintiön täyttyessä palvelu keskeytyy, ei laskua). Osoite, tiilikoko (256 px) ja lähdemerkintä Esrin arcgis/imagery-tyylistä; Static Basemap Tiles -palvelussa satelliittikuvaa ei ole. Ennen julkaisua korjattu: Esrin lähdemerkintä jäi näkyviin peruskarttaan palattaessa (testi), ja tummassa tilassa rakennukset ja tiet peittivät satelliittikuvan (kuvakaappaus). Välimuisti ak-152 / ajoura-pwa-202.
+
+Varmennus: koko perussarja **741 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Uusi testi kaatui versiota 2.27 vastaan. Uusi testi test_v228.py (4); 2.25:n satelliittitestit päivitetty oikeaan kuvapalveluun; test_v226:n vartija vaati Esrin mainitsemisen selosteessa ennen julkaisua.
+
+Fyysisellä iPhonella tarkistettava: tasopainike ja valikko, satelliittikuva ja nimet vaaleassa ja tummassa tilassa, paluu peruskarttaan, lähdemerkinnän i-painike.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.27
 
 20.11.2026, GPS-suunnitelman vaihe 2b (osa 1). Niklas hyväksyi selosteen tekstin 20.11.2026.
 
@@ -17,8 +31,6 @@ Esri-satelliitti ei ole vielä käytössä: Esrin ohjeen mukaan Static Basemap T
 Varmennus: koko perussarja **736 läpäistyä / 1 epäonnistunut / 256 ohitettua**. Epäonnistunut test_v202 (autokuvan käsittely, ei liity karttaan) kaatuu satunnaisesti vain koko sarjan aikana: erikseen ajettuna test_v202.py meni läpi 6/6 sekä tällä versiolla että versiolla 2.24; korjaus omana tehtävänään. Uusi testi test_v227.py (5) kaatui versiota 2.26 vastaan (4/5), ja tarkoitukselliset rikkomukset (keskitys tallennetaan, sijainti kysytään heti, ei virheilmoitusta, seloste puuttuu) jäivät kiinni; tumman tilan kääntö on katettu test_v225:ssä.
 
 Fyysisellä iPhonella tarkistettava: sijaintipainike kysyy luvan kotivalikon sovelluksessa, kartta keskittyy ja merkki näkyy, kielletty lupa antaa ilmoituksen (Asetukset → Tietosuoja → Sijaintipalvelut), merkki tummassa tilassa.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.26
 
@@ -340,4 +352,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.24 | 16.11.2026 | `claude/focused-pasteur-ksqg0y` → main | Tankkaukseen Älä huomioi kustannuksissa (joku muu maksoi): summa näkyy, mutta ei kuluissa; uusi valinnainen kenttä nocost. Välimuisti ak-148 / ajoura-pwa-198. |
 | 2.25 | 17.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-suunnitelman vaihe 2a: Kartta-välilehti kaikille (MapLibre 6.18.0, OpenFreeMap vaalea ja tumma), alavalikko Koti, Kartta, (Ajopäiväkirja GPS-oikeudella), Raportit ja AI; karttatasopainike Esri-satelliittia varten automaattisella paluulla peruskarttaan. Välimuisti ak-149 / ajoura-pwa-199. |
 | 2.26 | 18.11.2026 | `claude/keen-noether-a7w1xe` → main | Tietosuojaselosteeseen Kartta-kohta (OpenFreeMap, lähteet). Välimuisti ak-150 / ajoura-pwa-200. |
-| 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. Tämä on nyt julkaistu versio. |
+| 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. |
+| 2.28 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartan tasovalikkoon Esri-satelliitti (oletus pois, paluu peruskarttaan jos kuvat eivät lataudu); selosteeseen Esri. Välimuisti ak-152 / ajoura-pwa-202. Tämä on nyt julkaistu versio. |
