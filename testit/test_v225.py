@@ -60,6 +60,8 @@ def test_kartta_latautuu_vasta_kartassa(browser, base):
     s = avaa(browser, base, "home", autot=tiedot.talli())
     kirjasto = []
     s.page.on("request", lambda r: "maplibre" in r.url and kirjasto.append(r.url))
+    esri = []
+    s.page.on("request", lambda r: "arcgis" in r.url and esri.append(r.url))
     try:
         s.page.goto(base + "/app.html#reports")
         s.page.wait_for_timeout(500)
@@ -72,8 +74,11 @@ def test_kartta_latautuu_vasta_kartassa(browser, base):
         assert s.page.locator('.main-tabs a[aria-label="Kartta"]').get_attribute("aria-current") == "page"
         assert s.page.locator(".kartta-map canvas").count() == 1
         assert s.page.locator(".kartta-tila").is_hidden()
-        # 2a: ilman Esri-avainta tasopainiketta ei näytetä (ei näennäispainikkeita).
-        assert s.page.locator(".kartta-tasot").count() == 0
+        # 2.28: tasopainike näkyy (Esri-avain on käytössä), mutta oletuksena peruskartta eikä yhtään pyyntöä Esrille.
+        assert s.page.locator("[data-kartta-tasot]").is_visible()
+        assert s.page.evaluate("AjouraKartta.layer()") == "peruskartta"
+        s.page.wait_for_timeout(500)
+        assert esri == [], "Esrille lähti pyyntö ennen satelliitin valintaa"
         # Lähdemerkintä ja zoomaus toimivat.
         z = s.page.evaluate("()=>document.querySelector('.kartta-map').querySelector('canvas')&&1")
         assert z == 1
@@ -285,18 +290,11 @@ def test_offline_osa_ja_kirjasto():
 
 
 def satelliitti(s, base, vastaus):
-    """Kartta keksityllä Esri-avaimella: kartta.js:n tyhjä avain korvataan vain tässä selaimessa. vastaus(route)."""
-    def kartta_js(route):
-        r = route.fetch()
-        body = r.text()
-        assert "const ESRI_KEY = '';" in body
-        route.fulfill(response=r, body=body.replace("const ESRI_KEY = '';", "const ESRI_KEY = 'keksitty-avain';"))
+    """Kartta keksityllä Esrin kuvapalvelulla (2.28: oikea avain kartta.js:ssä). vastaus(route)."""
     pyynnot = []
-    s.page.route(base + "/kartta.js*", kartta_js)
-    s.page.route("https://static-map-tiles-api.arcgis.com/**", lambda route: (pyynnot.append(route.request.url), vastaus(route)))
+    s.page.route("https://ibasemaps-api.arcgis.com/**", lambda route: (pyynnot.append(route.request.url), vastaus(route)))
     tyyli(s)
     s.page.goto(base + "/app.html#kartta")
-    s.page.reload()  # pelkkä #-osoitteen vaihto ei lataa skriptejä uudelleen
     odota_tila(s, "ready")
     return pyynnot
 
@@ -327,7 +325,9 @@ def test_satelliitti_vaihtuu_peruskarttaan_jos_ei_lataudu(browser, base):
         ilmoitus = s.page.locator(".kartta-ilmoitus")
         ilmoitus.wait_for(state="visible", timeout=8000)
         assert ilmoitus.inner_text() == "Satelliittikuva ei latautunut. Näytetään peruskartta."
-        assert pyynnot and "token=keksitty-avain" in pyynnot[0]
+        avain = re.search(r"const ESRI_KEY = '([^']+)';", (JUURI / "kartta.js").read_text(encoding="utf-8")).group(1)
+        assert pyynnot and pyynnot[0].startswith("https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/")
+        assert pyynnot[0].endswith("?token=" + avain)
         assert s.page.evaluate("AjouraKartta.layer()") == "peruskartta"
         assert s.page.evaluate("localStorage.getItem('ajoura-kartta-taso')") is None
         s.page.locator("[data-kartta-tasot]").click()

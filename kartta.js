@@ -16,14 +16,17 @@
   // Varalla 5.24.1 (UMD-skripti), jos ES-moduuli ei toimi iPhonen kotivalikon sovelluksessa (vendor/…/README.md).
   const LIB = 'vendor/maplibre-gl-6.18.0/';
   const STYLES = { light: 'https://tiles.openfreemap.org/styles/liberty', dark: 'https://tiles.openfreemap.org/styles/dark' };
-  // Satelliittitaso: Esri World Imagery (Niklas 17.11.2026). Julkinen selainavain, rajattu osoitteeseen
-  // ajoura-app.github.io, vain staattiset taustakarttatiilet, ilman käytön mukaista laskutusta (kiintiön täyttyessä
-  // Esri keskeyttää palvelun eikä laskuta). Avain lisätään vaiheessa 2b; tyhjänä satelliittitasoa eikä tasopainiketta
-  // näytetä. Satelliitti on oletuksena pois: Esri saa IP-osoitteen ja katsotun alueen vain, kun käyttäjä valitsee sen.
-  // Tiiliosoite, tiilikoko ja lähdemerkintä tarkistetaan Esrin ohjeesta oikealla avaimella vaiheessa 2b.
-  const ESRI_KEY = '';
+  // Satelliittitaso: Esri World Imagery (Niklas 17.11. ja 20.11.2026). Julkinen selainavain (kuten Supabasen
+  // publishable-avain sync.js:ssä; Niklas hyväksyi poikkeuksen "ei avaimia repoon" -sääntöön 17.11.2026): oikeutena vain
+  // taustakarttatyylit, rajaus osoitteeseen https://ajoura-app.github.io, vanhenee 20.11.2027, käytön mukainen laskutus
+  // pois päältä (kiintiön täyttyessä Esri keskeyttää palvelun eikä laskuta; silloin kartta palaa peruskarttaan).
+  // Huom (testattu 20.11.2026): kuvapalvelu ibasemaps-api ei tarkista osoiterajausta, joten avaimen voi käyttää muualla;
+  // suojana on vain laskutuksen esto. Satelliitti on oletuksena pois: Esri saa IP-osoitteen ja katsotun alueen vain,
+  // kun käyttäjä valitsee sen. Osoite, tiilikoko ja lähdemerkintä Esrin arcgis/imagery-tyylistä (Basemap Styles v2).
+  const ESRI_KEY = 'AAPTa4iIZcx07cs0eWTsMzflaMg..rwE_CLXDP75SXYruFZesMgEsdQ1dgx3A5Ltg6FhGNHgVyzbdS_xDJ5mVepltAYz9-OUi9-jfukiHdnJCu96jZhYPG0ylbIXVA_tTQZovtCiGY_xzDtW1gU0s7_BLCmPC1ARhObgMwoDuZUA_uvmP50KQ5GWEB4H5fKnjiUvDi6GTezALoIibMQ13apkPvzhJeHNpiB1mvTPxXJVFM-1Nnp7udQNT4zo2QobJPA5QQthnru8.AT1_9SpNYgKs';
   const SAT = 'satelliitti', SAT_LAYER = 'ajoura-satelliitti';
-  const SAT_TILES = 'https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/imagery/static/tile/{z}/{y}/{x}?token=';
+  const SAT_TILES = 'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=';
+  const SAT_ATTRIBUTION = 'Powered by <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a> | Source: Esri, Vantor, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community';
   const SAT_LIMIT = 12000; // ms: jos yhtään satelliittitiiltä ei saada tässä ajassa, palataan peruskarttaan
   // Karttatasot; tasopainike näkyy, kun tasoja on enemmän kuin yksi.
   const LAYERS = [{ id: 'peruskartta', name: 'Peruskartta' }, ...(ESRI_KEY ? [{ id: SAT, name: 'Satelliitti' }] : [])];
@@ -52,7 +55,8 @@
   let lib = null, map = null, mapEl = null, mapTheme = '', run = 0, timer = 0;
   let state = 'idle', reason = '';
   let satErrors = 0, satOk = false, satTimer = 0, noteTimer = 0;
-  let ML = null, me = null, locating = false, locMove = false; // MapLibre-moduuli, oman sijainnin merkki ja haku käynnissä
+  let ML = null, me = null, locating = false, locMove = false;
+  let corner = []; // lähdemerkintä ja mittakaava (addCorner) // MapLibre-moduuli, oman sijainnin merkki ja haku käynnissä
   // sync.js (ladataan ennen tätä) lukee istunnon heti, joten uloskirjautuneelle välilehti ei välähdä näkyviin.
   const signedIn = () => { const S = window.AjouraSync; return !!(S && S.enabled && S.account && S.account()); };
   let gps = get(GPS_KEY) === '1' && signedIn(), checkedAt = 0, checking = null;
@@ -87,7 +91,7 @@
   function drop() {
     run++; clearTimeout(timer); clearTimeout(satTimer);
     if (map) { try { map.remove(); } catch (e) { /* jo poistettu */ } }
-    map = null; mapEl = null; mapTheme = ''; me = null;
+    map = null; mapEl = null; mapTheme = ''; me = null; corner = [];
     if (state !== 'offline' && state !== 'error') state = 'idle';
   }
   function start() {
@@ -112,8 +116,7 @@
       mapEl = el; mapTheme = theme; ML = m; me = null;
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
-      map.addControl(new m.AttributionControl({ compact: true }), 'bottom-left');
-      map.addControl(new m.ScaleControl({ unit: 'metric', maxWidth: 88 }), 'bottom-left');
+      addCorner();
       map.once('load', () => { if (id !== run) return; clearTimeout(timer); show('ready'); });
       map.on('style.load', applyLayer); // myös tumman ja vaalean tyylin vaihdon jälkeen
       map.on('data', e => { if (e && e.sourceId === SAT_LAYER && e.tile) satOk = true; });
@@ -142,21 +145,32 @@
     s.hidden = state === 'ready';
   }
 
+  // Lähdemerkintä ja mittakaava vasempaan alakulmaan (samassa järjestyksessä myös uudelleen luotaessa).
+  function addCorner() {
+    corner.forEach(c => { try { map.removeControl(c); } catch (e) { /* jo poistettu */ } });
+    corner = [new ML.AttributionControl({ compact: true }), new ML.ScaleControl({ unit: 'metric', maxWidth: 88 })];
+    corner.forEach(c => map.addControl(c, 'bottom-left'));
+  }
+
   // ---- Karttatasot ----
-  // Satelliittikuva piirretään peruskartan päälle mutta sen nimien ja teiden tunnusten alle.
+  // Satelliittikuva piirretään peruskartan päälle mutta sen nimien ja symbolien alle.
   function applyLayer() {
     if (!map || !map.getStyle()) return;
     const want = layer() === SAT, has = !!map.getLayer(SAT_LAYER);
     if (want && !has) {
-      if (!map.getSource(SAT_LAYER)) map.addSource(SAT_LAYER, { type: 'raster', tiles: [SAT_TILES + encodeURIComponent(ESRI_KEY)], tileSize: 256, maxzoom: 19, attribution: 'Powered by Esri' });
-      const labels = (map.getStyle().layers || []).find(l => l.type === 'symbol');
-      map.addLayer({ id: SAT_LAYER, type: 'raster', source: SAT_LAYER }, labels ? labels.id : undefined);
+      if (!map.getSource(SAT_LAYER)) map.addSource(SAT_LAYER, { type: 'raster', tiles: [SAT_TILES + encodeURIComponent(ESRI_KEY)], tileSize: 256, maxzoom: 19, attribution: SAT_ATTRIBUTION });
+      // Kaikkien alueiden ja viivojen (myös tumman tyylin rakennukset ja tiet) päälle, nimien ja symbolien alle.
+      const layers = map.getStyle().layers || [];
+      let last = -1; layers.forEach((l, i) => { if (l.type !== 'symbol' && l.id !== SAT_LAYER) last = i; });
+      const above = layers[last + 1];
+      map.addLayer({ id: SAT_LAYER, type: 'raster', source: SAT_LAYER }, above ? above.id : undefined);
       satErrors = 0; satOk = false; clearTimeout(satTimer);
       const id = run;
       satTimer = setTimeout(() => { if (id === run && !satOk && layer() === SAT) satFailed(null, true); }, SAT_LIMIT);
     } else if (!want && has) {
       map.removeLayer(SAT_LAYER);
       if (map.getSource(SAT_LAYER)) map.removeSource(SAT_LAYER);
+      addCorner(); // MapLibre ei poista poistetun lähteen merkintää itse
       clearTimeout(satTimer);
     }
     document.querySelectorAll('[data-kartta-taso]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.karttaTaso === layer())));
