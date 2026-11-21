@@ -61,7 +61,6 @@ html.dark .device-glass .kartta .maplibregl-ctrl-attrib a{color:#e4ebf3}
 html.dark .device-glass .kartta .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-button{filter:invert(1)}
 html.dark .device-glass .kartta .maplibregl-ctrl-scale{color:#e4ebf3;border-color:#e4ebf3;background:#141c26bf}
 
-.kartta-huom{margin:0 2px 8px;font-size:12px;line-height:1.45;color:var(--c-5b6f84,#5b6f84)}
 
 /* Pitkä otsikko mahtuu ⋯-painikkeen viereen kapeassa puhelimessa. */
 @container(max-width:379px){.kartta-screen .ajot-otsikko{font-size:20px}}
@@ -73,3 +72,19 @@ html.dark .device-glass .kartta .maplibregl-ctrl-scale{color:#e4ebf3;border-colo
 .kartta-tyhja-ikoni{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:var(--c-dfeafd,#dfeafd);color:var(--blue)}
 
 @media print{.kartta-zoom,.kartta-ylanapit,.kartta-tila .app-button{display:none!important}}
+
+/* 2.30 (Niklas): kartta koko näkymälle. Kartta täyttää sovelluksen näkymän; alavalikko, ⋯-valikko ja oikean yläkulman
+   painikkeet kelluvat sen päällä. Alareunan säätimet nostetaan alavalikon yläpuolelle (--kartta-ala, kartta.js). */
+#app-screen:has(>.kartta-full){position:relative;overflow:hidden}
+.screen-content.kartta-full{position:absolute;inset:0;padding:0;animation:none}
+#app-screen>.screen-content.kartta-full~.tab-dock{position:absolute;left:0;right:0;bottom:0;margin:0;background:none}
+.kartta-full .kartta{position:absolute;inset:0;margin:0;aspect-ratio:auto;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none}
+.kartta-full .kartta-yla{position:absolute;top:8px;left:10px;z-index:3}
+html.standalone .kartta-full .kartta-yla{top:12px}
+.kartta-full .kartta-yla .top-menu{background:var(--c-fffffff2,#fffffff2);border-color:var(--c-d3dfee,#d3dfee);box-shadow:0 2px 8px var(--c-10243f2e,#10243f2e)}
+.kartta-full>.app-top.bare{z-index:3}
+.kartta-full .kartta-ylanapit{top:76px}
+.kartta-full .kartta-ilmoitus{top:64px;left:10px;right:64px}
+.kartta-full .kartta-zoom{bottom:calc(var(--kartta-ala,96px) + 24px)}
+.kartta-full .maplibregl-ctrl-bottom-left{bottom:var(--kartta-ala,96px);max-width:calc(100% - 70px)}
+.kartta-full .kartta-tila{padding-bottom:var(--kartta-ala,96px)}

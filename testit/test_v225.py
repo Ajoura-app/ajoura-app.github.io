@@ -236,7 +236,7 @@ def test_pyyhkaisy_ja_kartta(browser, base):
         s.page.evaluate(pyyhi, [".kartta-map", -120])
         s.page.wait_for_timeout(300)
         assert s.page.evaluate("location.hash") == "#kartta"
-        s.page.evaluate(pyyhi, [".kartta-huom", -120])
+        s.page.evaluate(pyyhi, [".kartta-yla", -120])  # 2.30: kartan ulkopuolinen kelluva yläosa
         s.page.wait_for_function("() => location.hash === '#reports'")
         s.page.evaluate(pyyhi, [".rp-head", 120])
         s.page.wait_for_function("() => location.hash === '#kartta'")

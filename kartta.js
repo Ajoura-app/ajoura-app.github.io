@@ -196,6 +196,15 @@
     clearTimeout(noteTimer); noteTimer = setTimeout(() => { n.hidden = true; }, 6000);
   }
 
+  // Kartan alareunan painikkeet ja lähdemerkintä alavalikon yläpuolelle (alavalikon korkeus vaihtelee leveyden mukaan).
+  function fitBottom() {
+    const box = document.querySelector('.kartta-full .kartta'), nav = document.querySelector('#app-screen > .tab-dock .tab-bar'), sc = document.getElementById('app-screen');
+    if (!box || !nav || !sc) return;
+    const gap = Math.max(0, sc.getBoundingClientRect().bottom - nav.getBoundingClientRect().top);
+    box.style.setProperty('--kartta-ala', Math.round(gap + 8) + 'px');
+  }
+  window.addEventListener('resize', fitBottom);
+
   // ---- Oma sijainti (2.27) ----
   // Vain painettaessa: selain kysyy luvan, ja sijaintia käytetään vain tässä laitteessa kartan keskittämiseen ja
   // merkkiin. Sitä ei lähetetä AJOURAlle eikä tallenneta; merkki katoaa, kun Kartta suljetaan. Karttapalvelu saa
@@ -227,14 +236,14 @@
   const layer = () => { const v = get(LAYER_KEY); return LAYERS.some(l => l.id === v) ? v : LAYERS[0].id; };
   const locateButton = () => navigator.geolocation ? `<button class="kartta-nappi" type="button" data-kartta-sijainti aria-label="Näytä oma sijainti">${svg('<circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="7.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22"/>')}</button>` : '';
   function mapView() {
-    return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading">Kartta</h2></div>${App().ui.topMenu}</div>
+    // 2.30 (Niklas): kartta koko näkymälle; ⋯-valikko, yläkulman painikkeet ja alavalikko kelluvat kartan päällä.
+    return `<div class="kartta-yla"><h2 class="sr-only">Kartta</h2>${App().ui.topMenu}</div>
       <section class="kartta" data-tila="${esc(state)}" aria-label="Kartta">
         <div class="kartta-map"></div>
         <div class="kartta-ylanapit">${layerButton()}${locateButton()}</div>
         <div class="kartta-zoom" role="group" aria-label="Kartan zoomaus"><button class="kartta-nappi" type="button" data-kartta-zoom="in" aria-label="Lähennä">${svg('<path d="M12 5v14M5 12h14"/>')}</button><button class="kartta-nappi" type="button" data-kartta-zoom="out" aria-label="Loitonna">${svg('<path d="M5 12h14"/>')}</button></div>
         <div class="kartta-tila" role="status" aria-live="polite"></div>
-      </section>
-      <p class="kartta-huom">Tulossa: lähimmät huoltoasemat, korjaamot ja latauspisteet.</p>`;
+      </section>`;
   }
   function diaryView() {
     return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading ajot-otsikko">Ajopäiväkirja</h2></div>${App().ui.topMenu}</div>
@@ -245,11 +254,12 @@
     const keep = view === 'kartta' && map && mapEl && mapEl.isConnected ? mapEl : null;
     if (view !== 'kartta') drop();
     if (keep) keep.remove();
-    screen.innerHTML = '<div class="screen-content kartta-screen">' + App().ui.top() + (view === 'ajot' ? diaryView() : mapView()) + '</div>' + App().ui.nav(view);
+    screen.innerHTML = '<div class="screen-content kartta-screen' + (view === 'kartta' ? ' kartta-full' : '') + '">' + App().ui.top() + (view === 'ajot' ? diaryView() : mapView()) + '</div>' + App().ui.nav(view);
     screen.scrollTop = 0;
     document.title = 'AJOURA App — ' + (view === 'ajot' ? 'Ajopäiväkirja' : 'Kartta');
     if (window.AjouraSecretary) window.AjouraSecretary.mountWidget();
     if (view === 'kartta') {
+      fitBottom();
       if (keep) {
         screen.querySelector('.kartta-map').replaceWith(keep);
         show(state, reason);
