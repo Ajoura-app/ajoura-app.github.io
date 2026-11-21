@@ -56,7 +56,10 @@
   let state = 'idle', reason = '';
   let satErrors = 0, satOk = false, satTimer = 0, noteTimer = 0;
   let ML = null, me = null, locating = false, locMove = false;
-  let corner = []; // lähdemerkintä ja mittakaava (addCorner) // MapLibre-moduuli, oman sijainnin merkki ja haku käynnissä
+  // MapLibre-moduuli, oman sijainnin merkki ja haku käynnissä; lähdemerkintä ja mittakaava (addCorner).
+  let corner = [];
+  // 2.31: paikat (huoltoasemat, korjaamot, latauspisteet); valittu luokka, lista auki, valittu kohde.
+  let paikat = null, paikatTila = 'idle', luokka = '', listaAuki = false, kohde = null;
   // sync.js (ladataan ennen tätä) lukee istunnon heti, joten uloskirjautuneelle välilehti ei välähdä näkyviin.
   const signedIn = () => { const S = window.AjouraSync; return !!(S && S.enabled && S.account && S.account()); };
   let gps = get(GPS_KEY) === '1' && signedIn(), checkedAt = 0, checking = null;
@@ -91,7 +94,7 @@
   function drop() {
     run++; clearTimeout(timer); clearTimeout(satTimer);
     if (map) { try { map.remove(); } catch (e) { /* jo poistettu */ } }
-    map = null; mapEl = null; mapTheme = ''; me = null; corner = [];
+    map = null; mapEl = null; mapTheme = ''; me = null; corner = []; kohde = null; listaAuki = false;
     if (state !== 'offline' && state !== 'error') state = 'idle';
   }
   function start() {
@@ -117,8 +120,9 @@
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
       addCorner();
-      map.once('load', () => { if (id !== run) return; clearTimeout(timer); show('ready'); });
-      map.on('style.load', applyLayer); // myös tumman ja vaalean tyylin vaihdon jälkeen
+      map.once('load', () => { if (id !== run) return; clearTimeout(timer); show('ready'); loadPaikat(); });
+      map.on('style.load', () => { applyLayer(); applyPaikat(); }); // myös tumman ja vaalean tyylin vaihdon jälkeen
+      map.on('click', e => clickPaikka(e));
       map.on('data', e => { if (e && e.sourceId === SAT_LAYER && e.tile) satOk = true; });
       // Ennen latausta tyylin tai kirjaston virhe on pysyvä; yksittäinen puuttuva karttatiili (sourceId) ei ole.
       map.on('error', e => {
@@ -126,7 +130,7 @@
         if (id === run && state === 'loading' && !(e && (e.sourceId || e.tile))) { drop(); show('error', 'tiles'); }
       });
       // Oman sijainnin keskitystä ei tallenneta kartan viimeisimmäksi näkymäksi; käyttäjän omat siirrot tallennetaan.
-      map.on('moveend', () => { if (locMove) { locMove = false; return; } saveView(); });
+      map.on('moveend', () => { if (listaAuki && !kohde && !me) renderLista(); if (locMove) { locMove = false; return; } saveView(); });
     }, () => { if (id !== run) return; clearTimeout(timer); show('error', 'lib'); });
   }
   // Tila näkyy kartan päällä: lataus, ei verkkoa tai virhe. Kartta ja sen painikkeet näkyvät vain valmiina.
@@ -200,10 +204,123 @@
   function fitBottom() {
     const box = document.querySelector('.kartta-full .kartta'), nav = document.querySelector('#app-screen > .tab-dock .tab-bar'), sc = document.getElementById('app-screen');
     if (!box || !nav || !sc) return;
-    const gap = Math.max(0, sc.getBoundingClientRect().bottom - nav.getBoundingClientRect().top);
+    const bottom = sc.getBoundingClientRect().bottom, gap = Math.max(0, bottom - nav.getBoundingClientRect().top);
     box.style.setProperty('--kartta-ala', Math.round(gap + 8) + 'px');
+    // Avoin paikkalista nostaa zoomauksen ja lähdemerkinnän listan yläpuolelle.
+    const l = box.querySelector('.kartta-lista:not([hidden])');
+    box.style.setProperty('--kartta-saatimet', Math.round((l ? bottom - l.getBoundingClientRect().top : gap) + 8) + 'px');
   }
   window.addEventListener('resize', fitBottom);
+
+  // ---- Lähimmät huoltoasemat, korjaamot ja latauspisteet (2.31) ----
+  // Aineisto on AJOURAn omalla sivustolla (kartta-data/paikat.json, OpenStreetMap, ODbL; tyokalut/karttapaikat.py ja
+  // kuukausittainen GitHub Actions -päivitys). Se ladataan vasta Kartassa. Etäisyydet lasketaan laitteessa omasta
+  // sijainnista (jos käyttäjä on pyytänyt sen) tai kartan keskeltä; mitään sijaintia ei lähetetä. Navigoi avaa
+  // puhelimen karttasovelluksen, jolle välitetään vain valitun paikan sijainti.
+  const LUOKAT = {
+    h: { yksi: 'Huoltoasema', monikko: 'Huoltoasemat', lahimmat: 'Lähimmät huoltoasemat', vari: '#e8590c' },
+    k: { yksi: 'Korjaamo', monikko: 'Korjaamot', lahimmat: 'Lähimmät korjaamot', vari: '#7048e8' },
+    l: { yksi: 'Latauspiste', monikko: 'Latauspisteet', lahimmat: 'Lähimmät latauspisteet', vari: '#2b8a3e' }
+  };
+  const PAIKAT_URL = 'kartta-data/paikat.json', PAIKAT_LAYER = 'ajoura-paikat', LUOKKA_KEY = 'ajoura-kartta-paikat', LISTA = 10;
+  let listaRivit = [];
+  const str = x => typeof x === 'string' ? x : '';
+  function loadPaikat() {
+    if (paikatTila === 'ok') { renderPaikat(); applyPaikat(); return; }
+    if (paikatTila === 'loading' || paikatTila === 'tyhja') return;
+    paikatTila = 'loading';
+    fetch(PAIKAT_URL, { cache: 'no-cache' }).then(r => r.ok ? r.json() : Promise.reject(new Error(String(r.status)))).then(d => {
+      if (!d || !d.meta || d.meta.versio !== 1 || !Array.isArray(d.paikat)) throw new Error('muoto');
+      paikat = d.paikat.filter(r => Array.isArray(r) && LUOKAT[r[0]] && Number.isFinite(r[1]) && Number.isFinite(r[2]) && Math.abs(r[1]) <= 90 && Math.abs(r[2]) <= 180)
+        .map(r => ({ c: r[0], lat: r[1], lon: r[2], nimi: str(r[3]), ketju: str(r[4]), osoite: str(r[5]), aukiolo: str(r[6]), puhelin: str(r[7]), www: /^https?:\/\//.test(str(r[8])) ? str(r[8]) : '' }));
+      paikatTila = paikat.length ? 'ok' : 'tyhja'; // tyhjä aineisto (ei vielä haettu): ei siruja
+      const v = get(LUOKKA_KEY); if (LUOKAT[v]) luokka = v;
+      renderPaikat(); applyPaikat();
+    }).catch(() => { paikatTila = 'virhe'; paikat = null; renderPaikat(); });
+  }
+  // Siruista valitaan luokka (yksi kerrallaan); valittu luokka näkyy kartalla ja avaa lähimpien listan.
+  function valitseLuokka(c) {
+    luokka = luokka === c ? '' : c;
+    set(LUOKKA_KEY, luokka || null);
+    listaAuki = !!luokka; kohde = null;
+    applyPaikat(); renderPaikat();
+  }
+  function renderPaikat() {
+    const sirut = document.querySelector('.kartta-sirut');
+    if (!sirut) return;
+    sirut.hidden = paikatTila !== 'ok';
+    sirut.querySelectorAll('[data-paikka-luokka]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.paikkaLuokka === luokka)));
+    renderLista();
+  }
+  function applyPaikat() {
+    if (!map || !map.getStyle() || !map.isStyleLoaded()) return;
+    if (map.getLayer(PAIKAT_LAYER)) map.removeLayer(PAIKAT_LAYER);
+    if (map.getSource(PAIKAT_LAYER)) map.removeSource(PAIKAT_LAYER);
+    if (!luokka || !paikat) return;
+    const features = paikat.map((p, i) => ({ p, i })).filter(x => x.p.c === luokka)
+      .map(x => ({ type: 'Feature', id: x.i, properties: { i: x.i }, geometry: { type: 'Point', coordinates: [x.p.lon, x.p.lat] } }));
+    map.addSource(PAIKAT_LAYER, { type: 'geojson', data: { type: 'FeatureCollection', features }, attribution: '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-tekijät</a>' });
+    map.addLayer({ id: PAIKAT_LAYER, type: 'circle', source: PAIKAT_LAYER, paint: {
+      'circle-color': LUOKAT[luokka].vari, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1.5,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 6, 14, 8] } });
+  }
+  function clickPaikka(e) {
+    if (!map || !map.getLayer(PAIKAT_LAYER)) return;
+    const p = e.point, f = map.queryRenderedFeatures([[p.x - 14, p.y - 14], [p.x + 14, p.y + 14]], { layers: [PAIKAT_LAYER] });
+    if (!f.length) return;
+    const lahin = f.map(x => paikat[x.properties.i]).filter(Boolean)
+      .sort((a, b) => { const pa = map.project([a.lon, a.lat]), pb = map.project([b.lon, b.lat]); return Math.hypot(pa.x - p.x, pa.y - p.y) - Math.hypot(pb.x - p.x, pb.y - p.y); })[0];
+    if (lahin) { listaAuki = true; avaaKohde(lahin, false); }
+  }
+  function lahto() {
+    if (me) { const l = me.getLngLat(); return { lat: l.lat, lon: l.lng, oma: true }; }
+    if (map) { const c = map.getCenter(); return { lat: c.lat, lon: c.lng, oma: false }; }
+    return null;
+  }
+  // Linnuntie-etäisyys (haversine), metreinä.
+  function matka(a, b) {
+    const R = 6371000, r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLon = r(b.lon - a.lon);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+  const muotoile = m => m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} m` : m < 10000 ? `${(m / 1000).toFixed(1).replace('.', ',')} km` : `${Math.round(m / 1000)} km`;
+  // OpenStreetMapin aukiolomerkintä suomeksi (yleisimmät lyhenteet); muu teksti jää sellaisenaan.
+  const PAIVAT = { Mo: 'ma', Tu: 'ti', We: 'ke', Th: 'to', Fr: 'pe', Sa: 'la', Su: 'su', PH: 'pyhät' };
+  const aukiolo = s => s === '24/7' ? 'Aina auki' : s.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, d => PAIVAT[d]).replace(/\b(off|closed)\b/g, 'suljettu').replace(/;\s*/g, '; ');
+  const nimi = p => p.nimi || p.ketju || LUOKAT[p.c].yksi;
+  const ios = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const navigoi = p => ios() ? `https://maps.apple.com/?daddr=${p.lat},${p.lon}&dirflg=d` : `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}&travelmode=driving`;
+  function renderLista() {
+    const box = document.querySelector('.kartta-lista');
+    if (!box) return;
+    if (!listaAuki || !luokka || !paikat) { box.hidden = true; box.innerHTML = ''; fitBottom(); return; }
+    const o = lahto(), L = LUOKAT[luokka];
+    const sulje = `<button type="button" class="kartta-lista-sulje" data-paikat-sulje aria-label="Sulje lista">${svg('<path d="M6 6l12 12M18 6 6 18"/>')}</button>`;
+    if (kohde) {
+      const p = kohde, d = o ? matka(o, p) : null;
+      box.innerHTML = `<div class="kartta-lista-yla"><button type="button" class="kartta-lista-takaisin" data-paikat-takaisin>← ${esc(L.lahimmat)}</button>${sulje}</div>
+        <h3 class="kartta-kohde-nimi">${esc(nimi(p))}</h3>
+        <p class="kartta-kohde-tiedot">${esc([p.nimi && p.ketju ? p.ketju : '', LUOKAT[p.c].yksi].filter(Boolean).join(' · '))}${d !== null ? ` · <span>${esc(muotoile(d))} linnuntietä</span>` : ''}</p>
+        ${p.osoite ? `<p class="kartta-kohde-rivi">${esc(p.osoite)}</p>` : ''}
+        ${p.aukiolo ? `<p class="kartta-kohde-rivi"><span class="kartta-kohde-otsake">Aukiolo</span> ${esc(aukiolo(p.aukiolo))}</p>` : ''}
+        <div class="kartta-kohde-toiminnot"><a class="app-button" href="${esc(navigoi(p))}" target="_blank" rel="noopener" data-navigoi>Navigoi</a>${p.puhelin ? `<a class="app-button secondary" href="tel:${esc(p.puhelin.replace(/[^\d+]/g, ''))}">Soita</a>` : ''}${p.www ? `<a class="app-button secondary" href="${esc(p.www)}" target="_blank" rel="noopener">Verkkosivu</a>` : ''}</div>
+        <p class="kartta-lista-lahde">Tiedot: © OpenStreetMap-tekijät. Navigoi avaa puhelimen karttasovelluksen.</p>`;
+    } else {
+      listaRivit = o ? paikat.filter(p => p.c === luokka).map(p => ({ p, d: matka(o, p) })).sort((a, b) => a.d - b.d).slice(0, LISTA).map(x => x.p) : [];
+      box.innerHTML = `<div class="kartta-lista-yla"><h3>${esc(L.lahimmat)}</h3>${sulje}</div>
+        <p class="kartta-lista-lahto">Linnuntie ${o && o.oma ? 'sijainnistasi' : 'kartan keskeltä'}</p>
+        ${listaRivit.length ? `<ol class="kartta-lista-rivit">${listaRivit.map((p, i) => `<li><button type="button" data-paikka="${i}"><span class="kartta-siru-piste luokka-${p.c}" aria-hidden="true"></span><span class="kartta-rivi-teksti"><strong>${esc(nimi(p))}</strong>${p.osoite || (p.nimi && p.ketju) ? `<small>${esc(p.osoite || p.ketju)}</small>` : ''}</span><span class="kartta-rivi-matka">${esc(muotoile(matka(o, p)))}</span></button></li>`).join('')}</ol>` : '<p class="kartta-lista-lahto">Ei kohteita.</p>'}`;
+    }
+    box.hidden = false;
+    fitBottom();
+  }
+  function avaaKohde(p, lenna = true) {
+    if (!p) return;
+    kohde = p; renderLista();
+    if (lenna && map) { locMove = true; map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 14), duration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 600 }); }
+    document.querySelector('.kartta-lista .kartta-kohde-nimi')?.setAttribute('tabindex', '-1');
+    document.querySelector('.kartta-lista .kartta-kohde-nimi')?.focus({ preventScroll: true });
+  }
 
   // ---- Oma sijainti (2.27) ----
   // Vain painettaessa: selain kysyy luvan, ja sijaintia käytetään vain tässä laitteessa kartan keskittämiseen ja
@@ -220,6 +337,7 @@
       if (!c.every(Number.isFinite)) return note('Sijaintia ei saatu. Yritä uudelleen.');
       if (!me) { const dot = document.createElement('div'); dot.className = 'kartta-oma'; dot.setAttribute('aria-hidden', 'true'); me = new ML.Marker({ element: dot }); }
       me.setLngLat(c).addTo(map);
+      if (listaAuki && !kohde) renderLista();
       const still = matchMedia('(prefers-reduced-motion: reduce)').matches, to = { center: c, zoom: Math.max(map.getZoom(), 14) };
       locMove = true;
       if (still) map.jumpTo(to); else map.easeTo({ ...to, duration: 800 });
@@ -241,6 +359,8 @@
       <section class="kartta" data-tila="${esc(state)}" aria-label="Kartta">
         <div class="kartta-map"></div>
         <div class="kartta-ylanapit">${layerButton()}${locateButton()}</div>
+        <div class="kartta-sirut" role="group" aria-label="Näytä kartalla" hidden>${Object.entries(LUOKAT).map(([k, l]) => `<button type="button" class="kartta-siru" data-paikka-luokka="${k}" aria-pressed="false"><span class="kartta-siru-piste luokka-${k}" aria-hidden="true"></span>${esc(l.monikko)}</button>`).join('')}</div>
+        <div class="kartta-lista" role="region" aria-label="Lähimmät paikat" hidden></div>
         <div class="kartta-zoom" role="group" aria-label="Kartan zoomaus"><button class="kartta-nappi" type="button" data-kartta-zoom="in" aria-label="Lähennä">${svg('<path d="M12 5v14M5 12h14"/>')}</button><button class="kartta-nappi" type="button" data-kartta-zoom="out" aria-label="Loitonna">${svg('<path d="M5 12h14"/>')}</button></div>
         <div class="kartta-tila" role="status" aria-live="polite"></div>
       </section>`;
@@ -266,6 +386,7 @@
         const theme = dark() ? 'dark' : 'light';
         if (theme !== mapTheme) { mapTheme = theme; map.setStyle(STYLES[theme]); }
         map.resize();
+        renderPaikat();
       } else start();
     }
     checkGps(false);
@@ -308,6 +429,12 @@
     const z = t.closest('[data-kartta-zoom]');
     if (z) { if (map) z.dataset.karttaZoom === 'in' ? map.zoomIn() : map.zoomOut(); return; }
     if (t.closest('[data-kartta-uudelleen]')) { start(); return; }
+    const lk = t.closest('[data-paikka-luokka]');
+    if (lk) { valitseLuokka(lk.dataset.paikkaLuokka); return; }
+    const pk = t.closest('[data-paikka]');
+    if (pk) { avaaKohde(listaRivit[Number(pk.dataset.paikka)]); return; }
+    if (t.closest('[data-paikat-sulje]')) { listaAuki = false; kohde = null; renderLista(); return; }
+    if (t.closest('[data-paikat-takaisin]')) { kohde = null; renderLista(); return; }
     const me_ = t.closest('[data-kartta-sijainti]');
     if (me_) { locate(me_); return; }
     const b = t.closest('[data-kartta-tasot]'), menu = document.getElementById('kartta-tasovalikko');
@@ -334,5 +461,5 @@
   // Istunto palautuu sync.js:ssä vasta sivun latauksen jälkeen, joten ensimmäinen tarkistus odottaa hetken.
   window.addEventListener('load', () => setTimeout(() => checkGps(false), 1500));
 
-  window.AjouraKartta = { owns: v => v === 'kartta' || v === 'ajot', paint, gps: () => gps, checkGps: () => checkGps(true), state: () => state, layer };
+  window.AjouraKartta = { owns: v => v === 'kartta' || v === 'ajot', paint, gps: () => gps, checkGps: () => checkGps(true), state: () => state, layer, paikat: () => paikatTila };
 })();
