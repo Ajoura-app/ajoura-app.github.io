@@ -76,7 +76,9 @@ def test_kuvan_kasittely_tallennus_ja_virhepolku(browser,base,fail):
             assert p.evaluate('source=>AjouraCarPhoto.display(source)',original)==output
             p.reload();p.wait_for_function('source=>AjouraCarPhoto.display(source).startsWith("data:image/png")',arg=original)
             p.goto(base+'/app.html#me');p.locator('[data-reset]').click()
-            p.wait_for_function('AjouraApp.cars().length===0')
+            # 2.29: the wipe leaves #me only after IndexedDB is cleared (before: a reload right after it raced the
+            # still-running clear, and the processed photo could come back under load).
+            p.wait_for_function('AjouraApp.cars().length===0&&location.hash!=="#me"')
             p.reload();p.evaluate('AjouraCarPhoto.ready')
             assert p.evaluate('source=>AjouraCarPhoto.display(source)',original)==original
         if fail:p.evaluate('AjouraApp.refresh()');assert p.evaluate('window.__calls')==1
