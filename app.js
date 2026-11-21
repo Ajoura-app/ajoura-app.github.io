@@ -684,7 +684,7 @@
   // Company details printed on reports. The business ID is a placeholder until the company is registered.
   // Fill id and email once the company and its address exist; empty values are left off the report.
   const company={name:'AJOURA by DRONEX',id:'',web:'ajoura-app.github.io',email:''};
-  const appVersion='2.28 (testiversio)';
+  const appVersion='2.29 (testiversio)';
   const isOil=e=>e.type==='Moottoriöljyn vaihto'||(e.items||[]).includes('Moottoriöljy');
   const monthsBetween=(a,b)=>(new Date(b)-new Date(a))/2629800000;
   // Average gap in months and km between consecutive events of one kind (oldest first).
@@ -2145,7 +2145,9 @@
   screen.addEventListener('touchstart',e=>{const t=e.touches[0];touch=e.touches.length===1&&!e.target.closest('input,select,textarea,.garage-strip,.secretary-vehicle,.check-grid,video,.report-table,.fl-cars,.fl-chart,.kartta')?{x:t.clientX,y:t.clientY,at:Date.now()}:null;},{passive:true});
   screen.addEventListener('touchend',e=>{if(!touch)return;const t=e.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y,fast=Date.now()-touch.at<600;touch=null;if(!fast||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*2)return;
     const v=route().view,order=tabOrder(),cur=order.indexOf(tabOf(v));if(cur<0)return;const next=order[cur+(dx<0?1:-1)];if(!next)return;screen.dataset.swipe=dx<0?'left':'right';go(next);setTimeout(()=>delete screen.dataset.swipe,400);},{passive:true});
-  function reset(){if(!confirm('Poistetaanko kaikki autot ja merkinnät?'))return;cars=[];profile={...defaultProfile};sequence=0;notice='';draft=null;lookup=null;window.AjouraCarPhoto?.clear();try{[storeKey,backupKey,sinceKey].forEach(k=>localStorage.removeItem(k));}catch(e){}idb.del(storeKey).catch(()=>{});if(window.AjouraSync)window.AjouraSync.forget();document.getElementById('demo-announcement').textContent='Kaikki tiedot poistettu.';go(installed?'welcome':'launcher');}
+  // 2.29: wait until the garage copy and the processed car photos are removed from IndexedDB before leaving, so
+  // closing the app right after the wipe cannot bring the cars back or leave a processed photo on the device.
+  function reset(){if(!confirm('Poistetaanko kaikki autot ja merkinnät?'))return;cars=[];profile={...defaultProfile};sequence=0;notice='';draft=null;lookup=null;const photos=Promise.resolve(window.AjouraCarPhoto?.clear()).catch(()=>{});try{[storeKey,backupKey,sinceKey].forEach(k=>localStorage.removeItem(k));}catch(e){}const stored=idb.del(storeKey).catch(()=>{});if(window.AjouraSync)window.AjouraSync.forget();Promise.all([photos,stored]).then(()=>{document.getElementById('demo-announcement').textContent='Kaikki tiedot poistettu.';go(installed?'welcome':'launcher');});}
   screen.addEventListener('click',event=>{const cost=event.target.closest('[data-home-costs]');if(cost){event.preventDefault();const o=rpPrefs();o.car=cost.dataset.homeCosts;o.p='year';o.kp={};o.offKinds=[];prefSet(rpKey,flKeep(o));go('reports');return;}const kl=event.target.closest('[data-fl-kindlink]');if(kl){const o=flPrefs();o.k=kl.dataset.flKindlink;prefSet(flKey,flKeep(o));}const q=event.target.closest('[data-quickfuel]');if(q){const c=cars.find(c=>c.id===q.dataset.quickfuel);if(c){openSheet(c,q,null,q.dataset.kind);const mode=q.dataset.secretaryMode,l=glass.querySelector('.sheet-layer');
       if(mode&&l){l.dataset.secretaryMode=mode;const target={manual:'[data-ai-manual]',photo:'[data-ai-cam]',speech:'[data-ai-mic]'}[mode];if(target)l.querySelector(target)?.click();if(mode==='text')l.querySelector('#ai-say-in')?.focus();}}return;}const to=event.target.closest('[data-scroll-to]');if(to){const el=document.getElementById(to.dataset.scrollTo);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:to.dataset.scrollBlock||'center'});}});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&glass.querySelector('.sheet-layer'))closeSheet();});
