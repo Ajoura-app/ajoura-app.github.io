@@ -6,7 +6,23 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.28
+## Julkaistu versio 2.31
+
+21.11.2026, Niklaksen pyynnöt: test_v202:n korjaus, kartta koko näkymälle ja GPS-suunnitelman vaihe 2c. Kolme muutosta omina versioinaan (2.29–2.31).
+
+- **2.29** Tyhjennä tiedot (Varmuuskopio ja tiedot) odottaa, että tallin IndexedDB-kopio ja taustanpoistetut autokuvat on poistettu, ennen kuin näkymä vaihtuu. Ennen poisto jatkui taustalla, ja jos sovellus suljettiin heti, kuva tai tallin kopio saattoi jäädä laitteelle. Tämä oli test_v202:n satunnaisen kaatumisen syy (testi latasi sivun ennen kuin poisto oli valmis).
+- **2.30** Kartta koko näkymälle: alavalikko, ⋯-valikko ja oikean yläkulman painikkeet kelluvat kartan päällä, zoomaus, mittakaava ja lähdemerkintä alavalikon yläpuolella.
+- **2.31** Kartalle **lähimmät huoltoasemat, korjaamot ja latauspisteet**: sirut (yksi luokka kerrallaan), pisteet kartalla, lähimpien lista (linnuntie kartan keskeltä tai omasta sijainnista), tiedot (osoite, aukiolo suomeksi, puhelin, verkkosivu) ja Navigoi (Apple Kartat iPhonessa, muuten Google Maps). Aineisto kartta-data/paikat.json (OpenStreetMap, ODbL) rakennetaan skriptillä tyokalut/karttapaikat.py; GitHub Actions -työnkulku "Kartan paikat (OpenStreetMap)" hakee sen kerran kuussa ja avaa PR:n. Repossa on tyhjä pohja, kunnes ensimmäinen haku on yhdistetty: siihen asti siruja ei näytetä. Overpass ei vastaa tästä kehitysympäristöstä, joten ensimmäinen aineisto haetaan Actionsissa. Tietosuojaselosteeseen Lähimmät paikat -kappale (Niklas hyväksyi 21.11.2026).
+
+Tallennettu tietomuoto, varmuuskopio, synkronointi ja Supabase ennallaan. Laitteeseen tallentuu näkymäasetuksena valittu paikkaluokka. Välimuisti ak-155 / ajoura-pwa-205.
+
+Varmennus: koko perussarja **761 läpäistyä / 0 epäonnistunutta / 256 ohitettua** (myös test_v202). Laaja sarja versiota 2.28 vastaan: 11 läpäistyä / 8 ohitettua; näkymävertailussa muuttui vain versionumero. Uudet testit test_v229.py (1), test_v230.py (7) ja test_v231.py (12) kaatuivat edellistä versiota vastaan; 2.31:n tarkoitukselliset rikkomukset (escape, järjestys, karttasovellus, määrätarkistus, yksityiset paikat, tyhjä aineisto) jäivät kiinni.
+
+Fyysisellä iPhonella tarkistettava: kartta koko näytöllä ja kelluvat painikkeet (kotipalkin alue, ⋯), sirut ja lista ensimmäisen aineisto-PR:n jälkeen, Navigoi avaa Apple Kartat, pisteen napautus.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.28
 
 20.11.2026, GPS-suunnitelman vaihe 2b (osa 2). Niklas loi Esri-avaimen ja hyväksyi selosteen tekstin 20.11.2026.
 
@@ -17,8 +33,6 @@ Esri-avain (julkinen selainavain, Niklaksen hyväksymä poikkeus 17.11.2026) on 
 Varmennus: koko perussarja **741 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Uusi testi kaatui versiota 2.27 vastaan. Uusi testi test_v228.py (4); 2.25:n satelliittitestit päivitetty oikeaan kuvapalveluun; test_v226:n vartija vaati Esrin mainitsemisen selosteessa ennen julkaisua.
 
 Fyysisellä iPhonella tarkistettava: tasopainike ja valikko, satelliittikuva ja nimet vaaleassa ja tummassa tilassa, paluu peruskarttaan, lähdemerkinnän i-painike.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.27
 
@@ -353,4 +367,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.25 | 17.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-suunnitelman vaihe 2a: Kartta-välilehti kaikille (MapLibre 6.18.0, OpenFreeMap vaalea ja tumma), alavalikko Koti, Kartta, (Ajopäiväkirja GPS-oikeudella), Raportit ja AI; karttatasopainike Esri-satelliittia varten automaattisella paluulla peruskarttaan. Välimuisti ak-149 / ajoura-pwa-199. |
 | 2.26 | 18.11.2026 | `claude/keen-noether-a7w1xe` → main | Tietosuojaselosteeseen Kartta-kohta (OpenFreeMap, lähteet). Välimuisti ak-150 / ajoura-pwa-200. |
 | 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. |
-| 2.28 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartan tasovalikkoon Esri-satelliitti (oletus pois, paluu peruskarttaan jos kuvat eivät lataudu); selosteeseen Esri. Välimuisti ak-152 / ajoura-pwa-202. Tämä on nyt julkaistu versio. |
+| 2.28 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartan tasovalikkoon Esri-satelliitti (oletus pois, paluu peruskarttaan jos kuvat eivät lataudu); selosteeseen Esri. Välimuisti ak-152 / ajoura-pwa-202. |
+| 2.29–2.31 | 21.11.2026 | `claude/keen-noether-a7w1xe` → main | Tyhjennys odottaa laitteen tietokantaa (test_v202 korjattu), kartta koko näkymälle, lähimmät huoltoasemat, korjaamot ja latauspisteet (OpenStreetMap, kuukausittainen Actions-päivitys). Välimuisti ak-155 / ajoura-pwa-205. Tämä on nyt julkaistu versio. |
