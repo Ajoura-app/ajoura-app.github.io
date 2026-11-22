@@ -93,6 +93,7 @@
   }
   function drop() {
     run++; clearTimeout(timer); clearTimeout(satTimer);
+    if (window.AjouraGps) window.AjouraGps.irrota();
     if (map) { try { map.remove(); } catch (e) { /* jo poistettu */ } }
     map = null; mapEl = null; mapTheme = ''; me = null; corner = []; kohde = null; listaAuki = false;
     if (state !== 'offline' && state !== 'error') state = 'idle';
@@ -120,7 +121,7 @@
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
       addCorner();
-      map.once('load', () => { if (id !== run) return; clearTimeout(timer); show('ready'); loadPaikat(); });
+      map.once('load', () => { if (id !== run) return; clearTimeout(timer); show('ready'); loadPaikat(); gpsKytke(false); });
       map.on('style.load', () => { applyLayer(); applyPaikat(); }); // myös tumman ja vaalean tyylin vaihdon jälkeen
       map.on('click', e => clickPaikka(e));
       map.on('data', e => { if (e && e.sourceId === SAT_LAYER && e.tile) satOk = true; });
@@ -200,6 +201,18 @@
     clearTimeout(noteTimer); noteTimer = setTimeout(() => { n.hidden = true; }, 6000);
   }
 
+  // 2.32: GPS-kerros (gps.js) kartalle vain, kun palvelin on vahvistanut GPS-oikeuden. Uudelleenpiirrossa kortti
+  // piirretään uuteen elementtiin (keep = sama kartta).
+  let gpsBox = null;
+  function gpsKytke(keep) {
+    const box = document.querySelector('.kartta-gps'), G = window.AjouraGps;
+    if (!G || !box) return;
+    if (!gps || !map || state !== 'ready') { G.irrota(); gpsBox = null; box.hidden = true; return; }
+    if (keep && gpsBox) { G.siirra(box); gpsBox = box; return; }
+    G.liita(map, ML, box); gpsBox = box;
+  }
+  document.addEventListener('gps-koko', () => fitBottom());
+
   // Kartan alareunan painikkeet ja lähdemerkintä alavalikon yläpuolelle (alavalikon korkeus vaihtelee leveyden mukaan).
   function fitBottom() {
     const box = document.querySelector('.kartta-full .kartta'), nav = document.querySelector('#app-screen > .tab-dock .tab-bar'), sc = document.getElementById('app-screen');
@@ -207,7 +220,7 @@
     const bottom = sc.getBoundingClientRect().bottom, gap = Math.max(0, bottom - nav.getBoundingClientRect().top);
     box.style.setProperty('--kartta-ala', Math.round(gap + 8) + 'px');
     // Avoin paikkalista nostaa zoomauksen ja lähdemerkinnän listan yläpuolelle.
-    const l = box.querySelector('.kartta-lista:not([hidden])');
+    const l = box.querySelector('.kartta-lista:not([hidden])') || [...box.querySelectorAll('.kartta-gps:not([hidden])')].find(x => x.offsetParent);
     box.style.setProperty('--kartta-saatimet', Math.round((l ? bottom - l.getBoundingClientRect().top : gap) + 8) + 'px');
   }
   window.addEventListener('resize', fitBottom);
@@ -361,22 +374,26 @@
         <div class="kartta-ylanapit">${layerButton()}${locateButton()}</div>
         <div class="kartta-sirut" role="group" aria-label="Näytä kartalla" hidden>${Object.entries(LUOKAT).map(([k, l]) => `<button type="button" class="kartta-siru" data-paikka-luokka="${k}" aria-pressed="false"><span class="kartta-siru-piste luokka-${k}" aria-hidden="true"></span>${esc(l.monikko)}</button>`).join('')}</div>
         <div class="kartta-lista" role="region" aria-label="Lähimmät paikat" hidden></div>
+        <div class="kartta-gps" role="region" aria-label="Auton GPS-tiedot" hidden></div>
         <div class="kartta-zoom" role="group" aria-label="Kartan zoomaus"><button class="kartta-nappi" type="button" data-kartta-zoom="in" aria-label="Lähennä">${svg('<path d="M12 5v14M5 12h14"/>')}</button><button class="kartta-nappi" type="button" data-kartta-zoom="out" aria-label="Loitonna">${svg('<path d="M5 12h14"/>')}</button></div>
         <div class="kartta-tila" role="status" aria-live="polite"></div>
       </section>`;
   }
-  function diaryView() {
-    return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading ajot-otsikko">Ajopäiväkirja</h2></div>${App().ui.topMenu}</div>
-      <div class="kartta-tyhja"><span class="kartta-tyhja-ikoni" aria-hidden="true">${svg('<path d="M12 6.5C10.4 5.3 8 4.8 4 5v13c4 0 6.4.5 8 1.6 1.6-1.1 4-1.6 8-1.6V5c-4-.2-6.4.3-8 1.5z"/><path d="M12 6.5v13"/>')}</span><h3>GPS-yhteys on vahvistettu tilillesi</h3><p>Ajot, reitit ja kuukausikooste tulevat tähän seuraavissa versioissa. Tämä versio ei vielä hae eikä näytä ajotietoja.</p><a class="app-button secondary" href="#kartta">Avaa kartta</a></div>`;
+  // 2.32: Ajopäiväkirja ja ajon tiedot (gps.js). Näkyvät vain, kun palvelin on vahvistanut GPS-oikeuden.
+  function diaryView(id) {
+    if (id) return `<a class="nav-back gps-takaisin" href="#ajot">← Ajopäiväkirja</a><h2 class="app-heading gps-tiedot-otsikko">Ajon tiedot</h2><div class="gps-ajon-tiedot"></div>`;
+    return `<div class="rp-head fv-head"><div class="rp-titles"><h2 class="app-heading ajot-otsikko">Ajopäiväkirja</h2></div>${App().ui.topMenu}</div><div class="gps-paivakirja"></div>`;
   }
-  function paint(screen, view) {
+  function paint(screen, view, id) {
     if (view === 'ajot' && !gps) { history.replaceState(null, '', '#kartta'); view = 'kartta'; }
     const keep = view === 'kartta' && map && mapEl && mapEl.isConnected ? mapEl : null;
     if (view !== 'kartta') drop();
     if (keep) keep.remove();
-    screen.innerHTML = '<div class="screen-content kartta-screen' + (view === 'kartta' ? ' kartta-full' : '') + '">' + App().ui.top() + (view === 'ajot' ? diaryView() : mapView()) + '</div>' + App().ui.nav(view);
+    screen.innerHTML = '<div class="screen-content kartta-screen' + (view === 'kartta' ? ' kartta-full' : '') + '">' + App().ui.top() + (view === 'ajot' ? diaryView(id) : mapView()) + '</div>' + App().ui.nav(view);
     screen.scrollTop = 0;
-    document.title = 'AJOURA App — ' + (view === 'ajot' ? 'Ajopäiväkirja' : 'Kartta');
+    document.title = 'AJOURA App — ' + (view === 'ajot' ? (id ? 'Ajon tiedot' : 'Ajopäiväkirja') : 'Kartta');
+    const G = window.AjouraGps;
+    if (view === 'ajot' && G) { if (id) G.tiedot(screen.querySelector('.gps-ajon-tiedot'), id, load); else G.paivakirja(screen.querySelector('.gps-paivakirja')); }
     if (window.AjouraSecretary) window.AjouraSecretary.mountWidget();
     if (view === 'kartta') {
       fitBottom();
@@ -387,6 +404,7 @@
         if (theme !== mapTheme) { mapTheme = theme; map.setStyle(STYLES[theme]); }
         map.resize();
         renderPaikat();
+        gpsKytke(true);
       } else start();
     }
     checkGps(false);
@@ -400,6 +418,7 @@
     const A = App(); if (!A) return;
     if (!on && /^#ajot(\/|$)/.test(location.hash)) { history.replaceState(null, '', '#kartta'); A.refresh(); }
     else A.refreshNavigation();
+    if (/^#kartta(\/|$)/.test(location.hash)) gpsKytke(false);
   }
   function checkGps(force) {
     const S = window.AjouraSync;
@@ -461,5 +480,5 @@
   // Istunto palautuu sync.js:ssä vasta sivun latauksen jälkeen, joten ensimmäinen tarkistus odottaa hetken.
   window.addEventListener('load', () => setTimeout(() => checkGps(false), 1500));
 
-  window.AjouraKartta = { owns: v => v === 'kartta' || v === 'ajot', paint, gps: () => gps, checkGps: () => checkGps(true), state: () => state, layer, paikat: () => paikatTila };
+  window.AjouraKartta = { owns: v => v === 'kartta' || v === 'ajot', paint, gps: () => gps, checkGps: () => checkGps(true), state: () => state, layer, paikat: () => paikatTila, style: () => STYLES[dark() ? 'dark' : 'light'] };
 })();

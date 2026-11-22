@@ -7,9 +7,9 @@
 <meta name="description" content="Miten AJOURA käsittelee tietojasi testivaiheessa.">
 <meta name="theme-color" content="#f6f8fb">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="ajoura.css?v=ak-155">
-<script src="i18n-sv.js?v=ak-155" defer></script>
-<script src="i18n.js?v=ak-155" defer></script>
+<link rel="stylesheet" href="ajoura.css?v=ak-156">
+<script src="i18n-sv.js?v=ak-156" defer></script>
+<script src="i18n.js?v=ak-156" defer></script>
 </head>
 <body>
 <main class="legal">
@@ -63,6 +63,9 @@
 <p><strong>Oma sijainti:</strong> kun painat kartan sijaintipainiketta, selain kysyy luvan käyttää laitteesi sijaintia. Sijaintia käytetään vain laitteellasi kartan keskittämiseen ja sijaintimerkkiin. Sitä ei lähetetä AJOURAlle eikä tallenneta, ja merkki katoaa, kun suljet kartan. Kun kartta näyttää sijaintisi ympäristön, karttapalvelu saa karttakuvien pyynnöistä tiedon katsotusta alueesta. Luvan voi perua selaimen tai puhelimen asetuksista.</p>
 <p><strong>Lähimmät paikat:</strong> huoltoasemat, korjaamot ja latauspisteet tulevat AJOURAn omalta sivustolta (OpenStreetMap-aineisto, © OpenStreetMap-tekijät). Etäisyydet lasketaan laitteellasi kartan keskeltä tai, jos olet pyytänyt sen, sijainnistasi. Sijaintia ei lähetetä minnekään. Navigoi avaa puhelimesi karttasovelluksen (Apple Kartat tai Google Maps), jolle välitetään valitun paikan sijainti. Sen jälkeen tietoja käsittelee karttasovelluksen tarjoaja omien ehtojensa mukaan.</p>
 
+<h2>GPS ja ajopäiväkirja (testivaihe)</h2>
+<p>Jos tiliisi on liitetty GPS-laite, Kartta ja Ajopäiväkirja hakevat auton sijainnin, ajot ja reitit Traccar-palvelusta (server.traccar.org) AJOURAn palvelimen (Supabase, EU) kautta vain silloin, kun avaat ne. Tietoja ei tallenneta AJOURAn palvelimelle eikä laitteellesi, ja ne näytetään vain sinulle. Ajojen paikannimet päätellään laitteellasi Tilastokeskuksen kuntarajoista (CC BY 4.0). Testivaiheessa GPS-toiminto on vain AJOURAn tekijöiden omassa käytössä.</p>
+
 <h2>Palvelut, joiden kautta sivu toimii</h2>
 <ul>
 <li><strong>GitHub Pages</strong> (GitHub Inc.) jakaa sivuston. Kuten kaikki verkkopalvelimet, se näkee teknisiä tietoja, kuten IP-osoitteen, sivua ladattaessa.</li>
@@ -72,6 +75,7 @@
 <li><strong>Google</strong> (Google LLC, Yhdysvallat): Google-kirjautuminen, kun kirjaudut, ja palautelomake (Google Apps Script), kun lähetät palautetta.</li>
 <li><strong>OpenFreeMap</strong> (avoin karttapalvelu): karttakuvat Kartta-välilehdellä, vain kun avaat sen.</li>
 <li><strong>Esri</strong> (Esri Inc., Yhdysvallat): satelliittikuvat Kartta-välilehdellä, vain kun valitset satelliittitason.</li>
+<li><strong>Traccar</strong> (server.traccar.org): GPS-laitteen sijainnit ja ajot, vain tileillä, joihin GPS-laite on liitetty.</li>
 <li><strong>Automallien kuvat</strong> ovat AJOURAn omalla sivustolla (GitHub Pages), joten niitä ladattaessa ei oteta yhteyttä muihin palveluihin.</li>
 </ul>
 
@@ -87,7 +91,7 @@
 <p>AJOURAa kehittävät Hannes ja Niklas yksityishenkilöinä. Yritystä ei ole vielä perustettu. Hannes ja Niklas ovat yhdessä rekisterinpitäjä tässä selosteessa kuvatulle tietojen käsittelylle. Yhteystiedot: info.ajoura@gmail.com. Samaan osoitteeseen voit lähettää pyynnön tietojesi katsomisesta, korjaamisesta tai poistamisesta. Palautteen voi lähettää myös sovelluksesta: Valikko → Anna palautetta.</p>
 
 <p style="margin-top:32px"><a href="./">← Takaisin AJOURAan</a> · <a href="app.html">Avaa sovellus</a></p>
-<p style="font-size:13px;color:var(--muted)">Päivitetty 21.11.2026</p>
+<p style="font-size:13px;color:var(--muted)">Päivitetty 22.11.2026</p>
 </main>
 </body>
 </html>

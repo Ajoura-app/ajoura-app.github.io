@@ -198,8 +198,9 @@ def test_ajopaivakirja_vain_palvelimen_luvalla(browser, base):
         p = vastaus["pyynnot"][0]
         assert p["url"] == GPS + "?action=devices" and p["auth"] == "Bearer testitunniste" and p["apikey"]
         s.page.locator('.main-tabs a[aria-label="Ajopäiväkirja"]').click()
-        s.page.wait_for_selector(".kartta-tyhja")
-        assert "GPS-yhteys on vahvistettu" in s.page.locator(".kartta-tyhja").inner_text()
+        # 2.32: oikea Ajopäiväkirja (gps.js); keksityllä palvelimella ei laitteita.
+        s.page.wait_for_selector(".gps-virhe")
+        assert s.page.locator(".gps-virhe").inner_text() == "Tiliin ei ole liitetty GPS-laitetta."
         assert s.page.locator('.main-tabs a[aria-label="Ajopäiväkirja"]').get_attribute("aria-current") == "page"
         # Uusi tarkistus enintään 10 min välein, ei jokaisella näkymän vaihdolla.
         n = len(vastaus["pyynnot"])
@@ -267,7 +268,7 @@ def test_kapea_puhelin(browser, base):
         osuu = "()=>{const m=document.querySelector('.top-menu'),r=m.getBoundingClientRect();return document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)?.closest('.top-menu')===m}"
         assert s.page.evaluate(osuu)
         s.page.locator('.main-tabs a[aria-label="Ajopäiväkirja"]').click()
-        s.page.wait_for_selector(".kartta-tyhja")
+        s.page.wait_for_selector(".gps-paivakirja")  # 2.32
         assert s.page.evaluate(osuu)
     finally:
         s.sulje()

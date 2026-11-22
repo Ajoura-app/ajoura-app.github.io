@@ -101,7 +101,9 @@ def lista(p):
 
 
 def test_tyhja_aineisto_ei_nayta_siruja(browser, base):
-    s, _ = kartta(browser, base, aineisto=None)  # repon oma pohja: paikat = []
+    # Tyhjä pohja (ennen ensimmäistä aineistohakua; repossa on nyt oikea aineisto, PR #34).
+    tyhja = json.dumps({"meta": json.loads(AINEISTO)["meta"], "paikat": []})
+    s, _ = kartta(browser, base, aineisto=tyhja)
     try:
         s.page.wait_for_function("AjouraKartta.paikat() === 'tyhja'")
         assert s.page.locator(".kartta-sirut").is_hidden()
