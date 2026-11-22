@@ -197,4 +197,7 @@ html.dark .device-glass .gps-tiedot-kartta{filter:invert(1) hue-rotate(180deg)}
 .gps-tiedot div:last-child{border-bottom:0}
 .gps-tiedot dt{flex:0 0 auto;font-size:13px;color:var(--c-4f5f72,#4f5f72)}
 .gps-tiedot dd{margin:0;font-size:14px;font-weight:650;text-align:right;overflow-wrap:anywhere}
+/* 2.33: epäilyttävän pitkä ajo (pieni keskinopeus): huomautus, tiedot ennallaan. */
+.gps-huomio{margin:6px 0 8px;padding:8px 10px;border:1px solid var(--c-f5c26b,#f5c26b);border-radius:12px;background:var(--c-fff8e6,#fff8e6);color:var(--c-5c3c00,#5c3c00);font-size:12px;line-height:1.45}
+.gps-ajo-teksti .gps-epaily{color:var(--c-8a5a00,#8a5a00);font-weight:600}
 @media print{.kartta-gps,.gps-jaksot,.gps-selaa{display:none!important}}
