@@ -11,3 +11,10 @@ ja tämä johdettu tiedosto on samalla lisenssillä julkinen ODbL-aineisto.
 - Kentät (rivi = taulukko): luokka (`h` huoltoasema, `k` korjaamo, `l` latauspiste), lat, lon, nimi, ketju,
   osoite, aukiolo (OSM:n opening_hours), puhelin, www. Tyhjät kentät lopusta puuttuvat.
 - Tyhjä `paikat`-lista tarkoittaa, että aineistoa ei ole vielä haettu; silloin Kartta ei näytä paikkoja.
+
+# Kuntarajat (Ajopäiväkirja)
+
+`kunnat.json`: Tilastokeskus, kunnat 1:4 500 000, **CC BY 4.0** (lähde mainittava: Tilastokeskus).
+Rakennetaan skriptillä `tyokalut/kunnat.py`; GitHub Actions (`.github/workflows/kunnat.yml`) hakee sen kerran vuodessa
+ja avaa muutoksista PR:n. Selain päättelee laitteessa ajon lähtö- ja päätepisteen kunnan; sijainti ei lähde laitteelta.
+Tyhjä lista: kuntanimiä ei vielä ole, ja ajon nimenä käytetään GPS-palvelun osoitetta tai "Ajo klo 11.52".

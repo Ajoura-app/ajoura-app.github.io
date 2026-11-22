@@ -1,0 +1,46 @@
+name: Kuntarajat (Tilastokeskus)
+
+# Hakee Ajopäiväkirjan kuntarajat Tilastokeskuksen avoimesta aineistosta (CC BY 4.0) kerran vuodessa kuntaliitosten
+# jälkeen ja avaa muutoksista PR:n tarkistettavaksi. Käsin: Actions → Kuntarajat (Tilastokeskus) → Run workflow.
+
+on:
+  schedule:
+    - cron: '23 4 20 1 *'  # 20.1. klo 4.23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: kunnat
+  cancel-in-progress: false
+
+jobs:
+  paivita:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Hae ja rakenna kuntarajat
+        run: python tyokalut/kunnat.py
+      - name: Avaa PR muutoksista
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain -- kartta-data)" ]; then echo "Ei muutoksia."; exit 0; fi
+          paiva="$(date -u +%Y-%m-%d)"
+          haara="data/kunnat-$paiva"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$haara"
+          git add kartta-data
+          git commit -m "Kuntarajat: Tilastokeskus $paiva"
+          git push origin "$haara"
+          gh pr create --base main --head "$haara" \
+            --title "Kuntarajat: Tilastokeskus $paiva" \
+            --body "Ajopäiväkirjan kuntarajat Tilastokeskuksen avoimesta aineistosta (CC BY 4.0). Tarkista kuntien määrä ennen yhdistämistä." \
+          || echo "::warning::PR:n avaus estetty. Salli Settings → Actions → General → Allow GitHub Actions to create and approve pull requests, tai avaa PR haarasta $haara käsin."
