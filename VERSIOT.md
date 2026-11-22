@@ -6,7 +6,19 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.32
+## Julkaistu versio 2.33
+
+22.11.2026, Niklaksen havainto oikealla GPS-laitteella: 13 km:n ajo näkyi kestävän 2 h 20 min (keskinopeus 6 km/h). Lähtöaika oli oikein, mutta GPS-palvelu (Traccar) ei tunnistanut pysähdystä, vaan laski pysäköidyn ajan vielä ajoksi.
+
+- **2.33** Ajo, jonka keskinopeus on alle 10 km/h ja kesto vähintään 30 min, saa huomautuksen: "Loppuaika voi sisältää seisonta-aikaa, jos GPS-palvelu ei tunnistanut pysähdystä." Huomautus näkyy ajon tiedoissa, Ajopäiväkirjan listassa ja kartan reittipaneelissa. Tietoja ei muuteta: aika, kesto ja keskinopeus näytetään kuten GPS-palvelu ne ilmoitti. Varsinainen korjaus tehdään Traccarin asetuksista (liikkeen nopeusraja, pysäköinnin vähimmäiskesto tai virta-avaimen käyttö). Välimuisti ak-157 / ajoura-pwa-207.
+
+Varmennus: koko perussarja **777 läpäistyä / 0 epäonnistunutta / 256 ohitettua**. Uusi testi test_v233.py (raja-arvot ja kolme näkymää) kaatui versiota 2.32 vastaan.
+
+Fyysisellä iPhonella tarkistettava: 22.11. Tampere–Kangasala-ajossa huomautus näkyy ajon tiedoissa ja Ajopäiväkirjan listassa.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.32
 
 22.11.2026, GPS-suunnitelman vaiheet 2d–2f (Niklas: "tee seuraavat vaiheet omatoimisesti"). Niklas hyväksyi selosteen GPS-kohdan 22.11.2026.
 
@@ -22,8 +34,6 @@ Kolme vaihetta julkaistiin yhtenä versiona, koska näkymät linkittävät toisi
 Varmennus: koko perussarja 772 läpäistyä / 3 epäonnistunutta / 256 ohitettua; kolme epäonnistunutta olivat vanhoja Kartta-testejä, jotka odottivat 2.25:n Ajopäiväkirja-paikkamerkkiä tai tyhjää paikka-aineistoa. Ne päivitettiin, ja kaikki kartta- ja GPS-testit (37) menivät läpi. Uudet testit kaatuivat versiota 2.31 vastaan (11/14; kolme Python-testiä lukee repon tiedostoja). Uudet testit test_v232.py, test_v232_paivakirja.py ja test_v232_tiedot.py (keksitty GPS-palvelu testit/gps_keksitty.py, kello lukittu). Testit löysivät ennen julkaisua: viikkoja selatessa valittu päivä saattoi osua tulevaisuuteen (rajattu tähän päivään).
 
 Fyysisellä iPhonella tarkistettava (oikealla GPS-laitteella): auton sijainti ja tila, Tänään/Kuukausi-luvut verrattuna Traccarin omaan näkymään, Näytä reitti, Ajopäiväkirjan jaksot ja kaavio, ajon tiedot ja kartta, paikannimet.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.31
 
@@ -386,4 +396,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. |
 | 2.28 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartan tasovalikkoon Esri-satelliitti (oletus pois, paluu peruskarttaan jos kuvat eivät lataudu); selosteeseen Esri. Välimuisti ak-152 / ajoura-pwa-202. |
 | 2.29–2.31 | 21.11.2026 | `claude/keen-noether-a7w1xe` → main | Tyhjennys odottaa laitteen tietokantaa (test_v202 korjattu), kartta koko näkymälle, lähimmät huoltoasemat, korjaamot ja latauspisteet (OpenStreetMap, kuukausittainen Actions-päivitys). Välimuisti ak-155 / ajoura-pwa-205. |
-| 2.32 | 22.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-näkymät (vaiheet 2d–2f): auton sijainti ja reitti Kartalla, Ajopäiväkirja (päivä/viikko/kuukausi, kaavio, kuntanimet), ajon tiedot; vain luku. Välimuisti ak-156 / ajoura-pwa-206. Tämä on nyt julkaistu versio. |
+| 2.32 | 22.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-näkymät (vaiheet 2d–2f): auton sijainti ja reitti Kartalla, Ajopäiväkirja (päivä/viikko/kuukausi, kaavio, kuntanimet), ajon tiedot; vain luku. Välimuisti ak-156 / ajoura-pwa-206. |
+| 2.33 | 22.11.2026 | `claude/keen-noether-a7w1xe` → main | Huomautus epäilyttävän pitkästä GPS-ajosta (keskinopeus alle 10 km/h, kesto vähintään 30 min); tiedot ennallaan. Välimuisti ak-157 / ajoura-pwa-207. Tämä on nyt julkaistu versio. |
