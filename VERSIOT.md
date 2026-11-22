@@ -6,7 +6,26 @@ Jokainen rivi on varmuuskopio sovelluksesta ja verkkosivusta sellaisena kuin ne 
 
 **Päivitys:** lista päivittyy kerran päivässä (noin klo 22 Suomen aikaa), jos sovellukseen tai sivuun on tullut muutoksia, sekä aina kun pyydät ("tee uusi versio"). Versio nousee 0,01 kerrallaan: 0.09 → 0.10 → 0.11 … (0.99:n jälkeen 0.100, 0.101 …, 0.118). Versiosta 1.19 alkaen numerointi on 1.xx (0.119 = 1.19): 1.19 → 1.20 … (1.99:n jälkeen 1.100). Käyttäjän pyynnöstä tämä kokonaisuus julkaistaan 8.11.2026 nimellä **Ajoura 2.0**. Seuraavat tavalliset versiot ovat **2.01, 2.02 … 2.99, 2.100**. Pääversion seuraava vaihto tehdään vain erillisestä pyynnöstä.
 
-## Julkaistu versio 2.31
+## Julkaistu versio 2.32
+
+22.11.2026, GPS-suunnitelman vaiheet 2d–2f (Niklas: "tee seuraavat vaiheet omatoimisesti"). Niklas hyväksyi selosteen GPS-kohdan 22.11.2026.
+
+- **2.32** GPS-näkymät, vain tilille, jolle palvelin vahvistaa GPS-oikeuden (gps.js; vain lukeminen gps-traccar-funktiosta):
+  - **Kartta (2d):** auton merkki (harmaa, jos sijainti on vanha), tila "Yhdistetty" vain tuoreella sijainnilla (≤ 10 min), muuten "Viimeisin sijainti … sitten"; tunnusluvut Viimeisin päivitys, Nopeus, Tänään, Kuukausi; viimeisin ajo, Avaa ajopäiväkirja ja Näytä reitti (reitti, lähtö- ja saapumispiste, alapaneeli: matka, kesto, keskinopeus, Luokittelematon, Tunnistettu automaattisesti). Kortin voi pienentää. Sijainti päivittyy minuutin välein vain Kartan ollessa auki.
+  - **Ajopäiväkirja (2e):** Päivä/Viikko/Kuukausi (oletus kuukausi), selaus taaksepäin (ei tulevaisuuteen), kooste (ajot yhteensä, ajoja, ajoaika), päivittäinen kaavio ja sama tieto taulukkona, ajolista uusin ensin, päivänäkymässä pysähdykset. Paikannimet kuntarajoista laitteessa (Tilastokeskus, kartta-data/kunnat.json; GitHub Actions -työnkulku "Kuntarajat (Tilastokeskus)"), muuten GPS-palvelun osoite tai "Ajo klo 11.52".
+  - **Ajon tiedot (2f):** kartta reitteineen, päivämäärä, lähtö ja saapuminen (aika, paikka, osoite), matka, kesto, keskinopeus, suurin nopeus, ajotyyppi Luokittelematon, tietolähde Traccar GPS. Linkki toimii myös uudelleenlatauksen jälkeen.
+  - Ajat Suomen ajassa kesäaika huomioiden. GPS-matka ei ole matkamittarin lukema. Luokittelu (työ/yksityinen), muistiinpanot, tallennus ja vienti tulevat vaiheessa 3 (kysy ensin), joten niiden painikkeita ei näytetä.
+  - GPS-tietoja ei tallenneta pilveen eikä laitteelle (vain muistiin sivun ollessa auki); laitteelle jäävät vain näkymäasetukset (valittu laite, kortin koko). Tietosuojaselosteeseen kohta GPS ja ajopäiväkirja sekä Traccar palvelulistaan.
+
+Kolme vaihetta julkaistiin yhtenä versiona, koska näkymät linkittävät toisiinsa (kartan kortti → päiväkirja → ajon tiedot). Ei Traccarin oikeaa testiä (vaihe 1b): näkymät on rakennettu gps-traccar-funktion määriteltyä vastausmuotoa vasten keksityllä aineistolla. Supabase-koodi ennallaan. Välimuisti ak-156 / ajoura-pwa-206.
+
+Varmennus: koko perussarja 772 läpäistyä / 3 epäonnistunutta / 256 ohitettua; kolme epäonnistunutta olivat vanhoja Kartta-testejä, jotka odottivat 2.25:n Ajopäiväkirja-paikkamerkkiä tai tyhjää paikka-aineistoa. Ne päivitettiin, ja kaikki kartta- ja GPS-testit (37) menivät läpi. Uudet testit kaatuivat versiota 2.31 vastaan (11/14; kolme Python-testiä lukee repon tiedostoja). Uudet testit test_v232.py, test_v232_paivakirja.py ja test_v232_tiedot.py (keksitty GPS-palvelu testit/gps_keksitty.py, kello lukittu). Testit löysivät ennen julkaisua: viikkoja selatessa valittu päivä saattoi osua tulevaisuuteen (rajattu tähän päivään).
+
+Fyysisellä iPhonella tarkistettava (oikealla GPS-laitteella): auton sijainti ja tila, Tänään/Kuukausi-luvut verrattuna Traccarin omaan näkymään, Näytä reitti, Ajopäiväkirjan jaksot ja kaavio, ajon tiedot ja kartta, paikannimet.
+
+Tämä on nyt julkaistu versio.
+
+## Edellinen julkaistu versio 2.31
 
 21.11.2026, Niklaksen pyynnöt: test_v202:n korjaus, kartta koko näkymälle ja GPS-suunnitelman vaihe 2c. Kolme muutosta omina versioinaan (2.29–2.31).
 
@@ -19,8 +38,6 @@ Tallennettu tietomuoto, varmuuskopio, synkronointi ja Supabase ennallaan. Laitte
 Varmennus: koko perussarja **761 läpäistyä / 0 epäonnistunutta / 256 ohitettua** (myös test_v202). Laaja sarja versiota 2.28 vastaan: 11 läpäistyä / 8 ohitettua; näkymävertailussa muuttui vain versionumero. Uudet testit test_v229.py (1), test_v230.py (7) ja test_v231.py (12) kaatuivat edellistä versiota vastaan; 2.31:n tarkoitukselliset rikkomukset (escape, järjestys, karttasovellus, määrätarkistus, yksityiset paikat, tyhjä aineisto) jäivät kiinni.
 
 Fyysisellä iPhonella tarkistettava: kartta koko näytöllä ja kelluvat painikkeet (kotipalkin alue, ⋯), sirut ja lista ensimmäisen aineisto-PR:n jälkeen, Navigoi avaa Apple Kartat, pisteen napautus.
-
-Tämä on nyt julkaistu versio.
 
 ## Edellinen julkaistu versio 2.28
 
@@ -368,4 +385,5 @@ Paikallinen ajoneuvoavustajakokeilu pysyy tuotannossa suljettuna. Supabasen tuot
 | 2.26 | 18.11.2026 | `claude/keen-noether-a7w1xe` → main | Tietosuojaselosteeseen Kartta-kohta (OpenFreeMap, lähteet). Välimuisti ak-150 / ajoura-pwa-200. |
 | 2.27 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartalle oma sijainti vain pyydettäessä (ei lähetetä eikä tallenneta); selosteeseen Oma sijainti -kappale. Välimuisti ak-151 / ajoura-pwa-201. |
 | 2.28 | 20.11.2026 | `claude/keen-noether-a7w1xe` → main | Kartan tasovalikkoon Esri-satelliitti (oletus pois, paluu peruskarttaan jos kuvat eivät lataudu); selosteeseen Esri. Välimuisti ak-152 / ajoura-pwa-202. |
-| 2.29–2.31 | 21.11.2026 | `claude/keen-noether-a7w1xe` → main | Tyhjennys odottaa laitteen tietokantaa (test_v202 korjattu), kartta koko näkymälle, lähimmät huoltoasemat, korjaamot ja latauspisteet (OpenStreetMap, kuukausittainen Actions-päivitys). Välimuisti ak-155 / ajoura-pwa-205. Tämä on nyt julkaistu versio. |
+| 2.29–2.31 | 21.11.2026 | `claude/keen-noether-a7w1xe` → main | Tyhjennys odottaa laitteen tietokantaa (test_v202 korjattu), kartta koko näkymälle, lähimmät huoltoasemat, korjaamot ja latauspisteet (OpenStreetMap, kuukausittainen Actions-päivitys). Välimuisti ak-155 / ajoura-pwa-205. |
+| 2.32 | 22.11.2026 | `claude/keen-noether-a7w1xe` → main | GPS-näkymät (vaiheet 2d–2f): auton sijainti ja reitti Kartalla, Ajopäiväkirja (päivä/viikko/kuukausi, kaavio, kuntanimet), ajon tiedot; vain luku. Välimuisti ak-156 / ajoura-pwa-206. Tämä on nyt julkaistu versio. |
