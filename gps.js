@@ -119,6 +119,12 @@
   }
   const lyhytOsoite = a => typeof a === 'string' && a ? a.split(',')[0].trim() : '';
   const paikka = (piste, osoite) => kunta(piste) || lyhytOsoite(osoite);
+  // 2.33 (Niklas): pitkä ajo hyvin pienellä keskinopeudella (alle 10 km/h, vähintään 30 min) on usein GPS-palvelun
+  // ajontunnistuksen tulkinta: pysäköity auto (GPS-paikan heilunta, virta päällä) lasketaan vielä ajoksi. Tietoja ei
+  // muuteta; käyttäjälle kerrotaan, että loppuaika voi sisältää seisonta-aikaa.
+  const EPAILY_KMH = 10, EPAILY_S = 30 * 60;
+  const epailyttava = t => t.avgSpeedKmh !== null && t.avgSpeedKmh !== undefined && t.avgSpeedKmh < EPAILY_KMH && t.durationS >= EPAILY_S;
+  const HUOMIO = 'Keskinopeus on poikkeuksellisen pieni. Loppuaika voi sisältää seisonta-aikaa, jos GPS-palvelu ei tunnistanut pysähdystä. Tarkista tarvittaessa pysähdykset tai GPS-palvelun ajoraportti.';
   function otsikko(t) {
     const a = paikka(t.startPoint, t.startAddress), b = paikka(t.endPoint, t.endAddress);
     return a && b ? `${a} → ${b}` : `Ajo klo ${klo(t.s)}`;
@@ -192,7 +198,7 @@
       const t = k.reittiAjo;
       runko = `<p class="gps-pieni">${svg(ICON.reitti)} ${t === k.viimeisin ? 'Viimeisin ajo' : pvm(t.s)}</p><h3 class="gps-ajo-otsikko">${esc(otsikko(t))}</h3>
         <dl class="gps-luvut kolme"><div><dt>Matka</dt><dd>${km(t.distanceM)}</dd></div><div><dt>Kesto</dt><dd>${kesto(t.durationS)}</dd></div><div><dt>Keskinopeus</dt><dd>${t.avgSpeedKmh === null ? '–' : t.avgSpeedKmh + ' km/h'}</dd></div></dl>
-        <p class="gps-merkit"><span class="gps-merkki">Luokittelematon</span><span class="gps-merkki">Tunnistettu automaattisesti (Traccar)</span></p>
+        <p class="gps-merkit"><span class="gps-merkki">Luokittelematon</span><span class="gps-merkki">Tunnistettu automaattisesti (Traccar)</span></p>${epailyttava(t) ? `<p class="gps-huomio" role="note">${esc(HUOMIO)}</p>` : ''}
         <div class="gps-toiminnot"><a class="app-button" href="#ajot/${esc(ajoId(k.laite.id, t))}">${svg(ICON.kirja)} Ajon tiedot</a><button type="button" class="app-button secondary" data-gps-reitti-pois>Sulje reitti</button></div>`;
     } else if (auki && !k.lataa && !k.virhe) {
       runko = `<dl class="gps-luvut"><div><dt>Viimeisin päivitys</dt><dd>${pos ? klo(Date.parse(pos.fixTime)) : '–'}</dd></div><div><dt>Nopeus</dt><dd>${pos && pos.fresh && pos.speedKmh !== null ? pos.speedKmh + ' km/h' : '–'}</dd></div>
@@ -284,7 +290,7 @@
     return `<figure class="gps-kaavio"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ajetut kilometrit päivittäin"><text x="2" y="8" class="gps-kaavio-teksti">km</text>${viivat.join('')}${palkit}</svg></figure>${taulukko}`;
   }
   function ajoRivi(laiteId, t) {
-    return `<li><a class="gps-ajo" href="#ajot/${esc(ajoId(laiteId, t))}"><span class="gps-ajo-teksti"><small>${pvm(t.s)} · ${klo(t.s)}–${klo(t.e)}</small><strong>${esc(otsikko(t))}</strong><small>${km(t.distanceM)} · ${kesto(t.durationS)} · Luokittelematon</small></span><span class="gps-nuoli" aria-hidden="true">${svg(ICON.oikea)}</span></a></li>`;
+    return `<li><a class="gps-ajo" href="#ajot/${esc(ajoId(laiteId, t))}"><span class="gps-ajo-teksti"><small>${pvm(t.s)} · ${klo(t.s)}–${klo(t.e)}</small><strong>${esc(otsikko(t))}</strong><small>${km(t.distanceM)} · ${kesto(t.durationS)} · Luokittelematon</small>${epailyttava(t) ? '<small class="gps-epaily">Loppuaika voi sisältää seisonta-aikaa</small>' : ''}</span><span class="gps-nuoli" aria-hidden="true">${svg(ICON.oikea)}</span></a></li>`;
   }
   let pkAjo = 0;
   function paivakirja(el) {
@@ -342,7 +348,7 @@
       el.querySelector('.gps-lataus').outerHTML = `<dl class="gps-tiedot">${rivi('Päivämäärä', pvm(t.s))}${rivi('Lähtö', lahto)}${t.startAddress ? rivi('Lähtöosoite', esc(t.startAddress)) : ''}${rivi('Saapuminen', maali)}${t.endAddress ? rivi('Saapumisosoite', esc(t.endAddress)) : ''}
         ${rivi('Matka', km(t.distanceM))}${rivi('Kesto', kesto(t.durationS))}${t.avgSpeedKmh !== null ? rivi('Keskinopeus', t.avgSpeedKmh + ' km/h') : ''}${t.maxSpeedKmh !== null ? rivi('Suurin nopeus', t.maxSpeedKmh + ' km/h') : ''}
         ${rivi('Ajotyyppi', 'Luokittelematon')}${rivi('Tietolähde', 'Traccar GPS')}</dl>
-        <p class="gps-pieni">GPS-matka ei ole matkamittarin lukema. Ajon luokittelu, muistiinpano ja vienti raportteihin tulevat myöhemmin.</p>`;
+        ${epailyttava(t) ? `<p class="gps-huomio" role="note">${esc(HUOMIO)}</p>` : ''}<p class="gps-pieni">GPS-matka ei ole matkamittarin lukema. Ajon luokittelu, muistiinpano ja vienti raportteihin tulevat myöhemmin.</p>`;
       const box = el.querySelector('.gps-tiedot-kartta');
       reitti(laiteId, t).then(r => {
         if (tMap !== my || !box.isConnected || !window.WebGL2RenderingContext || !r.points || r.points.length < 2) { if (box.isConnected && (!r.points || r.points.length < 2)) box.remove(); return; }
@@ -378,5 +384,5 @@
   // Uloskirjautuminen tai tilin vaihto: muistissa olevat GPS-tiedot pois.
   document.addEventListener('ajoura-session', () => muisti.clear());
 
-  window.AjouraGps = { liita, siirra, irrota, paivakirja, tiedot, irrotaTiedot, _testi: { keskiyo, paikallinen, kunta, otsikko, km, kesto, jaksoRaja } };
+  window.AjouraGps = { liita, siirra, irrota, paivakirja, tiedot, irrotaTiedot, _testi: { epailyttava, keskiyo, paikallinen, kunta, otsikko, km, kesto, jaksoRaja } };
 })();
